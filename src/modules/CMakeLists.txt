@@ -1,5 +1,5 @@
 set(MODULES
-  test
+  first_test
   )
 
 foreach(MODULE ${MODULES})

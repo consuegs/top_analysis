@@ -21,9 +21,11 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 
 #~ set(BOOST_INCLUDEDIR "/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/boost/1.57.0-ikhhed/include/")
 #~ set(Boost_LIBRARY_DIR "/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/boost/1.57.0-ikhhed/lib/")
-set(BOOST_INCLUDEDIR "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/boost/1.63.0/include/")
-set(Boost_LIBRARY_DIR "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/boost/1.63.0/lib/")
-find_package(Boost 1.40 COMPONENTS program_options python REQUIRED)
+#~ set(BOOST_INCLUDEDIR "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/boost/1.63.0/include/")
+#~ set(Boost_LIBRARY_DIR "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/boost/1.63.0/lib/")
+set(BOOST_INCLUDEDIR "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/boost/1.67.0/include/")
+set(Boost_LIBRARY_DIR "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/boost/1.67.0/lib/")
+find_package(Boost 1.67 COMPONENTS program_options REQUIRED)
 
 ### c++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
