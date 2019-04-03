@@ -1,0 +1,8 @@
+/output/*.root
+/build/
+/src/style/myStyle.pyc
+/output/
+/input/
+/output_v19/
+/output_v01D/
+/output_v02D/
