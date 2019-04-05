@@ -262,15 +262,15 @@ std::vector<std::string> DatasetCollection::getDatasubsetNames(std::vector<TStri
 
 TString DatasetCollection::getLabel(TString const &dsName) const
 {
-   Config const &cfg=Config::get();
-   if (dsName=="efake") return cfg.efake.label;
+   //~ Config const &cfg=Config::get();
+   //~ if (dsName=="efake") return cfg.efake.label;
    return getDataset(dsName).label;
 }
 
 float DatasetCollection::getSystUncert(TString dsName) const
 {
-   Config const &cfg=Config::get();
-   if (dsName=="efake") return cfg.efake.syst_unc;
-   if (dsName=="TTcomb") dsName="TTGJets";
+   //~ Config const &cfg=Config::get();
+   //~ if (dsName=="efake") return cfg.efake.syst_unc;
+   //~ if (dsName=="TTcomb") dsName="TTGJets";
    return getDataset(dsName).syst_unc;
 }

@@ -1,5 +1,5 @@
 set(MODULES
-  first_test
+  distributions
   )
 
 foreach(MODULE ${MODULES})

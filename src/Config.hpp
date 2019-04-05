@@ -16,21 +16,21 @@ class Config
 public:
    static Config& get();
    float lumi;
-   float trigger_eff_PhMET;
-   float trigger_eff_Ph;
-   struct {
-      float f,f_mc; // the fake rate
-      float syst_unc;
-      TString label;
-      int color;
-   } efake;
-   struct {
-      float Vg,e_Vg;
-      float GJ,e_GJ;
-      float rho;
-      float uncert_Vgamma;     
-      float uncert_gammaJ;
-   } sf; // scale factors
+   //~ float trigger_eff_PhMET;
+   //~ float trigger_eff_Ph;
+   //~ struct {
+      //~ float f,f_mc; // the fake rate
+      //~ float syst_unc;
+      //~ TString label;
+      //~ int color;
+   //~ } efake;
+   //~ struct {
+      //~ float Vg,e_Vg;
+      //~ float GJ,e_GJ;
+      //~ float rho;
+      //~ float uncert_Vgamma;     
+      //~ float uncert_gammaJ;
+   //~ } sf; // scale factors
 
    TString treeVersion;
    TString treeName;

@@ -8,9 +8,8 @@ std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets)
    for (tree::Jet j: jets){
       // vary jet energy scale up or down (resort after loop!)
       // j.p*=(1.-j.uncert);
-      if (!j.isLoose || j.p.Pt()<30 || fabs(j.p.Eta())>3.0) continue;
-      //~ if (j.hasPhotonMatch || j.hasElectronMatch || j.hasMuonMatch) continue;
-      if (j.hasElectronMatch || j.hasMuonMatch) continue; //photonMatch not available in current trees, maybe need to change!!!!
+      if (!j.isLoose || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
+      if (j.hasElectronMatch || j.hasMuonMatch) continue;
       cjets.push_back(j);
    }
    // sort(cjets.begin(), cjets.end(), tree::PtGreater);
