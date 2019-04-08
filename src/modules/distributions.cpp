@@ -30,6 +30,20 @@ void run()
    hs.addHist("baseline/emu/mll"   ,";mll(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("baseline/mumu/mll"   ,";mll(GeV);EventsBIN"           ,100,0,600);
    
+   hs.addHist("genParticles/ee/pT_nunu"   ,";p_{T}^{#nu#nu}(GeV);EventsBIN"           ,100,0,600);
+   hs.addHist("genParticles/emu/pT_nunu"   ,";p_{T}^{#nu#nu}(GeV);EventsBIN"           ,100,0,600);
+   hs.addHist("genParticles/mumu/pT_nunu"   ,";p_{T}^{#nu#nu}(GeV);EventsBIN"           ,100,0,600);
+   hs.addHist("genParticles/ee/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,600);
+   hs.addHist("genParticles/emu/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,600);
+   hs.addHist("genParticles/mumu/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,600);
+   
+   hist::Histograms<TH2F> hs2d(vsDatasubsets);
+   hs2d.addHist("genParticles/ee/2d_nunuVSgenMet", ";genMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
+   hs2d.addHist("genParticles/emu/2d_nunuVSgenMet", ";genMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
+   hs2d.addHist("genParticles/mumu/2d_nunuVSgenMet", ";genMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
+
+
+   
    for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){
       TFile file(dss.getPath(),"read");
       if (file.IsZombie()) {
@@ -37,10 +51,11 @@ void run()
       }
       io::log * ("Processing '"+dss.datasetName+"' ");
 
-      bool const isData=dss.isData;
-      bool const isSignal=dss.isSignal;
+      //~ bool const isData=dss.isData;
+      //~ bool const isSignal=dss.isSignal;
       
       hs.setCurrentSample(dss.name);
+      hs2d.setCurrentSample(dss.name);
 
       TTreeReader reader(cfg.treeName, &file);
       TTreeReaderValue<float> w_pu(reader, "pu_weight");
@@ -56,6 +71,7 @@ void run()
       TTreeReaderValue<std::vector<tree::IntermediateGenParticle>> intermediateGenParticles(reader, "intermediateGenParticles");     
       TTreeReaderValue<std::vector<tree::Particle>> triggerObjects(reader, "hltEG165HE10Filter");
       TTreeReaderValue<tree::MET> MET(reader, "met");
+      TTreeReaderValue<tree::MET> GENMET(reader, "met_gen");
       TTreeReaderValue<tree::MET> MET_JESu(reader, "met_JESu");
       TTreeReaderValue<tree::MET> MET_JESd(reader, "met_JESd");
       TTreeReaderValue<float> HTgen(reader, "genHt");
@@ -78,15 +94,17 @@ void run()
          
          float fEventWeight=*w_pu * *w_mc;
          hs.setFillWeight(fEventWeight);
+         hs2d.setFillWeight(fEventWeight);
          
          float const met=MET->p.Pt();
+         float const genMet=GENMET->p.Pt();
          
          //Baseline selection
          TLorentzVector p_l1;
          TLorentzVector p_l2;
          
          if (*is_ee){
-            if(!(*electrons)[0].isTight || !(*electrons)[1].isTight) continue;
+            if(!(*electrons)[0].isTight || !(*electrons)[1].isTight) continue; //currently double check since trees only have tight leptons!!
             p_l1=(*electrons)[0].p;
             p_l2=(*electrons)[1].p;
          }
@@ -115,39 +133,62 @@ void run()
          if (cjets.size()<2) continue;
          
          bool bTag=false;
-         for (tree::Jet jet : cjets) {
+         for (tree::Jet const &jet : cjets) {
             if (jet.bTagCSVv2>0.5426) bTag=true;
          }
-         if (!bTag) continue;
+         if (!bTag) continue; // end baseline selection
          
+         // Get pT of Neutrino Pair
+         TLorentzVector neutrinoPair(0,0,0,0);
+         for (tree::IntermediateGenParticle const &inter: *intermediateGenParticles){
+            if (abs(inter.pdgId)==24) {
+               for (tree::GenParticle const &daughter: inter.daughters){
+                  if (abs(daughter.pdgId)==12 || abs(daughter.pdgId)==14 || abs(daughter.pdgId)==16){
+                     neutrinoPair+=daughter.p;
+                  }
+               }
+            }
+         }
          
          //Fill hists
          if (*is_ee){
             hs.fill("baseline/ee/met",met);
             hs.fill("baseline/ee/mll",*mll);
+            hs.fill("genParticles/ee/pT_nunu",neutrinoPair.Pt());
+            hs.fill("genParticles/ee/genMet",genMet);
+            hs2d.fill("genParticles/ee/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
          }
          else if (*is_emu){
             hs.fill("baseline/emu/met",met);
             hs.fill("baseline/emu/mll",*mll);
+            hs.fill("genParticles/emu/pT_nunu",neutrinoPair.Pt());
+            hs.fill("genParticles/emu/genMet",genMet);
+            hs2d.fill("genParticles/emu/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
          }
          else if (*is_mumu){
             hs.fill("baseline/mumu/met",met);
             hs.fill("baseline/mumu/mll",*mll);
+            hs.fill("genParticles/mumu/pT_nunu",neutrinoPair.Pt());
+            hs.fill("genParticles/mumu/genMet",genMet);
+            hs2d.fill("genParticles/mumu/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
          }
          
       }// evt loop
       io::log<<"";
       
       hs.scaleLumi();
+      hs2d.scaleLumi();
       hs.mergeOverflow();
+      hs2d.mergeOverflow();
       file.Close();
    } // dataset loop
    
    std::vector<TString> samplesToCombine={"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ"};
    hs.combineFromSubsamples(samplesToCombine);
+   hs2d.combineFromSubsamples(samplesToCombine);
    
-   //Plotting part
-   io::RootFileSaver saver("plots.root",TString::Format("distributions%.1f",cfg.processFraction*100));
+   //Plotting part 1D
+   io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),TString::Format("distributions%.1f",cfg.processFraction*100));
    
    TCanvas can;
    can.SetLogy();
@@ -155,18 +196,42 @@ void run()
    std::map<TString,std::vector<TString>> msPresel_vVars={
       {"baseline/ee/",{"met","mll"}},
       {"baseline/emu/",{"met","mll"}},
-      {"baseline/mumu/",{"met","mll"}},};
+      {"baseline/mumu/",{"met","mll"}},
+      {"genParticles/ee/",{"pT_nunu","genMet"}},
+      {"genParticles/emu/",{"pT_nunu","genMet"}},
+      {"genParticles/mumu/",{"pT_nunu","genMet"}},
+      };
       
    for (auto const &sPresel_vVars:msPresel_vVars){
       TString const &sPresel=sPresel_vVars.first;
       for (TString sVar:sPresel_vVars.second){
          sVar=sPresel+sVar;
-         THStack st_mc=hs.getStack(sVar,{"SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","TTbar"});
+         TH1F* hist=hs.getHistogram(sVar,"TTbar");
          gfx::LegendEntries le=hs.getLegendEntries();
-         st_mc.Draw();
+         hist->SetStats(0);
+         hist->SetMarkerSize(0);
+         hist->Draw("histE");
          TLegend leg=le.buildLegend(.4,.7,1-gPad->GetRightMargin(),-1,2);
          leg.Draw();
-         saver.save(can,sVar);
+         saver.save(can,"tt_only/"+sVar);
+         
+         THStack st_mc=hs.getStack(sVar,{"SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","TTbar"});
+         le=hs.getLegendEntries();
+         st_mc.Draw();
+         TLegend leg2=le.buildLegend(.4,.7,1-gPad->GetRightMargin(),-1,2);
+         leg2.Draw();
+         saver.save(can,"all/"+sVar);
       }
+   }
+   
+   //Plotting part 2D
+   TCanvas can_2d;
+   for (TString selection:{"ee","emu","mumu"}){
+      can_2d.cd();
+      TString loc="genParticles/"+selection+"/2d_nunuVSgenMet";
+      TH2F *hist=hs2d.getHistogram(loc,"TTbar");
+      hist->SetStats(0);
+      hist->Draw("colz");
+      saver.save(can_2d,"tt_only/"+loc);
    }
 }
