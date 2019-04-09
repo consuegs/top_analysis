@@ -1,5 +1,6 @@
 set(MODULES
   distributions
+  unfolding
   )
 
 foreach(MODULE ${MODULES})

@@ -11,7 +11,7 @@
 #include "tools/gfx.hpp"
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define debug io::log*"DEBUG:"*__FILENAME__*":"*__FUNCTION__*":"*__LINE__*": "
+#define debug_io io::log*"DEBUG:"*__FILENAME__*":"*__FUNCTION__*":"*__LINE__*": "
 
 namespace io
 {

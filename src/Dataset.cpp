@@ -60,7 +60,7 @@ Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std:
       TH1F*  h=(TH1F*)f.Get("TreeWriter/hCutFlow");
       TTree* t=(TTree*)f.Get("TreeWriter/eventTree");
       if (!h || !t) {
-         debug<<TString::Format("%s is broken!",filename.c_str());
+         debug_io<<TString::Format("%s is broken!",filename.c_str());
          Ngen=0;
          entries=0;
       } else {
@@ -69,7 +69,7 @@ Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std:
       }
       f.Close();
    } else {
-      debug<<TString::Format("%s is broken!",filename.c_str());
+      debug_io<<TString::Format("%s is broken!",filename.c_str());
    }
 }
 

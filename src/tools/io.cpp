@@ -73,8 +73,8 @@ void io::RootFileSaver::save(TObject const &obj, TString name,bool decorate,bool
       title.ReplaceAll(".","_");
       can.SetName(title);
       if (decorate) gfx::decorate(can,simulation,bLumiText_);
-      can.SaveAs("test.pdf");
-      can.SaveAs("test.root");
+      //~ can.SaveAs("test.pdf");
+      //~ can.SaveAs("test.root");
       //~ can.SaveAs("test.png");
    }
    file_->cd();
@@ -113,7 +113,7 @@ io::RootFileReader::RootFileReader(TString rootFileName,TString internalPath)
    ensurePathForFile(fPath_);
    file_ = new TFile(fPath_,"read");
    if (file_->IsZombie()) {
-      debug << "Could not open file: "+fPath_;
+      debug_io << "Could not open file: "+fPath_;
       throw;
    }
 }

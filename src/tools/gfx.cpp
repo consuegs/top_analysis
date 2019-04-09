@@ -113,7 +113,7 @@ void gfx::setupZaxis(TH2 &h2, bool log){
    gPad->Update();
    TPaletteAxis* palAx=(TPaletteAxis*)h2.GetListOfFunctions()->FindObject("palette");
    if (!palAx){
-      debug<<TString::Format("no z axis found for '%s'",h2.GetName());
+      debug_io<<TString::Format("no z axis found for '%s'",h2.GetName());
       return;
    }
    // thinner:

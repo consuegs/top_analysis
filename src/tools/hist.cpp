@@ -91,35 +91,35 @@ void hist::Histograms<HIST>::setFillWeight(float w)
 template <class HIST>
 void hist::Histograms<HIST>::fill(TString const &varName,float x)
 {
-   if (mmH_.count(varName)<1) {debug*varName>>"unkown"; throw;}
+   if (mmH_.count(varName)<1) {debug_io*varName>>"unkown"; throw;}
    mmH_[varName][sCurrentSample_].Fill(x,fWeight_);
 }
 
 template <class HIST>
 void hist::Histograms<HIST>::fillbin(TString const &varName,TString const &binName)
 {
-   if (mmH_.count(varName)<1) {debug*varName>>"unkown"; throw;}
+   if (mmH_.count(varName)<1) {debug_io*varName>>"unkown"; throw;}
    mmH_[varName][sCurrentSample_].Fill(binName,fWeight_);
 }
 
 template <class HIST>
 void hist::Histograms<HIST>::fillbinFake(TString const &varName,TString const &binName)
 {
-   if (mmH_.count(varName)<1) {debug*varName>>"unkown"; throw;}
+   if (mmH_.count(varName)<1) {debug_io*varName>>"unkown"; throw;}
    mmH_[varName][sCurrentSample_].Fill(binName,0);
 }
 
 template <class HIST>
 void hist::Histograms<HIST>::fillweight(TString const &varName,float x,float w)
 {
-   if (mmH_.count(varName)<1) {debug*varName>>"unkown"; throw;}
+   if (mmH_.count(varName)<1) {debug_io*varName>>"unkown"; throw;}
    mmH_[varName][sCurrentSample_].Fill(x,w*fWeight_);
 }
 
 template <class HIST>
 void hist::Histograms<HIST>::fill(TString const &varName,float x,float y)
 {
-   if (mmH_.count(varName)<1) {debug*varName>>"unkown"; throw;}
+   if (mmH_.count(varName)<1) {debug_io*varName>>"unkown"; throw;}
    mmH_[varName][sCurrentSample_].Fill(x,y,fWeight_);
 }
 
@@ -339,7 +339,7 @@ void hist::divideByBinWidth(TH1& h,bool divideLastBin)
 {
    int N=h.GetNbinsX();
    if (h.GetBinContent(N+1) != 0) {
-      debug<<"non-emtpy overflow. merge first!";
+      debug_io<<"non-emtpy overflow. merge first!";
       throw;
    }
    float w;
@@ -518,7 +518,7 @@ TH1F hist::getPull(TH1F const &h1,TH1F const &h2,TString title,ErrorType et)
          hPull.SetBinError(i,0);
       } else {
          if (err<1e-6){
-            debug<<"Zero error in non-emtpy bin!";
+            debug_io<<"Zero error in non-emtpy bin!";
             throw;
          }
          hPull.SetBinContent(i,cont/err);

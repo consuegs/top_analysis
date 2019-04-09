@@ -16,6 +16,31 @@
 
 Config const &cfg=Config::get();
 
+void saveHistograms(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH1F> &hs, std::vector<TString> const &Samples)
+{
+   for (auto const &sPresel_vVars:msPresel_vVars){
+      TString const &sPresel=sPresel_vVars.first;
+      for (TString sVar:sPresel_vVars.second){
+         sVar=sPresel+sVar;
+         for (TString sSample: Samples){
+            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
+         }       
+      }
+   }
+}
+void saveHistograms2D(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH2F> &hs, std::vector<TString> const &Samples)
+{
+   for (auto const &sPresel_vVars:msPresel_vVars){
+      TString const &sPresel=sPresel_vVars.first;
+      for (TString sVar:sPresel_vVars.second){
+         sVar=sPresel+sVar;
+         for (TString sSample: Samples){
+            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
+         }       
+      }
+   }
+}
+
 extern "C"
 void run()
 {
@@ -30,6 +55,14 @@ void run()
    hs.addHist("baseline/emu/mll"   ,";mll(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("baseline/mumu/mll"   ,";mll(GeV);EventsBIN"           ,100,0,600);
    
+   hs.addHist("baseline/ee/dphi_metJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/emu/dphi_metJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/mumu/dphi_metJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet),;EventsBIN"           ,100,0,3.2);
+   
+   hs.addHist("baseline/ee/nBjets"   ,";N_{bJets},;EventsBIN"           ,5,-0.5,4.5);
+   hs.addHist("baseline/emu/nBjets"   ,";N_{bJets},;EventsBIN"           ,5,-0.5,4.5);
+   hs.addHist("baseline/mumu/nBjets"   ,";N_{bJets},;EventsBIN"           ,5,-0.5,4.5);
+   
    hs.addHist("genParticles/ee/pT_nunu"   ,";p_{T}^{#nu#nu}(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("genParticles/emu/pT_nunu"   ,";p_{T}^{#nu#nu}(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("genParticles/mumu/pT_nunu"   ,";p_{T}^{#nu#nu}(GeV);EventsBIN"           ,100,0,600);
@@ -37,10 +70,18 @@ void run()
    hs.addHist("genParticles/emu/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("genParticles/mumu/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,600);
    
+   hs.addHist("genParticles/ee/diff_ptNuNu_genMET"   ,";p_{T}^{#nu#nu}-genMET(GeV);EventsBIN"           ,100,-50,50);
+   hs.addHist("genParticles/emu/diff_ptNuNu_genMET"   ,";p_{T}^{#nu#nu}-genMET(GeV);EventsBIN"           ,100,-50,50);
+   hs.addHist("genParticles/mumu/diff_ptNuNu_genMET"   ,";p_{T}^{#nu#nu}-genMET(GeV);EventsBIN"           ,100,-50,50);
+   
    hist::Histograms<TH2F> hs2d(vsDatasubsets);
    hs2d.addHist("genParticles/ee/2d_nunuVSgenMet", ";genMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
    hs2d.addHist("genParticles/emu/2d_nunuVSgenMet", ";genMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
    hs2d.addHist("genParticles/mumu/2d_nunuVSgenMet", ";genMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
+   
+   hs2d.addHist("genParticles/ee/MetVSgenMet", ";p_{T}^{miss} (GeV);genMET (GeV);EventsBIN" ,100,0,600,100,0,600);
+   hs2d.addHist("genParticles/emu/MetVSgenMet", ";p_{T}^{miss} (GeV);genMET (GeV);EventsBIN" ,100,0,600,100,0,600);
+   hs2d.addHist("genParticles/mumu/MetVSgenMet", ";p_{T}^{miss} (GeV);genMET (GeV);EventsBIN" ,100,0,600,100,0,600);
 
 
    
@@ -133,8 +174,12 @@ void run()
          if (cjets.size()<2) continue;
          
          bool bTag=false;
+         int nBjets=0;
          for (tree::Jet const &jet : cjets) {
-            if (jet.bTagCSVv2>0.5426) bTag=true;
+            if (jet.bTagCSVv2>0.5426) {
+               bTag=true;
+               nBjets++;
+            }
          }
          if (!bTag) continue; // end baseline selection
          
@@ -150,27 +195,47 @@ void run()
             }
          }
          
+         //Get DeltaPhi between MET and nearest Jet
+         float dPhiMETnearJet=4; // nearest jet or photon
+         for (tree::Jet const &jet : cjets){
+            const float dPhi=MET->p.DeltaPhi(jet.p);
+            if (std::abs(dPhi) < std::abs(dPhiMETnearJet))
+               dPhiMETnearJet=dPhi;
+         }
+         
          //Fill hists
          if (*is_ee){
             hs.fill("baseline/ee/met",met);
             hs.fill("baseline/ee/mll",*mll);
+            hs.fill("baseline/ee/dphi_metJet",abs(dPhiMETnearJet));
+            hs.fill("baseline/ee/nBjets",nBjets);
             hs.fill("genParticles/ee/pT_nunu",neutrinoPair.Pt());
             hs.fill("genParticles/ee/genMet",genMet);
+            hs.fill("genParticles/ee/diff_ptNuNu_genMET",neutrinoPair.Pt()-genMet);
             hs2d.fill("genParticles/ee/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
+            hs2d.fill("genParticles/ee/MetVSgenMet",met,genMet);
          }
          else if (*is_emu){
             hs.fill("baseline/emu/met",met);
             hs.fill("baseline/emu/mll",*mll);
+            hs.fill("baseline/emu/dphi_metJet",abs(dPhiMETnearJet));
+            hs.fill("baseline/emu/nBjets",nBjets);
             hs.fill("genParticles/emu/pT_nunu",neutrinoPair.Pt());
             hs.fill("genParticles/emu/genMet",genMet);
+            hs.fill("genParticles/emu/diff_ptNuNu_genMET",neutrinoPair.Pt()-genMet);
             hs2d.fill("genParticles/emu/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
+            hs2d.fill("genParticles/emu/MetVSgenMet",met,genMet);
          }
          else if (*is_mumu){
             hs.fill("baseline/mumu/met",met);
             hs.fill("baseline/mumu/mll",*mll);
+            hs.fill("baseline/mumu/dphi_metJet",abs(dPhiMETnearJet));
+            hs.fill("baseline/mumu/nBjets",nBjets);
             hs.fill("genParticles/mumu/pT_nunu",neutrinoPair.Pt());
             hs.fill("genParticles/mumu/genMet",genMet);
+            hs.fill("genParticles/mumu/diff_ptNuNu_genMET",neutrinoPair.Pt()-genMet);
             hs2d.fill("genParticles/mumu/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
+            hs2d.fill("genParticles/mumu/MetVSgenMet",met,genMet);
          }
          
       }// evt loop
@@ -183,7 +248,8 @@ void run()
       file.Close();
    } // dataset loop
    
-   std::vector<TString> samplesToCombine={"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ"};
+   std::vector<TString> samplesToCombine={"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ",
+      "T1tttt_1200_800","T2tt_650_250","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"};
    hs.combineFromSubsamples(samplesToCombine);
    hs2d.combineFromSubsamples(samplesToCombine);
    
@@ -194,44 +260,89 @@ void run()
    can.SetLogy();
    // what to plot in which preselection
    std::map<TString,std::vector<TString>> msPresel_vVars={
-      {"baseline/ee/",{"met","mll"}},
-      {"baseline/emu/",{"met","mll"}},
-      {"baseline/mumu/",{"met","mll"}},
-      {"genParticles/ee/",{"pT_nunu","genMet"}},
-      {"genParticles/emu/",{"pT_nunu","genMet"}},
-      {"genParticles/mumu/",{"pT_nunu","genMet"}},
+      {"baseline/ee/",{"met","mll","dphi_metJet","nBjets"}},
+      {"baseline/emu/",{"met","mll","dphi_metJet","nBjets"}},
+      {"baseline/mumu/",{"met","mll","dphi_metJet","nBjets"}},
+      {"genParticles/ee/",{"pT_nunu","genMet","diff_ptNuNu_genMET"}},
+      {"genParticles/emu/",{"pT_nunu","genMet","diff_ptNuNu_genMET"}},
+      {"genParticles/mumu/",{"pT_nunu","genMet","diff_ptNuNu_genMET"}},
       };
       
    for (auto const &sPresel_vVars:msPresel_vVars){
       TString const &sPresel=sPresel_vVars.first;
       for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         TH1F* hist=hs.getHistogram(sVar,"TTbar");
+         TString loc;
+         loc=sPresel+sVar;
+         TH1F* hist=hs.getHistogram(loc,"TTbar");
          gfx::LegendEntries le=hs.getLegendEntries();
+         TString cat;
+         if (sPresel.Contains("ee/")) cat="ee";
+         else if (sPresel.Contains("emu/")) cat="e#mu";
+         else if (sPresel.Contains("mumu/")) cat="#mu#mu";
+         TLatex label=gfx::cornerLabel(cat,2);
          hist->SetStats(0);
          hist->SetMarkerSize(0);
+         if (sVar=="diff_ptNuNu_genMET") can.SetLogy(0);
          hist->Draw("histE");
          TLegend leg=le.buildLegend(.4,.7,1-gPad->GetRightMargin(),-1,2);
          leg.Draw();
-         saver.save(can,"tt_only/"+sVar);
+         label.Draw();
+         saver.save(can,"tt_only/"+loc);
          
-         THStack st_mc=hs.getStack(sVar,{"SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","TTbar"});
+         THStack st_mc=hs.getStack(loc,{"SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","TTbar"});
          le=hs.getLegendEntries();
          st_mc.Draw();
          TLegend leg2=le.buildLegend(.4,.7,1-gPad->GetRightMargin(),-1,2);
          leg2.Draw();
-         saver.save(can,"all/"+sVar);
+         label.Draw();
+         saver.save(can,"all/"+loc);
       }
    }
    
+   // Save 1d histograms
+   io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("danilo_distributions%.1f",cfg.processFraction*100),false);
+   saveHistograms(msPresel_vVars,saver_hist,hs,samplesToCombine);
+   
    //Plotting part 2D
+   std::map<TString,std::vector<TString>> msPresel_vVars2D={
+      {"genParticles/ee/",{"2d_nunuVSgenMet","MetVSgenMet"}},
+      {"genParticles/emu/",{"2d_nunuVSgenMet","MetVSgenMet"}},
+      {"genParticles/mumu/",{"2d_nunuVSgenMet","MetVSgenMet"}},
+      };
    TCanvas can_2d;
-   for (TString selection:{"ee","emu","mumu"}){
-      can_2d.cd();
-      TString loc="genParticles/"+selection+"/2d_nunuVSgenMet";
-      TH2F *hist=hs2d.getHistogram(loc,"TTbar");
-      hist->SetStats(0);
-      hist->Draw("colz");
-      saver.save(can_2d,"tt_only/"+loc);
+   for (auto const &sPresel_vVars:msPresel_vVars2D){
+      TString const &sPresel=sPresel_vVars.first;
+      for (TString sVar:sPresel_vVars.second){
+         can_2d.cd();
+         can_2d.SetLogz();
+         gPad->SetRightMargin(0.2);
+         gPad->SetLeftMargin(0.13);
+         gPad->SetBottomMargin(0.10);
+         TString loc=sPresel+sVar;
+         TH2F *hist=hs2d.getHistogram(loc,"TTbar");
+         
+         hist->GetYaxis()->SetTitleOffset(1.3);
+         hist->GetXaxis()->SetTitleOffset(0.9);
+         hist->GetZaxis()->SetTitleOffset(1.3);
+         hist->GetYaxis()->SetTitleSize(0.05);
+         hist->GetXaxis()->SetTitleSize(0.05);
+         hist->GetZaxis()->SetTitleSize(0.05);
+         hist->GetYaxis()->SetLabelSize(0.04);
+         hist->GetXaxis()->SetLabelSize(0.04);
+         hist->GetZaxis()->SetLabelSize(0.04);
+                  
+         hist->SetStats(0);
+         hist->Draw("colz");
+         TString cat;
+         if (sPresel.Contains("ee/")) cat="ee";
+         else if (sPresel.Contains("emu/")) cat="e#mu";
+         else if (sPresel.Contains("mumu/")) cat="#mu#mu";
+         TLatex label=gfx::cornerLabel(cat,2);
+         label.Draw();
+         saver.save(can_2d,"tt_only/"+loc);
+      }
    }
+   
+   //Save 2d histograms
+   saveHistograms2D(msPresel_vVars2D,saver_hist,hs2d,samplesToCombine);
 }
