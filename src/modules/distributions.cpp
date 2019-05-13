@@ -51,13 +51,49 @@ void run()
    hs.addHist("baseline/emu/met"   ,";%MET;EventsBIN"           ,100,0,600);
    hs.addHist("baseline/mumu/met"   ,";%MET;EventsBIN"           ,100,0,600);
    
+   hs.addHist("baseline/ee/met1000"   ,";%MET;EventsBIN"           ,100,0,1000);
+   hs.addHist("baseline/emu/met1000"   ,";%MET;EventsBIN"           ,100,0,1000);
+   hs.addHist("baseline/mumu/met1000"   ,";%MET;EventsBIN"           ,100,0,1000);
+   
    hs.addHist("baseline/ee/mll"   ,";mll(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("baseline/emu/mll"   ,";mll(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("baseline/mumu/mll"   ,";mll(GeV);EventsBIN"           ,100,0,600);
    
+   hs.addHist("baseline/ee/pTlep1"   ,";%pTl1;EventsBIN"           ,100,0,600);
+   hs.addHist("baseline/emu/pTlep1"   ,";%pTl1;EventsBIN"           ,100,0,600);
+   hs.addHist("baseline/mumu/pTlep1"   ,";%pTl1;EventsBIN"           ,100,0,600);
+   
+   hs.addHist("baseline/ee/pTlep2"   ,";%pTl2;EventsBIN"           ,100,0,600);
+   hs.addHist("baseline/emu/pTlep2"   ,";%pTl2;EventsBIN"           ,100,0,600);
+   hs.addHist("baseline/mumu/pTlep2"   ,";%pTl2;EventsBIN"           ,100,0,600);
+   
    hs.addHist("baseline/ee/dphi_metJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet),;EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/emu/dphi_metJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet),;EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/mumu/dphi_metJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet),;EventsBIN"           ,100,0,3.2);
+   
+   hs.addHist("baseline/ee/dphi_metBJet"   ,";|#Delta#phi|(p_{T}^{miss},bjet),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/emu/dphi_metBJet"   ,";|#Delta#phi|(p_{T}^{miss},b jet),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/mumu/dphi_metBJet"   ,";|#Delta#phi|(p_{T}^{miss},b jet),;EventsBIN"           ,100,0,3.2);
+   
+   hs.addHist("baseline/ee/dphi_bJetLep1"   ,";|#Delta#phi|(b Jet,l_{1}),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/emu/dphi_bJetLep1"   ,";|#Delta#phi|(b Jet,l_{1}),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/mumu/dphi_bJetLep1"   ,";|#Delta#phi|(b Jet,l_{1}),;EventsBIN"           ,100,0,3.2);
+   
+   hs.addHist("baseline/ee/dphi_bJetLep2"   ,";|#Delta#phi|(b Jet,l_{2}),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/emu/dphi_bJetLep2"   ,";|#Delta#phi|(b Jet,l_{2}),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/mumu/dphi_bJetLep2"   ,";|#Delta#phi|(b Jet,l_{2}),;EventsBIN"           ,100,0,3.2);
+   
+   hs.addHist("baseline/ee/dphi_metLep1"   ,";|#Delta#phi|(p_{T}^{miss},l_{1}),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/emu/dphi_metLep1"   ,";|#Delta#phi|(p_{T}^{miss},l_{1}),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/mumu/dphi_metLep1"   ,";|#Delta#phi|(p_{T}^{miss},l_{1}),;EventsBIN"           ,100,0,3.2);
+   
+   hs.addHist("baseline/ee/dphi_metLep2"   ,";|#Delta#phi|(p_{T}^{miss},l_{2}),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/emu/dphi_metLep2"   ,";|#Delta#phi|(p_{T}^{miss},l_{2}),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/mumu/dphi_metLep2"   ,";|#Delta#phi|(p_{T}^{miss},l_{2}),;EventsBIN"           ,100,0,3.2);
+   
+   hs.addHist("baseline/ee/dphi_Lep1Lep2"   ,";|#Delta#phi|(l_{1},l_{2}),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/emu/dphi_Lep1Lep2"   ,";|#Delta#phi|(l_{1},l_{2}),;EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/mumu/dphi_Lep1Lep2"   ,";|#Delta#phi|(l_{1},l_{2}),;EventsBIN"           ,100,0,3.2);
    
    hs.addHist("baseline/ee/nBjets"   ,";N_{bJets},;EventsBIN"           ,5,-0.5,4.5);
    hs.addHist("baseline/emu/nBjets"   ,";N_{bJets},;EventsBIN"           ,5,-0.5,4.5);
@@ -66,22 +102,63 @@ void run()
    hs.addHist("genParticles/ee/pT_nunu"   ,";p_{T}^{#nu#nu}(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("genParticles/emu/pT_nunu"   ,";p_{T}^{#nu#nu}(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("genParticles/mumu/pT_nunu"   ,";p_{T}^{#nu#nu}(GeV);EventsBIN"           ,100,0,600);
+   
    hs.addHist("genParticles/ee/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("genParticles/emu/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,600);
    hs.addHist("genParticles/mumu/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,600);
    
-   hs.addHist("genParticles/ee/diff_ptNuNu_genMET"   ,";p_{T}^{#nu#nu}-genMET(GeV);EventsBIN"           ,100,-50,50);
-   hs.addHist("genParticles/emu/diff_ptNuNu_genMET"   ,";p_{T}^{#nu#nu}-genMET(GeV);EventsBIN"           ,100,-50,50);
-   hs.addHist("genParticles/mumu/diff_ptNuNu_genMET"   ,";p_{T}^{#nu#nu}-genMET(GeV);EventsBIN"           ,100,-50,50);
+   hs.addHist("genParticles/ee/DMgenMet"   ,";DMgenMET(GeV);EventsBIN"           ,100,0,600);
+   hs.addHist("genParticles/emu/DMgenMet"   ,";DMgenMET(GeV);EventsBIN"           ,100,0,600);
+   hs.addHist("genParticles/mumu/DMgenMet"   ,";DMgenMET(GeV);EventsBIN"           ,100,0,600);
+   
+   hs.addHist("genParticles/ee/diff_ptNuNu_genMET"   ,";p_{T}^{#nu#nu}-genMET(GeV);EventsBIN"           ,400,-100,100);
+   hs.addHist("genParticles/emu/diff_ptNuNu_genMET"   ,";p_{T}^{#nu#nu}-genMET(GeV);EventsBIN"           ,400,-100,100);
+   hs.addHist("genParticles/mumu/diff_ptNuNu_genMET"   ,";p_{T}^{#nu#nu}-genMET(GeV);EventsBIN"           ,400,-100,100);
+   
+   hs.addHist("genParticles/ee/diff_ptNuNu_DMgenMET"   ,";p_{T}^{#nu#nu}-DMgenMET(GeV);EventsBIN"           ,400,-100,100);
+   hs.addHist("genParticles/emu/diff_ptNuNu_DMgenMET"   ,";p_{T}^{#nu#nu}-DMgenMET(GeV);EventsBIN"           ,400,-100,100);
+   hs.addHist("genParticles/mumu/diff_ptNuNu_DMgenMET"   ,";p_{T}^{#nu#nu}-DMgenMET(GeV);EventsBIN"           ,400,-100,100);
+   
+   hs.addHist("genParticles/ee/diff_Met_genMET"   ,";p_{T}^{miss}-genMET(GeV);EventsBIN"           ,200,-100,100);
+   hs.addHist("genParticles/emu/diff_Met_genMET"   ,";p_{T}^{miss}-genMET(GeV);EventsBIN"           ,200,-100,100);
+   hs.addHist("genParticles/mumu/diff_Met_genMET"   ,";p_{T}^{miss}-genMET(GeV);EventsBIN"           ,200,-100,100);
+   
+   hs.addHist("genParticles/ee/diff_Met_DMgenMET"   ,";p_{T}^{miss}-DMgenMET(GeV);EventsBIN"           ,200,-100,100);
+   hs.addHist("genParticles/emu/diff_Met_DMgenMET"   ,";p_{T}^{miss}-DMgenMET(GeV);EventsBIN"           ,200,-100,100);
+   hs.addHist("genParticles/mumu/diff_Met_DMgenMET"   ,";p_{T}^{miss}-DMgenMET(GeV);EventsBIN"           ,200,-100,100);
+   
+   hs.addHist("genParticles/ee/diff_Met_genMET_norm"   ,";#frac{p_{T}^{miss}-genMET}{genMET};EventsBIN"           ,200,-10,10);
+   hs.addHist("genParticles/emu/diff_Met_genMET_norm"   ,";#frac{p_{T}^{miss}-genMET}{genMET};EventsBIN"           ,200,-10,10);
+   hs.addHist("genParticles/mumu/diff_Met_genMET_norm"   ,";#frac{p_{T}^{miss}-genMET}{genMET};EventsBIN"           ,200,-10,10);
+   
+   hs.addHist("genParticles/ee/diff_Met_DMgenMET_norm"   ,";#frac{p_{T}^{miss}-DMgenMET}{DMgenMET};EventsBIN"           ,200,-10,10);
+   hs.addHist("genParticles/emu/diff_Met_DMgenMET_norm"   ,";#frac{p_{T}^{miss}-DMgenMET}{DMgenMET};EventsBIN"           ,200,-10,10);
+   hs.addHist("genParticles/mumu/diff_Met_DMgenMET_norm"   ,";#frac{p_{T}^{miss}-DMgenMET}{DMgenMET};EventsBIN"           ,200,-10,10);
+   
+   hs.addHist("genParticles/ee/diff_ptNuNu_Met"   ,";p_{T}^{#nu#nu}-p_{T}^{miss}(GeV);EventsBIN"           ,400,-100,100);
+   hs.addHist("genParticles/emu/diff_ptNuNu_Met"   ,";p_{T}^{#nu#nu}-p_{T}^{miss}(GeV);EventsBIN"           ,400,-100,100);
+   hs.addHist("genParticles/mumu/diff_ptNuNu_Met"   ,";p_{T}^{#nu#nu}-p_{T}^{miss}(GeV);EventsBIN"           ,400,-100,100);
    
    hist::Histograms<TH2F> hs2d(vsDatasubsets);
    hs2d.addHist("genParticles/ee/2d_nunuVSgenMet", ";genMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
    hs2d.addHist("genParticles/emu/2d_nunuVSgenMet", ";genMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
    hs2d.addHist("genParticles/mumu/2d_nunuVSgenMet", ";genMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
    
+   hs2d.addHist("genParticles/ee/2d_nunuVSDMgenMet", ";DMgenMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
+   hs2d.addHist("genParticles/emu/2d_nunuVSDMgenMet", ";DMgenMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
+   hs2d.addHist("genParticles/mumu/2d_nunuVSDMgenMet", ";DMgenMET (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
+   
    hs2d.addHist("genParticles/ee/MetVSgenMet", ";p_{T}^{miss} (GeV);genMET (GeV);EventsBIN" ,100,0,600,100,0,600);
    hs2d.addHist("genParticles/emu/MetVSgenMet", ";p_{T}^{miss} (GeV);genMET (GeV);EventsBIN" ,100,0,600,100,0,600);
    hs2d.addHist("genParticles/mumu/MetVSgenMet", ";p_{T}^{miss} (GeV);genMET (GeV);EventsBIN" ,100,0,600,100,0,600);
+   
+   hs2d.addHist("genParticles/ee/MetVSDMgenMet", ";p_{T}^{miss} (GeV);DMgenMET (GeV);EventsBIN" ,100,0,600,100,0,600);
+   hs2d.addHist("genParticles/emu/MetVSDMgenMet", ";p_{T}^{miss} (GeV);DMgenMET (GeV);EventsBIN" ,100,0,600,100,0,600);
+   hs2d.addHist("genParticles/mumu/MetVSDMgenMet", ";p_{T}^{miss} (GeV);DMgenMET (GeV);EventsBIN" ,100,0,600,100,0,600);
+   
+   hs2d.addHist("genParticles/ee/2d_nunuVSMet", ";p_{T}^{miss} (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
+   hs2d.addHist("genParticles/emu/2d_nunuVSMet", ";p_{T}^{miss} (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
+   hs2d.addHist("genParticles/mumu/2d_nunuVSMet", ";p_{T}^{miss} (GeV);p_{T}^{#nu#nu}(GeV);EventsBIN" ,100,0,600,100,0,600);
 
 
    
@@ -174,14 +251,23 @@ void run()
          if (cjets.size()<2) continue;
          
          bool bTag=false;
-         int nBjets=0;
+         std::vector<tree::Jet> BJets;
          for (tree::Jet const &jet : cjets) {
             if (jet.bTagCSVv2>0.5426) {
                bTag=true;
-               nBjets++;
+               BJets.push_back(jet);
             }
          }
          if (!bTag) continue; // end baseline selection
+         
+         // Bjet and angular variables
+         int nBjets=BJets.size();
+         float dPhiMetBJet=MET->p.DeltaPhi(BJets[0].p);
+         float dPhiLep1BJet=p_l1.DeltaPhi(BJets[0].p);
+         float dPhiLep2BJet=p_l2.DeltaPhi(BJets[0].p);
+         float dPhiLep1MET=p_l1.DeltaPhi(MET->p);
+         float dPhiLep2MET=p_l2.DeltaPhi(MET->p);
+         float dPhiLep1Lep2=p_l1.DeltaPhi(p_l2);
          
          // Get pT of Neutrino Pair
          TLorentzVector neutrinoPair(0,0,0,0);
@@ -203,39 +289,104 @@ void run()
                dPhiMETnearJet=dPhi;
          }
          
+         //Calculate genMET for DM scenario
+         TLorentzVector DMgenMET=neutrinoPair;
+         for (auto const &genParticle : *genParticles){
+            if(abs(genParticle.pdgId)>100000){
+               DMgenMET+=genParticle.p;
+            }
+         }
+         
          //Fill hists
          if (*is_ee){
             hs.fill("baseline/ee/met",met);
+            hs.fill("baseline/ee/met1000",met);
             hs.fill("baseline/ee/mll",*mll);
+            hs.fill("baseline/ee/pTlep1",p_l1.Pt());
+            hs.fill("baseline/ee/pTlep2",p_l2.Pt());
             hs.fill("baseline/ee/dphi_metJet",abs(dPhiMETnearJet));
+            hs.fill("baseline/ee/dphi_metBJet",abs(dPhiMetBJet));
+            hs.fill("baseline/ee/dphi_bJetLep1",abs(dPhiLep1BJet));
+            hs.fill("baseline/ee/dphi_bJetLep2",abs(dPhiLep2BJet));
+            hs.fill("baseline/ee/dphi_metLep1",abs(dPhiLep1MET));
+            hs.fill("baseline/ee/dphi_metLep2",abs(dPhiLep2MET));
+            hs.fill("baseline/ee/dphi_Lep1Lep2",abs(dPhiLep1Lep2));
             hs.fill("baseline/ee/nBjets",nBjets);
             hs.fill("genParticles/ee/pT_nunu",neutrinoPair.Pt());
             hs.fill("genParticles/ee/genMet",genMet);
+            hs.fill("genParticles/ee/DMgenMet",DMgenMET.Pt());
             hs.fill("genParticles/ee/diff_ptNuNu_genMET",neutrinoPair.Pt()-genMet);
+            hs.fill("genParticles/ee/diff_ptNuNu_DMgenMET",neutrinoPair.Pt()-DMgenMET.Pt());
+            hs.fill("genParticles/ee/diff_Met_genMET",met-genMet);
+            hs.fill("genParticles/ee/diff_Met_DMgenMET",met-DMgenMET.Pt());
+            hs.fill("genParticles/ee/diff_Met_genMET_norm",(met-genMet)/genMet);
+            hs.fill("genParticles/ee/diff_Met_DMgenMET_norm",(met-DMgenMET.Pt())/DMgenMET.Pt());
+            hs.fill("genParticles/ee/diff_ptNuNu_Met",neutrinoPair.Pt()-met);
             hs2d.fill("genParticles/ee/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
+            hs2d.fill("genParticles/ee/2d_nunuVSDMgenMet",genMet,DMgenMET.Pt());
             hs2d.fill("genParticles/ee/MetVSgenMet",met,genMet);
+            hs2d.fill("genParticles/ee/MetVSDMgenMet",met,DMgenMET.Pt());
+            hs2d.fill("genParticles/ee/2d_nunuVSMet",met,neutrinoPair.Pt());
          }
          else if (*is_emu){
             hs.fill("baseline/emu/met",met);
+            hs.fill("baseline/emu/met1000",met);
             hs.fill("baseline/emu/mll",*mll);
+            hs.fill("baseline/emu/pTlep1",p_l1.Pt());
+            hs.fill("baseline/emu/pTlep2",p_l2.Pt());
             hs.fill("baseline/emu/dphi_metJet",abs(dPhiMETnearJet));
+            hs.fill("baseline/emu/dphi_metBJet",abs(dPhiMetBJet));
+            hs.fill("baseline/emu/dphi_bJetLep1",abs(dPhiLep1BJet));
+            hs.fill("baseline/emu/dphi_bJetLep2",abs(dPhiLep2BJet));
+            hs.fill("baseline/emu/dphi_metLep1",abs(dPhiLep1MET));
+            hs.fill("baseline/emu/dphi_metLep2",abs(dPhiLep2MET));
+            hs.fill("baseline/emu/dphi_Lep1Lep2",abs(dPhiLep1Lep2));
             hs.fill("baseline/emu/nBjets",nBjets);
             hs.fill("genParticles/emu/pT_nunu",neutrinoPair.Pt());
             hs.fill("genParticles/emu/genMet",genMet);
+            hs.fill("genParticles/emu/DMgenMet",DMgenMET.Pt());
             hs.fill("genParticles/emu/diff_ptNuNu_genMET",neutrinoPair.Pt()-genMet);
+            hs.fill("genParticles/emu/diff_ptNuNu_DMgenMET",neutrinoPair.Pt()-DMgenMET.Pt());
+            hs.fill("genParticles/emu/diff_Met_genMET",met-genMet);
+            hs.fill("genParticles/emu/diff_Met_DMgenMET",met-DMgenMET.Pt());
+            hs.fill("genParticles/emu/diff_Met_genMET_norm",(met-genMet)/genMet);
+            hs.fill("genParticles/emu/diff_Met_DMgenMET_norm",(met-DMgenMET.Pt())/DMgenMET.Pt());
+            hs.fill("genParticles/emu/diff_ptNuNu_Met",neutrinoPair.Pt()-met);
             hs2d.fill("genParticles/emu/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
+            hs2d.fill("genParticles/emu/2d_nunuVSDMgenMet",genMet,DMgenMET.Pt());
             hs2d.fill("genParticles/emu/MetVSgenMet",met,genMet);
+            hs2d.fill("genParticles/emu/MetVSDMgenMet",met,DMgenMET.Pt());
+            hs2d.fill("genParticles/emu/2d_nunuVSMet",met,neutrinoPair.Pt());
          }
          else if (*is_mumu){
             hs.fill("baseline/mumu/met",met);
+            hs.fill("baseline/mumu/met1000",met);
             hs.fill("baseline/mumu/mll",*mll);
+            hs.fill("baseline/mumu/pTlep1",p_l1.Pt());
+            hs.fill("baseline/mumu/pTlep2",p_l2.Pt());
             hs.fill("baseline/mumu/dphi_metJet",abs(dPhiMETnearJet));
+            hs.fill("baseline/mumu/dphi_metBJet",abs(dPhiMetBJet));
+            hs.fill("baseline/mumu/dphi_bJetLep1",abs(dPhiLep1BJet));
+            hs.fill("baseline/mumu/dphi_bJetLep2",abs(dPhiLep2BJet));
+            hs.fill("baseline/mumu/dphi_metLep1",abs(dPhiLep1MET));
+            hs.fill("baseline/mumu/dphi_metLep2",abs(dPhiLep2MET));
+            hs.fill("baseline/mumu/dphi_Lep1Lep2",abs(dPhiLep1Lep2));
             hs.fill("baseline/mumu/nBjets",nBjets);
             hs.fill("genParticles/mumu/pT_nunu",neutrinoPair.Pt());
             hs.fill("genParticles/mumu/genMet",genMet);
+            hs.fill("genParticles/mumu/DMgenMet",DMgenMET.Pt());
             hs.fill("genParticles/mumu/diff_ptNuNu_genMET",neutrinoPair.Pt()-genMet);
+            hs.fill("genParticles/mumu/diff_ptNuNu_DMgenMET",neutrinoPair.Pt()-DMgenMET.Pt());
+            hs.fill("genParticles/mumu/diff_Met_genMET",met-genMet);
+            hs.fill("genParticles/mumu/diff_Met_DMgenMET",met-DMgenMET.Pt());
+            hs.fill("genParticles/mumu/diff_Met_genMET_norm",(met-genMet)/genMet);
+            hs.fill("genParticles/mumu/diff_Met_DMgenMET_norm",(met-DMgenMET.Pt())/DMgenMET.Pt());
+            hs.fill("genParticles/mumu/diff_ptNuNu_Met",neutrinoPair.Pt()-met);
             hs2d.fill("genParticles/mumu/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
+            hs2d.fill("genParticles/mumu/2d_nunuVSDMgenMet",genMet,DMgenMET.Pt());
             hs2d.fill("genParticles/mumu/MetVSgenMet",met,genMet);
+            hs2d.fill("genParticles/mumu/MetVSDMgenMet",met,DMgenMET.Pt());
+            hs2d.fill("genParticles/mumu/2d_nunuVSMet",met,neutrinoPair.Pt());
          }
          
       }// evt loop
@@ -260,12 +411,12 @@ void run()
    can.SetLogy();
    // what to plot in which preselection
    std::map<TString,std::vector<TString>> msPresel_vVars={
-      {"baseline/ee/",{"met","mll","dphi_metJet","nBjets"}},
-      {"baseline/emu/",{"met","mll","dphi_metJet","nBjets"}},
-      {"baseline/mumu/",{"met","mll","dphi_metJet","nBjets"}},
-      {"genParticles/ee/",{"pT_nunu","genMet","diff_ptNuNu_genMET"}},
-      {"genParticles/emu/",{"pT_nunu","genMet","diff_ptNuNu_genMET"}},
-      {"genParticles/mumu/",{"pT_nunu","genMet","diff_ptNuNu_genMET"}},
+      {"baseline/ee/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets"}},
+      {"baseline/emu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets"}},
+      {"baseline/mumu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets"}},
+      {"genParticles/ee/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_ptNuNu_Met"}},
+      {"genParticles/emu/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_ptNuNu_Met"}},
+      {"genParticles/mumu/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_ptNuNu_Met"}},
       };
       
    for (auto const &sPresel_vVars:msPresel_vVars){
@@ -300,14 +451,14 @@ void run()
    }
    
    // Save 1d histograms
-   io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("danilo_distributions%.1f",cfg.processFraction*100),false);
+   io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),false);
    saveHistograms(msPresel_vVars,saver_hist,hs,samplesToCombine);
    
    //Plotting part 2D
    std::map<TString,std::vector<TString>> msPresel_vVars2D={
-      {"genParticles/ee/",{"2d_nunuVSgenMet","MetVSgenMet"}},
-      {"genParticles/emu/",{"2d_nunuVSgenMet","MetVSgenMet"}},
-      {"genParticles/mumu/",{"2d_nunuVSgenMet","MetVSgenMet"}},
+      {"genParticles/ee/",{"2d_nunuVSgenMet","2d_nunuVSDMgenMet","MetVSgenMet","MetVSDMgenMet","2d_nunuVSMet"}},
+      {"genParticles/emu/",{"2d_nunuVSgenMet","2d_nunuVSDMgenMet","MetVSDMgenMet","MetVSgenMet","2d_nunuVSMet"}},
+      {"genParticles/mumu/",{"2d_nunuVSgenMet","2d_nunuVSDMgenMet","MetVSDMgenMet","MetVSgenMet","2d_nunuVSMet"}},
       };
    TCanvas can_2d;
    for (auto const &sPresel_vVars:msPresel_vVars2D){
