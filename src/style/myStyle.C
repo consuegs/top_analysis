@@ -17,7 +17,7 @@
    // kDeepSea=51, kRainBow=55,kBlueYellow= 54
  //  gStyle->SetPalette(54);
 //   gStyle->SetPalette(112);
-   gStyle->SetPalette(55);
+   //~ gStyle->SetPalette(55);
    gStyle->SetHistLineWidth(2);
    gStyle->SetHistLineColor(kGray+2);
    gStyle->SetHistFillColor(kGray+2);

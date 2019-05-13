@@ -6,7 +6,7 @@ T* io::RootFileReader::read(TString name) const
    if (intPath_!="") name=intPath_+"/"+name;
    T* h=(T*)file_->Get(name);
    if (!h){
-      debug_io<<TString::Format("did not find '%s' in '%s'",(intPath_+"/"+name).Data(),fName_.Data());
+      debug_io<<TString::Format("did not find '%s' in '%s'",(name).Data(),fName_.Data());
       throw;
    }
    return h;

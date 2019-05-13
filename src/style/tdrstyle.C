@@ -158,7 +158,7 @@ void setTDRStyle() {
   tdrStyle->SetHatchesLineWidth(5);
   tdrStyle->SetHatchesSpacing(0.05);
   
-  tdrStyle->SetPalette(kRainBow);
+  //~ tdrStyle->SetPalette(55);
   tdrStyle->cd();
 
 }
