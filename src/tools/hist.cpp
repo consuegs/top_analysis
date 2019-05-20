@@ -51,6 +51,14 @@ void hist::Histograms<HIST>::addHist(TString const &varName,TString const &title
 }
 
 template <class HIST>
+void hist::Histograms<HIST>::addFilledHist(TString const &varName,TString const &s,TH1F const &filledHist)
+{
+   TH1::SetDefaultSumw2();
+   if (mmH_.find(varName)==mmH_.end()) mmH_[varName]=std::map<TString,HIST>();
+   mmH_[varName][s]=filledHist;
+}
+
+template <class HIST>
 void hist::Histograms<HIST>::addHist(TString const &varName,TString const &title, Int_t nbinsx, Double_t xlow, Double_t xup, Int_t nbinsy, Double_t ylow, Double_t yup)
 {
    TH1::SetDefaultSumw2();
@@ -186,6 +194,19 @@ void hist::Histograms<HIST>::combineFromSubsamples(std::vector<TString> const &s
             mCount_[mC.first][s]+=mC.second.at(dss.name);
             mCountError2_[mC.first][s]+=mCountError2_[mC.first][dss.name];
          }
+      }
+   }
+}
+
+template <class HIST>
+void hist::Histograms<HIST>::combineSamples(TString const &sampleCombined, std::vector<TString> const &samples)
+{
+   for (auto const &mH: mmH_){
+      mmH_[mH.first][sampleCombined]=*(HIST*)mH.second.begin()->second.Clone();
+      HIST &newH=mmH_[mH.first][sampleCombined];
+      newH.Reset();
+      for (auto const &s: samples){
+         newH.Add(&mH.second.at(s));
       }
    }
 }

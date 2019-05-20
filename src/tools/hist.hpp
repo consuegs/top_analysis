@@ -34,6 +34,7 @@ namespace hist
       // 1d
       void addHist(TString const &varName,TString const &title, Int_t nbinsx, Double_t xlow, Double_t xup);
       void addHist(TString const &varName,TString const &title, std::vector<float> edges, std::vector<float> widths);
+      void addFilledHist(TString const &varName,TString const &s,TH1F const &filledHist);
       // 2d
       void addHist(TString const &varName,TString const &title, Int_t nbinsx, Double_t xlow, Double_t xup, Int_t nbinsy, Double_t ylow, Double_t yup);
       void addHist(TString const &varName,TString const &title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y);
@@ -51,6 +52,7 @@ namespace hist
       void scaleLumi(); // scales MC with lumi weight and trigger efficiency. Data is ignored.
       void mergeOverflow(bool includeUnderflow=true); // add the overflow to the last bin (and underflow to first)
       void combineFromSubsamples(std::vector<TString> const &samples);
+      void combineSamples(TString const &sampleCombined, std::vector<TString> const &samples);
       std::vector<TString> getVariableNames();
       std::vector<HIST*> getHistograms(TString const &varName,std::vector<TString> const &samples,bool divideByBinWidth=false);
       HIST* getHistogram(TString const &varName,TString const &sample,bool divideByBinWidth=false);
@@ -83,6 +85,8 @@ namespace hist
    void Histograms<TH2F>::addHist(TString const&,TString const&,Int_t,Double_t,Double_t)=delete;
    template <>
    void Histograms<TH2F>::addHist(TString const&,TString const&,std::vector<float>,std::vector<float>)=delete;
+   template <>
+   void Histograms<TH2F>::addFilledHist(TString const&, TString const&, TH1F const&)=delete;
    template <>
    void Histograms<TH1F>::addHist(TString const&,TString const&,Int_t,Double_t,Double_t,Int_t,Double_t,Double_t)=delete;
    template <>
