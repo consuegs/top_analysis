@@ -38,7 +38,6 @@ void run()
    int scale=10;
    
    io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
-   io::RootFileReader histReaderUnfold(TString::Format("unfolding%.1f.root",cfg.processFraction*100),TString::Format("unfolding%.1f",cfg.processFraction*100));
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),TString::Format("templateFit%.1f",cfg.processFraction*100));
    io::RootFileSaver saver_templateFit(TString::Format("templateFit%.1f.root",cfg.processFraction*100),TString::Format("templateFit%.1f",cfg.processFraction*100));
    
@@ -58,7 +57,7 @@ void run()
       TH2F* migrMatrix=(TH2F*)histReader.read<TH2F>(sSelection+"/TTbar");
       migrMatrix->RebinY(10);
       migrMatrix->RebinX(2);
-      for (TString sSample:{"T1tttt_1200_800","T2tt_650_250","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){
+      for (TString sSample:{"T1tttt_1200_800","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){
       //~ for (TString sSample:{"T1tttt_1200_800"}){
          if (sSample.Contains("DM")) sSelectionGenMET="genParticles/"+cat+"/DMgenMet";
          TH1F* genMET_ttbar=(TH1F*)histReader.read<TH1F>(sSelectionGenMET+"/TTbar");
@@ -115,7 +114,7 @@ void run()
          
          RooAddPdf model_gen("model","model",RooArgList(sig_pdf_gen,bkg_pdf_gen),RooArgList(nsig_gen,nbkg_gen));
          
-         RooFitResult* fitres_gen=model_gen.fitTo(hist_data_gen,RooFit::SumW2Error(kTRUE),RooFit::Save(), RooFit::PrintLevel(-1));
+         RooFitResult* fitres_gen=model_gen.fitTo(hist_data_gen,RooFit::SumW2Error(kFALSE),RooFit::Save(), RooFit::PrintLevel(-1));
          
          RooPlot* xframe_gen = x_gen.frame();
          hist_data_gen.plotOn(xframe_gen,RooFit::Name("data"));
@@ -148,17 +147,16 @@ void run()
          fitres_gen->Print();
          can.Clear();
          
-         out<<std::scientific;
-         out<<sSample<<"     "<<cat<<std::endl;
-         out<<nsig_gen.getValV()<<"    "<<nsig_gen.getError()<<std::endl;
-         out<<nbkg_gen.getValV()<<"    "<<nbkg_gen.getError()<<std::endl;
-         
          //////////////////////////////////////////////////////////
          ///////Template fit of detector level distributions///////
          //////////////////////////////////////////////////////////
          RooRealVar x("MET","MET",0,600);
          RooRealVar nsig("nsig","fitted number of signal events", 0, 1000*scale) ;
          RooRealVar nbkg("nbkg","fitted number of bkg events",0, 200000);
+         
+         //~ MET_ttbar->Rebin(5);
+         //~ MET_BSM->Rebin(5);
+         //~ pseudoData_MET.Rebin(5);
          
          RooDataHist hist_sig("hist_sig","hist_sig",x,MET_BSM);
          RooDataHist hist_bkg("hist_bkg","hist_bkg",x,MET_ttbar);
@@ -169,7 +167,7 @@ void run()
          
          RooAddPdf model("model","model",RooArgList(sig_pdf,bkg_pdf),RooArgList(nsig,nbkg));
          
-         RooFitResult* fitres=model.fitTo(hist_data,RooFit::SumW2Error(kTRUE),RooFit::Save(), RooFit::PrintLevel(-1));
+         RooFitResult* fitres=model.fitTo(hist_data,RooFit::SumW2Error(kFALSE),RooFit::Save(), RooFit::PrintLevel(-1));
          
          RooPlot* xframe = x.frame();
          hist_data.plotOn(xframe,RooFit::Name("data"));
@@ -199,10 +197,9 @@ void run()
          fitres->Print();
          can.Clear();
          
-         out<<std::scientific;
-         out<<nsig.getValV()<<"    "<<nsig.getError()<<std::endl;
-         out<<nbkg.getValV()<<"    "<<nbkg.getError()<<std::endl;
-         out<<"--------------------------"<<std::endl;
+         float diff=(nsig.getValV()-nsig_gen.getValV())/sqrt(nsig.getError()*nsig.getError()+nsig_gen.getError()*nsig_gen.getError());
+         
+         out<<sSample<<" & "<<cat_label<<" & $"<<nsig.getValV()<<"\\pm"<<nsig.getError()<<"$ & $"<<nsig_gen.getValV()<<"\\pm"<<nsig_gen.getError()<<"$ & $"<<diff<<"$ \\\\"<<std::endl;
          
       }
    }
