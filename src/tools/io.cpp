@@ -45,12 +45,11 @@ void io::ensurePathForFile(TString fileName)
  * class RootFileSaver
  ******************************************************************************/
 
-io::RootFileSaver::RootFileSaver(TString rootFileName,TString internalPath,bool lumiText, bool quiet)
+io::RootFileSaver::RootFileSaver(TString rootFileName,TString internalPath,bool lumiText)
    : fName_(rootFileName)
    , fPath_(CMAKE_SOURCE_DIR+TString::Format("/%s/",cfg.outputDirectory.Data())+fName_)
    , intPath_(internalPath)
    , bLumiText_(lumiText)
-   , bQuiet_(quiet)
 {
    ensurePathForFile(fPath_);
    file_ = new TFile(fPath_,"update");
@@ -89,7 +88,7 @@ void io::RootFileSaver::save(TObject const &obj, TString name,bool decorate,bool
       file_->cd(pathInFile);
    }
    obj.Write(nameInFile,TObject::kOverwrite);
-   if (!bQuiet_) io::log*"Saved '"*name*"' to '"*fName_<<"'";
+   io::log*"Saved '"*name*"' to '"*fName_<<"'";
 }
 
 void io::RootFileSaver::save(gfx::SplitCan &obj, TString name,bool simulation) const

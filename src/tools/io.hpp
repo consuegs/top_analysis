@@ -23,14 +23,14 @@ namespace io
    class RootFileSaver
    {
    public:
-      RootFileSaver(TString rootFileName,TString internalPath,bool lumiText=true, bool quiet=false);
+      RootFileSaver(TString rootFileName,TString internalPath,bool lumiText=true);
       ~RootFileSaver();
       void save(TObject const &obj, TString name, bool decorate=true,bool simulation=true) const;
       void save(gfx::SplitCan &obj, TString name,bool simulation=true) const;
    private:
       TFile *file_;
       TString fName_,fPath_,intPath_;
-      bool bSimulation_,bLumiText_,bQuiet_;
+      bool bSimulation_,bLumiText_;
    };
 
    /* class for reading Objects (e.g. histograms) from a root file */
