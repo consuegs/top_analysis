@@ -11,8 +11,11 @@ namespace phys
 
    // transverse mass (for massless daughters)
    float M_T (tree::Particle const &p1, tree::Particle const &p2);
-   float M_T (TVector3 const &v1, TVector3 const &v2);
-   float M_T2(TVector3 const &v1, TVector3 const &v2);
+   float M_T (TLorentzVector const &v1, TLorentzVector const &v2);
+   float M_T2(TLorentzVector const &v1, TLorentzVector const &v2);
+   
+   // contransverse mass (for massless daugthers)
+   float conM_T(TLorentzVector const &v1, TLorentzVector const &v2);
 
    // matching
    bool matchesGen(tree::Particle const &p,std::vector<tree::GenParticle> const &genP,int pdgId,float dR,float rel_dp);
@@ -20,6 +23,9 @@ namespace phys
    // invariant mass
    float invmass(tree::Particle const &p1, tree::Particle const &p2);
    float invmass(TVector3 const &v1, TVector3 const &v2);
+   
+   // sum mlb
+   float sumMlb(TLorentzVector &lepton1, TLorentzVector &lepton2, const std::vector<tree::Jet> &jets, const std::vector<tree::Jet> &bjets);
 } // namespace phys
 
 #endif /* PHYSICS_HPP__ */

@@ -6,8 +6,6 @@ std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets)
 {
    std::vector<tree::Jet> cjets;
    for (tree::Jet j: jets){
-      // vary jet energy scale up or down (resort after loop!)
-      // j.p*=(1.-j.uncert);
       if (!j.isLoose || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
       if (j.hasElectronMatch || j.hasMuonMatch) continue;
       cjets.push_back(j);
@@ -37,19 +35,24 @@ float phys::METoverSqrtHT(float MET, float HT)
            : MET/TMath::Sqrt(HT));
 }
 
-float phys::M_T2(TVector3 const &v1, TVector3 const &v2)
+float phys::M_T2(TLorentzVector const &v1, TLorentzVector const &v2)
 {
    return 2.0*v1.Pt()*v2.Pt()*(1-TMath::Cos(v1.DeltaPhi(v2)));
 }
 
-float phys::M_T(TVector3 const &v1, TVector3 const &v2)
+float phys::M_T(TLorentzVector const &v1, TLorentzVector const &v2)
 {
    return TMath::Sqrt(M_T2(v1,v2));
 }
 
 float phys::M_T(tree::Particle const &p1, tree::Particle const &p2)
 {
-   return M_T(p1.p.Vect(),p2.p.Vect());
+   return M_T(p1.p,p2.p);
+}
+
+float phys::conM_T(TLorentzVector const &v1, TLorentzVector const &v2)
+{
+   return TMath::Sqrt(2.0*v1.Pt()*v2.Pt()*(1+TMath::Cos(v1.DeltaPhi(v2))));
 }
 
 bool phys::matchesGen(tree::Particle const &p,std::vector<tree::GenParticle> const &genP,int pdgId,float dR,float rel_dp)
@@ -75,3 +78,68 @@ float phys::invmass(tree::Particle const &p1, tree::Particle const &p2)
 {
    return invmass(p1.p.Vect(),p2.p.Vect());
 }
+
+float phys::sumMlb(TLorentzVector &lepton1, TLorentzVector &lepton2, const std::vector<tree::Jet> &jets, const std::vector<tree::Jet> &bjets){
+   float mlb_min = 1.E6;
+   float mlb_max = 1.E6;
+
+   float temp_mlb;
+   float result_sum_mlb;
+
+   TLorentzVector jet (0.,0.,0.,0.);
+   TLorentzVector jet1 (0.,0.,0.,0.);
+   TLorentzVector lepton (0.,0.,0.,0.);
+
+   TLorentzVector leptList[2] = {lepton1,lepton2};
+
+   int lmin = -1;
+
+   std::vector< tree::Jet > jet1Coll;
+   std::vector< tree::Jet > jet2Coll;
+
+   // Calculate sum Mlb
+   if (bjets.size() >= 1) jet1Coll = bjets;
+   else jet1Coll = jets;
+
+   if (bjets.size() >= 2) jet2Coll = bjets;
+   else jet2Coll = jets;
+
+   for (int il=0; il < 2; ++il){
+      for (std::size_t ij=0; ij < jet1Coll.size(); ++ij){
+         jet.SetPxPyPzE(jet1Coll.at(ij).p.Px(),jet1Coll.at(ij).p.Py(),jet1Coll.at(ij).p.Pz(),jet1Coll.at(ij).p.Energy());
+         if (jet.Pt() > 30. && abs(jet.Eta()) < 2.4){
+            lepton.SetPxPyPzE(leptList[il].Px(),leptList[il].Py(),leptList[il].Pz(),leptList[il].Energy());
+        
+            temp_mlb = (jet+lepton).M();
+            if (temp_mlb < mlb_min) {
+               mlb_min = temp_mlb;
+               lmin = il;
+               jet1 = jet;
+            }
+         }
+      }
+   }
+   for (int il=0; il < 2; ++il){
+      if (il == lmin) continue;
+      for (std::size_t ij=0; ij < jet2Coll.size(); ++ij){
+         jet.SetPxPyPzE(jet2Coll.at(ij).p.Px(),jet2Coll.at(ij).p.Py(),jet2Coll.at(ij).p.Pz(),jet2Coll.at(ij).p.Energy());
+         if (jet.Pt() > 30. && abs(jet.Eta()) < 2.4){
+            if (bjets.size() == 1 && jet.DeltaR (jet1) < 0.1) continue;
+            if ( (bjets.size() == 0 || bjets.size() >= 2) &&  jet == jet1) continue;  
+            lepton.SetPxPyPzE(leptList[il].Px(),leptList[il].Py(),leptList[il].Pz(),leptList[il].Energy());
+        
+            temp_mlb = (jet+lepton).M();
+            if (temp_mlb < mlb_max) {
+               mlb_max = temp_mlb;
+            }
+         }
+      }
+   }
+   
+   if (mlb_min < 1.E6 and mlb_max < 1.E6) result_sum_mlb = mlb_min + mlb_max; 
+   else result_sum_mlb = 1.E-6;
+   
+   return result_sum_mlb;
+  
+}
+
