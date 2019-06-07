@@ -6,6 +6,7 @@ set(MODULES
   check_DM
   plot_distributions
   templateFit
+  compare_ttMC
   )
 
 foreach(MODULE ${MODULES})
