@@ -1,4 +1,4 @@
-//Script to plot 2D distributions for met, genMet and pT of both neutrinos
+//Script to plot 2D distributions for different METS and others variables
 
 #include "Config.hpp"
 #include "tools/hist.hpp"
@@ -22,11 +22,15 @@ void run()
    io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
    TCanvas can;
    
-   for (TString sSelection : {"genParticles","genParticles_Met200"}){
+   for (TString sSelection : {"genParticles","genParticles_Met200","baseline","baseline_Met200"}){
       for (TString sSample :{"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ",
-      "T1tttt_1200_800","T2tt_650_250","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){
-      
-         for (TString sVar :{"2d_nunuVSgenMet","MetVSgenMet","2d_nunuVSMet","2d_nunuVSDMgenMet","MetVSDMgenMet"}) {
+      "T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","TTbar_diLepton"}){
+         
+         std::vector<TString> Plots_2d={"2d_nunuVSgenMet","MetVSgenMet","2d_nunuVSMet","2d_nunuVSDMgenMet","MetVSDMgenMet","2d_MT2VSgenMT2","2d_MT2VSgenMT2neutrino",
+            "2d_dPhiMetNearLep_genResponse","2d_dPhiMetNearLep_Response"};
+         if (sSelection == "baseline" or sSelection == "baseline_Met200") Plots_2d={"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep"};
+         
+         for (TString sVar : Plots_2d) {
             
             TH2F hist_add;
             TH2F *hist;
@@ -44,16 +48,16 @@ void run()
                }
                   
                
-               hist->RebinX(2);
+               hist->RebinX(2);  //Use wider binning to increase statistics for BSM samples
                hist->RebinY(2);
                
-               for (TString norm:{"","LineNorm"}){
+               for (TString norm:{"","LineNorm"}){    //Plot nominal response and response normalized in each row
                   
                   if (norm==""){
                      hist->Scale(1.0/(hist->Integral()));
                   }
                   else{
-                     //Normalize each individual line of diagram
+                     //Normalize each individual row of diagram
                      float sum;
                      for (int y=1; y<=hist->GetNbinsY(); y++){
                         sum=hist->Integral(1,hist->GetNbinsX(),y,y);
@@ -64,6 +68,7 @@ void run()
                      }
                   }
                   
+                  // Plotting stuff in the following
                   TGraph diag;
                   diag.SetPoint(1,0,0);
                   diag.SetPoint(2,600,600);
@@ -106,13 +111,13 @@ void run()
                   else if (cat=="mumu") cat_label="#mu#mu";
                   else if (cat=="all") cat_label="all";
                   TString labelString=cat_label+"    "+sSample;
-                  if (sSelection=="genParticles_Met200") labelString=cat_label+"    "+sSample+"    p_{T}^{miss}>200 GeV";
+                  if (sSelection=="genParticles_Met200" or sSelection=="baseline_Met200") labelString=cat_label+"    "+sSample+"    p_{T}^{miss}>200 GeV";
                   TLatex label=gfx::cornerLabel(labelString,1);
                   label.Draw();
                   
                   can.RedrawAxis();
                   TString plotLoc=sSample+"/"+sVar+norm+"/"+cat;
-                  if (sSelection=="genParticles_Met200") plotLoc="Met200/"+sSample+"/"+sVar+norm+"/"+cat;
+                  if (sSelection=="genParticles_Met200" or sSelection=="baseline_Met200") plotLoc="Met200/"+sSample+"/"+sVar+norm+"/"+cat;
                   saver.save(can,plotLoc,true,true);
                   can.Clear();
                }
