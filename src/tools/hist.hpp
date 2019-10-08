@@ -105,10 +105,11 @@ namespace hist
    std::vector<double> getBinVector(std::vector<float> edges, std::vector<float> widths);
    TH1F fromWidths(const char *name, const char *title,std::vector<float> edges, std::vector<float> widths);
    TH2F fromWidths_2d(const char *name, const char *title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y);
-
+   std::vector<float> getWidths(std::vector<float> const &bins);
 
    TH1F rebinned(TH1F const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow=true,bool mergeUnderflow=true);
    TH1F rebinned(TH1F const &h, std::vector<double> const &binedges,bool mergeOverflow=true,bool mergeUnderflow=true);
+   TH2F rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::vector<float> const &binedges_y,bool mergeOverflow=true,bool mergeUnderflow=true);
    void divideByBinWidth(TH1& h,bool divideLastBin=true);
    void mergeOverflow(TH1& h, bool includeUnderflow=true);
    void mergeOverflow(TH2& h, bool includeUnderflow=true);
