@@ -1,3 +1,4 @@
+//Script to check genParticle content of samples and other stuff (mainly for debugging)
 #include "Config.hpp"
 #include "tools/hist.hpp"
 #include "tools/physics.hpp"
@@ -21,8 +22,11 @@ void run()
 {
 
    
-   TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v02/TTbarDMJets_DiLept_pseudoscalar_Mchi-50_Mphi-50_TuneCUETP8M1_v2_13TeV-madgraphMLM-pythia8.root","read");
-   //~ TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v02/SMS-T1tttt_mGluino-1200_mLSP-800_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root","read");
+   // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v03/TTbarDMJets_DiLept_pseudoscalar_Mchi-50_Mphi-50_TuneCUETP8M1_v2_13TeV-madgraphMLM-pythia8.root","read");
+   // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v05/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root","read");
+   // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v05/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root","read");
+   TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v05/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root","read");
+   // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v05/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8.root","read");
 
    TTreeReader reader(cfg.treeName, &file);
    TTreeReaderValue<float> w_pu(reader, "pu_weight");
@@ -46,14 +50,27 @@ void run()
    TTreeReaderValue<bool> is_emu   (reader, "emu");
    TTreeReaderValue<bool> is_mumu   (reader, "mumu");
    TTreeReaderValue<float> mll   (reader, "mll");
+   TTreeReaderValue<TLorentzVector> genNeutrino(reader, "genNeutrino");
+   TTreeReaderValue<TLorentzVector> genAntiNeutrino(reader, "genAntiNeutrino");
+   TTreeReaderValue<TLorentzVector> pseudoNeutrino(reader, "pseudoNeutrino");
+   TTreeReaderValue<TLorentzVector> pseudoAntiNeutrino(reader, "pseudoAntiNeutrino");
+   TTreeReaderValue<TLorentzVector> genLepton(reader, "genLepton");
+   TTreeReaderValue<TLorentzVector> genAntiLepton(reader, "genAntiLepton");
+   TTreeReaderValue<TLorentzVector> pseudoLepton(reader, "pseudoLepton");
+   TTreeReaderValue<TLorentzVector> pseudoAntiLepton(reader, "pseudoAntiLepton");
+   
+   TH1F hist_neutrinos("","",6,-0.5,5.5);
+   TH1F hist_neutrinosPt("","",20,0,150);
 
 
    int iEv=0;
    //~ int events =0;
-   int processEvents=10;
+   int processEvents=1000;
    while (reader.Next()){
       iEv++;
       if (iEv>processEvents) break;
+      
+      // ~if (*lumNo!=2681) continue;
       
       float const met=MET->p.Pt();
       float const genMet=GENMET->p.Pt();
@@ -101,44 +118,80 @@ void run()
       }
       if (!bTag) continue; // end baseline selection
       
-      // Get pT of Neutrino Pair
+      // Get pT of Neutrino Pair, which is further changed in case of BSM scenarios!!
       TLorentzVector neutrinoPair(0,0,0,0);
-      for (tree::IntermediateGenParticle const &inter: *intermediateGenParticles){
-         if (abs(inter.pdgId)==24) {
-            for (tree::GenParticle const &daughter: inter.daughters){
-               if (abs(daughter.pdgId)==12 || abs(daughter.pdgId)==14 || abs(daughter.pdgId)==16){
-                  neutrinoPair+=daughter.p;
-               }
-            }
+      neutrinoPair=(*genNeutrino)+(*genAntiNeutrino);
+      
+      //Calculate MET before parton shower and hadronization for DM scenario and SUSY scenarios
+      for (auto const &genParticle : *genParticles){
+         if((abs(genParticle.pdgId)==1000022)){
+            neutrinoPair+=genParticle.p;
          }
       }
+      
+      // ~std::cout<<"------------------------------"<<std::endl;
+      // ~std::cout<<genNeutrino->Pt()<<"   "<<pseudoNeutrino->Pt()<<std::endl;
+      // ~std::cout<<genAntiNeutrino->Pt()<<"   "<<pseudoAntiNeutrino->Pt()<<std::endl;
+      std::cout<<"------------------------------"<<std::endl;
+      std::cout<<genLepton->Pt()<<"   "<<pseudoLepton->Pt()<<std::endl;
+      std::cout<<genAntiLepton->Pt()<<"   "<<pseudoAntiLepton->Pt()<<std::endl;
+      
+      // ~std::cout<<"---------------------"<<std::endl;
+      // ~std::cout<<*runNo<<":"<<*lumNo<<":"<<*evtNo<<std::endl;
+      // ~std::cout<<genNeutrino->Pt()<<"   "<<genAntiNeutrino->Pt()<<std::endl;
+      // ~std::cout<<neutrinoPair.Pt()<<std::endl;
+      // ~std::cout<<genMet<<std::endl;
+
+      
+      // ~int n_neutrinos=0;
+      // ~for (auto const &genParticle : *genParticles){
+         // ~if (abs(genParticle.pdgId)==12 || abs(genParticle.pdgId)==14 || abs(genParticle.pdgId)==16){
+            // ~n_neutrinos++;
+            // ~if (n_neutrinos>2)neutrinoPair+=genParticle.p;
+            // ~std::cout<<"neutrino"<<"   "<<genParticle.p.Pt()<<"   "<<genParticle.p.Phi()<<"   "<<genParticle.p.Eta()<<std::endl;
+            // ~if(n_neutrinos>2)hist_neutrinosPt.Fill(genParticle.p.Pt());
+         // ~}
+         // ~if((abs(genParticle.pdgId)==1000022)){
+            // ~std::cout<<"BSM"<<"   "<<genParticle.p.Pt()<<"   "<<genParticle.p.Phi()<<"   "<<genParticle.p.Eta()<<std::endl;
+         // ~}
+      // ~}
+      // ~std::cout<<neutrinoPair.Pt()<<std::endl;
+      
+      // ~TLorentzVector temp;
+      // ~temp.SetPtEtaPhiM(2.780,-1.285,2.419,0.);
+      // ~neutrinoPair+=temp;
       
       //Get DeltaPhi between MET and nearest Jet
-      float dPhiMETnearJet=4; // nearest jet or photon
-      for (tree::Jet const &jet : cjets){
-         const float dPhi=MET->p.DeltaPhi(jet.p);
-         if (std::abs(dPhi) < std::abs(dPhiMETnearJet))
-            dPhiMETnearJet=dPhi;
-      }
+      // ~float dPhiMETnearJet=4; // nearest jet or photon
+      // ~for (tree::Jet const &jet : cjets){
+         // ~const float dPhi=MET->p.DeltaPhi(jet.p);
+         // ~if (std::abs(dPhi) < std::abs(dPhiMETnearJet))
+            // ~dPhiMETnearJet=dPhi;
+      // ~}
       
-      std::cout<<*runNo<<":"<<*lumNo<<":"<<*evtNo<<std::endl;
-      TLorentzVector DMgenMET=neutrinoPair;
-      for (auto const &genParticle : *genParticles){
-         std::cout<<genParticle.pdgId<<std::endl;
-         if(abs(genParticle.pdgId)>100000){
-            DMgenMET+=genParticle.p;
-         }
-      }
-      std::cout<<met<<std::endl;
-      std::cout<<genMet<<std::endl;
-      std::cout<<DMgenMET.Pt()<<std::endl;
+      // ~std::cout<<*runNo<<":"<<*lumNo<<":"<<*evtNo<<std::endl;
+      // ~TLorentzVector DMgenMET=neutrinoPair;
+      // ~for (auto const &genParticle : *genParticles){
+         // ~//~ std::cout<<genParticle.pdgId<<std::endl;
+         // ~//~ if(abs(genParticle.pdgId)>100000){
+         // ~if(abs(genParticle.pdgId)==1000022){
+            // ~DMgenMET+=genParticle.p;
+            // ~std::cout<<abs(genParticle.pdgId)<<"   "<<genParticle.p.Pt()<<std::endl;
+         // ~}
+      // ~}
+      //~ std::cout<<met<<std::endl;
+      // ~std::cout<<genMet<<std::endl;
+      // ~std::cout<<DMgenMET.Pt()<<std::endl;
       
-      
-
-      std::cout<<"---------------------------------------------"<<std::endl;
+      // ~hist_neutrinos.Fill(n_neutrinos);
+      // ~std::cout<<n_neutrinos<<std::endl;
+      // ~std::cout<<"---------------------------------------------"<<std::endl;
    }// evt loop
    io::log<<"";
    
    file.Close();
+   
+   hist_neutrinos.SaveAs("test.root");
+   // ~hist_neutrinosPt.SaveAs("test.root");
    
 }
