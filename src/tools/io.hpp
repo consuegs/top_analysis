@@ -27,6 +27,7 @@ namespace io
       ~RootFileSaver();
       void save(TObject const &obj, TString name, bool decorate=true,bool simulation=true) const;
       void save(gfx::SplitCan &obj, TString name,bool simulation=true) const;
+      void closeFile() const;
    private:
       TFile *file_;
       TString fName_,fPath_,intPath_;
