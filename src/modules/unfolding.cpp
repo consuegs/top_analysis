@@ -1,3 +1,4 @@
+//First script to try some unfolding stuff and get used to the unfolding framework
 #include "Config.hpp"
 #include "tools/hist.hpp"
 #include "tools/physics.hpp"
@@ -21,7 +22,6 @@ extern "C"
 void run()
 {
    io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
-   io::RootFileReader histReaderUnfold(TString::Format("unfolding%.1f.root",cfg.processFraction*100),TString::Format("unfolding%.1f",cfg.processFraction*100));
    io::RootFileSaver saver_hist(TString::Format("unfolding%.1f.root",cfg.processFraction*100),TString::Format("unfolding%.1f",cfg.processFraction*100),false);
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),TString::Format("unfolding%.1f",cfg.processFraction*100));
    
@@ -34,7 +34,7 @@ void run()
       TString sSelection="genParticles/"+cat+"/MetVSgenMet";
       TString sSelection2="baseline/"+cat+"/met";
       TString sSelection3="genParticles/"+cat+"/genMet";
-      for (TString sSample:{"T1tttt_1200_800","T2tt_650_250","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){
+      for (TString sSample:{"T1tttt_1200_800","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){
          if (sSample.Contains("DM")) sSelection3="genParticles/"+cat+"/DMgenMet";
          TH2F* migrMatrix=(TH2F*)histReader.read<TH2F>(sSelection+"/TTbar");
          TH1F* fakeData=(TH1F*)histReader.read<TH1F>(sSelection2+"/"+sSample);
@@ -48,7 +48,7 @@ void run()
             std::cout<<"Unfolding result may be wrong\n";
          }
          
-         // scan L curve and find best point
+         // scan L curve and find best point for regularisation
          //~ Int_t nScan=30;
          //~ // use automatic L-curve scan: start with taumin=taumax=0.0
          //~ Double_t tauMin=0.0;
@@ -104,12 +104,12 @@ void run()
          realDis->Draw("hist same");
          pseudo2->SetLineColor(kRed);
          pseudo5->SetLineColor(kGreen);
-         pseudo2->Draw("pe1 same");
-         pseudo5->Draw("pe1 same");
+         // ~pseudo2->Draw("pe1 same");
+         // ~pseudo5->Draw("pe1 same");
          gfx::LegendEntries legE;
          legE.append(*unfolded,"Unfolded pseudo Data","pe");
-         legE.append(*pseudo2,"Scaled pseudo Data (50x50)","pe");
-         legE.append(*pseudo5,"Scaled pseudo Data (10x10)","pe");
+         // ~legE.append(*pseudo2,"Scaled pseudo Data (50x50)","pe");
+         // ~legE.append(*pseudo5,"Scaled pseudo Data (10x10)","pe");
          legE.append(*realDis,"MC True","l");
          TLegend leg=legE.buildLegend(.5,.65,0.75,.9,1);
          leg.SetTextSize(0.035);
@@ -119,6 +119,7 @@ void run()
          if (cat=="emu") cat_label="e#mu";
          else if (cat=="mumu") cat_label="#mu#mu";
          else if (cat=="all") cat_label="all";
+         cat_label+="   "+sSample;
          TLatex label=gfx::cornerLabel(cat_label,1);
          label.Draw();
             
