@@ -83,7 +83,7 @@ void run()
          if(unfold.SetInput(&pseudoData_MET)>=10000) {
             std::cout<<"Unfolding result may be wrong\n";
          }
-         unfold.DoUnfold(0.);
+         unfold.DoUnfold(0.);    //Do the unfolding without regularisation
          TH1* unfolded=unfold.GetOutput("Unfolded");
          
          //Plot original genMET distribution
