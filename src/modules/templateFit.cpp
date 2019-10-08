@@ -1,3 +1,4 @@
+// Script to study if a possible signal can still be found after unfolding (currently only based on genMET and not yet pT_nunu+BSM!!!)
 #include "Config.hpp"
 #include "tools/hist.hpp"
 #include "tools/physics.hpp"
@@ -35,31 +36,29 @@ extern "C"
 void run()
 {
    
-   int scale=10;
+   int scale=10;     //Scale to be used for BSM samples (otherwise the signal yield would just be too small)
    
    io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),TString::Format("templateFit%.1f",cfg.processFraction*100));
    io::RootFileSaver saver_templateFit(TString::Format("templateFit%.1f.root",cfg.processFraction*100),TString::Format("templateFit%.1f",cfg.processFraction*100));
    
    std::ofstream out;
-   out.open("../output/txt/templateFit.txt");
+   out.open("../output/txt/templateFit.txt");   //File to save fitting results
    out.precision(4);
    
    TCanvas can;
    can.SetLogy();
       
    for (TString cat: {"ee","emu","mumu"}){
-   //~ for (TString cat: {"ee"}){
       TString sSelection="genParticles/"+cat+"/MetVSgenMet";
       TString sSelectionMET="baseline/"+cat+"/met";
       TString sSelectionGenMET="genParticles/"+cat+"/genMet";
       
-      TH2F* migrMatrix=(TH2F*)histReader.read<TH2F>(sSelection+"/TTbar");
+      TH2F* migrMatrix=(TH2F*)histReader.read<TH2F>(sSelection+"/TTbar");  //Response matrix used for the unfolding
       migrMatrix->RebinY(10);
       migrMatrix->RebinX(2);
       for (TString sSample:{"T1tttt_1200_800","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){
-      //~ for (TString sSample:{"T1tttt_1200_800"}){
-         if (sSample.Contains("DM")) sSelectionGenMET="genParticles/"+cat+"/DMgenMet";
+         if (sSample.Contains("DM")) sSelectionGenMET="genParticles/"+cat+"/DMgenMet";    //Use DMgenMET in case of DM samples
          TH1F* genMET_ttbar=(TH1F*)histReader.read<TH1F>(sSelectionGenMET+"/TTbar");
          TH1F* genMET_BSM=(TH1F*)histReader.read<TH1F>(sSelectionGenMET+"/"+sSample);
          TH1F* MET_ttbar=(TH1F*)histReader.read<TH1F>(sSelectionMET+"/TTbar");
@@ -79,6 +78,7 @@ void run()
          TH1F pseudoData_genMET=*(genMET_ttbar);
          pseudoData_genMET.Add(genMET_BSM);
          
+         //Unfolding
          TUnfoldDensity unfold(migrMatrix,TUnfold::kHistMapOutputVert);
          if(unfold.SetInput(&pseudoData_MET)>=10000) {
             std::cout<<"Unfolding result may be wrong\n";
@@ -102,8 +102,8 @@ void run()
          ///////Template fit of gen level distributions///////
          //////////////////////////////////////////////////////////
          RooRealVar x_gen("MET","MET",0,600);
-         RooRealVar nsig_gen("nsig","fitted number of signal events", 0, 1000*scale) ;
-         RooRealVar nbkg_gen("nbkg","fitted number of bkg events",0, 200000);
+         RooRealVar nsig_gen("nsig","fitted number of signal events", 0, 5000*scale) ;
+         RooRealVar nbkg_gen("nbkg","fitted number of bkg events",0, 1000000);
          
          RooDataHist hist_sig_gen("hist_sig","hist_sig",x_gen,genMET_BSM);
          RooDataHist hist_bkg_gen("hist_bkg","hist_bkg",x_gen,genMET_ttbar);
@@ -114,8 +114,9 @@ void run()
          
          RooAddPdf model_gen("model","model",RooArgList(sig_pdf_gen,bkg_pdf_gen),RooArgList(nsig_gen,nbkg_gen));
          
-         RooFitResult* fitres_gen=model_gen.fitTo(hist_data_gen,RooFit::SumW2Error(kFALSE),RooFit::Save(), RooFit::PrintLevel(-1));
+         RooFitResult* fitres_gen=model_gen.fitTo(hist_data_gen,RooFit::SumW2Error(kFALSE),RooFit::Save(), RooFit::PrintLevel(-1));    //Template fit
          
+         //RooFit plotting stuff
          RooPlot* xframe_gen = x_gen.frame();
          hist_data_gen.plotOn(xframe_gen,RooFit::Name("data"));
          model_gen.plotOn(xframe_gen,RooFit::Name("fit"));
@@ -151,8 +152,8 @@ void run()
          ///////Template fit of detector level distributions///////
          //////////////////////////////////////////////////////////
          RooRealVar x("MET","MET",0,600);
-         RooRealVar nsig("nsig","fitted number of signal events", 0, 1000*scale) ;
-         RooRealVar nbkg("nbkg","fitted number of bkg events",0, 200000);
+         RooRealVar nsig("nsig","fitted number of signal events", 0, 5000*scale) ;
+         RooRealVar nbkg("nbkg","fitted number of bkg events",0, 1000000);
          
          //~ MET_ttbar->Rebin(5);
          //~ MET_BSM->Rebin(5);
@@ -199,6 +200,7 @@ void run()
          
          float diff=(nsig.getValV()-nsig_gen.getValV())/sqrt(nsig.getError()*nsig.getError()+nsig_gen.getError()*nsig_gen.getError());
          
+         //Output of fitting results
          out<<sSample<<" & "<<cat_label<<" & $"<<nsig.getValV()<<"\\pm"<<nsig.getError()<<"$ & $"<<nsig_gen.getValV()<<"\\pm"<<nsig_gen.getError()<<"$ & $"<<diff<<"$ \\\\"<<std::endl;
          
       }
