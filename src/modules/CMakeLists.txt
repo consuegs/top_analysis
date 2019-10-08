@@ -7,6 +7,9 @@ set(MODULES
   plot_distributions
   templateFit
   compare_ttMC
+  test_MT2
+  plot2D_sensitivity
+  binningUnfolding
   )
 
 foreach(MODULE ${MODULES})
