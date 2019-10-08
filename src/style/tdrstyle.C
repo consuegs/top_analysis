@@ -20,7 +20,7 @@ void setTDRStyle() {
 // For the canvas:
   tdrStyle->SetCanvasBorderMode(0);
   tdrStyle->SetCanvasColor(kWhite);
-  //~ tdrStyle->SetCanvasDefH(600); //Height of canvas match johannes stack plots
+  //~ tdrStyle->SetCanvasDefH(600); //Height of canvas match johannes stack plots with ratio
   //~ tdrStyle->SetCanvasDefH(550); //Height of canvas for limits
   tdrStyle->SetCanvasDefH(500); //for 2d ggm parameter
   tdrStyle->SetCanvasDefW(600); //Width of canvas
