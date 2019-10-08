@@ -1,4 +1,4 @@
-//Script to plot difference between met, genMet and pT of both neutrinos
+//Script to plot difference between met, genMet and pT of both neutrinos(+BSM)
 
 #include "Config.hpp"
 #include "tools/hist.hpp"
@@ -24,16 +24,17 @@ void run()
    
    for (TString sSelection : {"genParticles","genParticles_Met200"}){
       for (TString sSample :{"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ",
-      "T1tttt_1200_800","T2tt_650_350","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){
+      "T1tttt_1200_800","T2tt_650_350","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","TTbar_diLepton"}){
       
-         for (TString sVar :{"diff_ptNuNu_genMET","diff_Met_genMET","diff_ptNuNu_Met","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_DMgenMET","diff_Met_DMgenMET"}) {
+         for (TString sVar :{"diff_ptNuNu_genMET","diff_Met_genMET","diff_ptNuNu_Met","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM",
+            "diff_Met_DMgenMET_normSUM","diff_ptNuNu_DMgenMET","diff_Met_DMgenMET","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep"}) {
             
             TH1F hist_add;
             TH1F *hist;
             
             for (TString cat:{"ee","emu","mumu","all"}){
                
-               if (cat!="all"){
+               if (cat!="all"){     //Add categories
                   hist=(TH1F*) histReader.read<TH2F>(sSelection+"/"+cat+"/"+sVar+"/"+sSample);
                   if (cat=="ee") hist_add=(TH1F) *(histReader.read<TH1F>(sSelection+"/"+cat+"/"+sVar+"/"+sSample));
                   else hist_add.Add(hist);
@@ -42,17 +43,18 @@ void run()
                   hist = &hist_add;
                }
                
+               //Rebin in case of poor statistics
                if (sVar!="diff_ptNuNu_genMET" and sVar!="diff_Met_genMET_norm" and sVar!="diff_Met_DMgenMET_norm" and sVar!="diff_Met_genMET_normSUM" and sVar!="diff_Met_DMgenMET_normSUM") hist->RebinX(4);
                //~ else hist->RebinX(2);
                
-               hist->Scale(1.0/(hist->Integral()));
+               hist->Scale(1.0/(hist->Integral()));   //Normalize the hist to the integral
                
                can.cd();
                can.SetLogz();
                
                hist->GetYaxis()->SetTitle("normalized distribution");
 
-               hist->Fit("gaus","Q");
+               hist->Fit("gaus","Q");     //Try to fit a gaussian to the response
                
                if (sVar=="diff_Met_genMET_norm"){
                   hist->GetXaxis()->SetTitle("(p_{T}^{miss}-genMET)/genMET");
