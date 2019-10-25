@@ -10,6 +10,9 @@ set(MODULES
   test_MT2
   plot2D_sensitivity
   binningUnfolding
+  compare_pseudoGen
+  diff_dPhiResolution
+  plot_dPhiResolution
   )
 
 foreach(MODULE ${MODULES})
