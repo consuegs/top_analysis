@@ -10,7 +10,7 @@ std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets)
       if (j.hasElectronMatch || j.hasMuonMatch) continue;
       cjets.push_back(j);
    }
-   // sort(cjets.begin(), cjets.end(), tree::PtGreater);
+   sort(cjets.begin(), cjets.end(), tree::PtGreater);
    return cjets;
 }
 
