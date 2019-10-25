@@ -37,10 +37,20 @@ std::vector<float> get_Ratio(TH2F bkg, TH2F const &total) {    //Function to get
    return ratios;
 }
 
+TH2F get_sqrt(TH2F inital) {    //Function to get the square-root of the 2D histogram
+   TH2F sqrts=inital;
+   for (int j=1; j<=inital.GetNbinsY(); j++){
+      for (int i=1; i<=inital.GetNbinsX(); i++){
+         sqrts.SetBinContent(i,j,sqrt(inital.GetBinContent(i,j)));
+      }
+   }
+   return sqrts;
+}
+
 extern "C"
 void run()
 {
-   io::RootFileSaver saver(TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100),"plot2D_sensitvity");
+   io::RootFileSaver saver(TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100),"plot2D_sensitivity");
    io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
    TCanvas can;
    
@@ -48,6 +58,7 @@ void run()
    TH2F ttbar;
    TH2F SMbkg;
    TH2F sensitivity;
+   TH2F sensitivity_sqrtB;
    TH2F temp_hist;
    
    // Define different binning schemes
@@ -60,7 +71,8 @@ void run()
    std::vector<float> met_bins3={0,70,140,250,400};
    std::vector<float> phi_bins3={0,0.4,0.8,1.2,3.14};
    
-   std::vector<float> met_bins4={0,80,160,260,400};
+   // ~std::vector<float> met_bins4={0,80,160,260,400};
+   std::vector<float> met_bins4={0,60,120,230,400};
    std::vector<float> phi_bins4={0,0.7,1.4,3.14};
    
    //Used for names in the savin process
@@ -87,49 +99,53 @@ void run()
             add_Categories("2d_MetVSdPhiMetNearLep/"+signalSample,histReader,signal);
             signal=hist::rebinned(signal,met_bins,phi_bins);
             
-            temp_hist=ttbar;
-            temp_hist.Add(&SMbkg);
-            temp_hist.Add(&signal);
-            
-            sensitivity=signal;
-            sensitivity.Divide(&temp_hist);     //Get S/(S+B)
-            
-            //Plotting stuff in the following
-            can.cd();
-            can.SetLogz();
-            
-            gPad->SetRightMargin(0.2);
-            gPad->SetLeftMargin(0.13);
-            gPad->SetBottomMargin(0.11);
-            
-            sensitivity.GetYaxis()->SetTitleOffset(1.3);
-            sensitivity.GetXaxis()->SetTitleOffset(0.9);
-            sensitivity.GetZaxis()->SetTitleOffset(1.3);
-            sensitivity.GetYaxis()->SetTitleSize(0.05);
-            sensitivity.GetXaxis()->SetTitleSize(0.05);
-            sensitivity.GetZaxis()->SetTitleSize(0.05);
-            sensitivity.GetYaxis()->SetLabelSize(0.04);
-            sensitivity.GetXaxis()->SetLabelSize(0.04);
-            sensitivity.GetZaxis()->SetLabelSize(0.04);
-            sensitivity.GetZaxis()->SetTitle("S/(S+B)");
-            
-            sensitivity.SetMaximum(1.0);
-            sensitivity.SetStats(false);
-            sensitivity.Draw("colz");
-            
-            signal.SetMarkerColor(kRed);
-            signal.SetMarkerSize(1.5);
-            signal.Draw("same text");
-            
-            TString cat_label="all";
-            TString labelString=cat_label+"    "+signalSample;
-            TLatex label=gfx::cornerLabel(labelString,1);
-            label.Draw();
-            
-            can.RedrawAxis();
-            TString plotLoc="Binning_Met"+std::to_string(numberBinningSchemeMet)+"_Phi"+std::to_string(numberBinningSchemePhi)+"/"+signalSample;
-            saver.save(can,plotLoc,true,true);
-            can.Clear();
+            for (TString sensitivity_type : {"SplusB","sqrtB"}){
+               temp_hist=ttbar;
+               temp_hist.Add(&SMbkg);
+               if (sensitivity_type=="SplusB") temp_hist.Add(&signal);
+               else if (sensitivity_type=="sqrtB") temp_hist=get_sqrt(temp_hist);
+               
+               sensitivity=signal;
+               sensitivity.Divide(&temp_hist);
+               
+               //Plotting stuff in the following
+               can.cd();
+               can.SetLogz();
+               
+               gPad->SetRightMargin(0.2);
+               gPad->SetLeftMargin(0.13);
+               gPad->SetBottomMargin(0.11);
+               
+               sensitivity.GetYaxis()->SetTitleOffset(1.3);
+               sensitivity.GetXaxis()->SetTitleOffset(0.9);
+               sensitivity.GetZaxis()->SetTitleOffset(1.3);
+               sensitivity.GetYaxis()->SetTitleSize(0.05);
+               sensitivity.GetXaxis()->SetTitleSize(0.05);
+               sensitivity.GetZaxis()->SetTitleSize(0.05);
+               sensitivity.GetYaxis()->SetLabelSize(0.04);
+               sensitivity.GetXaxis()->SetLabelSize(0.04);
+               sensitivity.GetZaxis()->SetLabelSize(0.04);
+               if (sensitivity_type=="SplusB") sensitivity.GetZaxis()->SetTitle("S/(S+B)");
+               else if (sensitivity_type=="sqrtB") sensitivity.GetZaxis()->SetTitle("S/#sqrt{B}");
+               
+               // ~sensitivity.SetMaximum(1.0);
+               sensitivity.SetStats(false);
+               sensitivity.Draw("colz");
+               
+               signal.SetMarkerColor(kRed);
+               signal.SetMarkerSize(1.5);
+               signal.Draw("same text");
+               
+               TString cat_label="all";
+               TString labelString=cat_label+"    "+signalSample;
+               TLatex label=gfx::cornerLabel(labelString,1);
+               label.Draw();
+               
+               can.RedrawAxis();
+               TString plotLoc="Binning_Met"+std::to_string(numberBinningSchemeMet)+"_Phi"+std::to_string(numberBinningSchemePhi)+"/"+sensitivity_type+"/"+signalSample;
+               saver.save(can,plotLoc,true,true);
+               can.Clear();
+            }
          }
          
          // BKG composition for individual bins
