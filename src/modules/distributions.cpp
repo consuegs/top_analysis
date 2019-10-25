@@ -72,6 +72,10 @@ void run()
    hs.addHist("baseline/emu/dphi_metJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet);EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/mumu/dphi_metJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet);EventsBIN"           ,100,0,3.2);
    
+   hs.addHist("baseline/ee/dphi_metLeadJet"   ,";|#Delta#phi|(p_{T}^{miss},leading jet);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/emu/dphi_metLeadJet"   ,";|#Delta#phi|(p_{T}^{miss},leading jet);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/mumu/dphi_metLeadJet"   ,";|#Delta#phi|(p_{T}^{miss},leading jet);EventsBIN"           ,100,0,3.2);
+   
    hs.addHist("baseline/ee/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/emu/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/mumu/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,100,0,3.2);
@@ -512,8 +516,29 @@ void run()
    hs2d.addHist("baseline_Met200/mumu/2d_MetVSCosdPhiMetNearLep", ";p_{T}^{miss} (GeV);cos(|#Delta#phi|(p_{T}^{miss}),nearest l);EventsBIN" ,100,0,1000,100,-1,1);
    
    //Ntuple and file to save minimal ttbar tree used for binning studies
+   float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet, minTree_PhiMetbJet, minTree_PhiLep1Lep2,
+   minTree_METsig, minTree_N, minTree_genMet;
+   UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode;
+   ULong64_t minTree_evtNo;
    io::RootFileSaver ttbar_res_saver(TString::Format("ttbar_res%.1f.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100));
-   TNtuple ttbar_res("ttbar_res","ttbar_res","MET:PtNuNu:Phi_rec:Phi_gen:N");
+   TTree ttbar_res("ttbar_res","ttbar_res");
+   ttbar_res.Branch("MET",&minTree_MET,"MET/f");
+   ttbar_res.Branch("PtNuNu",&minTree_PtNuNu,"PtNuNu/f");
+   ttbar_res.Branch("Phi_rec",&minTree_PhiRec,"Phi_rec/f");
+   ttbar_res.Branch("Phi_gen",&minTree_PhiGen,"Phi_gen/f");
+   ttbar_res.Branch("dPhiMETnearJet",&minTree_PhiMetNearJet,"dPhiMETnearJet/f");
+   ttbar_res.Branch("dPhiMETfarJet",&minTree_PhiMetFarJet,"dPhiMETfarJet/f");
+   ttbar_res.Branch("dPhiMETleadJet",&minTree_PhiMetLeadJet,"dPhiMETleadJet/f");
+   ttbar_res.Branch("dPhiMETlead2Jet",&minTree_PhiMetLead2Jet,"dPhiMETlead2Jet/f");
+   ttbar_res.Branch("dPhiMETbJet",&minTree_PhiMetbJet,"dPhiMETbJet/f");
+   ttbar_res.Branch("dPhiLep1Lep2",&minTree_PhiLep1Lep2,"dPhiLep1Lep2/f");
+   ttbar_res.Branch("METsig",&minTree_METsig,"METsig/f");
+   ttbar_res.Branch("N",&minTree_N,"N/f");
+   ttbar_res.Branch("runNo",&minTree_runNo,"runNo/i");
+   ttbar_res.Branch("lumNo",&minTree_lumNo,"lumNo/i");
+   ttbar_res.Branch("evtNo",&minTree_evtNo,"evtNo/l");
+   ttbar_res.Branch("genDecayMode",&minTree_genDecayMode,"genDecayMode/i");
+   ttbar_res.Branch("genMET",&minTree_genMet,"genMET/f");
    
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
@@ -542,9 +567,14 @@ void run()
       bool ttBar_standard=false;
       if (dss.datasetName=="TTbar") ttBar_standard=true;
       
+      //Check if current sample is TTbar powheg dilepton
+      bool ttBar_dilepton=false;
+      if (dss.datasetName=="TTbar_diLepton") ttBar_dilepton=true;
+      
       //Check if current sample is TTbar madGraph (has extra genMet>150 part)
       bool ttBar_madGraph=false;
       if (dss.datasetName=="TTbar_madGraph") ttBar_madGraph=true;
+
       
       //Check if current sample is SUSY scenario
       bool SUSY_scen=false;
@@ -591,7 +621,7 @@ void run()
       TTreeReaderValue<TLorentzVector> genAntiNeutrino(reader, "pseudoAntiNeutrino");
       TTreeReaderValue<TLorentzVector> genWMinus(reader, "pseudoWMinus");
       TTreeReaderValue<TLorentzVector> genWPlus(reader, "pseudoWPlus");
-      TTreeReaderValue<int> genDecayMode(reader, "ttbarPseudoDecayMode");
+      TTreeReaderValue<int> genDecayMode_pseudo(reader, "ttbarPseudoDecayMode");
       // ~TTreeReaderValue<TLorentzVector> genTop(reader, "genTop");    //Alternative genParticles, which are not based on RIVET
       // ~TTreeReaderValue<TLorentzVector> genAntiTop(reader, "genAntiTop");
       // ~TTreeReaderValue<TLorentzVector> genLepton(reader, "genLepton");
@@ -606,7 +636,7 @@ void run()
       // ~TTreeReaderValue<TLorentzVector> genAntiNeutrino(reader, "genAntiNeutrino");
       // ~TTreeReaderValue<TLorentzVector> genWMinus(reader, "genWMinus");
       // ~TTreeReaderValue<TLorentzVector> genWPlus(reader, "genWPlus");
-      // ~TTreeReaderValue<int> genDecayMode(reader, "ttbarDecayMode");
+      TTreeReaderValue<int> genDecayMode(reader, "ttbarDecayMode");
    
    
       int iEv=0;
@@ -680,7 +710,7 @@ void run()
          }
          if (!bTag) rec_selection=false; // end reco baseline selection
          
-         if (*genDecayMode==0) pseudo_selection=false; //pseudo baseline selection
+         if (*genDecayMode_pseudo==0) pseudo_selection=false; //pseudo baseline selection
          
          if(rec_selection==false && pseudo_selection==false) continue;  // only proceed with events selected by one of the baseline selection (reco or pseudo)
          
@@ -697,7 +727,7 @@ void run()
             }
          }
          
-          //Get DeltaPhi between MET (or genMet or neutrino pT) and nearest Lepton
+         //Get DeltaPhi between MET (or genMet or neutrino pT) and nearest Lepton
          float dPhiMETnearLep=4; 
          for (TLorentzVector const lep : {p_l1,p_l2}){
             const float dPhi=MET->p.DeltaPhi(lep);
@@ -714,23 +744,75 @@ void run()
             if (std::abs(dPhi) < std::abs(dPhiPtNunearLep)) dPhiPtNunearLep=dPhi;
          }
          
+         //Get DeltaPhi between MET nearest/leading/farest (b) Jet and HT
+         float dPhiMETnearJet=4;
+         float dPhiMETfarJet=0;
+         float dPhiMETleadJet=4;
+         float dPhiMETlead2Jet=4;
+         float dPhiMetBJet=4;
+         float dPhiLep1Lep2=4;
+         float HT=0;
+         if (rec_selection){ 
+            for (tree::Jet const &jet : cjets) {
+               const float dPhi=MET->p.DeltaPhi(jet.p);
+               if (std::abs(dPhi) < std::abs(dPhiMETnearJet)) dPhiMETnearJet=dPhi;
+               if (std::abs(dPhi) > std::abs(dPhiMETfarJet)) dPhiMETfarJet=dPhi;
+               HT+=jet.p.Pt();
+            }
+            dPhiMETleadJet=MET->p.DeltaPhi(cjets[0].p);
+            dPhiMETlead2Jet=MET->p.DeltaPhi(cjets[1].p);
+            dPhiMetBJet=MET->p.DeltaPhi(BJets[0].p);
+            dPhiLep1Lep2=p_l1.DeltaPhi(p_l2);
+         }
+         
          //Fill minimal tree for TTbar resolution used in binning studies
-         if (ttBar_standard){
-            if (rec_selection && pseudo_selection) ttbar_res.Fill(met,neutrinoPair.Pt(),abs(dPhiMETnearLep),abs(dPhiPtNunearLep),lumi_weight*fEventWeight);
-            else if (rec_selection==false) ttbar_res.Fill(-1.,neutrinoPair.Pt(),-1.,abs(dPhiPtNunearLep),lumi_weight*fEventWeight);
-            else if (pseudo_selection==false) ttbar_res.Fill(met,-1.,abs(dPhiMETnearLep),-1.,lumi_weight*fEventWeight);
+         if (ttBar_standard || ttBar_dilepton){
+            minTree_MET=met;
+            minTree_PtNuNu=neutrinoPair.Pt();
+            minTree_PhiRec=abs(dPhiMETnearLep);
+            minTree_PhiGen=abs(dPhiPtNunearLep);
+            minTree_PhiMetNearJet=abs(dPhiMETnearJet);
+            minTree_PhiMetFarJet=abs(dPhiMETfarJet);
+            minTree_PhiMetLeadJet=abs(dPhiMETleadJet);
+            minTree_PhiMetLead2Jet=abs(dPhiMETlead2Jet);
+            minTree_PhiMetbJet=abs(dPhiMetBJet);
+            minTree_PhiLep1Lep2=abs(dPhiLep1Lep2);
+            minTree_METsig=MET->sig;
+            minTree_N=lumi_weight*fEventWeight;
+            minTree_runNo=*runNo;
+            minTree_lumNo=*lumNo;
+            minTree_evtNo=*evtNo;
+            minTree_genDecayMode=*genDecayMode;
+            minTree_genMet=genMet;
+            if (rec_selection==false) {
+               minTree_MET=-1.;
+               minTree_PhiRec=-1.;
+               minTree_PhiMetNearJet=-1.;
+               minTree_PhiMetFarJet=-1.;
+               minTree_PhiMetLeadJet=-1.;
+               minTree_PhiMetLead2Jet=-1.;
+               minTree_PhiMetbJet=-1.;
+               minTree_PhiMetbJet=-1.;
+               minTree_METsig=-1.;
+            }
+            else if (pseudo_selection==false) {
+               minTree_PtNuNu=-1.;
+               minTree_PhiGen=-1.;
+               minTree_genDecayMode=0.;
+               minTree_genMet=-1.;
+            }
+            // ~std::cout<<minTree_lumNo<<std::endl;
+            ttbar_res.Fill();
          }
          
          if(rec_selection==false) continue;  //fill the following histograms only with events selected by the reco baseline selection
          
          // Bjet and angular variables
          int nBjets=BJets.size();
-         float dPhiMetBJet=MET->p.DeltaPhi(BJets[0].p);
          float dPhiLep1BJet=p_l1.DeltaPhi(BJets[0].p);
          float dPhiLep2BJet=p_l2.DeltaPhi(BJets[0].p);
          float dPhiLep1MET=p_l1.DeltaPhi(MET->p);
          float dPhiLep2MET=p_l2.DeltaPhi(MET->p);
-         float dPhiLep1Lep2=p_l1.DeltaPhi(p_l2);
          float dR_Lep1Lep2=p_l1.DeltaR(p_l2);
          float dPhiMetLepSum=MET->p.DeltaPhi(p_l1+p_l2);
          
@@ -760,15 +842,6 @@ void run()
          dRNeutrinoLep1=genNeutrino->DeltaR(*genAntiLepton);
          dRNeutrinoLep2=genAntiNeutrino->DeltaR(*genLepton);
          
-         //Get DeltaPhi between MET and nearest Jet and get HT
-         float dPhiMETnearJet=4;
-         float HT=0;
-         for (tree::Jet const &jet : cjets){
-            const float dPhi=MET->p.DeltaPhi(jet.p);
-            if (std::abs(dPhi) < std::abs(dPhiMETnearJet)) dPhiMETnearJet=dPhi;
-            HT+=jet.p.Pt();
-         }
-         
          //Calculate genMET for DM scenario and SUSY scenarios (!!!Currently only neutrinos with pT above 10 GeV)
          TLorentzVector DMgenMET(0,0,0,0);
          for (auto const &genParticle : *genParticles){
@@ -797,6 +870,7 @@ void run()
          hs.fill("baseline/"+path_cat+"/pTlep1",p_l1.Pt());
          hs.fill("baseline/"+path_cat+"/pTlep2",p_l2.Pt());
          hs.fill("baseline/"+path_cat+"/dphi_metJet",abs(dPhiMETnearJet));
+         hs.fill("baseline/"+path_cat+"/dphi_metLeadJet",abs(dPhiMETleadJet));
          hs.fill("baseline/"+path_cat+"/dphi_metNearLep",abs(dPhiMETnearLep));
          hs.fill("baseline/"+path_cat+"/COSdphi_metNearLep",TMath::Cos(abs(dPhiMETnearLep)));
          hs.fill("baseline/"+path_cat+"/SINdphi_metNearLep",TMath::Sin(abs(dPhiMETnearLep)));
@@ -926,13 +1000,19 @@ void run()
       //Save ntuple for TTbar resolution used in binning studies
       if (ttBar_standard) {
          ttbar_res_saver.save(ttbar_res,"ttbar_res");
+         ttbar_res.Reset();
+      }
+      else if (ttBar_dilepton) {
+         ttbar_res_saver.save(ttbar_res,"ttbar_res_dilepton");
          ttbar_res_saver.closeFile();
       }
       
    } // dataset loop
    
    
-   std::vector<TString> samplesToCombine={"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","TTbar_diLepton","TTbar_madGraph","TTbar_madGraph150","TTbar_singleLepton",
+   // ~std::vector<TString> samplesToCombine={"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","TTbar_diLepton","TTbar_madGraph","TTbar_madGraph150","TTbar_singleLepton",
+      // ~"T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","ttZ_SM","ttH_SM"};
+   std::vector<TString> samplesToCombine={"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","TTbar_madGraph","TTbar_madGraph150",
       "T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","ttZ_SM","ttH_SM"};
    hs.combineFromSubsamples(samplesToCombine);
    hs2d.combineFromSubsamples(samplesToCombine);
@@ -949,9 +1029,9 @@ void run()
    can.SetLogy();
    // what to plot in which preselection
    std::map<TString,std::vector<TString>> msPresel_vVars={
-      {"baseline/ee/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline/emu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline/mumu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline/ee/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metLeadJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline/emu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_metLeadJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline/mumu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_metLeadJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
       {"baseline_Met200/ee/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
       {"baseline_Met200/emu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
       {"baseline_Met200/mumu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
