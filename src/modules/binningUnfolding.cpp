@@ -63,6 +63,7 @@ void run()
    TH1F dPhiMETbJet_badReso("dphi_metbJet"   ,";|#Delta#phi|(p_{T}^{miss},b jet);EventsBIN"           ,100,0,3.2);
    TH1F dPhiLep1Lep2_badReso("dphi_Lep1Lep2"   ,";|#Delta#phi|(l_1,l_2);EventsBIN"           ,100,0,3.2);
    TH1F METsig_badReso("METsig"   ,";METsig;EventsBIN"           ,100,0,200);
+   TH1F diffPuppi_badReso("diffPuppi"   ,";|PFp_{T}^{miss}-PUPPIp_{T}^{miss}|/H_{T};EventsBIN"           ,100,0,0.5);
    
    TH1F dPhiMETnearJet_goodReso("dphi_metnearJet_good"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet);EventsBIN"           ,100,0,3.2);
    TH1F dPhiMETfarJet_goodReso("dphi_metfarJet_good"   ,";|#Delta#phi|(p_{T}^{miss},farest jet);EventsBIN"           ,100,0,3.2);
@@ -71,6 +72,7 @@ void run()
    TH1F dPhiMETbJet_goodReso("dphi_metbJet_good"   ,";|#Delta#phi|(p_{T}^{miss},b jet);EventsBIN"           ,100,0,3.2);
    TH1F dPhiLep1Lep2_goodReso("dphi_Lep1Lep2_good"   ,";|#Delta#phi|(l_1,l_2);EventsBIN"           ,100,0,3.2);
    TH1F METsig_goodReso("METsig_good"   ,";METsig;EventsBIN"           ,100,0,200);
+   TH1F diffPuppi_goodReso("diffPuppi_good"   ,";|PFp_{T}^{miss}-PUPPIp_{T}^{miss}|/H_{T};EventsBIN"           ,100,0,0.5);
    
    
    // ~for(std::vector<float> met_bins : {met_bins1,met_bins2,met_bins3,met_bins4}){    //Test every possible combination of the binning defined above
@@ -108,7 +110,10 @@ void run()
          // ~TTreeReader reader("ttbar_res100.0/ttbar_res", &file);
          TFile file("~/top_analysis/framework/output/ttbar_res100.0.root","read");
          TTreeReader reader("ttbar_res100.0/ttbar_res_dilepton", &file);
+         // ~TFile file("~/top_analysis/framework/output/ttbar_res100.0.root","read");
+         // ~TTreeReader reader("ttbar_res100.0/ttbar_res_MadGraph", &file);
          TTreeReaderValue<float> MET   (reader, "MET");
+         // ~TTreeReaderValue<float> MET   (reader, "PuppiMET");
          TTreeReaderValue<float> PtNuNu   (reader, "PtNuNu");
          TTreeReaderValue<float> Phi_rec   (reader, "Phi_rec");
          TTreeReaderValue<float> Phi_gen   (reader, "Phi_gen");
@@ -125,6 +130,10 @@ void run()
          TTreeReaderValue<ULong64_t> evtNo   (reader, "evtNo");
          TTreeReaderValue<UInt_t> genDecayMode   (reader, "genDecayMode");
          TTreeReaderValue<float> genMET   (reader, "genMET");
+         TTreeReaderValue<float> PuppiMET   (reader, "PuppiMET");
+         TTreeReaderValue<float> HT_tree   (reader, "HT");
+         TTreeReaderValue<UInt_t> n_Interactions(reader, "n_Interactions");
+         
          
          
          while (reader.Next()){
@@ -139,7 +148,7 @@ void run()
                if (*MET>-1 && *Phi_rec>-1) eff_gen_recSom.Fill(*PtNuNu,*Phi_gen);
             }
             
-            if (*MET<met_bins4[0] || *PtNuNu<met_bins4[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
+            if (*MET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
             
             // ~if(*MET<60) *MET=-1;    //Additional cuts, which might solve problem of poor dPhi resolution
             // ~if(*PtNuNu<60) *PtNuNu=-1;
@@ -152,11 +161,16 @@ void run()
             // ~if(*dPhiMETnearJet<0.5) continue;
             // ~if(*dPhiMETleadJet>2.5 || *dPhiMETlead2Jet>2.5) continue;
             
-            if(*dPhiMETlead2Jet<0.8) continue;
-            if(*dPhiMETnearJet<0.8) continue;
+            // ~if(*dPhiMETlead2Jet<0.8) continue;
+            // ~if(*dPhiMETnearJet<0.8) continue;
             // ~if(*dPhiLep1Lep2<2.1) continue;
-            // ~if(*dPhiMETleadJet<0.6) continue;
+            // ~if(*dPhiMETleadJet<1.6) continue;
             // ~if(*dPhiMETbJet>2.2) continue;
+            
+            float HT=*HT_tree;
+            // ~if((abs(*MET-*PuppiMET)/HT)>0.05) continue;
+            // ~if(abs(*MET-*PuppiMET)>30) continue;
+            // ~if(*n_Interactions>35) continue;
             
             bin_gen=N_gen.Fill(*PtNuNu,*Phi_gen);
             bin_rec=N_rec.Fill(*MET,*Phi_rec);
@@ -175,13 +189,13 @@ void run()
             // ~phi_res[realBin_gen].Fill(*Phi_gen-*Phi_rec);
             
             
-            // ~if (realBin==11 && realBin_gen!=11 && abs(*MET-*genMET)>30) {
-            if (realBin==11 && realBin_gen!=11) {
+            if (realBin==11 && realBin_gen!=11 && abs(*MET-*PtNuNu)>100) {
+            // ~if (realBin==11 && realBin_gen!=11) {
                migration.Fill(*PtNuNu,*Phi_gen);
-               // ~std::cout<<"-------------------------------"<<std::endl;
-               // ~std::cout<<*runNo<<":"<<*lumNo<<":"<<*evtNo<<std::endl;
-               // ~std::cout<<*PtNuNu<<"   "<<*MET<<"   "<<*genMET<<std::endl;
-               // ~std::cout<<*Phi_gen<<"   "<<*Phi_rec<<std::endl;
+               std::cout<<"-------------------------------"<<std::endl;
+               std::cout<<*runNo<<":"<<*lumNo<<":"<<*evtNo<<std::endl;
+               std::cout<<"pT_NuNu="<<*PtNuNu<<"   "<<"MET="<<*MET<<"   "<<"genMET="<<*genMET<<"   "<<"puppiMET="<<*PuppiMET<<std::endl;
+               std::cout<<"phi_rec="<<*Phi_rec<<"   "<<"phi_gen="<<*Phi_gen<<std::endl;
                // ~std::cout<<*genDecayMode<<std::endl;
                // ~std::cout<<abs(3.14-*dPhiMETleadJet)<<std::endl;
                // ~std::cout<<abs(3.14-*dPhiMETlead2Jet)<<std::endl;
@@ -195,6 +209,7 @@ void run()
                dPhiMETbJet_badReso.Fill(*dPhiMETbJet);
                dPhiLep1Lep2_badReso.Fill(*dPhiLep1Lep2);
                METsig_badReso.Fill(*METsig);
+               diffPuppi_badReso.Fill(abs(*MET-*PuppiMET)/HT);
             }
             
             else if (realBin==11 && realBin_gen==11) {
@@ -205,6 +220,7 @@ void run()
                dPhiMETbJet_goodReso.Fill(*dPhiMETbJet);
                dPhiLep1Lep2_goodReso.Fill(*dPhiLep1Lep2);
                METsig_goodReso.Fill(*METsig);
+               diffPuppi_goodReso.Fill(abs(*MET-*PuppiMET)/HT);
             }
             
             
@@ -213,6 +229,7 @@ void run()
          
          // ~io::RootFileSaver saver(TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100),"binningUnfolding");
          io::RootFileSaver saver(TString::Format("binningUnfolding_dilepton%.1f.root",cfg.processFraction*100),"binningUnfolding");
+         // ~io::RootFileSaver saver(TString::Format("binningUnfolding_madgraph%.1f.root",cfg.processFraction*100),"binningUnfolding");
          
          TH2F stability=N_genrec;
          TH2F purity=N_genrec;
@@ -229,6 +246,7 @@ void run()
          std::vector<TFitResultPtr> r_met;
          std::vector<TFitResultPtr> r_phi;
          
+         
          TString Binning="Binning_Met"+std::to_string(numberBinningSchemeMet)+"_Phi"+std::to_string(numberBinningSchemePhi);
          for(int i=0;i<nBins;i++){
             r_met.push_back(met_res[i].Fit("gaus","SQ"));
@@ -237,26 +255,28 @@ void run()
             saver.save(phi_res[i],Binning+"/Resolution/phi_bin"+std::to_string(i+1));
          }
          
-         int i=0;
-         for(int y=1;y<=nBinsPhi;y++){
-            for(int x=1;x<=nBinsMet;x++){
-               std::cout<<"-------------Bin Number "<<i+1<<"----Width_MET="<<hist::getWidths(met_bins)[i%nBinsMet]<<"----Width_PHI="<<hist::getWidths(phi_bins)[i%nBinsPhi]<<"-------------"<<std::endl;
-               if(r_met[i]!=-1) std::cout<<"Res_MET="<<r_met[i]->Parameter(2)<<"+-"<<r_met[i]->ParError(2)<<std::endl;
-               if(r_phi[i]!=-1) std::cout<<"Res_PHI="<<r_phi[i]->Parameter(2)<<"+-"<<r_phi[i]->ParError(2)<<std::endl;
-               std::cout<<"Purity="<<purity.GetBinContent(x,y)<<std::endl;
-               std::cout<<"Stability="<<stability.GetBinContent(x,y)<<std::endl;
-               std::cout<<"N_Events="<<met_res[i].GetEntries()<<std::endl;
-               std::cout<<"N_DataEvents="<<Evt_gen.GetBinContent(x,y)<<std::endl;
-               
-               if(r_met[i]!=-1) hist_res_phi.SetBinContent(x,y,r_phi[i]->Parameter(2));
-               if(r_phi[i]!=-1) hist_res_met.SetBinContent(x,y,r_met[i]->Parameter(2));
-               
-               i++;
+         if (!r_met.empty() && !r_phi.empty()){
+            int i=0;
+            for(int y=1;y<=nBinsPhi;y++){
+               for(int x=1;x<=nBinsMet;x++){
+                  std::cout<<"-------------Bin Number "<<i+1<<"----Width_MET="<<hist::getWidths(met_bins)[i%nBinsMet]<<"----Width_PHI="<<hist::getWidths(phi_bins)[i%nBinsPhi]<<"-------------"<<std::endl;
+                  if(r_met[i]!=-1) std::cout<<"Res_MET="<<r_met[i]->Parameter(2)<<"+-"<<r_met[i]->ParError(2)<<std::endl;
+                  if(r_phi[i]!=-1) std::cout<<"Res_PHI="<<r_phi[i]->Parameter(2)<<"+-"<<r_phi[i]->ParError(2)<<std::endl;
+                  std::cout<<"Purity="<<purity.GetBinContent(x,y)<<std::endl;
+                  std::cout<<"Stability="<<stability.GetBinContent(x,y)<<std::endl;
+                  std::cout<<"N_Events="<<met_res[i].GetEntries()<<std::endl;
+                  std::cout<<"N_DataEvents="<<Evt_gen.GetBinContent(x,y)<<std::endl;
+                  
+                  if(r_met[i]!=-1) hist_res_phi.SetBinContent(x,y,r_phi[i]->Parameter(2));
+                  if(r_phi[i]!=-1) hist_res_met.SetBinContent(x,y,r_met[i]->Parameter(2));
+                  
+                  i++;
+               }
             }
          }
          
          std::vector<TString> z_axis={"stability","purity","efficiency","efficiency_RG","N_gen","N_rec","N_gen_rec","Evt_gen","Evt_rec","res_phi","res_met","migration"};
-         i=0;
+         int i=0;
          
          for(TH2F current_hist: {stability,purity,efficiency,efficiency_RG,N_gen,N_rec,N_genrec,Evt_gen,Evt_rec,hist_res_phi,hist_res_met,migration}){
             TCanvas can;
@@ -289,17 +309,17 @@ void run()
             i++;
          }
          
-         std::vector<TH1F> goodHists={dPhiMETnearJet_goodReso,dPhiMETfarJet_goodReso,dPhiMETleadJet_goodReso,dPhiMETlead2Jet_goodReso,dPhiMETbJet_goodReso,dPhiLep1Lep2_goodReso,METsig_goodReso};
-         std::vector<TH1F> badHists={dPhiMETnearJet_badReso,dPhiMETfarJet_badReso,dPhiMETleadJet_badReso,dPhiMETlead2Jet_badReso,dPhiMETbJet_badReso,dPhiLep1Lep2_badReso,METsig_badReso};
-         std::vector<TString> names={"dPhiMETnearJet","dPhiMETfarJet","dPhiMETleadJet","dPhiMETlead2Jet","dPhiMETbJet","dPhiLep1Lep2","METsig"};
+         std::vector<TH1F> goodHists={dPhiMETnearJet_goodReso,dPhiMETfarJet_goodReso,dPhiMETleadJet_goodReso,dPhiMETlead2Jet_goodReso,dPhiMETbJet_goodReso,dPhiLep1Lep2_goodReso,METsig_goodReso,diffPuppi_goodReso};
+         std::vector<TH1F> badHists={dPhiMETnearJet_badReso,dPhiMETfarJet_badReso,dPhiMETleadJet_badReso,dPhiMETlead2Jet_badReso,dPhiMETbJet_badReso,dPhiLep1Lep2_badReso,METsig_goodReso,diffPuppi_badReso};
+         std::vector<TString> names={"dPhiMETnearJet","dPhiMETfarJet","dPhiMETleadJet","dPhiMETlead2Jet","dPhiMETbJet","dPhiLep1Lep2","METsig","diffPuppi"};
          for (int i=0;i<goodHists.size();i++){
             TCanvas can;
             can.cd();
             
             // ~badHists[i].Rebin(4);
             // ~goodHists[i].Rebin(4);
-            badHists[i].Rebin(10);
-            goodHists[i].Rebin(10);
+            badHists[i].Rebin(5);
+            goodHists[i].Rebin(5);
                
             goodHists[i].Scale(1.0/(goodHists[i].Integral()));   //Normalize the hist to the integral
             badHists[i].Scale(1.0/(badHists[i].Integral()));

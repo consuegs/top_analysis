@@ -24,7 +24,11 @@ void run()
    TCanvas can;
    
    std::map<TString,std::vector<TString>> msPresel_vVars={
-      {"baseline/",{"met","met1000","metSig","mll","pTlep1","pTlep2","pTbJet","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metFarJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","METoverHT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline/",{"met","met1000","metSig","mll","pTlep1","pTlep2","etalep1","etalep2","pTbJet","etabJet","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet",
+         "dphi_metFarJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","njets","mt2","dR_Lep1Lep2","ST","HT",
+         "METoverHT","METoverSUMpt","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep",
+         "dphi_metLepsum","diff_met_Puppi","diff_met_NoHF","diff_met_Calo","diff_met_Raw","HTnormed_diff_met_Puppi","HTnormed_diff_met_NoHF",
+         "HTnormed_diff_met_Calo","HTnormed_diff_met_Raw","n_Interactions"}},
       {"genParticles/",{"pT_nunu","genMet","diff_ptNuNu_genMET","diff_Met_genMET","diff_Met_genMET_norm","diff_Met_genMET_normSUM","diff_ptNuNu_Met","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
       };
    
@@ -43,10 +47,12 @@ void run()
          hist_good=(TH1F*) histReader.read<TH1F>("goodMETRes/"+sPresel+sVar+"/TTbar_diLepton");
          hist_bad=(TH1F*) histReader.read<TH1F>("badMETRes/"+sPresel+sVar+"/TTbar_diLepton");
          
-         // ~hist_bad->Rebin(4);
-         // ~hist_good->Rebin(4);
-         hist_bad->Rebin(10);
-         hist_good->Rebin(10);
+         if (sVar!="njets" and sVar!="nBjets"){
+            // ~hist_bad->Rebin(4);
+            // ~hist_good->Rebin(4);
+            hist_bad->Rebin(10);
+            hist_good->Rebin(10);
+         }
             
          hist_good->Scale(1.0/(hist_good->Integral()));   //Normalize the hist to the integral
          hist_bad->Scale(1.0/(hist_bad->Integral()));
@@ -69,6 +75,8 @@ void run()
          gfx::LegendEntries legE;
          // ~legE.append(*hist_good,"good resolution (<0.3)","l");
          // ~legE.append(*hist_bad,"bad resolution (>0.3)","l");
+         // ~legE.append(*hist_good,"good resolution (<50)","l");
+         // ~legE.append(*hist_bad,"bad resolution (>50)","l");
          legE.append(*hist_good,"true","l");
          legE.append(*hist_bad,"migrated","l");
          TLegend leg=legE.buildLegend(.5,.65,0.75,.9,1);
@@ -77,15 +85,16 @@ void run()
          
          // ~TLatex label=gfx::cornerLabel("MET>120 GeV, dPhi>1.4",1);
          TLatex label=gfx::cornerLabel("MET>230 GeV, dPhi>1.4",1);
-         TLatex label2=gfx::cornerLabel("|#Delta#phi(met,near(2nd lead) jet)|>0.8",2);
+         // ~TLatex label=gfx::cornerLabel("All bins",1);
+         // ~TLatex label2=gfx::cornerLabel("|PFp_{T}^{miss}-PUPPIp_{T}^{miss}|/H_{T}<0.05",2);
          label.Draw();
-         label2.Draw();
+         // ~label2.Draw();
          
          can.RedrawAxis();
          // ~TString plotLoc=sPresel+"/"+sVar;
          TString plotLoc="METresolution/"+sPresel+"/"+sVar;
          saver.save(can,plotLoc,true,true);
-         if(sPresel=="baseline/")can.SaveAs(sVar+".pdf");
+         // ~if(sPresel=="baseline/")can.SaveAs(sVar+".pdf");
          can.Clear();
       }
    }

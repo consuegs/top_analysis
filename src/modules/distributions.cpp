@@ -76,6 +76,10 @@ void run()
    hs.addHist("baseline/emu/dphi_metLeadJet"   ,";|#Delta#phi|(p_{T}^{miss},leading jet);EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/mumu/dphi_metLeadJet"   ,";|#Delta#phi|(p_{T}^{miss},leading jet);EventsBIN"           ,100,0,3.2);
    
+   hs.addHist("baseline/ee/dphi_metLead2Jet"   ,";|#Delta#phi|(p_{T}^{miss},2nd leading jet);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/emu/dphi_metLead2Jet"   ,";|#Delta#phi|(p_{T}^{miss},2nd leading jet);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/mumu/dphi_metLead2Jet"   ,";|#Delta#phi|(p_{T}^{miss},2nd leading jet);EventsBIN"           ,100,0,3.2);
+   
    hs.addHist("baseline/ee/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/emu/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/mumu/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,100,0,3.2);
@@ -99,6 +103,10 @@ void run()
    hs.addHist("baseline/ee/dphi_bJetLep2"   ,";|#Delta#phi|(b Jet,l_{2});EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/emu/dphi_bJetLep2"   ,";|#Delta#phi|(b Jet,l_{2});EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/mumu/dphi_bJetLep2"   ,";|#Delta#phi|(b Jet,l_{2});EventsBIN"           ,100,0,3.2);
+   
+   hs.addHist("baseline/ee/dphi_bJetnearLep"   ,";|#Delta#phi|(b Jet,next l);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/emu/dphi_bJetnearLep"   ,";|#Delta#phi|(b Jet,next l);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline/mumu/dphi_bJetnearLep"   ,";|#Delta#phi|(b Jet,next l);EventsBIN"           ,100,0,3.2);
    
    hs.addHist("baseline/ee/dphi_metLep1"   ,";|#Delta#phi|(p_{T}^{miss},l_{1});EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline/emu/dphi_metLep1"   ,";|#Delta#phi|(p_{T}^{miss},l_{1});EventsBIN"           ,100,0,3.2);
@@ -265,6 +273,14 @@ void run()
    hs.addHist("baseline_Met200/emu/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline_Met200/mumu/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,100,0,3.2);
    
+   hs.addHist("baseline_Met200/ee/dphi_metLeadJet"   ,";|#Delta#phi|(p_{T}^{miss},leading jet);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline_Met200/emu/dphi_metLeadJet"   ,";|#Delta#phi|(p_{T}^{miss},leading jet);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline_Met200/mumu/dphi_metLeadJet"   ,";|#Delta#phi|(p_{T}^{miss},leading jet);EventsBIN"           ,100,0,3.2);
+   
+   hs.addHist("baseline_Met200/ee/dphi_metLead2Jet"   ,";|#Delta#phi|(p_{T}^{miss},2nd leading jet);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline_Met200/emu/dphi_metLead2Jet"   ,";|#Delta#phi|(p_{T}^{miss},2nd leading jet);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline_Met200/mumu/dphi_metLead2Jet"   ,";|#Delta#phi|(p_{T}^{miss},2nd leading jet);EventsBIN"           ,100,0,3.2);
+   
    hs.addHist("baseline_Met200/ee/COSdphi_metNearLep"   ,";cos(|#Delta#phi|(p_{T}^{miss},nearest l));EventsBIN"           ,100,-1.,1);
    hs.addHist("baseline_Met200/emu/COSdphi_metNearLep"   ,";cos(|#Delta#phi|(p_{T}^{miss},nearest l));EventsBIN"           ,100,-1.,1);
    hs.addHist("baseline_Met200/mumu/COSdphi_metNearLep"   ,";cos(|#Delta#phi|(p_{T}^{miss},nearest l));EventsBIN"           ,100,-1.,1);
@@ -284,6 +300,10 @@ void run()
    hs.addHist("baseline_Met200/ee/dphi_bJetLep2"   ,";|#Delta#phi|(b Jet,l_{2});EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline_Met200/emu/dphi_bJetLep2"   ,";|#Delta#phi|(b Jet,l_{2});EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline_Met200/mumu/dphi_bJetLep2"   ,";|#Delta#phi|(b Jet,l_{2});EventsBIN"           ,100,0,3.2);
+   
+   hs.addHist("baseline_Met200/ee/dphi_bJetnearLep"   ,";|#Delta#phi|(b Jet,next l);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline_Met200/emu/dphi_bJetnearLep"   ,";|#Delta#phi|(b Jet,next l);EventsBIN"           ,100,0,3.2);
+   hs.addHist("baseline_Met200/mumu/dphi_bJetnearLep"   ,";|#Delta#phi|(b Jet,next l);EventsBIN"           ,100,0,3.2);
    
    hs.addHist("baseline_Met200/ee/dphi_metLep1"   ,";|#Delta#phi|(p_{T}^{miss},l_{1});EventsBIN"           ,100,0,3.2);
    hs.addHist("baseline_Met200/emu/dphi_metLep1"   ,";|#Delta#phi|(p_{T}^{miss},l_{1});EventsBIN"           ,100,0,3.2);
@@ -517,8 +537,8 @@ void run()
    
    //Ntuple and file to save minimal ttbar tree used for binning studies
    float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet, minTree_PhiMetbJet, minTree_PhiLep1Lep2,
-   minTree_METsig, minTree_N, minTree_genMet;
-   UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode;
+   minTree_METsig, minTree_N, minTree_genMet, minTree_PuppiMet, minTree_HT;
+   UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions;
    ULong64_t minTree_evtNo;
    io::RootFileSaver ttbar_res_saver(TString::Format("ttbar_res%.1f.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100));
    TTree ttbar_res("ttbar_res","ttbar_res");
@@ -539,6 +559,9 @@ void run()
    ttbar_res.Branch("evtNo",&minTree_evtNo,"evtNo/l");
    ttbar_res.Branch("genDecayMode",&minTree_genDecayMode,"genDecayMode/i");
    ttbar_res.Branch("genMET",&minTree_genMet,"genMET/f");
+   ttbar_res.Branch("PuppiMET",&minTree_PuppiMet,"PuppiMET/f");
+   ttbar_res.Branch("HT",&minTree_HT,"HT/f");
+   ttbar_res.Branch("n_Interactions",&minTree_n_Interactions,"n_Interactions/i");
    
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
@@ -574,6 +597,10 @@ void run()
       //Check if current sample is TTbar madGraph (has extra genMet>150 part)
       bool ttBar_madGraph=false;
       if (dss.datasetName=="TTbar_madGraph") ttBar_madGraph=true;
+      
+      //Check if current sample is TTbar madGraph high MET
+      bool ttBar_madGraph150=false;
+      if (dss.datasetName=="TTbar_madGraph150") ttBar_madGraph150=true;
 
       
       //Check if current sample is SUSY scenario
@@ -597,6 +624,11 @@ void run()
       TTreeReaderValue<tree::MET> GENMET(reader, "met_gen");
       TTreeReaderValue<tree::MET> MET_JESu(reader, "met_JESu");
       TTreeReaderValue<tree::MET> MET_JESd(reader, "met_JESd");
+      TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
+      TTreeReaderValue<tree::MET> MET_NoHF(reader, "metNoHF");
+      TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
+      TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
+      TTreeReaderValue<int> n_Interactions(reader, "true_nPV");
       TTreeReaderValue<float> HTgen(reader, "genHt");
       TTreeReaderValue<bool> is_ee   (reader, "ee");
       TTreeReaderValue<bool> is_emu   (reader, "emu");
@@ -766,7 +798,7 @@ void run()
          }
          
          //Fill minimal tree for TTbar resolution used in binning studies
-         if (ttBar_standard || ttBar_dilepton){
+         if (ttBar_standard || ttBar_dilepton || ttBar_madGraph150 || ttBar_madGraph){
             minTree_MET=met;
             minTree_PtNuNu=neutrinoPair.Pt();
             minTree_PhiRec=abs(dPhiMETnearLep);
@@ -784,6 +816,9 @@ void run()
             minTree_evtNo=*evtNo;
             minTree_genDecayMode=*genDecayMode;
             minTree_genMet=genMet;
+            minTree_PuppiMet=MET_Puppi->p.Pt();
+            minTree_HT=HT;
+            minTree_n_Interactions=*n_Interactions;
             if (rec_selection==false) {
                minTree_MET=-1.;
                minTree_PhiRec=-1.;
@@ -794,12 +829,15 @@ void run()
                minTree_PhiMetbJet=-1.;
                minTree_PhiMetbJet=-1.;
                minTree_METsig=-1.;
+               minTree_PuppiMet=-1.;
+               minTree_HT=-1.;
             }
             else if (pseudo_selection==false) {
                minTree_PtNuNu=-1.;
                minTree_PhiGen=-1.;
                minTree_genDecayMode=0.;
                minTree_genMet=-1.;
+               minTree_n_Interactions=0;
             }
             // ~std::cout<<minTree_lumNo<<std::endl;
             ttbar_res.Fill();
@@ -811,6 +849,7 @@ void run()
          int nBjets=BJets.size();
          float dPhiLep1BJet=p_l1.DeltaPhi(BJets[0].p);
          float dPhiLep2BJet=p_l2.DeltaPhi(BJets[0].p);
+         float dphi_bJetnearLep=std::min(abs(dPhiLep1BJet),abs(dPhiLep2BJet));
          float dPhiLep1MET=p_l1.DeltaPhi(MET->p);
          float dPhiLep2MET=p_l2.DeltaPhi(MET->p);
          float dR_Lep1Lep2=p_l1.DeltaR(p_l2);
@@ -871,12 +910,14 @@ void run()
          hs.fill("baseline/"+path_cat+"/pTlep2",p_l2.Pt());
          hs.fill("baseline/"+path_cat+"/dphi_metJet",abs(dPhiMETnearJet));
          hs.fill("baseline/"+path_cat+"/dphi_metLeadJet",abs(dPhiMETleadJet));
+         hs.fill("baseline/"+path_cat+"/dphi_metLead2Jet",abs(dPhiMETlead2Jet));
          hs.fill("baseline/"+path_cat+"/dphi_metNearLep",abs(dPhiMETnearLep));
          hs.fill("baseline/"+path_cat+"/COSdphi_metNearLep",TMath::Cos(abs(dPhiMETnearLep)));
          hs.fill("baseline/"+path_cat+"/SINdphi_metNearLep",TMath::Sin(abs(dPhiMETnearLep)));
          hs.fill("baseline/"+path_cat+"/dphi_metBJet",abs(dPhiMetBJet));
          hs.fill("baseline/"+path_cat+"/dphi_bJetLep1",abs(dPhiLep1BJet));
          hs.fill("baseline/"+path_cat+"/dphi_bJetLep2",abs(dPhiLep2BJet));
+         hs.fill("baseline/"+path_cat+"/dphi_bJetnearLep",dphi_bJetnearLep);
          hs.fill("baseline/"+path_cat+"/dphi_metLep1",abs(dPhiLep1MET));
          hs.fill("baseline/"+path_cat+"/dphi_metLep2",abs(dPhiLep2MET));
          hs.fill("baseline/"+path_cat+"/dphi_metLepsum",abs(dPhiMetLepSum));
@@ -936,11 +977,14 @@ void run()
             hs.fill("baseline_Met200/"+path_cat+"/pTlep2",p_l2.Pt());
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metJet",abs(dPhiMETnearJet));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metNearLep",abs(dPhiMETnearLep));
+            hs.fill("baseline_Met200/"+path_cat+"/dphi_metLeadJet",abs(dPhiMETleadJet));
+            hs.fill("baseline_Met200/"+path_cat+"/dphi_metLead2Jet",abs(dPhiMETlead2Jet));
             hs.fill("baseline_Met200/"+path_cat+"/COSdphi_metNearLep",TMath::Cos(abs(dPhiMETnearLep)));
             hs.fill("baseline_Met200/"+path_cat+"/SINdphi_metNearLep",TMath::Sin(abs(dPhiMETnearLep)));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metBJet",abs(dPhiMetBJet));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_bJetLep1",abs(dPhiLep1BJet));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_bJetLep2",abs(dPhiLep2BJet));
+            hs.fill("baseline_Met200/"+path_cat+"/dphi_bJetnearLep",dphi_bJetnearLep);
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metLep1",abs(dPhiLep1MET));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metLep2",abs(dPhiLep2MET));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metLepsum",abs(dPhiMetLepSum));
@@ -1002,6 +1046,10 @@ void run()
          ttbar_res_saver.save(ttbar_res,"ttbar_res");
          ttbar_res.Reset();
       }
+      else if (ttBar_madGraph150) {
+         ttbar_res_saver.save(ttbar_res,"ttbar_res_MadGraph");
+         ttbar_res.Reset();
+      }
       else if (ttBar_dilepton) {
          ttbar_res_saver.save(ttbar_res,"ttbar_res_dilepton");
          ttbar_res_saver.closeFile();
@@ -1029,12 +1077,12 @@ void run()
    can.SetLogy();
    // what to plot in which preselection
    std::map<TString,std::vector<TString>> msPresel_vVars={
-      {"baseline/ee/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metLeadJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline/emu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_metLeadJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline/mumu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_metLeadJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline_Met200/ee/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline_Met200/emu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline_Met200/mumu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline/ee/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline/emu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline/mumu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metBJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline_Met200/ee/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline_Met200/emu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline_Met200/mumu/",{"met","met1000","mll","pTlep1","pTlep2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
       {"genParticles/ee/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
       {"genParticles/emu/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
       {"genParticles/mumu/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
