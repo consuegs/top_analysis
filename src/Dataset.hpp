@@ -56,7 +56,8 @@ public:
    std::vector<Datasubset> getDatasubsets(std::vector<TString> dsNames) const;
    Dataset    getDataset(TString const &dsName) const;
    Datasubset getDatasubset(TString const &dssName) const;
-   std::vector<std::string> getDatasetNames() const;
+   // ~std::vector<std::string> getDatasetNames() const;
+   std::vector<TString> getDatasetNames() const;
    std::vector<std::string> getDatasubsetNames() const;
    std::vector<std::string> getDatasubsetNames(std::vector<TString> dsNames) const;
    TString getLabel(TString const &dsName) const;

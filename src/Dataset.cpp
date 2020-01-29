@@ -235,10 +235,18 @@ Datasubset DatasetCollection::getDatasubset(TString const &dssName) const
    return mDatasubsets_.at(dssName.Data());
 }
 
-std::vector<std::string> DatasetCollection::getDatasetNames() const
+// ~std::vector<std::string> DatasetCollection::getDatasetNames() const
+// ~{
+   // ~std::vector<std::string> v;
+   // ~for (auto ds: mDatasubsets_){
+      // ~v.push_back(ds.first);
+   // ~}
+   // ~return v;
+// ~}
+std::vector<TString> DatasetCollection::getDatasetNames() const
 {
-   std::vector<std::string> v;
-   for (auto ds: mDatasubsets_){
+   std::vector<TString> v;
+   for (auto ds: mDatasets_){
       v.push_back(ds.first);
    }
    return v;
