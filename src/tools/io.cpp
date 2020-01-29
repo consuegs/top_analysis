@@ -45,12 +45,14 @@ void io::ensurePathForFile(TString fileName)
  * class RootFileSaver
  ******************************************************************************/
 
-io::RootFileSaver::RootFileSaver(TString rootFileName,TString internalPath,bool lumiText)
+io::RootFileSaver::RootFileSaver(TString rootFileName,TString internalPath,bool lumiText,bool standardOutputDirectory)
    : fName_(rootFileName)
-   , fPath_(CMAKE_SOURCE_DIR+TString::Format("/%s/",cfg.outputDirectory.Data())+fName_)
+   // ~, fPath_(CMAKE_SOURCE_DIR+TString::Format("/%s/",cfg.outputDirectory.Data())+fName_)
    , intPath_(internalPath)
    , bLumiText_(lumiText)
 {
+   if (standardOutputDirectory) fPath_=CMAKE_SOURCE_DIR+TString::Format("/%s/",cfg.outputDirectory.Data())+fName_;
+   else fPath_=fName_;
    ensurePathForFile(fPath_);
    file_ = new TFile(fPath_,"update");
 }
