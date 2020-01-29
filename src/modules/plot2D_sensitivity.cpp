@@ -71,9 +71,10 @@ void run()
    std::vector<float> met_bins3={0,70,140,250,400};
    std::vector<float> phi_bins3={0,0.4,0.8,1.2,3.14};
    
-   // ~std::vector<float> met_bins4={0,80,160,260,400};
    std::vector<float> met_bins4={0,60,120,230,400};
    std::vector<float> phi_bins4={0,0.7,1.4,3.14};
+   // ~std::vector<float> met_bins4={0,400};
+   // ~std::vector<float> phi_bins4={0,3.14};
    
    //Used for names in the savin process
    int numberBinningSchemeMet=1;
@@ -81,6 +82,8 @@ void run()
    
    for(std::vector<float> met_bins : {met_bins1,met_bins2,met_bins3,met_bins4}){
       for(std::vector<float> phi_bins : {phi_bins1,phi_bins2,phi_bins3,phi_bins4}){
+   // ~for(std::vector<float> met_bins : {met_bins4}){
+      // ~for(std::vector<float> phi_bins : {phi_bins4}){
                
          for (TString bkgSample :{"SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttZ_SM","ttH_SM"}) {     //Add all SM backgrounds except ttbar
             add_Categories("2d_MetVSdPhiMetNearLep/"+bkgSample,histReader,temp_hist);
@@ -125,16 +128,20 @@ void run()
                sensitivity.GetYaxis()->SetLabelSize(0.04);
                sensitivity.GetXaxis()->SetLabelSize(0.04);
                sensitivity.GetZaxis()->SetLabelSize(0.04);
+               sensitivity.GetZaxis()->SetLabelOffset(0.02);
                if (sensitivity_type=="SplusB") sensitivity.GetZaxis()->SetTitle("S/(S+B)");
                else if (sensitivity_type=="sqrtB") sensitivity.GetZaxis()->SetTitle("S/#sqrt{B}");
                
-               // ~sensitivity.SetMaximum(1.0);
+               sensitivity.SetMaximum(2.0);
                sensitivity.SetStats(false);
-               sensitivity.Draw("colz");
+               sensitivity.SetMarkerColor(kRed);
+               sensitivity.SetMarkerSize(2.5);
+               sensitivity.Draw("colz text");
+               // ~sensitivity.Draw("colz");
                
-               signal.SetMarkerColor(kRed);
-               signal.SetMarkerSize(1.5);
-               signal.Draw("same text");
+               // ~signal.SetMarkerColor(kRed);
+               // ~signal.SetMarkerSize(2.5);
+               // ~signal.Draw("same text");
                
                TString cat_label="all";
                TString labelString=cat_label+"    "+signalSample;
@@ -152,6 +159,7 @@ void run()
          int nTotBins=(met_bins.size()-1)*(phi_bins.size()-1);
          Float_t bin_ratios[nTotBins][7];
          int j=0;
+         SMbkg.Add(&ttbar);
          for (TString bkgSample :{"SingleTop","DrellYan","ttZ_SM","ttH_SM","WJetsToLNu","Diboson","TTbar"}) {
             TH2F temp;
             if (bkgSample=="Diboson"){    //If diboson add samples
@@ -170,7 +178,6 @@ void run()
             
             temp=hist::rebinned(temp,met_bins,phi_bins);    //Rebin following the current binning scheme
             
-            
             std::vector<float> ratios=get_Ratio(temp,SMbkg);      //Get ratios needed for the pie charts
             for (int i=0;i<int(ratios.size());i++){
                bin_ratios[i][j]=ratios[i];
@@ -179,7 +186,7 @@ void run()
          }
          
          //Plot pie charts with and without ttbar
-         TCanvas can;
+         TCanvas can("","",300,300);
          TCanvas can_noTTbar;
          can.Divide(met_bins.size()-1,phi_bins.size()-1);
          can_noTTbar.Divide(met_bins.size()-1,phi_bins.size()-1);
@@ -189,18 +196,25 @@ void run()
             Float_t vals[7];
             for (int j=0;j<7;j++){
                vals[j]= bin_ratios[i][j];
+               std::cout<<vals[j]<<std::endl;
             }
             TString binName="Bin"+std::to_string(i+1);
             TPie *pie1 = new TPie("pie1",binName,7,vals,colors);
             
             pie1->GetSlice(0)->SetTitle("SingleTop");
             pie1->GetSlice(1)->SetTitle("DrellYan");
-            pie1->GetSlice(2)->SetTitle("ttZ");
-            pie1->GetSlice(3)->SetTitle("ttH");
-            pie1->GetSlice(4)->SetTitle("W+Jets");
-            pie1->GetSlice(5)->SetTitle("Diboson");
+            // ~pie1->GetSlice(2)->SetTitle("ttZ");
+            // ~pie1->GetSlice(3)->SetTitle("ttH");
+            // ~pie1->GetSlice(4)->SetTitle("W+Jets");
+            // ~pie1->GetSlice(5)->SetTitle("Diboson");
+            pie1->GetSlice(2)->SetTitle("");
+            pie1->GetSlice(3)->SetTitle("");
+            pie1->GetSlice(4)->SetTitle("");
+            pie1->GetSlice(5)->SetTitle("");
             pie1->GetSlice(6)->SetTitle("TTbar");
             pie1->SetLabelsOffset(-.2);
+            pie1->SetLabelFormat("%txt(%perc)");
+            pie1->SetRadius(.3);
             
             can.cd(nTotBins-i+fix[(nTotBins-i)%(met_bins.size()-1)]);
             
