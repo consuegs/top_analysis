@@ -101,6 +101,7 @@ void run()
       hs.addHist(selection+"genParticles/dR_NeutrinoLep"   ,";|#Delta R|_{gen}(#nu,l);EventsBIN"           ,100,0,6);
       hs.addHist(selection+"genParticles/pTtop1"   ,";p_{T}^{gen}(t_{1});EventsBIN"           ,100,0,600);   
       hs.addHist(selection+"genParticles/pTtop2"   ,";p_{T}^{gen}(t_{2});EventsBIN"           ,100,0,600);
+      hs.addHist(selection+"genParticles/dphi_WW"   ,";|#Delta#phi|_{gen}(W,W);EventsBIN"           ,100,0,4);
    }
 
    
@@ -423,6 +424,7 @@ void run()
       hs.fill(selection+"/genParticles/dR_NeutrinoLep",abs(dRNeutrinoLep2));
       hs.fill(selection+"/genParticles/pTtop1",pT_top1);
       hs.fill(selection+"/genParticles/pTtop2",pT_top2);
+      hs.fill(selection+"/genParticles/dphi_WW",genWMinus->DeltaPhi(*genWPlus));
             
    }// evt loop
    io::log<<"";
@@ -451,14 +453,14 @@ void run()
          "COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum","diff_met_Puppi","diff_met_NoHF","diff_met_Calo","diff_met_Raw",
          "HTnormed_diff_met_Puppi","HTnormed_diff_met_NoHF","HTnormed_diff_met_Calo","HTnormed_diff_met_Raw","n_Interactions"}},
       {"goodMETRes/genParticles/",{"pT_nunu","genMet","diff_ptNuNu_genMET","diff_Met_genMET","diff_Met_genMET_norm","diff_Met_genMET_normSUM","diff_ptNuNu_Met",
-         "diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
+         "diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","dphi_WW"}},
       {"badMETRes/baseline/",{"met","met1000","metSig","mll","pTlep1","pTlep2","etalep1","etalep2","pTbJet","etabJet","dphi_metJet","dphi_metLeadJet",
          "dphi_metLead2Jet","dphi_metFarJet","dphi_metBJet","dphi_bJetLep1","dphi_bJetLep2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","njets","mt2",
          "dR_Lep1Lep2","ST","HT","METoverHT","METoverSUMpt","sum_STHT","mt_MetLep1","mt_MetLep2","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep",
          "COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum","diff_met_Puppi","diff_met_NoHF","diff_met_Calo","diff_met_Raw",
          "HTnormed_diff_met_Puppi","HTnormed_diff_met_NoHF","HTnormed_diff_met_Calo","HTnormed_diff_met_Raw","n_Interactions"}},
       {"badMETRes/genParticles/",{"pT_nunu","genMet","diff_ptNuNu_genMET","diff_Met_genMET","diff_Met_genMET_norm","diff_Met_genMET_normSUM","diff_ptNuNu_Met",
-         "diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
+         "diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","dphi_WW"}},
       };
    
    // Save 1d histograms
