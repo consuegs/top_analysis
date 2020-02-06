@@ -24,13 +24,14 @@ public:
       //~ TString label;
       //~ int color;
    //~ } efake;
-   //~ struct {
-      //~ float Vg,e_Vg;
-      //~ float GJ,e_GJ;
-      //~ float rho;
-      //~ float uncert_Vgamma;     
-      //~ float uncert_gammaJ;
-   //~ } sf; // scale factors
+   struct {
+      // ~float Vg,e_Vg;
+      // ~float GJ,e_GJ;
+      // ~float rho;
+      // ~float uncert_Vgamma;     
+      // ~float uncert_gammaJ;
+      float met_sf;
+   } sf; // scale factors
 
    TString treeVersion;
    TString treeName;
