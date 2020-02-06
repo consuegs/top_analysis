@@ -47,6 +47,10 @@ void run()
 {
    std::vector<std::string> vsDatasubsets(cfg.datasets.getDatasubsetNames());
    
+   float met_sf = cfg.sf.met_sf;
+   TString met_sf_string="";
+   if (met_sf!=1.0) met_sf_string="_SF"+std::to_string(met_sf);
+   
    hist::Histograms<TH1F> hs(vsDatasubsets);    //Define histograms in the following
    
    for(TString selection:{"baseline","baseline_Met200","baseline_Met400"}){ //Reco 1D Histograms
@@ -434,7 +438,7 @@ void run()
    minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_genMet, minTree_PuppiMet, minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep;
    UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions;
    ULong64_t minTree_evtNo;
-   io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res%.1f.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
+   io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res"+met_sf_string+"%.1f.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
    TTree ttbar_res("ttbar_res","ttbar_res");
    ttbar_res.Branch("MET",&minTree_MET,"MET/f");
    ttbar_res.Branch("PtNuNu",&minTree_PtNuNu,"PtNuNu/f");
@@ -588,7 +592,7 @@ void run()
          hs.setFillWeight(fEventWeight);
          hs2d.setFillWeight(fEventWeight);
          
-         float const met=MET->p.Pt();
+         float met=MET->p.Pt();
          float const genMet=GENMET->p.Pt();
          
          //Booleans for reco and pseudo selection
@@ -649,6 +653,9 @@ void run()
          if (*genDecayMode_pseudo==0) pseudo_selection=false; //pseudo baseline selection
          
          if(rec_selection==false && pseudo_selection==false) continue;  // only proceed with events selected by one of the baseline selection (reco or pseudo)
+         
+         //Scale measured met by met_sf from config
+         met=met_sf*met;
          
          // Get pT of Neutrino Pair, which is further changed in case of BSM scenarios!!
          TLorentzVector neutrinoPair(0,0,0,0);
@@ -1092,7 +1099,7 @@ void run()
    samplesToCombine.push_back("TTbar_madGraphCOMB");
    
    //Plotting part 1D
-   io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),TString::Format("distributions%.1f",cfg.processFraction*100));
+   io::RootFileSaver saver(TString::Format("plots"+met_sf_string+"%.1f.root",cfg.processFraction*100),TString::Format("distributions%.1f",cfg.processFraction*100));
    
    TCanvas can;
    can.SetLogy();
@@ -1159,7 +1166,7 @@ void run()
    // ~}
    
    // Save 1d histograms
-   io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),false);
+   io::RootFileSaver saver_hist(TString::Format("histograms"+met_sf_string+"_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),false);
    saveHistograms(msPresel_vVars,saver_hist,hs,samplesToCombine);
    
    //Plotting part 2D
