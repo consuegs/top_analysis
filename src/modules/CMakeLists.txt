@@ -13,6 +13,8 @@ set(MODULES
   plot2D_sensitivity_MT
   binningUnfolding
   binningUnfolding_MT
+  scaleFactorUnfolding
+  plot_scaleFactorUnfolding
   plot_response
   compare_pseudoGen
   diff_dPhiResolution
