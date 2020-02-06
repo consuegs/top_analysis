@@ -9,6 +9,7 @@
 #include <TFile.h>
 #include <TF1.h>
 #include <TF2.h>
+#include <TProfile.h>
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <TColor.h>
@@ -24,6 +25,7 @@ Config const &cfg=Config::get();
 extern "C"
 void run()
 {
+   double scaleFactor = 1.0;
    
    std::vector<float> met_bins1={0,100,200,300,400};
    std::vector<float> phi_bins1={0,0.8,1.6,2.4,3.2};
@@ -36,6 +38,8 @@ void run()
    
    std::vector<float> met_bins4={0,60,120,230,400};
    std::vector<float> phi_bins4={0,0.7,1.4,3.14};
+   // ~std::vector<float> met_bins4={40,60,90,120,230,400};
+   // ~std::vector<float> phi_bins4={0,0.7,1.4,3.14};
    
    TH2F N_gen;
    TH2F N_rec;
@@ -54,6 +58,12 @@ void run()
    
    int numberBinningSchemeMet=1;
    int numberBinningSchemePhi=1;
+   
+   float diffMET=0.;
+   float diffPHI=0.;
+   
+   float diffMET_normed=0.;
+   float diffPHI_normed=0.;
    
    TH1F dPhiMETnearJet_badReso("dphi_metnearJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet);EventsBIN"           ,100,0,3.2);
    TH1F dPhiMETfarJet_badReso("dphi_metfarJet"   ,";|#Delta#phi|(p_{T}^{miss},farest jet);EventsBIN"           ,100,0,3.2);
@@ -82,6 +92,8 @@ void run()
    TH1F recoDistributions("recoDistributions",";binNumber;EventsBIN",48,-0.5,47.5);
    TH2F reco2D=hist::fromWidths_2d("reco2D",";p_{T}^{miss}(GeV);|#Delta#phi|(p_{T}^{miss},nearest l);",met_bins_unfold,hist::getWidths(met_bins_unfold),phi_bins_unfold,hist::getWidths(phi_bins_unfold));
    
+   //Hist for METdiff vs. measured MET
+   TH2F METdiff("METdiff_MET",";p_{T}^{miss} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-p_{T}^{miss})/p_{T}^{miss}",1000,0,400,600,-1,3);
    
    
    // ~for(std::vector<float> met_bins : {met_bins1,met_bins2,met_bins3,met_bins4}){    //Test every possible combination of the binning defined above
@@ -103,34 +115,33 @@ void run()
          }
          
          
-         // ~N_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         // ~N_rec=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         // ~N_genrec=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         N_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         N_rec=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         N_genrec=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
-         // ~Evt_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         // ~Evt_rec=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         Evt_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         Evt_rec=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
-         // ~eff_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         // ~eff_gen_recSom=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         eff_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         eff_gen_recSom=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
-         // ~migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         N_gen=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         N_rec=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         N_genrec=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         // ~N_gen=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         // ~N_rec=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         // ~N_genrec=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
-         Evt_gen=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         Evt_rec=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         // ~Evt_gen=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         // ~Evt_rec=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
-         eff_gen=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         eff_gen_recSom=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         // ~eff_gen=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         // ~eff_gen_recSom=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
-         migration=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         // ~migration=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
          // ~TString sampleName="";
          TString sampleName="dilepton";
          // ~TString sampleName="MadGraph";
          // ~TString sampleName="T2tt_650_350";
-         // ~TFile file("~/top_analysis/framework/output/ttbar_res100.0.root","read");
          TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0.root","read");
          TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/ttbar_res_"+sampleName, &file);
          
@@ -138,11 +149,11 @@ void run()
          TTreeReaderValue<float> MET   (reader, "MET");
          // ~TTreeReaderValue<float> MET   (reader, "PuppiMET");
          TTreeReaderValue<float> PtNuNu_true   (reader, "PtNuNu");
-         // ~TTreeReaderValue<float> PtNuNu   (reader, "PtNuNu");
-         TTreeReaderValue<float> PtNuNu   (reader, "genMET");
+         TTreeReaderValue<float> PtNuNu   (reader, "PtNuNu");
+         // ~TTreeReaderValue<float> PtNuNu   (reader, "genMET");
          TTreeReaderValue<float> Phi_rec   (reader, "Phi_rec");
-         // ~TTreeReaderValue<float> Phi_gen   (reader, "Phi_NuNu");
-         TTreeReaderValue<float> Phi_gen   (reader, "Phi_gen");
+         TTreeReaderValue<float> Phi_gen   (reader, "Phi_NuNu");
+         // ~TTreeReaderValue<float> Phi_gen   (reader, "Phi_gen");
          TTreeReaderValue<float> dPhiMETnearJet   (reader, "dPhiMETnearJet");
          TTreeReaderValue<float> dPhiMETfarJet   (reader, "dPhiMETfarJet");
          TTreeReaderValue<float> dPhiMETleadJet   (reader, "dPhiMETleadJet");
@@ -167,6 +178,11 @@ void run()
          
          while (reader.Next()){
             
+            diffMET=*PtNuNu-*MET;//Save difference befor overflow handling
+            diffPHI=*Phi_gen-*Phi_rec;
+            diffMET_normed=diffMET/(*MET);
+            diffPHI_normed=diffPHI/(*Phi_rec);
+            
             if(*MET>=met_bins.back()) *MET=met_bins.back()-0.01;     //Handel overflow correctly
             if(*PtNuNu>=met_bins.back()) *PtNuNu=met_bins.back()-0.01;
             if(*Phi_rec>=phi_bins.back()) *Phi_rec=phi_bins.back()-0.01;
@@ -177,6 +193,8 @@ void run()
                if (*MET>-1 && *Phi_rec>-1) eff_gen_recSom.Fill(*PtNuNu,*Phi_gen);
             }
             
+            if(*genDecayMode>3) continue;    //Remove tau events
+            
             if (*MET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
             
             // ~if(*MET<60) *MET=-1;    //Additional cuts, which might solve problem of poor dPhi resolution
@@ -185,7 +203,6 @@ void run()
             // ~if(*dPhiMETnearJet>0.5) continue;
             // ~if(*METsig<80.) continue;
             
-            if(*genDecayMode>3) continue;    //Remove tau events
             // ~if(*dPhiMETfarJet>2.64 || *dPhiMETnearJet<0.5) continue;  //Remove Events with met back to back/close with jet
             // ~if(*dPhiMETnearJet<0.5) continue;
             // ~if(*dPhiMETleadJet>2.5 || *dPhiMETlead2Jet>2.5) continue;
@@ -201,6 +218,11 @@ void run()
             // ~if(abs(*MET-*PuppiMET)>30) continue;
             // ~if(*n_Interactions>35) continue;
             
+            ///////////////////////////
+            /////Ptmiss Scale Factor///
+            ///////////////////////////
+            *MET=scaleFactor * *MET;
+            
             bin_gen=N_gen.Fill(*PtNuNu,*Phi_gen);
             bin_rec=N_rec.Fill(*MET,*Phi_rec);
             
@@ -212,8 +234,10 @@ void run()
             int realBin=bin_rec-((bin_rec/(nBinsMet+2)-1)*2+nBinsMet+3);   //Take into account over and underflow bin counting
             int realBin_gen=bin_gen-((bin_gen/(nBinsMet+2)-1)*2+nBinsMet+3);
             
-            met_res[realBin].Fill(*PtNuNu-*MET);
-            phi_res[realBin].Fill(*Phi_gen-*Phi_rec);
+            met_res[realBin].Fill(diffMET);
+            phi_res[realBin].Fill(diffPHI);
+            
+            METdiff.Fill(diffMET/diffMET_normed,1.+diffMET_normed);  //Same as Ptnunu/MET
             
             // ~if (realBin==11 && realBin_gen!=11 && abs(*MET-*PtNuNu_true)>100) {
             if (realBin==11 && realBin_gen!=11) {
@@ -255,8 +279,7 @@ void run()
             int realBin_rec_unfold=bin_rec_unfold-((bin_rec_unfold/(2*nBinsMet+2)-1)*2+2*nBinsMet+3);
             trueDistributions.Fill(realBin_gen,*N);
             recoDistributions.Fill(realBin_rec_unfold,*N);
-            // ~response.Fill(realBin_rec_unfold,realBin_gen,*N);
-            response.Fill(realBin_rec_unfold,realBin_gen);
+            response.Fill(realBin_rec_unfold,realBin_gen,*N);
             response_sameBins.Fill(realBin,realBin_gen);
             
             // ~std::cout<<realBin_gen<<"   "<<*PtNuNu<<"   "<<*Phi_gen<<std::endl;
@@ -288,7 +311,8 @@ void run()
          std::vector<TFitResultPtr> r_phi;
          
          
-         TString Binning="Binning_Met"+std::to_string(numberBinningSchemeMet)+"_Phi"+std::to_string(numberBinningSchemePhi);
+         TString Binning= (scaleFactor==1.0) ? "Binning_Met"+std::to_string(numberBinningSchemeMet)+"_Phi"+std::to_string(numberBinningSchemePhi)
+                                                : "Binning_Met"+std::to_string(numberBinningSchemeMet)+"_Phi"+std::to_string(numberBinningSchemePhi)+"_SF"+std::to_string(scaleFactor);
          for(int i=0;i<nBins;i++){
             r_met.push_back(met_res[i].Fit("gaus","SQ"));
             r_phi.push_back(phi_res[i].Fit("gaus","SQ"));
@@ -406,6 +430,12 @@ void run()
             saver.save(can,plotLoc,true,true);
             can.Clear();
          }
+         
+         //Save Graph for METdiff vs met
+         TProfile METdiff_profile;
+         METdiff_profile=*(METdiff.ProfileX("s"));
+         saver.save(METdiff,"METdiff_vs_MET");
+         saver.save(METdiff_profile,"METdiff_vs_MET_profile");
          
          //Save histograms for unfolding
          for (int i=0; i<trueDistributions.GetNbinsX(); i++){
