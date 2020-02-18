@@ -435,7 +435,7 @@ void run()
    
    //Ntuple and file to save minimal ttbar tree used for binning studies
    float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
-   minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_genMet, minTree_PuppiMet, minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep;
+   minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep;
    UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions;
    ULong64_t minTree_evtNo;
    io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res"+met_sf_string+"%.1f.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
@@ -453,6 +453,7 @@ void run()
    ttbar_res.Branch("dPhiLep1Lep2",&minTree_PhiLep1Lep2,"dPhiLep1Lep2/f");
    ttbar_res.Branch("METsig",&minTree_METsig,"METsig/f");
    ttbar_res.Branch("N",&minTree_N,"N/f");
+   ttbar_res.Branch("SF",&minTree_SF,"SF/f");
    ttbar_res.Branch("runNo",&minTree_runNo,"runNo/i");
    ttbar_res.Branch("lumNo",&minTree_lumNo,"lumNo/i");
    ttbar_res.Branch("evtNo",&minTree_evtNo,"evtNo/l");
@@ -588,9 +589,10 @@ void run()
             io::log.flush();
          }
          
-         float fEventWeight=*w_pu * *w_mc * *sf_lep1 * *sf_lep2;     //Set event weight also taking lepton scale factors into account
-         hs.setFillWeight(fEventWeight);
-         hs2d.setFillWeight(fEventWeight);
+         float fEventWeight=*w_pu * *w_mc;     //Set event weight 
+         float SFWeight=*sf_lep1 * *sf_lep2;     //Set combined SF weight
+         hs.setFillWeight(fEventWeight*SFWeight);
+         hs2d.setFillWeight(fEventWeight*SFWeight);
          
          float met=MET->p.Pt();
          float const genMet=GENMET->p.Pt();
@@ -744,6 +746,7 @@ void run()
             minTree_PhiLep1Lep2=abs(dPhiLep1Lep2);
             minTree_METsig=MET->sig;
             minTree_N=lumi_weight*fEventWeight;
+            minTree_SF=SFWeight;
             minTree_runNo=*runNo;
             minTree_lumNo=*lumNo;
             minTree_evtNo=*evtNo;
@@ -770,6 +773,7 @@ void run()
                minTree_HT=-1.;
                minTree_MT=-1.;
                minTree_MT_nextLep=-1.;
+               minTree_SF=0.;
             }
             else if (pseudo_selection==false) {
                minTree_PtNuNu=-1.;
@@ -1076,7 +1080,7 @@ void run()
       }
       
    } // dataset loop
-   ttbar_res_saver.closeFile();
+   // ~ttbar_res_saver.closeFile();
    
    
    std::vector<TString> samplesToCombine=cfg.datasets.getDatasetNames();
