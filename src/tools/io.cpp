@@ -63,12 +63,6 @@ io::RootFileSaver::~RootFileSaver()
    delete file_;
 }
 
-void io::RootFileSaver::closeFile() const
-{
-   file_->Close();
-   delete file_;
-}
-
 void io::RootFileSaver::save(TObject const &obj, TString name,bool decorate,bool simulation) const
 {  
    if (intPath_!="") name=intPath_+"/"+name;
