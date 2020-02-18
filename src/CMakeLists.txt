@@ -10,6 +10,7 @@ set(MYLIBS
   tools
   tree
   style
+  RooUnfold
   )
 set(EXTLIBS
   ${ROOT_LIBRARIES}
@@ -25,3 +26,4 @@ add_subdirectory(tools)
 add_subdirectory(modules)
 add_subdirectory(tree)
 add_subdirectory(style)
+add_subdirectory(RooUnfold)

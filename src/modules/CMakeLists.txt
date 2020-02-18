@@ -19,6 +19,10 @@ set(MODULES
   compare_pseudoGen
   diff_dPhiResolution
   plot_dPhiResolution
+  TUnfold_binning
+  TUnfold_unfolding
+  TUnfold_plotting
+  RooUnfold_test
   )
 
 foreach(MODULE ${MODULES})
