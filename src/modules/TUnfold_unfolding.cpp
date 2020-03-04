@@ -77,12 +77,16 @@ extern "C"
 void run()
 {
    // unfolded sample
-   TString sample="MadGraph";
-   // ~TString sample="dilepton";
+   // ~TString sample="MadGraph";
+   TString sample="dilepton";
    
    // response sample
    // ~TString sample_response="MadGraph";
    TString sample_response="dilepton";
+   
+   // include signal to pseudo data
+   // ~bool withBSM = true;
+   bool withBSM = false;
    
    // perform toys studies?
    // ~bool toy_studies=false;
@@ -93,14 +97,17 @@ void run()
 
    //==============================================
    // step 1 : open output file
-   io::RootFileSaver saver(TString::Format("TUnfold%.1f.root",cfg.processFraction*100),"TUnfold_results_"+sample+"_"+sample_response);
-   // ~io::RootFileSaver saver(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100),"TUnfold_results_"+sample+"_"+sample_response);
+   TString save_path = "TUnfold_results_"+sample+"_"+sample_response;
+   if (withBSM) save_path+="_BSM";
+   io::RootFileSaver saver(TString::Format("TUnfold%.1f.root",cfg.processFraction*100),save_path);
+   // ~io::RootFileSaver saver(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
 
    //==============================================
    // step 2 : read binning schemes and input histograms
    io::RootFileReader histReader(TString::Format("TUnfold%.1f.root",cfg.processFraction*100));
    // ~io::RootFileReader histReader(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100));
    TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
+   if (withBSM) input_loc+="_BSM";
 
    TUnfoldBinning *detectorBinning=histReader.read<TUnfoldBinning>(input_loc+"/detector_binning");
    TUnfoldBinning *generatorBinning=histReader.read<TUnfoldBinning>(input_loc+"/generator_binning");
@@ -122,8 +129,8 @@ void run()
    // Step 3: unfolding
 
    // preserve the area
-   TUnfold::EConstraint constraintMode= TUnfold::kEConstraintArea;
-   // ~TUnfold::EConstraint constraintMode= TUnfold::kEConstraintNone;
+   // ~TUnfold::EConstraint constraintMode= TUnfold::kEConstraintArea;
+   TUnfold::EConstraint constraintMode= TUnfold::kEConstraintNone;
 
    // basic choice of regularisation scheme:
    //    curvature (second derivative)
@@ -169,7 +176,8 @@ void run()
       for(int itoy=0;itoy<=MAXTOY;itoy++) {
          std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
          TH1 *hist_toybase_noRegularisation=unfold.GetFoldedOutput("",";bin",0,0,false,true);
-         unfold.SetInput(generatePoissonToy(hist_folded,itoy),1.0);
+         // ~unfold.SetInput(generatePoissonToy(hist_folded,itoy),1.0);
+         unfold.SetInput(generatePoissonToy(histDataReco,itoy),1.0);
          unfold.DoUnfold(0.);//Without regularization
          if (itoy==0)hist_unfolded_firstToy=unfold.GetOutput("");
          analyzeToy(unfold.GetOutput(""),

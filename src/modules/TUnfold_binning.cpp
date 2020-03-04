@@ -27,12 +27,16 @@ void run()
    std::cout<<"---------------------------------------"<<std::endl;
    
    // unfolded sample
-   TString sample="MadGraph";
-   // ~TString sample="dilepton";
+   // ~TString sample="MadGraph";
+   TString sample="dilepton";
    
    // response sample
    // ~TString sample_response="MadGraph";
    TString sample_response="dilepton";
+   
+   // include signal to pseudo data
+   // ~bool withBSM = true;
+   bool withBSM = false;
    
    // number of met and phi bins
    int NBIN_MET_FINE=7;
@@ -43,7 +47,6 @@ void run()
 
    // met binning (last bin is overflow)
    Double_t metBinsFine[NBIN_MET_FINE+1]={0,30,60,90,120,175,230,315};
-   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,60,120,230,400};
    Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,60,120,230};
    // phi binning
    Double_t phiBinsFine[NBIN_PHI_FINE+1]={0,0.35,0.7,1.05,1.4,2.27,3.141};
@@ -87,9 +90,11 @@ void run()
 
    //=======================================================
    // Step 1: open file to save histograms and binning schemes
-
-   io::RootFileSaver saver(TString::Format("TUnfold%.1f.root",cfg.processFraction*100),"TUnfold_binning_"+sample+"_"+sample_response);
-   // ~io::RootFileSaver saver(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100),"TUnfold_binning_"+sample+"_"+sample_response);
+   TString save_path = "TUnfold_binning_"+sample+"_"+sample_response;
+   if (withBSM) save_path+="_BSM";
+   
+   io::RootFileSaver saver(TString::Format("TUnfold%.1f.root",cfg.processFraction*100),save_path);
+   // ~io::RootFileSaver saver(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
 
    //=======================================================
    // Step 2: save binning to output file
@@ -110,10 +115,14 @@ void run()
    TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0.root");
    // ~TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res_SF0.910000100.0.root");
    TTree *dataTree=(TTree *) dataFile->Get("ttbar_res100.0/ttbar_res_"+sample);
+   TTree *BSMTree=(TTree *) dataFile->Get("ttbar_res100.0/ttbar_res_T2tt_650_350");
    
 
    if(!dataTree) {
       cout<<"could not read 'data' tree\n";
+   }
+   if(!BSMTree) {
+      cout<<"could not read 'BSM' tree\n";
    }
   
    dataTree->ResetBranchAddresses();
@@ -136,7 +145,7 @@ void run()
       if(dataTree->GetEntry(ievent)<=0) break;
 
       //only bin to bin migration
-      if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
       
       //remove tau events, which are not reconstructed (no gen match, no reco match, should be included into distributions.cpp!!!!)
       if(metRec<0 && genDecayMode>3) continue;
@@ -152,6 +161,26 @@ void run()
       histDataReco->Fill(binNumber,mcWeight);
    }
    
+   if (withBSM) {
+      BSMTree->ResetBranchAddresses();
+      BSMTree->SetBranchAddress("Phi_rec",&phiRec);
+      BSMTree->SetBranchAddress("MET",&metRec);
+      BSMTree->SetBranchAddress("Phi_NuNu",&phiGen);
+      BSMTree->SetBranchAddress("PtNuNu",&metGen);
+      BSMTree->SetBranchAddress("genDecayMode",&genDecayMode);
+      BSMTree->SetBranchAddress("N",&mcWeight);
+      BSMTree->SetBranchAddress("SF",&recoWeight);
+      
+      for(Int_t ievent=0;ievent<BSMTree->GetEntriesFast();ievent++) {
+         if(BSMTree->GetEntry(ievent)<=0) break;
+
+         // fill histogram with reconstructed quantities
+         if (metRec<0) continue;   //events that are not reconstructed
+         Int_t binNumber=detectorDistribution->GetGlobalBinNumber(metRec,phiRec);
+         histDataReco->Fill(binNumber,mcWeight);
+      }
+   }
+   
    // set reco bin error to error expected in data
    for(int i=0;i<=histDataReco->GetNbinsX()+1;i++) {
       histDataReco->SetBinError(i,sqrt(histDataReco->GetBinContent(i)));
@@ -161,7 +190,6 @@ void run()
    saver.save(*histDataTruth,"histDataTruth");
 
    delete dataTree;
-
    //=======================================================
    // Step 4: book and fill histogram of migrations
    //         it receives events from both signal MC and background MC (right now only signal MC)
@@ -191,7 +219,7 @@ void run()
       if(signalTree->GetEntry(ievent)<=0) break;
       
       //only bin to bin migration
-      if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
 
       //remove tau events, which are not reconstructed (no gen match, no reco match, should be included into distributions.cpp!!!!)
       if(metRec<0 && genDecayMode>3) continue;
@@ -221,6 +249,7 @@ void run()
    }
   
    saver.save(*histMCGenRec,"histMCGenRec");
+   saver.save(*histMCGenRec_purity,"histMCGenRec_sameBins");
    saver.save(*(histMCGenRec->ProjectionX()),"histMCGenRec_projX");
    saver.save(*(histMCGenRec->ProjectionY()),"histMCGenRec_projY");
 
@@ -261,10 +290,6 @@ void run()
    delete bgrTree;
    delete bgrFile;
    */
-  
-   std::cout<<histMCGenRec->GetBinContent(1,0)<<std::endl;
-   std::cout<<histMCGenRec->GetBinContent(0,0)<<std::endl;
-   std::cout<<histMCGenRec->GetBinContent(0,1)<<std::endl;
    //efficiency
    TH1 *hist_efficiency=generatorBinning->CreateHistogram("efficiency");
    for(int binGen=0;binGen<=histMCGenRec->GetNbinsX()+1;binGen++) {
@@ -280,8 +305,11 @@ void run()
    }
    saver.save(*hist_efficiency,"hist_efficiency");
    
-   // calculate bin purities for the three binning schemes
+   // calculate bin purities and stabilities
    TH1 *hist_purity=generatorBinning->CreateHistogram("purity");
+   TH1 *hist_stability=generatorBinning->CreateHistogram("stability");
+   TH1 *hist_N_GenRec=generatorBinning->CreateHistogram("N_GenRec");
+   TH1 *hist_N_Rec=generatorBinning->CreateHistogram("N_Rec");
    for(int binRec=0;binRec<=hist_purity->GetNbinsX()+1;binRec++) {
       double sum=0.;
       // ~for(int binGen=0;binGen<=hist_purity->GetNbinsX()+1;binGen++) {
@@ -293,7 +321,27 @@ void run()
          p=histMCGenRec_purity->GetBinContent(binRec,binRec)/sum;
       }
       hist_purity->SetBinContent(binRec,p);
+      hist_N_GenRec->SetBinContent(binRec,histMCGenRec_purity->GetBinContent(binRec,binRec));
+      hist_N_Rec->SetBinContent(binRec,sum);
    }
+   
    saver.save(*hist_purity,"hist_purity");
+   saver.save(*hist_N_GenRec,"hist_N_GenRec");
+   saver.save(*hist_N_Rec,"hist_N_Rec");
+   
+   for(int binGen=0;binGen<=hist_purity->GetNbinsX()+1;binGen++) {
+      double sum=0.;
+      // ~for(int binGen=0;binGen<=hist_purity->GetNbinsX()+1;binGen++) {
+      for(int binRec=1;binRec<=hist_purity->GetNbinsX()+1;binRec++) {
+         sum += histMCGenRec_purity->GetBinContent(binGen,binRec);
+      }
+      double p=0.;
+      if(sum>0.0) {
+         p=histMCGenRec_purity->GetBinContent(binGen,binGen)/sum;
+      }
+      hist_stability->SetBinContent(binGen,p);
+   }
+   
+   saver.save(*hist_stability,"hist_stability");
 
 }
