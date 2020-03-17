@@ -83,20 +83,20 @@ void gfx::setupDrawnAxes(SplitCan const &spcan)
    off=gStyle->GetTitleOffset("y")*f;
    y->SetTitleSize(size);
  //  y->SetTitleSize(0.55);
-   y->SetTitleOffset(off);
+   // ~y->SetTitleOffset(off);
    size=gStyle->GetLabelSize("y")/f;
-   off=gStyle->GetLabelOffset("y")*f;
+   // ~off=gStyle->GetLabelOffset("y")*f;
    y->SetLabelSize(size);
-   y->SetLabelOffset(0.008);
-   x->SetLabelOffset(0.02);
+   // ~y->SetLabelOffset(0.008);
+   // ~x->SetLabelOffset(0.02);
    
    size=gStyle->GetTitleSize("x")/f;
    x->SetTitleSize(size);
    size=gStyle->GetLabelSize("x")/f;
    x->SetLabelSize(size);
 
-   size=gStyle->GetTickLength("x")/f;
-   x->SetTickLength(size);
+   // ~size=gStyle->GetTickLength("x")/f;
+   // ~x->SetTickLength(size);
 
    setupDrawnAxes(spcan.pL_);
 }
