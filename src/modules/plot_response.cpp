@@ -12,6 +12,7 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <TColor.h>
+#include <TProfile.h>
 
 Config const &cfg=Config::get();
 
@@ -19,13 +20,16 @@ extern "C"
 void run()
 {
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot2D_reponse");
-   io::RootFileReader histReader(TString::Format("binningUnfolding_dilepton%.1f.root",cfg.processFraction*100),"binningUnfolding");
+   io::RootFileReader histReader(TString::Format("TUnfold%.1f.root",cfg.processFraction*100),"");
    TCanvas can;
    
    TH2F *hist;
+   TH2F *hist_alt;
    
-   //~hist = (TH2F*) histReader.read<TH2F>("Binning_Met1_Phi1/Unfolding/response_sameBins");
-   hist = (TH2F*) histReader.read<TH2F>("Binning_Met1_Phi1/Unfolding/response");
+   // ~hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton/histMCGenRec");
+   // ~hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_MadGraph/histMCGenRec");
+   hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton/histMCGenRec_sameBins");
+   hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_MadGraph/histMCGenRec_sameBins");
    
    for (TString norm:{"","LineNorm"}){    //Plot nominal response and response normalized in each row
       
@@ -35,10 +39,10 @@ void run()
       else{
          //Normalize each individual row of diagram
          float sum;
-         for (int y=1; y<=hist->GetNbinsY(); y++){
-            sum=hist->Integral(1,hist->GetNbinsX(),y,y);
+         for (int x=1; x<=hist->GetNbinsX(); x++){
+            sum=hist->Integral(x,x,1,hist->GetNbinsY());
             if (sum==0) continue;
-            for (int x=1; x<=hist->GetNbinsX(); x++){
+            for (int y=1; y<=hist->GetNbinsY(); y++){
                if (hist->GetBinContent(x,y)!=0)hist->SetBinContent(x,y,hist->GetBinContent(x,y)/sum);
                else hist->SetBinContent(x,y,0.000002);
             }
@@ -53,7 +57,7 @@ void run()
       
       // Plotting stuff in the following
       can.cd();
-      can.SetLogz();
+      // ~can.SetLogz();
       
       gPad->SetRightMargin(0.2);
       gPad->SetLeftMargin(0.13);
@@ -69,6 +73,10 @@ void run()
       hist->GetXaxis()->SetLabelSize(0.04);
       hist->GetZaxis()->SetLabelSize(0.04);
       
+      hist->SetMarkerColor(kRed);
+      hist->SetMarkerSize(1.5);
+      hist->SetTitle("");
+      
       if (norm==""){
          hist->GetZaxis()->SetTitle("normalized distribution");
          
@@ -83,14 +91,35 @@ void run()
       }
 
       hist->SetStats(false);
-      hist->Draw("colz");
+      hist->Draw("colz text");
       
-      hist->GetXaxis()->SetTitle("reco binNumber");
-      hist->GetYaxis()->SetTitle("gen binNumber");
+      hist->GetYaxis()->SetTitle("reco binNumber");
+      hist->GetXaxis()->SetTitle("gen binNumber");
+      hist->GetYaxis()->SetRangeUser(2,13);
+      hist->GetXaxis()->SetRangeUser(2,13);
       
       can.RedrawAxis();
-      TString plotLoc="Binning_Met1_Phi1/reponse_"+norm;
+      TString plotLoc="dilepton_dilepton/reponse_"+norm;
       saver.save(can,plotLoc,true,true);
       can.Clear();
+      
+      if(norm=="LineNorm"){
+         float sum;
+         for (int x=1; x<=hist_alt->GetNbinsX(); x++){
+            sum=hist_alt->Integral(x,x,1,hist_alt->GetNbinsY());
+            if (sum==0) continue;
+            for (int y=1; y<=hist_alt->GetNbinsY(); y++){
+               if (hist_alt->GetBinContent(x,y)!=0)hist_alt->SetBinContent(x,y,hist_alt->GetBinContent(x,y)/sum);
+               else hist_alt->SetBinContent(x,y,0.000002);
+            }
+         }
+         hist->Add(hist_alt,-1.);
+         for (int i=0; i<=hist->GetNbinsX()+1; i++){
+            for (int j=0; j<=hist->GetNbinsY()+1; j++){
+               hist->SetBinContent(i,j,abs(hist->GetBinContent(i,j)));
+            }
+         }
+         saver.save(*hist,"diff_dilepton_MadGraph");
+      }
    }
 }
