@@ -523,6 +523,10 @@ TH1F hist::getRatio(TH1F const &h1,TH1F const &h2,TString title,ErrorType et)
          err = (N2==0.0) ? 0.0 : h2.GetBinError(i)/N2;
          hRatio.SetBinError(i,err);
       }
+   } else if (et==NOERR){
+      for (int i=0; i<=h1.GetNbinsX()+1;i++){
+         hRatio.SetBinError(i,0.);
+      }
    } else assert(et==COMB);
 
    Double_t min = hRatio.GetBinContent(hRatio.GetMinimumBin());

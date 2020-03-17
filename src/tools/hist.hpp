@@ -21,7 +21,8 @@ namespace hist
       COMB,
       // special for ratios, residuals, ...
       ONLY1,
-      ONLY2
+      ONLY2,
+      NOERR
    };
 
    template <class HIST>
