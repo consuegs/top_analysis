@@ -24,20 +24,22 @@ void run()
    io::RootFileReader histReader(TString::Format("binningUnfolding_dilepton%.1f.root",cfg.processFraction*100),"binningUnfolding");
    io::RootFileReader histReaderMadGraph(TString::Format("binningUnfolding_MadGraph%.1f.root",cfg.processFraction*100),"binningUnfolding");
    io::RootFileReader histReaderSignal(TString::Format("binningUnfolding_T2tt_650_350%.1f.root",cfg.processFraction*100),"binningUnfolding");
-   io::RootFileSaver saver_hist(TString::Format("unfolding%.1f.root",cfg.processFraction*100),TString::Format("unfolding%.1f",cfg.processFraction*100),false);
+   io::RootFileSaver saver_hist(TString::Format("unfolding%.1f.root",cfg.processFraction*100),TString::Format("unfolding%.1f",cfg.processFraction*100));
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),TString::Format("unfolding%.1f",cfg.processFraction*100));
    
    TCanvas can2D;
    TH2* Rho2D;
    TH1* unfolded;
+   TH1* biasVector;
    
    TH2F* migrMatrix=(TH2F*)histReader.read<TH2F>("Binning_Met1_Phi1/Unfolding/response");
+   // ~TH2F* migrMatrix=(TH2F*)histReaderMadGraph.read<TH2F>("Binning_Met1_Phi1/Unfolding/response");
    TH1F* fakeData=(TH1F*)histReaderMadGraph.read<TH1F>("Binning_Met1_Phi1/Unfolding/recoDistribution");
    fakeData->Add((TH1F*)histReaderSignal.read<TH1F>("Binning_Met1_Phi1/Unfolding/recoDistribution"));
    TH1F* realDis=(TH1F*)histReaderMadGraph.read<TH1F>("Binning_Met1_Phi1/Unfolding/trueDistribution");
    TH1F* realDis_signal=(TH1F*)histReaderSignal.read<TH1F>("Binning_Met1_Phi1/Unfolding/trueDistribution");
-   TUnfoldDensity unfold(migrMatrix,TUnfold::kHistMapOutputVert);
-   if(unfold.SetInput(fakeData)>=10000) {
+   TUnfoldDensity unfold(migrMatrix,TUnfold::kHistMapOutputVert,TUnfold::kRegModeSize,TUnfold::kEConstraintNone);
+   if(unfold.SetInput(fakeData,1.)>=10000) {
       std::cout<<"Unfolding result may be wrong\n";
    }
    
@@ -55,6 +57,7 @@ void run()
 
    unfolded=unfold.GetOutput("Unfolded");
    Rho2D=unfold.GetRhoIJtotal("Rho2D");
+   biasVector=unfold.GetBias("biasVector");
    double tau=unfold.GetTau();
    
    std::cout<<tau<<std::endl;
@@ -64,6 +67,7 @@ void run()
    saver_hist.save(*realDis,"true");
    saver_hist.save(*realDis_signal,"true_signal");
    saver_hist.save(*Rho2D,"Rho2D");
+   saver_hist.save(*biasVector,"biasVector");
    
    
    
@@ -137,7 +141,7 @@ void run()
       
    saver.save(can,"/MadGraph",true);
    
-   /*
+   
    //Plot Rho2D
    can2D.cd();
    gPad->SetRightMargin(0.2);
@@ -156,12 +160,9 @@ void run()
    Rho2D->GetZaxis()->SetLabelOffset(0.01);
 
    Rho2D->SetStats(false);
-   Rho2D->SetTitle(";genMET (GeV);genMET (GeV)");
+   // ~Rho2D->SetTitle(";genMET (GeV);genMET (GeV)");
    Rho2D->Draw("colz");
    
-   TLatex label2=gfx::cornerLabel(cat_label,1);
-   label2.Draw();
+   saver.save(can2D,"/MadGraph_Rho2D",true);
    
-   saver.save(can2D,sSample+"/Rho2D/"+cat,true,true);
-   */
 }
