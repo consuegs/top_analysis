@@ -435,10 +435,11 @@ void run()
    
    //Ntuple and file to save minimal ttbar tree used for binning studies
    float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
-   minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep;
+   minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
+   minTree_PhiPtnunuMet, minTree_leadTop;
    UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions;
    ULong64_t minTree_evtNo;
-   io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res"+met_sf_string+"%.1f.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
+   io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res"+met_sf_string+"%.1f_new.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
    TTree ttbar_res("ttbar_res","ttbar_res");
    ttbar_res.Branch("MET",&minTree_MET,"MET/f");
    ttbar_res.Branch("PtNuNu",&minTree_PtNuNu,"PtNuNu/f");
@@ -466,6 +467,8 @@ void run()
    ttbar_res.Branch("MT_nextLep",&minTree_MT_nextLep,"MT_nextLep/f");
    ttbar_res.Branch("genMT_nextLep",&minTree_genMT_nextLep,"genMT_nextLep/f");
    ttbar_res.Branch("n_Interactions",&minTree_n_Interactions,"n_Interactions/i");
+   ttbar_res.Branch("dPhiPtnunuMet",&minTree_PhiPtnunuMet,"dPhiPtnunuMet/f");
+   ttbar_res.Branch("leadTop_pT",&minTree_leadTop,"leadTop_pT/f");
    
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
@@ -731,6 +734,16 @@ void run()
          float mt_genMetLep1=phys::M_T(GENMET->p,leadGenLepton);
          float mt_genNeutrinosLep1=phys::M_T(neutrinoPair,leadGenLepton);
          
+         //Sort genTop pT
+         std::vector<TLorentzVector> gen_tops;
+         gen_tops.push_back(*genTop);
+         gen_tops.push_back(*genAntiTop);
+         sort(gen_tops.begin(), gen_tops.end(), tree::PtGreaterLorentz);
+         float pT_top1=0;
+         float pT_top2=0;
+         pT_top1=gen_tops[0].Pt();
+         pT_top2=gen_tops[1].Pt();
+         
          //Fill minimal tree for TTbar resolution used in binning studies
          if (ttBar_dilepton || ttBar_madGraph || ttBar_madGraph150 || SUSY_T2tt_650_350 || ttBar_standard){
             minTree_MET=met;
@@ -759,6 +772,7 @@ void run()
             minTree_n_Interactions=*n_Interactions;
             minTree_MT_nextLep=mt_MetNextLep;
             minTree_genMT_nextLep=mt_NuNuNextLep;
+            minTree_leadTop=pT_top1;
             if (rec_selection==false) {
                minTree_MET=-1.;
                minTree_PhiRec=-1.;
@@ -774,6 +788,7 @@ void run()
                minTree_MT=-1.;
                minTree_MT_nextLep=-1.;
                minTree_SF=0.;
+               minTree_PhiPtnunuMet=-1;
             }
             else if (pseudo_selection==false) {
                minTree_PtNuNu=-1.;
@@ -784,6 +799,11 @@ void run()
                minTree_n_Interactions=0;
                minTree_genMT=-1;
                minTree_genMT_nextLep=-1;
+               minTree_PhiPtnunuMet=-1;
+               minTree_leadTop=-1;
+            }
+            else {
+               minTree_PhiPtnunuMet=abs(neutrinoPair.DeltaPhi(MET->p));
             }
             // ~std::cout<<minTree_lumNo<<std::endl;
             ttbar_res.Fill();
@@ -808,16 +828,6 @@ void run()
             dPhiBjets=BJets[0].p.DeltaPhi(BJets[1].p);
             dRBjets=BJets[0].p.DeltaR(BJets[1].p);
          }
-         
-         //Sort genTop pT
-         std::vector<TLorentzVector> gen_tops;
-         gen_tops.push_back(*genTop);
-         gen_tops.push_back(*genAntiTop);
-         sort(gen_tops.begin(), gen_tops.end(), tree::PtGreaterLorentz);
-         float pT_top1=0;
-         float pT_top2=0;
-         pT_top1=gen_tops[0].Pt();
-         pT_top2=gen_tops[1].Pt();
          
          //Get distance between neutrino and lepton from same W
          float dPhiNeutrinoLep1=4;
