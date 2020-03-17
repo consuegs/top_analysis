@@ -119,7 +119,7 @@ void run()
    unfolded->GetXaxis()->SetTitleOffset(1.5);
    unfolded->GetYaxis()->SetTitleOffset(0.8);
    unfolded->GetXaxis()->CenterLabels(false);
-   unfolded->GetXaxis()->SetBinLabel(1,"fakes");   //End binning initializing
+   realDis->GetXaxis()->SetBinLabel(1,"fakes");   //End binning initializing
    
    unfolded->LabelsOption("v");
    realDis->LabelsOption("v");
@@ -179,6 +179,7 @@ void run()
    ratio.SetMarkerColor(kRed-6);
    ratio.GetYaxis()->SetTitleOffset(0.3);
    ratio.GetXaxis()->SetTitleOffset(1.3);
+   ratio.GetXaxis()->SetTickLength(0.);
    ratio.Draw();
    
    TH1F ratio_response=hist::getRatio(*realDis_response,*unfolded,"ratio",hist::NOERR);
