@@ -27,8 +27,8 @@ void run()
    std::cout<<"---------------------------------------"<<std::endl;
    
    // unfolded sample
-   // ~TString sample="MadGraph";
-   TString sample="dilepton";
+   TString sample="MadGraph";
+   // ~TString sample="dilepton";
    
    // response sample
    // ~TString sample_response="MadGraph";
@@ -38,16 +38,26 @@ void run()
    // ~bool withBSM = true;
    bool withBSM = false;
    
+   //Use scale factor
+   bool withScaleFactor = false;
+   // ~bool withScaleFactor = true;
+   
    // number of met and phi bins
    int NBIN_MET_FINE=7;
+   // ~int NBIN_MET_FINE=9;
    int NBIN_PHI_FINE=6;
 
    int NBIN_MET_COARSE=3;
+   // ~int NBIN_MET_COARSE=4;
    int NBIN_PHI_COARSE=3;
 
    // met binning (last bin is overflow)
-   Double_t metBinsFine[NBIN_MET_FINE+1]={0,30,60,90,120,175,230,315};
-   Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,60,120,230};
+   // ~Double_t metBinsFine[NBIN_MET_FINE+1]={0,30,60,90,120,175,230,315};
+   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,60,120,230};
+   Double_t metBinsFine[NBIN_MET_FINE+1]={0,20,40,80,120,175,230,315};
+   Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,120,230};
+   // ~Double_t metBinsFine[NBIN_MET_FINE+1]={0,20,40,65,90,125,160,195,230,315};
+   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,90,160,230};
    // phi binning
    Double_t phiBinsFine[NBIN_PHI_FINE+1]={0,0.35,0.7,1.05,1.4,2.27,3.141};
    Double_t phiBinsCoarse[NBIN_PHI_COARSE+1]={0,0.7,1.4,3.141};
@@ -93,8 +103,7 @@ void run()
    TString save_path = "TUnfold_binning_"+sample+"_"+sample_response;
    if (withBSM) save_path+="_BSM";
    
-   io::RootFileSaver saver(TString::Format("TUnfold%.1f.root",cfg.processFraction*100),save_path);
-   // ~io::RootFileSaver saver(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
+   io::RootFileSaver saver(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
 
    //=======================================================
    // Step 2: save binning to output file
@@ -112,8 +121,9 @@ void run()
    TH1 *histDataReco=detectorBinning->CreateHistogram("histDataReco");
    TH1 *histDataTruth=generatorBinning->CreateHistogram("histDataTruth");
 
-   TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0.root");
-   // ~TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res_SF0.910000100.0.root");
+   TString inputFile = "ttbar_res100.0.root";
+   if (withScaleFactor) inputFile = "ttbar_res_SF0.910000100.0.root";
+   TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/"+inputFile);
    TTree *dataTree=(TTree *) dataFile->Get("ttbar_res100.0/ttbar_res_"+sample);
    TTree *BSMTree=(TTree *) dataFile->Get("ttbar_res100.0/ttbar_res_T2tt_650_350");
    

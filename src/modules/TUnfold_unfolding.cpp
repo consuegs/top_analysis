@@ -77,8 +77,8 @@ extern "C"
 void run()
 {
    // unfolded sample
-   // ~TString sample="MadGraph";
-   TString sample="dilepton";
+   TString sample="MadGraph";
+   // ~TString sample="dilepton";
    
    // response sample
    // ~TString sample_response="MadGraph";
@@ -87,6 +87,10 @@ void run()
    // include signal to pseudo data
    // ~bool withBSM = true;
    bool withBSM = false;
+   
+   //Use scale factor
+   bool withScaleFactor = false;
+   // ~bool withScaleFactor = true;
    
    // perform toys studies?
    // ~bool toy_studies=false;
@@ -99,12 +103,12 @@ void run()
    // step 1 : open output file
    TString save_path = "TUnfold_results_"+sample+"_"+sample_response;
    if (withBSM) save_path+="_BSM";
-   io::RootFileSaver saver(TString::Format("TUnfold%.1f.root",cfg.processFraction*100),save_path);
+   io::RootFileSaver saver(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
    // ~io::RootFileSaver saver(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
 
    //==============================================
    // step 2 : read binning schemes and input histograms
-   io::RootFileReader histReader(TString::Format("TUnfold%.1f.root",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100));
    // ~io::RootFileReader histReader(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100));
    TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
    if (withBSM) input_loc+="_BSM";
@@ -168,8 +172,10 @@ void run()
    int MAXTOY=300;
    
    // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult");
+   // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
    TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
    TH1 *hist_folded=unfold.GetFoldedOutput("hist_foldedResult",";bin",0,0,false);
+   TH2 *cov_input=unfold.GetEmatrixInput("cov_input",";bin",0,0,true);
    TH1 *hist_unfolded_firstToy=0;
    
    if(toy_studies){
@@ -196,5 +202,6 @@ void run()
    // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult","P_{T}^{#nu#nu} [GeV]","signal");
    saver.save(*hist_unfolded,"hist_unfoldedResult");
    saver.save(*hist_folded,"hist_foldedResult");
+   saver.save(*cov_input,"cov_input");
 
 }

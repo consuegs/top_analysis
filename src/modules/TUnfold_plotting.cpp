@@ -11,6 +11,7 @@
 #include "TUnfoldDensity.h"
 #include <TRandom3.h>
 #include <TProfile.h>
+#include <TVectorD.h>
 
 
 #include "Config.hpp"
@@ -27,24 +28,29 @@ extern "C"
 void run()
 {
    // unfolded sample
-   // ~TString sample="MadGraph";
-   TString sample="dilepton";
+   TString sample="MadGraph";
+   // ~TString sample="dilepton";
    
    // response sample
    // ~TString sample_response="MadGraph";
    TString sample_response="dilepton";
    
    // include signal to pseudo data
-   bool withBSM = true;
-   // ~bool withBSM = false;
+   // ~bool withBSM = true;
+   bool withBSM = false;
+   
+   //Use scale factor
+   bool withScaleFactor = false;
+   // ~bool withScaleFactor = true;
    
    //==============================================
    // step 1 : open output file
-   io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),TString::Format("TUnfold_plotting%.1f",cfg.processFraction*100));
+   io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),TString::Format(!withScaleFactor ? "TUnfold_plotting%.1f" : "TUnfold_plotting_SF_%.1f",cfg.processFraction*100));
 
    //==============================================
    // step 2 : read binning schemes and input histograms
-   io::RootFileReader histReader(TString::Format("TUnfold%.1f.root",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100));
    TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
    TString input_loc_result="TUnfold_results_"+sample+"_"+sample_response;
    if (withBSM) {
@@ -61,103 +67,132 @@ void run()
 
    // read histograms
    TH1F *realDis=histReader.read<TH1F>(input_loc+"/histDataTruth");
+   TH1F *realDis_response=histReader.read<TH1F>(input_loc+"/histMCGenRec_projX");
    TH1F *unfolded=histReader.read<TH1F>(input_loc_result+"/hist_unfoldedResult");
 
-   if((!realDis)||(!unfolded)) {
+   if((!realDis)||(!realDis_response)||(!unfolded)) {
       cout<<"problem to read input histograms\n";
    }
 
    //========================
    // Step 3: plotting
    
-   // ~TCanvas can("c1","c1", 1200, 600);
-   
    gfx::SplitCan can;
    can.can_.SetWindowSize(1800,600);
    can.pU_.SetLogy();
-   can.pU_.cd();
+   can.pU_.cd();  //Use upper part of canvas
    
-   // ~can.SetLogy();
-
    
-   Double_t xbins[14] = {-30,0,60,120,230,400,460,520,630,800,860,920,1030,1200};
-   unfolded->SetBins(13,xbins);
-   realDis->SetBins(13,xbins);
-   // ~realDis_signal->SetBins(12,xbins);
+   //Initialize proper binning for plotting
+   TVectorD binning_met(*(generatorBinning->FindNode("signal")->GetDistributionBinning(0)));
+   TVectorD binning_phi(*(generatorBinning->FindNode("signal")->GetDistributionBinning(1)));
+   
+   int num_bins = binning_met.GetNoElements()*(binning_phi.GetNoElements()-1)+1;
+   int num_bins_met = binning_met.GetNoElements();
+   
+   binning_met.ResizeTo(binning_met.GetNoElements()+1);
+   binning_met[binning_met.GetNoElements()-1] = 400;  //Plotting end for overflow bin
+   
+   Double_t xbins[num_bins+1];
+   xbins[0] = -30;   //Plotting start for fake bin
+   xbins[1] = 0;   //Plotting start for fake bin
+   
+   int phi_bin = 0;
+   for (int i=0; i<(num_bins-1); i++)   {
+      xbins[i+2] = binning_met[i%num_bins_met+1]+phi_bin*400;
+      if (i%num_bins_met==num_bins_met-1) phi_bin++;
+   }
+   
+   unfolded->SetBins(num_bins,xbins);
+   realDis->SetBins(num_bins,xbins);
+   realDis_response->SetBins(num_bins,xbins);
+   for (int i=2; i<=num_bins; i++) {  //Set proper label for x axis
+      int bin_label_no = (i-2)%num_bins_met+1;
+      TString label;
+      if (bin_label_no == num_bins_met) label = ">"+std::to_string((int)binning_met[bin_label_no-1]);
+      else label = std::to_string((int)binning_met[bin_label_no-1])+"-"+std::to_string((int)binning_met[bin_label_no]);
+      unfolded->GetXaxis()->SetBinLabel(i,label);
+      realDis->GetXaxis()->SetBinLabel(i,label);
+   }
    unfolded->GetXaxis()->SetTickLength(0.);
    unfolded->GetYaxis()->SetTickLength(0.008);
    unfolded->GetXaxis()->SetTitleOffset(1.5);
    unfolded->GetYaxis()->SetTitleOffset(0.8);
    unfolded->GetXaxis()->CenterLabels(false);
-   unfolded->GetXaxis()->SetBinLabel(1,"fakes");
-   unfolded->GetXaxis()->SetBinLabel(2,"0-60");
-   unfolded->GetXaxis()->SetBinLabel(3,"60-120");
-   unfolded->GetXaxis()->SetBinLabel(4,"120-230");
-   unfolded->GetXaxis()->SetBinLabel(5,">230");
-   unfolded->GetXaxis()->SetBinLabel(6,"0-60");
-   unfolded->GetXaxis()->SetBinLabel(7,"60-120");
-   unfolded->GetXaxis()->SetBinLabel(8,"120-230");
-   unfolded->GetXaxis()->SetBinLabel(9,">230");
-   unfolded->GetXaxis()->SetBinLabel(10,"0-60");
-   unfolded->GetXaxis()->SetBinLabel(11,"60-120");
-   unfolded->GetXaxis()->SetBinLabel(12,"120-230");
-   unfolded->GetXaxis()->SetBinLabel(13,">230");
+   unfolded->GetXaxis()->SetBinLabel(1,"fakes");   //End binning initializing
+   
    unfolded->LabelsOption("v");
+   realDis->LabelsOption("v");
    unfolded->SetMaximum(4*unfolded->GetMaximum());
    unfolded->SetMinimum(2);
    unfolded->SetLineColor(kBlack);
    unfolded->SetTitle(";p_{T}^{#nu#nu} (GeV);arbitrary unit");
    unfolded->SetStats(false);
+   realDis->SetTitle(";p_{T}^{#nu#nu} (GeV);arbitrary unit");
+   realDis->SetStats(false);
    
-   // ~unfolded->Scale(1.0/(10e5));
-   // ~realDis->Scale(1.0/(10e5));
-   // ~realDis_signal->Scale(1.0/(10e5));
-   
-   unfolded->Draw("pe1");
+   unfolded->Draw("pe1");  //Draw into current canvas 
    realDis->SetLineColor(kRed-6);
    realDis->SetFillColor(kRed-6);
-   realDis->Draw("hist same");
-   // ~realDis_signal->SetLineColor(kBlue);
-   // ~realDis_signal->Draw("hist same");
+   realDis->Draw("hist same");   //Dra into current canvas (axis are not drawn again due to "same")
    
+   realDis_response->SetLineColor(kBlue);
+   realDis_response->SetFillColor(kBlue);
+   realDis_response->Draw("hist same");
+   
+   //Draw vertical lines and binning ranges for deltaPhi
    TLine * aline = new TLine();
    TLatex * atext = new TLatex();
    atext->SetTextSize(0.03);
-   //~ atext->SetTextFont(42);
    aline->SetLineWidth(2);
    aline->DrawLine(0,2,0,unfolded->GetMaximum());
    aline->DrawLine(800,2,800,unfolded->GetMaximum());
    aline->DrawLine(400,2,400,unfolded->GetMaximum());
    aline->DrawLine(800,2,800,unfolded->GetMaximum());
-   // ~aline->SetLineStyle(2);
    atext->DrawLatex(75,0.5*unfolded->GetMaximum(),"0<|#Delta#phi|(p_{T}^{#nu#nu},nearest l)<0.7");
    atext->DrawLatex(475,0.5*unfolded->GetMaximum(),"0.7<|#Delta#phi|(p_{T}^{#nu#nu},nearest l)<1.4");
    atext->DrawLatex(875,0.5*unfolded->GetMaximum(),"1.4<|#Delta#phi|(p_{T}^{#nu#nu},nearest l)<3.14");
    
-   
+   //Dra legend
    gfx::LegendEntries legE;
    legE.append(*unfolded,"Unfolded","pe");
    legE.append(*realDis,"MC true ttbar","l");
-   // ~legE.append(*realDis_signal,"MC true signal","l");
-   TLegend leg=legE.buildLegend(.2,.45,0.35,.6,1);
+   legE.append(*realDis_response,"MC true ttbar (response)","l");
+   TLegend leg=legE.buildLegend(.15,.45,0.3,.6,1);
    leg.SetTextSize(0.035);
    leg.Draw();
    
    unfolded->Draw("axis same");
    
+   if (withScaleFactor) {
+      atext->DrawLatex(75,10,"With ScaleFactor");
+   }
+   
+   //Change to lower part of canvas
    can.pL_.cd();
    can.pL_.SetBottomMargin(0.45);
    can.pL_.SetTickx(0);
-   TH1F ratio=hist::getRatio(*unfolded,*realDis,"ratio",hist::ONLY1);
+   TH1F ratio=hist::getRatio(*realDis,*unfolded,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
    ratio.SetMaximum(1.7);
    ratio.SetMinimum(0.5);
+   ratio.SetLineColor(kRed-6);
+   ratio.SetMarkerColor(kRed-6);
    ratio.GetYaxis()->SetTitleOffset(0.3);
    ratio.GetXaxis()->SetTitleOffset(1.3);
    ratio.Draw();
    
+   TH1F ratio_response=hist::getRatio(*realDis_response,*unfolded,"ratio",hist::NOERR);
+   ratio_response.SetLineColor(kBlue);
+   ratio_response.SetMarkerColor(kBlue);
+   ratio_response.Draw("same");
+   
+   TH1F uncertainty_unfolded=hist::getRatio(*unfolded,*unfolded,"ratio",hist::ONLY1);  //Get Ratio between unfolded and unfolded to draw unfolded uncertainty around 1
+   uncertainty_unfolded.SetMarkerSize(0);
+   uncertainty_unfolded.Draw("same");
+   
    // ~aline->SetLineStyle(2);
    aline->DrawLine(0,0.5,0,1.7);
-   aline->DrawLine(800,0.5,800,1.5);
+   aline->DrawLine(800,0.5,800,1.7);
    aline->DrawLine(400,0.5,400,1.7);
    aline->DrawLine(800,0.5,800,1.7);
    
