@@ -36,7 +36,9 @@ void run()
    std::vector<float> met_bins3={0,70,140,250,400};
    std::vector<float> phi_bins3={0,0.4,0.8,1.2,3.14};
    
-   std::vector<float> met_bins4={0,60,120,230,400};
+   // ~std::vector<float> met_bins4={0,60,120,230,400};
+   // ~std::vector<float> phi_bins4={0,0.7,1.4,3.14};
+   std::vector<float> met_bins4={0,40,120,230,400};
    std::vector<float> phi_bins4={0,0.7,1.4,3.14};
    // ~std::vector<float> met_bins4={40,60,90,120,230,400};
    // ~std::vector<float> phi_bins4={0,0.7,1.4,3.14};
@@ -61,6 +63,8 @@ void run()
    
    float diffMET=0.;
    float diffPHI=0.;
+   
+   float truePtNuNu=0.;
    
    float diffMET_normed=0.;
    float diffPHI_normed=0.;
@@ -93,7 +97,25 @@ void run()
    TH2F reco2D=hist::fromWidths_2d("reco2D",";p_{T}^{miss}(GeV);|#Delta#phi|(p_{T}^{miss},nearest l);",met_bins_unfold,hist::getWidths(met_bins_unfold),phi_bins_unfold,hist::getWidths(phi_bins_unfold));
    
    //Hist for METdiff vs. measured MET
-   TH2F METdiff("METdiff_MET",";p_{T}^{miss} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-p_{T}^{miss})/p_{T}^{miss}",1000,0,400,600,-1,3);
+   TH2F METdiff("METdiff_MET",";p_{T}^{miss} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-p_{T}^{miss})/p_{T}^{miss}",100,0,400,600,-1,3);
+   TH2F METdiff_PtNuNu("METdiff_PtNuNu",";p_{T}^{#nu#nu} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-p_{T}^{miss})/p_{T}^{miss}",100,0,400,600,-1,3);
+   TH2F METdiff_GenMet("METdiff_GenMet",";genMet (GeV);1+(p_{T}^{#nu#nu(+BSM)}-p_{T}^{miss})/p_{T}^{miss}",100,0,400,600,-1,3);
+   TH2F METdiffpuppi_PuppiMet("METdiffpuppi_PuppiMet",";PuppiMet (GeV);1+(p_{T}^{#nu#nu(+BSM)}-PuppiMet)/PuppiMet",100,0,400,600,-1,3);
+   TH2F METdiffgen("METdiffgen_PuppiMet",";p_{T}^{miss} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-genMet)/genMet",100,0,400,600,-1,3);
+   
+   TH2F METdiff_phi1("METdiff_MET_phi1",";p_{T}^{miss} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-p_{T}^{miss})/p_{T}^{miss}",50,0,400,600,-1,3);
+   TH2F METdiff_phi2("METdiff_MET_phi2",";p_{T}^{miss} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-p_{T}^{miss})/p_{T}^{miss}",50,0,400,600,-1,3);
+   TH2F METdiff_phi3("METdiff_MET_phi3",";p_{T}^{miss} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-p_{T}^{miss})/p_{T}^{miss}",50,0,400,600,-1,3);
+   TH2F METdiffgen_phi1("METdiffgen_MET_phi1",";p_{T}^{miss} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-p_{T}^{miss})/p_{T}^{miss}",50,0,400,600,-1,3);
+   TH2F METdiffgen_phi2("METdiffgen_MET_phi2",";p_{T}^{miss} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-p_{T}^{miss})/p_{T}^{miss}",50,0,400,600,-1,3);
+   TH2F METdiffgen_phi3("METdiffgen_MET_phi3",";p_{T}^{miss} (GeV);1+(p_{T}^{#nu#nu(+BSM)}-genMet)/genMet}",50,0,400,600,-1,3);
+   
+   TH2F dPhiMETpTnunu_phi1("dPhiMETpTnunu_MET_phi1",";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},p_{T}^{#nu#nu})",50,0,400,600,-3,3);
+   TH2F dPhiMETpTnunu_phi2("dPhiMETpTnunu_MET_phi2",";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},p_{T}^{#nu#nu})",50,0,400,600,-3,3);
+   TH2F dPhiMETpTnunu_phi3("dPhiMETpTnunu_MET_phi3",";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},p_{T}^{#nu#nu})",50,0,400,600,-3,3);
+   
+   TH2F TopPt_dPhi("TopPt_dPhi",";|#Delta#phi|(p_{T}^{miss},nearest l);p_{T}^{t1} (GeV)",100,0,3.2,600,0,600);
+
    
    
    // ~for(std::vector<float> met_bins : {met_bins1,met_bins2,met_bins3,met_bins4}){    //Test every possible combination of the binning defined above
@@ -115,17 +137,17 @@ void run()
          }
          
          
-         N_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         N_rec=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         N_genrec=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         N_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         N_rec=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         N_genrec=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
-         Evt_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         Evt_rec=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         Evt_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         Evt_rec=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
-         eff_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
-         eff_gen_recSom=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         eff_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         eff_gen_recSom=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
-         migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu(+BSM)}(GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          // ~N_gen=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          // ~N_rec=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          // ~N_genrec=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
@@ -139,8 +161,8 @@ void run()
          // ~migration=hist::fromWidths_2d("",";genMET(GeV);|#Delta#phi|(genMET,nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
          // ~TString sampleName="";
-         TString sampleName="dilepton";
-         // ~TString sampleName="MadGraph";
+         // ~TString sampleName="dilepton";
+         TString sampleName="MadGraph";
          // ~TString sampleName="T2tt_650_350";
          TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0.root","read");
          TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/ttbar_res_"+sampleName, &file);
@@ -148,7 +170,6 @@ void run()
          
          TTreeReaderValue<float> MET   (reader, "MET");
          // ~TTreeReaderValue<float> MET   (reader, "PuppiMET");
-         TTreeReaderValue<float> PtNuNu_true   (reader, "PtNuNu");
          TTreeReaderValue<float> PtNuNu   (reader, "PtNuNu");
          // ~TTreeReaderValue<float> PtNuNu   (reader, "genMET");
          TTreeReaderValue<float> Phi_rec   (reader, "Phi_rec");
@@ -171,6 +192,8 @@ void run()
          // ~TTreeReaderValue<float> PuppiMET   (reader, "MET");
          TTreeReaderValue<float> HT_tree   (reader, "HT");
          TTreeReaderValue<UInt_t> n_Interactions(reader, "n_Interactions");
+         TTreeReaderValue<float> dPhiPtnunuMet(reader, "dPhiPtnunuMet");
+         TTreeReaderValue<float> leadTop_pT(reader, "leadTop_pT");
          
           int migrated=0;
          
@@ -182,6 +205,7 @@ void run()
             diffPHI=*Phi_gen-*Phi_rec;
             diffMET_normed=diffMET/(*MET);
             diffPHI_normed=diffPHI/(*Phi_rec);
+            truePtNuNu=*PtNuNu;
             
             if(*MET>=met_bins.back()) *MET=met_bins.back()-0.01;     //Handel overflow correctly
             if(*PtNuNu>=met_bins.back()) *PtNuNu=met_bins.back()-0.01;
@@ -237,7 +261,31 @@ void run()
             met_res[realBin].Fill(diffMET);
             phi_res[realBin].Fill(diffPHI);
             
-            METdiff.Fill(diffMET/diffMET_normed,1.+diffMET_normed);  //Same as Ptnunu/MET
+            // ~METdiff.Fill(diffMET/diffMET_normed,1.+diffMET_normed);  //Same as Ptnunu/MET
+            METdiff.Fill(diffMET/diffMET_normed,1.+diffMET_normed,*N);  //Same as Ptnunu/MET
+            METdiff_PtNuNu.Fill(truePtNuNu,1.+diffMET_normed,*N);
+            METdiff_GenMet.Fill(*genMET,1.+diffMET_normed,*N);
+            METdiffpuppi_PuppiMet.Fill(*PuppiMET,truePtNuNu/(*PuppiMET),*N);
+            METdiffgen.Fill(diffMET/diffMET_normed,truePtNuNu/(*genMET),*N);
+           
+            TopPt_dPhi.Fill(*Phi_rec,*leadTop_pT,*N);
+            
+            //Save METdiff for different phi bins
+            if (realBin_gen<4) {
+               METdiff_phi1.Fill(diffMET/diffMET_normed,1.+diffMET_normed,*N);
+               METdiffgen_phi1.Fill(diffMET/diffMET_normed,truePtNuNu/(*genMET),*N);
+               dPhiMETpTnunu_phi1.Fill(diffMET/diffMET_normed,*dPhiPtnunuMet,*N);
+            }
+            else if (realBin_gen<8) {
+               METdiff_phi2.Fill(diffMET/diffMET_normed,1.+diffMET_normed,*N);
+               METdiffgen_phi2.Fill(diffMET/diffMET_normed,truePtNuNu/(*genMET),*N);
+               dPhiMETpTnunu_phi2.Fill(diffMET/diffMET_normed,*dPhiPtnunuMet,*N);
+            }
+            else {
+               METdiff_phi3.Fill(diffMET/diffMET_normed,1.+diffMET_normed,*N);
+               METdiffgen_phi3.Fill(diffMET/diffMET_normed,truePtNuNu/(*genMET),*N);
+               dPhiMETpTnunu_phi3.Fill(diffMET/diffMET_normed,*dPhiPtnunuMet,*N);
+            }
             
             // ~if (realBin==11 && realBin_gen!=11 && abs(*MET-*PtNuNu_true)>100) {
             if (realBin==11 && realBin_gen!=11) {
@@ -433,9 +481,93 @@ void run()
          
          //Save Graph for METdiff vs met
          TProfile METdiff_profile;
-         METdiff_profile=*(METdiff.ProfileX("s"));
+         METdiff_profile=*(METdiff.ProfileX("SF_met"));
+         METdiff_profile.GetYaxis()->SetTitle("ScaleFactor");
          saver.save(METdiff,"METdiff_vs_MET");
          saver.save(METdiff_profile,"METdiff_vs_MET_profile");
+         
+         TProfile METdiff_PtNuNu_profile;
+         METdiff_PtNuNu_profile=*(METdiff_PtNuNu.ProfileX("SF_met"));
+         METdiff_PtNuNu_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(METdiff_PtNuNu,"METdiff_vs_PtNuNu");
+         saver.save(METdiff_PtNuNu_profile,"METdiff_vs_PtNuNu_profile");
+         
+         TProfile METdiff_GenMet_profile;
+         METdiff_GenMet_profile=*(METdiff_GenMet.ProfileX("SF_met"));
+         METdiff_GenMet_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(METdiff_GenMet,"METdiff_vs_GenMet");
+         saver.save(METdiff_GenMet_profile,"METdiff_vs_GenMet_profile");
+         
+         TProfile METdiffpuppi_PuppiMet_profile;
+         METdiffpuppi_PuppiMet_profile=*(METdiffpuppi_PuppiMet.ProfileX("SF_met"));
+         METdiffpuppi_PuppiMet_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(METdiffpuppi_PuppiMet,"METdiff_vs_PuppiMet");
+         saver.save(METdiffpuppi_PuppiMet_profile,"METdiff_vs_PuppiMet_profile");
+         
+         TProfile METdiffgen_profile;
+         METdiffgen_profile=*(METdiffgen.ProfileX("SF_met"));
+         METdiffgen_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(METdiffgen,"METdiffgen_vsMET");
+         saver.save(METdiffgen_profile,"METdiffgen_vs_MET_profile");
+         
+         TProfile METdiff_phi1_profile;
+         METdiff_phi1_profile=*(METdiff_phi1.ProfileX("SF_met"));
+         METdiff_phi1_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(METdiff_phi1,"METdiff_phi1_vs_MET");
+         saver.save(METdiff_phi1_profile,"METdiff_phi1_vs_MET_profile");
+         
+         TProfile METdiff_phi2_profile;
+         METdiff_phi2_profile=*(METdiff_phi2.ProfileX("SF_met"));
+         METdiff_phi2_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(METdiff_phi2,"METdiff_phi2_vs_MET");
+         saver.save(METdiff_phi2_profile,"METdiff_phi2_vs_MET_profile");
+         
+         TProfile METdiff_phi3_profile;
+         METdiff_phi3_profile=*(METdiff_phi3.ProfileX("SF_met"));
+         METdiff_phi3_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(METdiff_phi3,"METdiff_phi3_vs_MET");
+         saver.save(METdiff_phi3_profile,"METdiff_phi3_vs_MET_profile");
+         
+         TProfile METdiffgen_phi1_profile;
+         METdiffgen_phi1_profile=*(METdiffgen_phi1.ProfileX("SF_met"));
+         METdiffgen_phi1_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(METdiffgen_phi1,"METdiffgen_phi1_vs_MET");
+         saver.save(METdiffgen_phi1_profile,"METdiffgen_phi1_vs_MET_profile");
+         
+         TProfile METdiffgen_phi2_profile;
+         METdiffgen_phi2_profile=*(METdiffgen_phi2.ProfileX("SF_met"));
+         METdiffgen_phi2_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(METdiffgen_phi2,"METdiffgen_phi2_vs_MET");
+         saver.save(METdiffgen_phi2_profile,"METdiffgen_phi2_vs_MET_profile");
+         
+         TProfile METdiffgen_phi3_profile;
+         METdiffgen_phi3_profile=*(METdiffgen_phi3.ProfileX("SF_met"));
+         METdiffgen_phi3_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(METdiffgen_phi3,"METdiffgen_phi3_vs_MET");
+         saver.save(METdiffgen_phi3_profile,"METdiffgen_phi3_vs_MET_profile");
+         
+         TProfile dPhiMETpTnunu_phi1_profile;
+         dPhiMETpTnunu_phi1_profile=*(dPhiMETpTnunu_phi1.ProfileX("SF_met"));
+         dPhiMETpTnunu_phi1_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(dPhiMETpTnunu_phi1,"dPhiMETpTnunu_phi1_vs_MET");
+         saver.save(dPhiMETpTnunu_phi1_profile,"dPhiMETpTnunu_phi1_vs_MET_profile");
+         
+         TProfile dPhiMETpTnunu_phi2_profile;
+         dPhiMETpTnunu_phi2_profile=*(dPhiMETpTnunu_phi2.ProfileX("SF_met"));
+         dPhiMETpTnunu_phi2_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(dPhiMETpTnunu_phi2,"dPhiMETpTnunu_phi2_vs_MET");
+         saver.save(dPhiMETpTnunu_phi2_profile,"dPhiMETpTnunu_phi2_vs_MET_profile");
+         
+         TProfile dPhiMETpTnunu_phi3_profile;
+         dPhiMETpTnunu_phi3_profile=*(dPhiMETpTnunu_phi3.ProfileX("SF_met"));
+         dPhiMETpTnunu_phi3_profile.GetYaxis()->SetTitle("ScaleFactor");
+         saver.save(dPhiMETpTnunu_phi3,"dPhiMETpTnunu_phi3_vs_MET");
+         saver.save(dPhiMETpTnunu_phi3_profile,"dPhiMETpTnunu_phi3_vs_MET_profile");
+         
+         TProfile TopPt_dPhi_profile;
+         TopPt_dPhi_profile=*(TopPt_dPhi.ProfileX("SF_met"));
+         saver.save(TopPt_dPhi,"TopPt_vs_dPhi");
+         saver.save(TopPt_dPhi_profile,"TopPt_vs_dPhi_profile");
          
          //Save histograms for unfolding
          for (int i=0; i<trueDistributions.GetNbinsX(); i++){
