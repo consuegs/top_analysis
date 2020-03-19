@@ -22,8 +22,10 @@ void setTDRStyle() {
   tdrStyle->SetCanvasColor(kWhite);
   //~ tdrStyle->SetCanvasDefH(600); //Height of canvas match johannes stack plots with ratio
   //~ tdrStyle->SetCanvasDefH(550); //Height of canvas for limits
-  tdrStyle->SetCanvasDefH(500); //for 2d ggm parameter
-  tdrStyle->SetCanvasDefW(600); //Width of canvas
+  // ~tdrStyle->SetCanvasDefH(500); //for 2d ggm parameter
+  // ~tdrStyle->SetCanvasDefW(600); //Width of canvas
+  tdrStyle->SetCanvasDefH(600); //for unfolding result
+  tdrStyle->SetCanvasDefW(1200); //Width of canvas
   tdrStyle->SetCanvasDefX(0);   //POsition on screen
   tdrStyle->SetCanvasDefY(0);
 
@@ -50,7 +52,7 @@ void setTDRStyle() {
   // tdrStyle->SetHistFillColor(1);
   // tdrStyle->SetHistFillStyle(0);
   tdrStyle->SetHistLineColor(1);
-  tdrStyle->SetHistLineStyle(0);
+  // ~tdrStyle->SetHistLineStyle(0);
   tdrStyle->SetHistLineWidth(1);
   // tdrStyle->SetLegoInnerR(Float_t rad = 0.5);
   // tdrStyle->SetNumberContours(Int_t number = 20);

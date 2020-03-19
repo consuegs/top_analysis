@@ -9,7 +9,8 @@
    // These settings are determined experimentally.
    gStyle->SetPadTopMargin   (.06);
    gStyle->SetPadBottomMargin(.13);
-   gStyle->SetPadLeftMargin  (.16);
+   // ~gStyle->SetPadLeftMargin  (.16);
+   gStyle->SetPadLeftMargin  (.10);
    gStyle->SetPadRightMargin (.06); // fits with 4 digits on y-axis
 
    // calling with kNAME does not work at PZ
