@@ -28,12 +28,14 @@ extern "C"
 void run()
 {
    // unfolded sample
-   TString sample="MadGraph";
-   // ~TString sample="dilepton";
+   // ~TString sample="MadGraph";
+   TString sample="dilepton";
+   // ~TString sample="";
    
    // response sample
    // ~TString sample_response="MadGraph";
    TString sample_response="dilepton";
+   // ~TString sample_response="";
    
    // include signal to pseudo data
    // ~bool withBSM = true;
@@ -87,27 +89,26 @@ void run()
    TVectorD binning_met(*(generatorBinning->FindNode("signal")->GetDistributionBinning(0)));
    TVectorD binning_phi(*(generatorBinning->FindNode("signal")->GetDistributionBinning(1)));
    
-   int num_bins = binning_met.GetNoElements()*(binning_phi.GetNoElements()-1)+1;
+   int num_bins = binning_met.GetNoElements()*(binning_phi.GetNoElements()-1);
    int num_bins_met = binning_met.GetNoElements();
    
    binning_met.ResizeTo(binning_met.GetNoElements()+1);
    binning_met[binning_met.GetNoElements()-1] = 400;  //Plotting end for overflow bin
    
    Double_t xbins[num_bins+1];
-   xbins[0] = -30;   //Plotting start for fake bin
-   xbins[1] = 0;   //Plotting start for fake bin
+   xbins[0] = 0;   //Plotting start
    
    int phi_bin = 0;
-   for (int i=0; i<(num_bins-1); i++)   {
-      xbins[i+2] = binning_met[i%num_bins_met+1]+phi_bin*400;
+   for (int i=0; i<(num_bins); i++)   {
+      xbins[i+1] = binning_met[i%num_bins_met+1]+phi_bin*400;
       if (i%num_bins_met==num_bins_met-1) phi_bin++;
    }
    
    unfolded->SetBins(num_bins,xbins);
    realDis->SetBins(num_bins,xbins);
    realDis_response->SetBins(num_bins,xbins);
-   for (int i=2; i<=num_bins; i++) {  //Set proper label for x axis
-      int bin_label_no = (i-2)%num_bins_met+1;
+   for (int i=1; i<=num_bins; i++) {  //Set proper label for x axis
+      int bin_label_no = (i-1)%num_bins_met+1;
       TString label;
       if (bin_label_no == num_bins_met) label = ">"+std::to_string((int)binning_met[bin_label_no-1]);
       else label = std::to_string((int)binning_met[bin_label_no-1])+"-"+std::to_string((int)binning_met[bin_label_no]);
@@ -119,7 +120,6 @@ void run()
    unfolded->GetXaxis()->SetTitleOffset(1.5);
    unfolded->GetYaxis()->SetTitleOffset(0.8);
    unfolded->GetXaxis()->CenterLabels(false);
-   realDis->GetXaxis()->SetBinLabel(1,"fakes");   //End binning initializing
    
    unfolded->LabelsOption("v");
    realDis->LabelsOption("v");
@@ -145,7 +145,6 @@ void run()
    TLatex * atext = new TLatex();
    atext->SetTextSize(0.03);
    aline->SetLineWidth(2);
-   aline->DrawLine(0,2,0,unfolded->GetMaximum());
    aline->DrawLine(800,2,800,unfolded->GetMaximum());
    aline->DrawLine(400,2,400,unfolded->GetMaximum());
    aline->DrawLine(800,2,800,unfolded->GetMaximum());
@@ -173,8 +172,8 @@ void run()
    can.pL_.SetBottomMargin(0.45);
    can.pL_.SetTickx(0);
    TH1F ratio=hist::getRatio(*realDis,*unfolded,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
-   ratio.SetMaximum(1.7);
-   ratio.SetMinimum(0.5);
+   ratio.SetMaximum(1.1);
+   ratio.SetMinimum(0.9);
    ratio.SetLineColor(kRed-6);
    ratio.SetMarkerColor(kRed-6);
    ratio.GetYaxis()->SetTitleOffset(0.3);
@@ -192,10 +191,9 @@ void run()
    uncertainty_unfolded.Draw("same");
    
    // ~aline->SetLineStyle(2);
-   aline->DrawLine(0,0.5,0,1.7);
-   aline->DrawLine(800,0.5,800,1.7);
-   aline->DrawLine(400,0.5,400,1.7);
-   aline->DrawLine(800,0.5,800,1.7);
+   aline->DrawLine(800,ratio.GetMinimum(),800,ratio.GetMaximum());
+   aline->DrawLine(400,ratio.GetMinimum(),400,ratio.GetMaximum());
+   aline->DrawLine(800,ratio.GetMinimum(),800,ratio.GetMaximum());
    
    
    //===========================

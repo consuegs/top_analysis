@@ -1,5 +1,5 @@
 //Script to define unfolding binning and generate distributions used for the unfolding based on TUnfolding classes (Following TUnfold examples)
-
+//This Script takes fakes into account by correcting the signal fraction before unfolding
 #include <iostream>
 #include <map>
 #include <cmath>
@@ -7,6 +7,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TH1.h>
+#include <TProfile.h>
 #include "TUnfoldBinning.h"
 
 #include "Config.hpp"
@@ -27,12 +28,14 @@ void run()
    std::cout<<"---------------------------------------"<<std::endl;
    
    // unfolded sample
-   TString sample="MadGraph";
-   // ~TString sample="dilepton";
+   // ~TString sample="MadGraph";
+   TString sample="dilepton";
+   // ~TString sample="";
    
    // response sample
    // ~TString sample_response="MadGraph";
    TString sample_response="dilepton";
+   // ~TString sample_response="";
    
    // include signal to pseudo data
    // ~bool withBSM = true;
@@ -43,8 +46,8 @@ void run()
    // ~bool withScaleFactor = true;
    
    // number of met and phi bins
-   int NBIN_MET_FINE=7;
-   // ~int NBIN_MET_FINE=9;
+   // ~int NBIN_MET_FINE=7;
+   int NBIN_MET_FINE=6;
    int NBIN_PHI_FINE=6;
 
    int NBIN_MET_COARSE=3;
@@ -52,9 +55,8 @@ void run()
    int NBIN_PHI_COARSE=3;
 
    // met binning (last bin is overflow)
-   // ~Double_t metBinsFine[NBIN_MET_FINE+1]={0,30,60,90,120,175,230,315};
-   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,60,120,230};
-   Double_t metBinsFine[NBIN_MET_FINE+1]={0,20,40,80,120,175,230,315};
+   // ~Double_t metBinsFine[NBIN_MET_FINE+1]={0,20,40,80,120,175,230,315};
+   Double_t metBinsFine[NBIN_MET_FINE+1]={0,20,40,80,120,175,230};
    Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,120,230};
    // ~Double_t metBinsFine[NBIN_MET_FINE+1]={0,20,40,65,90,125,160,195,230,315};
    // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,90,160,230};
@@ -82,7 +84,6 @@ void run()
    // signal distribution is measured with coarse binning
    // fake bin is used to check
    // what happens outside the phase-space
-   TUnfoldBinning *fakeBinning = generatorBinning->AddBinning("fake",1);
    TUnfoldBinning *signalBinning = generatorBinning->AddBinning("signal");
    signalBinning->AddAxis("metnunugen",NBIN_MET_COARSE,metBinsCoarse,
                            false, // underflow bin
@@ -119,13 +120,16 @@ void run()
    // ~Int_t istriggered,issignal;
 
    TH1 *histDataReco=detectorBinning->CreateHistogram("histDataReco");
+   TH1 *histDataReco_coarse=generatorBinning->CreateHistogram("histDataReco_coarse");
    TH1 *histDataTruth=generatorBinning->CreateHistogram("histDataTruth");
+   TH1 *histDataTruth_fakes=generatorBinning->CreateHistogram("histDataTruth_fakes");
 
-   TString inputFile = "ttbar_res100.0.root";
+   TString inputFile = TString::Format("ttbar_res%.1f.root",cfg.processFraction*100);
+   TString inputString = TString::Format("ttbar_res%.1f",cfg.processFraction*100);
    if (withScaleFactor) inputFile = "ttbar_res_SF0.910000100.0.root";
    TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/"+inputFile);
-   TTree *dataTree=(TTree *) dataFile->Get("ttbar_res100.0/ttbar_res_"+sample);
-   TTree *BSMTree=(TTree *) dataFile->Get("ttbar_res100.0/ttbar_res_T2tt_650_350");
+   TTree *dataTree=(TTree *) dataFile->Get(sample!=""? inputString+"/ttbar_res_"+sample: inputString+"/ttbar_res");
+   TTree *BSMTree=(TTree *) dataFile->Get(inputString+"/ttbar_res_T2tt_650_350");
    
 
    if(!dataTree) {
@@ -150,25 +154,35 @@ void run()
 
 
    cout<<"loop over data events\n";
+   
 
    for(Int_t ievent=0;ievent<dataTree->GetEntriesFast();ievent++) {
+   // ~for(Int_t ievent=0;ievent<dataTree->GetEntriesFast()/2;ievent++) {
       if(dataTree->GetEntry(ievent)<=0) break;
 
       //only bin to bin migration
       // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      
+      // ~if (metGen>0) mcWeight*=sqrt(sqrt(sqrt(sqrt(metGen))));
       
       //remove tau events, which are not reconstructed (no gen match, no reco match, should be included into distributions.cpp!!!!)
       if(metRec<0 && genDecayMode>3) continue;
 
       // fill histogram with data truth parameters
       Int_t genbinNumber=signalBinning->GetGlobalBinNumber(metGen,phiGen);
-      if (metGen<0 || genDecayMode>3) genbinNumber=fakeBinning->GetStartBin();
-      histDataTruth->Fill(genbinNumber,mcWeight);
+      // ~if (metGen<0 || genDecayMode>3) continue;
+      if (metGen<0 || genDecayMode>3) {
+         histDataTruth_fakes->Fill(genbinNumber,mcWeight);
+      }
+      else histDataTruth->Fill(genbinNumber,mcWeight);
 
       // fill histogram with reconstructed quantities
       if (metRec<0) continue;   //events that are not reconstructed
       Int_t binNumber=detectorDistribution->GetGlobalBinNumber(metRec,phiRec);
       histDataReco->Fill(binNumber,mcWeight);
+      
+      Int_t binNumber_coarse=signalBinning->GetGlobalBinNumber(metRec,phiRec);
+      histDataReco_coarse->Fill(binNumber_coarse,mcWeight);
    }
    
    if (withBSM) {
@@ -195,20 +209,23 @@ void run()
    for(int i=0;i<=histDataReco->GetNbinsX()+1;i++) {
       histDataReco->SetBinError(i,sqrt(histDataReco->GetBinContent(i)));
    }
-  
+   
    saver.save(*histDataReco,"histDataReco");
+   saver.save(*histDataTruth_fakes,"histDataTruth_fakes");
    saver.save(*histDataTruth,"histDataTruth");
 
    delete dataTree;
+   delete BSMTree;
    //=======================================================
    // Step 4: book and fill histogram of migrations
    //         it receives events from both signal MC and background MC (right now only signal MC)
 
    TH2 *histMCGenRec=TUnfoldBinning::CreateHistogramOfMigrations(generatorBinning,detectorBinning,"histMCGenRec");
    TH2 *histMCGenRec_purity=TUnfoldBinning::CreateHistogramOfMigrations(generatorBinning,generatorBinning,"histMCGenRec_purity");
+   TH1 *histMCRec_fakes=detectorBinning->CreateHistogram("histMCRec_fakes");
 
-   TTree *signalTree=(TTree *) dataFile->Get("ttbar_res100.0/ttbar_res_"+sample_response);
-
+   TTree *signalTree=(TTree *) dataFile->Get(sample_response!=""? inputString+"/ttbar_res_"+sample_response: inputString+"/ttbar_res");
+   
    if(!signalTree) {
       cout<<"could not read 'signal' tree\n";
    }
@@ -224,8 +241,10 @@ void run()
    signalTree->SetBranchAddress("SF",&recoWeight);
 
    cout<<"loop over MC signal events\n";
+   
   
    for(Int_t ievent=0;ievent<signalTree->GetEntriesFast();ievent++) {
+   // ~for(Int_t ievent=signalTree->GetEntriesFast()/2;ievent<signalTree->GetEntriesFast();ievent++) {
       if(signalTree->GetEntry(ievent)<=0) break;
       
       //only bin to bin migration
@@ -236,7 +255,6 @@ void run()
 
       // bin number on generator level for signal
       Int_t genBin=signalBinning->GetGlobalBinNumber(metGen,phiGen);
-      if (metGen<0 || genDecayMode>3) genBin=fakeBinning->GetStartBin();
 
       // bin number on reconstructed level
       // bin number 0 corresponds to non-reconstructed events
@@ -244,6 +262,12 @@ void run()
       Int_t recBin_purity=0;
       recBin=detectorDistribution->GetGlobalBinNumber(metRec,phiRec);
       recBin_purity=signalBinning->GetGlobalBinNumber(metRec,phiRec);
+      
+      // ~if (metGen<0 || genDecayMode>3) continue;
+      if (metGen<0 || genDecayMode>3) {
+         histMCRec_fakes->Fill(recBin,mcWeight);
+         continue;
+      }
 
       histMCGenRec->Fill(genBin,recBin,mcWeight);
       histMCGenRec_purity->Fill(genBin,recBin_purity,mcWeight);
@@ -260,8 +284,26 @@ void run()
   
    saver.save(*histMCGenRec,"histMCGenRec");
    saver.save(*histMCGenRec_purity,"histMCGenRec_sameBins");
+   saver.save(*histMCRec_fakes,"histMCRec_fakes");
    saver.save(*(histMCGenRec->ProjectionX()),"histMCGenRec_projX");
    saver.save(*(histMCGenRec->ProjectionY()),"histMCGenRec_projY");
+   
+   //Calculate Signal fration
+   TH1 *hist_SignalFraction=detectorBinning->CreateHistogram("hist_SignalFraction");
+   TH1 *histMCRec=histMCGenRec->ProjectionY("",1,-1);
+   saver.save(*histMCRec,"histMCRec");
+   hist_SignalFraction->Add(histMCRec);
+   histMCRec->Add(histMCRec_fakes);
+   hist_SignalFraction->Divide(histMCRec);
+   saver.save(*hist_SignalFraction,"hist_SignalFraction");
+   
+   //Save normalized reco distribution for fake and non fake events
+   TH1D histGen_fakes=*(histMCGenRec_purity->ProjectionY("Fakes",1,1));
+   TH1D histGen_noFakes=*(histMCGenRec_purity->ProjectionY("Fakes",2,-1));
+   // ~histRec_fakes.Scale(1/histRec_fakes.Integral());
+   // ~histRec_noFakes.Scale(1/histRec_noFakes.Integral());
+   saver.save(histGen_fakes,"histGen_fakes");
+   saver.save(histGen_noFakes,"histGen_noFakes");
 
    delete signalTree;
 
@@ -323,7 +365,7 @@ void run()
    for(int binRec=0;binRec<=hist_purity->GetNbinsX()+1;binRec++) {
       double sum=0.;
       // ~for(int binGen=0;binGen<=hist_purity->GetNbinsX()+1;binGen++) {
-      for(int binGen=2;binGen<=hist_purity->GetNbinsX()+1;binGen++) {
+      for(int binGen=1;binGen<=hist_purity->GetNbinsX()+1;binGen++) {
          sum += histMCGenRec_purity->GetBinContent(binGen,binRec);
       }
       double p=0.;
@@ -353,5 +395,16 @@ void run()
    }
    
    saver.save(*hist_stability,"hist_stability");
+   
+   // ~// Bin by bin correction factors
+   // ~TH1* correction = histMCGenRec_purity->ProjectionX();
+   // ~correction->Divide(histMCGenRec_purity->ProjectionY());
+   
+   // ~TH1* result_binBYbin = (TH1*)histDataReco_coarse->Clone("");
+   // ~result_binBYbin->Multiply(correction);
+   
+   // ~for (int i=1;i<=result_binBYbin->GetNbinsX();i++){
+      // ~std::cout<<result_binBYbin->GetBinContent(i)<<"   "<<histDataTruth->GetBinContent(i)<<"   "<<correction->GetBinContent(i)<<std::endl;
+   // ~}
 
 }

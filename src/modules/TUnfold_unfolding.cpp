@@ -77,12 +77,14 @@ extern "C"
 void run()
 {
    // unfolded sample
-   TString sample="MadGraph";
-   // ~TString sample="dilepton";
+   // ~TString sample="MadGraph";
+   TString sample="dilepton";
+   // ~TString sample="";
    
    // response sample
    // ~TString sample_response="MadGraph";
    TString sample_response="dilepton";
+   // ~TString sample_response="";
    
    // include signal to pseudo data
    // ~bool withBSM = true;
@@ -93,8 +95,8 @@ void run()
    // ~bool withScaleFactor = true;
    
    // perform toys studies?
-   // ~bool toy_studies=false;
-   bool toy_studies=true;
+   bool toy_studies=false;
+   // ~bool toy_studies=true;
    
    // switch on histogram errors
    TH1::SetDefaultSumw2();
@@ -123,11 +125,17 @@ void run()
    // read histograms
    TH1 *histDataReco=histReader.read<TH1>(input_loc+"/histDataReco");
    TH1 *histDataTruth=histReader.read<TH1>(input_loc+"/histDataTruth");
+   TH1 *histSignalFraction=histReader.read<TH1>(input_loc+"/hist_SignalFraction");
+   // ~TH1 *histSignalFraction=histReader.read<TH1>("TUnfold_binning_MadGraph_MadGraph/hist_SignalFraction");
+   // ~TH1 *histSignalFraction=histReader.read<TH1>("TUnfold_binning__/hist_SignalFraction");
    TH2 *histMCGenRec=histReader.read<TH2>(input_loc+"/histMCGenRec");
 
    if((!histDataReco)||(!histDataTruth)||(!histMCGenRec)) {
       cout<<"problem to read input histograms\n";
    }
+   
+   // remove fakes in reco by applying signal fraction
+   histDataReco->Multiply(histSignalFraction);
 
    //========================
    // Step 3: unfolding
@@ -137,12 +145,13 @@ void run()
    TUnfold::EConstraint constraintMode= TUnfold::kEConstraintNone;
 
    // basic choice of regularisation scheme:
-   //    curvature (second derivative)
    TUnfold::ERegMode regMode = TUnfold::kRegModeSize;
+   // ~TUnfold::ERegMode regMode = TUnfold::kRegModeCurvature;
+   // ~TUnfold::ERegMode regMode = TUnfold::kRegModeDerivative;
 
    // density flags
-   // ~TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeBinWidth;
-   TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeNone;
+   TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeBinWidth;
+   // ~TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeNone;
 
    // detailed steering for regularisation
    const char *REGULARISATION_DISTRIBUTION=0;
@@ -160,22 +169,29 @@ void run()
 
    // define the input vector (the measured data distribution)
    unfold.SetInput(histDataReco,1.0);
+   // ~unfold.SetInput(histDataReco,0.);
 
+   
+   // ~unfold.ScanTau(1000,0,0,0);
+   // ~std::cout<<unfold.GetTau()<<std::endl;
    // run the unfolding
    //
    unfold.DoUnfold(0.);//Without regularization
+   // ~unfold.DoUnfold(0.0006);//Without regularization
    
    // run the unfolding for toys
    TProfile *prof_pull_noRegularisation=0;
    TH1 *hist_coverage_noRegularisation=0;
    TH1 *hist_pull_noRegularisation=0;
-   int MAXTOY=300;
+   int MAXTOY=1000;
    
    // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult");
    // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
    TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
    TH1 *hist_folded=unfold.GetFoldedOutput("hist_foldedResult",";bin",0,0,false);
    TH2 *cov_input=unfold.GetEmatrixInput("cov_input",";bin",0,0,true);
+   TH2 *cov_statResponse=unfold.GetEmatrixSysUncorr("cov_statResponse",";bin",0,0,true);
+   TH2 *corr_matrix=unfold.GetRhoIJtotal("Rho2D");;
    TH1 *hist_unfolded_firstToy=0;
    
    if(toy_studies){
@@ -186,7 +202,7 @@ void run()
          unfold.SetInput(generatePoissonToy(histDataReco,itoy),1.0);
          unfold.DoUnfold(0.);//Without regularization
          if (itoy==0)hist_unfolded_firstToy=unfold.GetOutput("");
-         analyzeToy(unfold.GetOutput(""),
+         analyzeToy(unfold.GetOutput("","",0,0,false),
                        hist_unfolded,
                        prof_pull_noRegularisation,
                        hist_coverage_noRegularisation,hist_pull_noRegularisation,MAXTOY);
@@ -196,12 +212,19 @@ void run()
       saver.save(*hist_coverage_noRegularisation,"hist_coverage_noRegularisation");
       saver.save(*hist_pull_noRegularisation,"hist_pull_noRegularisation");
    }
-
+   
+   //Set stat. error to combined stat. error from input and response matrix
+   for (int i=1; i<hist_unfolded->GetNbinsX();i++){
+      hist_unfolded->SetBinError(i,sqrt(cov_input->GetBinContent(i,i)+cov_statResponse->GetBinContent(i,i)));
+      std::cout<<hist_unfolded->GetBinError(i)/hist_unfolded->GetBinContent(i)<<std::endl;
+   }
    //===========================
    // Step 4: retreive and plot unfolding results
    // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult","P_{T}^{#nu#nu} [GeV]","signal");
    saver.save(*hist_unfolded,"hist_unfoldedResult");
    saver.save(*hist_folded,"hist_foldedResult");
    saver.save(*cov_input,"cov_input");
+   saver.save(*cov_statResponse,"cov_statResponse");
+   saver.save(*corr_matrix,"corr_matrix");
 
 }
