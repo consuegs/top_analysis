@@ -24,10 +24,10 @@ void run()
    
    for (TString sSelection : {"genParticles","genParticles_Met200"}){
       for (TString sSample :{"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ",
-      "T1tttt_1200_800","T2tt_650_350","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","TTbar_diLepton"}){
+      "T1tttt_1200_800","T2tt_650_350","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){//,"TTbar_diLepton"}){
       
          for (TString sVar :{"diff_ptNuNu_genMET","diff_Met_genMET","diff_ptNuNu_Met","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM",
-            "diff_Met_DMgenMET_normSUM","diff_ptNuNu_DMgenMET","diff_Met_DMgenMET","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep"}) {
+            "diff_Met_DMgenMET_normSUM","diff_ptNuNu_DMgenMET","diff_Met_DMgenMET","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep"}) {
             
             TH1F hist_add;
             TH1F *hist;
