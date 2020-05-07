@@ -28,8 +28,13 @@ void run()
    
    // ~hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton/histMCGenRec");
    // ~hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_MadGraph/histMCGenRec");
-   hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton/histMCGenRec_sameBins");
-   hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_MadGraph/histMCGenRec_sameBins");
+   // ~hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton/histMCGenRec_sameBins");
+   // ~hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_MadGraph/histMCGenRec_sameBins");
+   // ~hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_PTreweight/histMCGenRec_sameBins");
+   // ~hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_PTreweight_sanity/histMCGenRec_sameBins");
+   // ~hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning__/histMCGenRec_sameBins");
+   hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_Puppi/histMCGenRec_sameBins");
+   hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_Puppi/histMCGenRec_sameBins");
    
    for (TString norm:{"","LineNorm"}){    //Plot nominal response and response normalized in each row
       
@@ -37,12 +42,12 @@ void run()
          hist->Scale(1.0/(hist->Integral()));
       }
       else{
-         //Normalize each individual row of diagram
+         //Normalize each individual line of diagram
          float sum;
-         for (int x=1; x<=hist->GetNbinsX(); x++){
-            sum=hist->Integral(x,x,1,hist->GetNbinsY());
+         for (int y=1; y<=hist->GetNbinsY(); y++){
+            sum=hist->Integral(1,hist->GetNbinsX(),y,y);
             if (sum==0) continue;
-            for (int y=1; y<=hist->GetNbinsY(); y++){
+            for (int x=1; x<=hist->GetNbinsY(); x++){
                if (hist->GetBinContent(x,y)!=0)hist->SetBinContent(x,y,hist->GetBinContent(x,y)/sum);
                else hist->SetBinContent(x,y,0.000002);
             }
@@ -92,11 +97,12 @@ void run()
 
       hist->SetStats(false);
       hist->Draw("colz text");
+      // ~hist->Draw("colz");
       
       hist->GetYaxis()->SetTitle("reco binNumber");
       hist->GetXaxis()->SetTitle("gen binNumber");
-      hist->GetYaxis()->SetRangeUser(2,13);
-      hist->GetXaxis()->SetRangeUser(2,13);
+      // ~hist->GetYaxis()->SetRangeUser(2,13);
+      // ~hist->GetXaxis()->SetRangeUser(2,13);
       
       can.RedrawAxis();
       TString plotLoc="dilepton_dilepton/reponse_"+norm;
@@ -105,21 +111,27 @@ void run()
       
       if(norm=="LineNorm"){
          float sum;
-         for (int x=1; x<=hist_alt->GetNbinsX(); x++){
-            sum=hist_alt->Integral(x,x,1,hist_alt->GetNbinsY());
+         for (int y=1; y<=hist_alt->GetNbinsY(); y++){
+            sum=hist_alt->Integral(1,hist_alt->GetNbinsX(),y,y);
             if (sum==0) continue;
-            for (int y=1; y<=hist_alt->GetNbinsY(); y++){
+            for (int x=1; x<=hist_alt->GetNbinsY(); x++){
                if (hist_alt->GetBinContent(x,y)!=0)hist_alt->SetBinContent(x,y,hist_alt->GetBinContent(x,y)/sum);
                else hist_alt->SetBinContent(x,y,0.000002);
             }
          }
+         saver.save(*hist_alt,"dilepton_MadGraph/response_"+norm);
          hist->Add(hist_alt,-1.);
          for (int i=0; i<=hist->GetNbinsX()+1; i++){
             for (int j=0; j<=hist->GetNbinsY()+1; j++){
-               hist->SetBinContent(i,j,abs(hist->GetBinContent(i,j)));
+               hist->SetBinContent(i,j,hist->GetBinContent(i,j)*100);
             }
          }
+         hist->GetZaxis()->SetTitle("difference (*100)");
+         TH1D* projectionX=hist_alt->ProjectionX();
          saver.save(*hist,"diff_dilepton_MadGraph");
+         saver.save(*projectionX,"diff_dilepton_MadGraph_project");
+         hist->Draw("colz text");
+         saver.save(can,"diff_dilepton_MadGraph_plot",true,true);
       }
    }
 }
