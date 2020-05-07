@@ -24,10 +24,10 @@ void run()
    
    for (TString sSelection : {"genParticles","genParticles_Met200","baseline","baseline_Met200"}){
       for (TString sSample :{"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ",
-      "T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","TTbar_diLepton"}){
+      "T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){//,"TTbar_diLepton"}){
          
          std::vector<TString> Plots_2d={"2d_nunuVSgenMet","MetVSgenMet","2d_nunuVSMet","2d_nunuVSDMgenMet","MetVSDMgenMet","2d_MT2VSgenMT2","2d_MT2VSgenMT2neutrino",
-            "2d_dPhiMetNearLep_genResponse","2d_dPhiMetNearLep_Response"};
+            "2d_MT_l1METVSgenMT","2d_MT_l1METVSgenMTneutrino","2d_dPhiMetNearLep_genResponse","2d_dPhiMetNearLep_Response"};
          if (sSelection == "baseline" or sSelection == "baseline_Met200") Plots_2d={"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep"};
          
          for (TString sVar : Plots_2d) {
