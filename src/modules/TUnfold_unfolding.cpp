@@ -11,7 +11,8 @@
 #include "TUnfoldDensity.h"
 #include <TRandom3.h>
 #include <TProfile.h>
-
+#include <TDecompSVD.h>
+#include <TMatrixDEigen.h>
 
 #include "Config.hpp"
 #include "tools/hist.hpp"
@@ -86,6 +87,18 @@ void run()
    TString sample_response="dilepton";
    // ~TString sample_response="";
    
+   // Use pT reweighted
+   // ~bool withPTreweight = false;
+   bool withPTreweight = true;
+   
+   // Use puppi instead of pfMET
+   bool withPuppi = false;
+   // ~bool withPuppi = true;
+   
+   // Use same bin numbers for gen/true
+   bool withSameBins = false;
+   // ~bool withSameBins = true;
+   
    // include signal to pseudo data
    // ~bool withBSM = true;
    bool withBSM = false;
@@ -105,6 +118,9 @@ void run()
    // step 1 : open output file
    TString save_path = "TUnfold_results_"+sample+"_"+sample_response;
    if (withBSM) save_path+="_BSM";
+   if (withPuppi) save_path+="_Puppi";
+   if (withSameBins) save_path+="_SameBins";
+   if (withPTreweight) save_path+="_PTreweight";
    io::RootFileSaver saver(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
    // ~io::RootFileSaver saver(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
 
@@ -114,6 +130,9 @@ void run()
    // ~io::RootFileReader histReader(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100));
    TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
    if (withBSM) input_loc+="_BSM";
+   if (withPuppi) input_loc+="_Puppi";
+   if (withSameBins) input_loc+="_SameBins";
+   if (withPTreweight) input_loc+="_PTreweight";
 
    TUnfoldBinning *detectorBinning=histReader.read<TUnfoldBinning>(input_loc+"/detector_binning");
    TUnfoldBinning *generatorBinning=histReader.read<TUnfoldBinning>(input_loc+"/generator_binning");
@@ -127,7 +146,7 @@ void run()
    TH1 *histDataTruth=histReader.read<TH1>(input_loc+"/histDataTruth");
    TH1 *histSignalFraction=histReader.read<TH1>(input_loc+"/hist_SignalFraction");
    // ~TH1 *histSignalFraction=histReader.read<TH1>("TUnfold_binning_MadGraph_MadGraph/hist_SignalFraction");
-   // ~TH1 *histSignalFraction=histReader.read<TH1>("TUnfold_binning__/hist_SignalFraction");
+   // ~TH1 *histSignalFraction=histReader.read<TH1>("TUnfold_binning_dilepton_/hist_SignalFraction");
    TH2 *histMCGenRec=histReader.read<TH2>(input_loc+"/histMCGenRec");
 
    if((!histDataReco)||(!histDataTruth)||(!histMCGenRec)) {
@@ -136,7 +155,13 @@ void run()
    
    // remove fakes in reco by applying signal fraction
    histDataReco->Multiply(histSignalFraction);
-
+   
+   // ~// test with flat reco distribution
+   // ~for(int i=1; i<=histDataReco->GetNbinsX(); i++) {
+      // ~histDataReco->SetBinContent(i,10000);
+      // ~histDataReco->SetBinError(i,100);
+   // ~}
+   
    //========================
    // Step 3: unfolding
 
@@ -191,8 +216,11 @@ void run()
    TH1 *hist_folded=unfold.GetFoldedOutput("hist_foldedResult",";bin",0,0,false);
    TH2 *cov_input=unfold.GetEmatrixInput("cov_input",";bin",0,0,true);
    TH2 *cov_statResponse=unfold.GetEmatrixSysUncorr("cov_statResponse",";bin",0,0,true);
-   TH2 *corr_matrix=unfold.GetRhoIJtotal("Rho2D");;
+   TH2 *cov_Output=unfold.GetEmatrixTotal("cov_total",";bin",0,0,true);
+   TH2 *corr_matrix=unfold.GetRhoIJtotal("Rho2D");
    TH1 *hist_unfolded_firstToy=0;
+   
+   std::cout<<unfold.GetRhoAvg()<<std::endl;
    
    if(toy_studies){
       for(int itoy=0;itoy<=MAXTOY;itoy++) {
@@ -204,6 +232,7 @@ void run()
          if (itoy==0)hist_unfolded_firstToy=unfold.GetOutput("");
          analyzeToy(unfold.GetOutput("","",0,0,false),
                        hist_unfolded,
+                       // ~histDataTruth,
                        prof_pull_noRegularisation,
                        hist_coverage_noRegularisation,hist_pull_noRegularisation,MAXTOY);
       }
@@ -216,7 +245,6 @@ void run()
    //Set stat. error to combined stat. error from input and response matrix
    for (int i=1; i<hist_unfolded->GetNbinsX();i++){
       hist_unfolded->SetBinError(i,sqrt(cov_input->GetBinContent(i,i)+cov_statResponse->GetBinContent(i,i)));
-      std::cout<<hist_unfolded->GetBinError(i)/hist_unfolded->GetBinContent(i)<<std::endl;
    }
    //===========================
    // Step 4: retreive and plot unfolding results
@@ -226,5 +254,31 @@ void run()
    saver.save(*cov_input,"cov_input");
    saver.save(*cov_statResponse,"cov_statResponse");
    saver.save(*corr_matrix,"corr_matrix");
+   saver.save(*cov_Output,"cov_output");
+   
+   //SVD decomposition
+   // ~TMatrixD test(histMCGenRec->GetNbinsY(),histMCGenRec->GetNbinsX());
+   // ~for (int i=1; i<=histMCGenRec->GetNbinsX();i++){
+      // ~for (int j=1; j<=histMCGenRec->GetNbinsY();j++){
+         // ~test[j-1][i-1]=histMCGenRec->GetBinContent(i,j);
+      // ~}
+   // ~}
+   
+   TH2 *normResponse=unfold.GetProbabilityMatrix("prob_matrix",0,false);
+   TMatrixD test(normResponse->GetNbinsY(),normResponse->GetNbinsX());
+   for (int i=1; i<=normResponse->GetNbinsX();i++){
+      for (int j=1; j<=normResponse->GetNbinsY();j++){
+         test[j-1][i-1]=normResponse->GetBinContent(i,j);
+      }
+   }
+   // ~test.Print();
+   TDecompSVD testSVD(test);
+   testSVD.Decompose();
+   // ~testSVD.Print();
+   std::cout<<testSVD.Condition()<<std::endl;
+   
+   // ~TMatrixDEigen testEigen(test);
+   // ~TMatrixD eigenvalues=testEigen.GetEigenValues();
+   // ~eigenvalues.Print();
 
 }

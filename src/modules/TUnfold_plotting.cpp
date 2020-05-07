@@ -24,6 +24,51 @@ using namespace std;
 
 Config const &cfg=Config::get();
 
+std::pair<float,int> getChi2NDF(TH1F* hist_res, TH1F* hist_true) {
+   if (hist_res->GetNbinsX()!=hist_true->GetNbinsX()){
+      std::cout<<"Histograms in Chi2 function have different number of bins"<<std::endl;
+      throw;
+   }
+   else {
+      float chi2 = 0;
+      for (int i=1; i<=hist_res->GetNbinsX(); i++) {
+         float diff = hist_res->GetBinContent(i)-hist_true->GetBinContent(i);
+         float err = hist_res->GetBinError(i)*1.;
+         chi2+= diff*diff/(err*err);
+      }
+      std::pair<float,int>result(chi2,hist_res->GetNbinsX());
+      return result;
+   }
+}
+
+std::pair<float,int> getChi2NDF_withCorr(TH1F* hist_res, TH1F* hist_true, TH2F* corr_res) {
+   if (hist_res->GetNbinsX()!=hist_true->GetNbinsX()){
+      std::cout<<"Histograms in Chi2 function have different number of bins"<<std::endl;
+      throw;
+   }
+   else {
+      
+      TMatrixD diff(hist_res->GetNbinsX(),1);
+      for (int i=1; i<=hist_res->GetNbinsX();i++){
+         diff[i-1][0]=hist_res->GetBinContent(i)-hist_true->GetBinContent(i);
+      }
+      
+      TMatrixD corr(hist_res->GetNbinsX(),hist_res->GetNbinsX());
+      for (int i=1; i<=corr_res->GetNbinsX();i++){
+         for (int j=1; j<=corr_res->GetNbinsY();j++){
+            corr[i-1][j-1]=corr_res->GetBinContent(i,j);
+         }
+      }
+      corr.Invert();
+      
+      TMatrixD resultMatrix(diff, TMatrixD::kTransposeMult,corr*diff);
+      
+      float chi2 = resultMatrix[0][0];
+      std::pair<float,int>result(chi2,hist_res->GetNbinsX());
+      return result;
+   }
+}
+
 extern "C"
 void run()
 {
@@ -36,6 +81,18 @@ void run()
    // ~TString sample_response="MadGraph";
    TString sample_response="dilepton";
    // ~TString sample_response="";
+   
+   // Use pT reweighted
+   // ~bool withPTreweight = false;
+   bool withPTreweight = true;
+   
+   // ~// Use puppi instead of pfMET
+   bool withPuppi = false;
+   // ~bool withPuppi = true;
+   
+   // Use same bin numbers for gen/true
+   bool withSameBins = false;
+   // ~bool withSameBins = true;
    
    // include signal to pseudo data
    // ~bool withBSM = true;
@@ -59,6 +116,18 @@ void run()
       input_loc+="_BSM";
       input_loc_result+="_BSM";
    }
+   if (withPuppi) {
+      input_loc+="_Puppi";
+      input_loc_result+="_Puppi";
+   }
+   if (withSameBins) {
+      input_loc+="_SameBins";
+      input_loc_result+="_SameBins";
+   }
+   if (withPTreweight) {
+      input_loc+="_PTreweight";
+      input_loc_result+="_PTreweight";
+   }
 
    TUnfoldBinning *detectorBinning=histReader.read<TUnfoldBinning>(input_loc+"/detector_binning");
    TUnfoldBinning *generatorBinning=histReader.read<TUnfoldBinning>(input_loc+"/generator_binning");
@@ -71,6 +140,8 @@ void run()
    TH1F *realDis=histReader.read<TH1F>(input_loc+"/histDataTruth");
    TH1F *realDis_response=histReader.read<TH1F>(input_loc+"/histMCGenRec_projX");
    TH1F *unfolded=histReader.read<TH1F>(input_loc_result+"/hist_unfoldedResult");
+   TH2F *corrMatrix=histReader.read<TH2F>(input_loc_result+"/corr_matrix");
+   TH2F *covMatrix=histReader.read<TH2F>(input_loc_result+"/cov_output");
 
    if((!realDis)||(!realDis_response)||(!unfolded)) {
       cout<<"problem to read input histograms\n";
@@ -152,7 +223,7 @@ void run()
    atext->DrawLatex(475,0.5*unfolded->GetMaximum(),"0.7<|#Delta#phi|(p_{T}^{#nu#nu},nearest l)<1.4");
    atext->DrawLatex(875,0.5*unfolded->GetMaximum(),"1.4<|#Delta#phi|(p_{T}^{#nu#nu},nearest l)<3.14");
    
-   //Dra legend
+   //Draw legend
    gfx::LegendEntries legE;
    legE.append(*unfolded,"Unfolded","pe");
    legE.append(*realDis,"MC true ttbar","l");
@@ -167,12 +238,18 @@ void run()
       atext->DrawLatex(75,10,"With ScaleFactor");
    }
    
+   //Get Chi2 and NDF
+   auto Chi2Pair = getChi2NDF(unfolded,realDis);
+   auto Chi2Pair_corr = getChi2NDF_withCorr(unfolded,realDis,covMatrix);
+   atext->DrawLatex(75,10,TString::Format("#chi^{2}/NDF=%.1f/%i",Chi2Pair.first,Chi2Pair.second));
+   atext->DrawLatex(75,3,TString::Format("#chi^{2}/NDF(corr.)=%.1f/%i",Chi2Pair_corr.first,Chi2Pair_corr.second));
+   
    //Change to lower part of canvas
    can.pL_.cd();
    can.pL_.SetBottomMargin(0.45);
    can.pL_.SetTickx(0);
    TH1F ratio=hist::getRatio(*realDis,*unfolded,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
-   ratio.SetMaximum(1.1);
+   ratio.SetMaximum(1.12);
    ratio.SetMinimum(0.9);
    ratio.SetLineColor(kRed-6);
    ratio.SetMarkerColor(kRed-6);
@@ -195,11 +272,43 @@ void run()
    aline->DrawLine(400,ratio.GetMinimum(),400,ratio.GetMaximum());
    aline->DrawLine(800,ratio.GetMinimum(),800,ratio.GetMaximum());
    
+   //Plot correlation matrix
+   TCanvas can2D;
+   can2D.cd();
+   
+   gPad->SetRightMargin(0.2);
+   corrMatrix->SetStats(0);
+   corrMatrix->SetTitle("");
+   corrMatrix->GetYaxis()->SetTitleOffset(0.6);
+   corrMatrix->GetYaxis()->SetTitle("BinNo");
+   corrMatrix->GetXaxis()->SetTitle("BinNo");
+   corrMatrix->GetZaxis()->SetTitleOffset(1.2);
+   corrMatrix->GetZaxis()->SetLabelOffset(0.01);
+   corrMatrix->SetMarkerColor(kRed);
+   corrMatrix->Draw("hcolz text");
+
    
    //===========================
    // Step 4: save plot
    TString saveName=sample+"_"+sample_response;
-   if (withBSM) saveName+="_BSM";
+   TString saveName2D="correlations/"+sample+"_"+sample_response;
+   if (withBSM) {
+      saveName+="_BSM";
+      saveName2D+="_BSM";
+   }
+   if (withPuppi)  {
+      saveName+="_Puppi";
+      saveName2D+="_Puppi";
+   }
+   if (withSameBins) {
+      saveName+="_SameBins";
+      saveName2D+="_SameBins";
+   }
+   if (withPTreweight) {
+      saveName+="_PTreweight";
+      saveName2D+="_PTreweight";
+   }
    saver.save(can,saveName);
+   saver.save(can2D,saveName2D);
 
 }

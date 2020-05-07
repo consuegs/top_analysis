@@ -35,7 +35,19 @@ void run()
    // response sample
    // ~TString sample_response="MadGraph";
    TString sample_response="dilepton";
-   // ~TString sample_response="";
+   // ~TString sample_response=""; 
+   
+   // Use pT reweighted
+   // ~bool withPTreweight = false;
+   bool withPTreweight = true;
+   
+   // Use puppi instead of pfMET
+   bool withPuppi = false;
+   // ~bool withPuppi = true;
+   
+   // Use same bin numbers for gen/true
+   bool withSameBins = false;
+   // ~bool withSameBins = true;
    
    // include signal to pseudo data
    // ~bool withBSM = true;
@@ -45,24 +57,32 @@ void run()
    bool withScaleFactor = false;
    // ~bool withScaleFactor = true;
    
-   // number of met and phi bins
-   // ~int NBIN_MET_FINE=7;
+   // number of met and phi bins and binning
    int NBIN_MET_FINE=6;
+   // ~int NBIN_MET_FINE=12;
    int NBIN_PHI_FINE=6;
+   std::vector<double> metBinsFine_vector={0,20,40,80,120,175,230};
+   // ~std::vector<double> metBinsFine_vector={40,60,70,80,120,175,230};
+   // ~std::vector<double> metBinsFine_vector={0,20,40,50,60,70,80,90,100,110,120,140,175,230};
+   std::vector<double> phiBinsFine_vector={0,0.35,0.7,1.05,1.4,2.27,3.141};
+   // ~std::vector<double> phiBinsFine_vector={0,0.35,0.7,1.05,1.4,1.8,3.141};
+   if(withSameBins){
+      NBIN_MET_FINE=3;
+      NBIN_PHI_FINE=3;
+      metBinsFine_vector.resize(NBIN_MET_FINE+1);
+      phiBinsFine_vector.resize(NBIN_PHI_FINE+1);
+      metBinsFine_vector={0,40,120,230};
+      phiBinsFine_vector={0,0.7,1.4,3.141};
+   }
+   Double_t* metBinsFine=&metBinsFine_vector[0];
+   Double_t* phiBinsFine=&phiBinsFine_vector[0];
 
    int NBIN_MET_COARSE=3;
-   // ~int NBIN_MET_COARSE=4;
    int NBIN_PHI_COARSE=3;
-
-   // met binning (last bin is overflow)
-   // ~Double_t metBinsFine[NBIN_MET_FINE+1]={0,20,40,80,120,175,230,315};
-   Double_t metBinsFine[NBIN_MET_FINE+1]={0,20,40,80,120,175,230};
    Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,120,230};
-   // ~Double_t metBinsFine[NBIN_MET_FINE+1]={0,20,40,65,90,125,160,195,230,315};
-   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,90,160,230};
-   // phi binning
-   Double_t phiBinsFine[NBIN_PHI_FINE+1]={0,0.35,0.7,1.05,1.4,2.27,3.141};
+   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={40,80,120,230};
    Double_t phiBinsCoarse[NBIN_PHI_COARSE+1]={0,0.7,1.4,3.141};
+   
    //=======================================================================
    // detector level binning scheme
 
@@ -71,6 +91,7 @@ void run()
    detectorDistribution->AddAxis("met",NBIN_MET_FINE,metBinsFine,
                                  false, // no underflow bin (not reconstructed)
                                  true // overflow bin
+                                 // ~false // overflow bin
                                  );
    detectorDistribution->AddAxis("phi",NBIN_PHI_FINE,phiBinsFine,
                                  false, // no underflow bin (not reconstructed)
@@ -88,6 +109,7 @@ void run()
    signalBinning->AddAxis("metnunugen",NBIN_MET_COARSE,metBinsCoarse,
                            false, // underflow bin
                            true // overflow bin
+                           // ~false // overflow bin
                            );
    signalBinning->AddAxis("phigen",NBIN_PHI_COARSE,phiBinsCoarse,
                            false, // underflow bin
@@ -103,6 +125,12 @@ void run()
    // Step 1: open file to save histograms and binning schemes
    TString save_path = "TUnfold_binning_"+sample+"_"+sample_response;
    if (withBSM) save_path+="_BSM";
+   if (withPuppi) save_path+="_Puppi";
+   if (withSameBins) save_path+="_SameBins";
+   if (withPTreweight) {
+      save_path+="_PTreweight";
+      sample+="_PTreweight";
+   }
    
    io::RootFileSaver saver(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
 
@@ -115,7 +143,7 @@ void run()
    //=======================================================
    // Step 3: book and fill data histograms
 
-   Float_t phiRec,metRec,phiGen,metGen,mcWeight,recoWeight;
+   Float_t phiRec,metRec,phiGen,metGen,mcWeight,recoWeight,genMET,reweight;
    UInt_t genDecayMode;
    // ~Int_t istriggered,issignal;
 
@@ -129,6 +157,8 @@ void run()
    if (withScaleFactor) inputFile = "ttbar_res_SF0.910000100.0.root";
    TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/"+inputFile);
    TTree *dataTree=(TTree *) dataFile->Get(sample!=""? inputString+"/ttbar_res_"+sample: inputString+"/ttbar_res");
+   // ~TFile *dataFile_alt=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0_new.root");
+   // ~TTree *dataTree=(TTree *) dataFile_alt->Get(sample!=""? inputString+"/ttbar_res_"+sample: inputString+"/ttbar_res");
    TTree *BSMTree=(TTree *) dataFile->Get(inputString+"/ttbar_res_T2tt_650_350");
    
 
@@ -142,16 +172,19 @@ void run()
    dataTree->ResetBranchAddresses();
    dataTree->SetBranchAddress("Phi_rec",&phiRec);
    dataTree->SetBranchAddress("MET",&metRec);
-   // for real data, only the triggered events are available
-   // ~dataTree->SetBranchAddress("istriggered",&istriggered);
-   // data truth parameters
+   dataTree->SetBranchAddress("genMET",&genMET);
+   if(withPuppi) {
+      dataTree->SetBranchAddress("Phi_recPuppi",&phiRec);
+      dataTree->SetBranchAddress("PuppiMET",&metRec);
+   }
    dataTree->SetBranchAddress("Phi_NuNu",&phiGen);
    dataTree->SetBranchAddress("PtNuNu",&metGen);
    dataTree->SetBranchAddress("genDecayMode",&genDecayMode);
    dataTree->SetBranchAddress("N",&mcWeight);
    dataTree->SetBranchAddress("SF",&recoWeight);
    // ~dataTree->SetBranchAddress("issignal",&issignal);
-
+   if(withPTreweight) dataTree->SetBranchAddress("reweight_PTnunu",&reweight);
+   else reweight=1.0;
 
    cout<<"loop over data events\n";
    
@@ -161,7 +194,13 @@ void run()
       if(dataTree->GetEntry(ievent)<=0) break;
 
       //only bin to bin migration
-      // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      
+      //ignore acceptance
+      // ~if(metRec<0) continue;
+      
+      //ignore fakes
+      // ~if(genDecayMode>3 || metGen<0) continue;
       
       // ~if (metGen>0) mcWeight*=sqrt(sqrt(sqrt(sqrt(metGen))));
       
@@ -170,7 +209,10 @@ void run()
 
       // fill histogram with data truth parameters
       Int_t genbinNumber=signalBinning->GetGlobalBinNumber(metGen,phiGen);
-      // ~if (metGen<0 || genDecayMode>3) continue;
+      
+      //reweight
+      mcWeight*=reweight;
+      
       if (metGen<0 || genDecayMode>3) {
          histDataTruth_fakes->Fill(genbinNumber,mcWeight);
       }
@@ -189,6 +231,10 @@ void run()
       BSMTree->ResetBranchAddresses();
       BSMTree->SetBranchAddress("Phi_rec",&phiRec);
       BSMTree->SetBranchAddress("MET",&metRec);
+      if(withPuppi) {
+         BSMTree->SetBranchAddress("Phi_recPuppi",&phiRec);
+         BSMTree->SetBranchAddress("PuppiMET",&metRec);
+      }
       BSMTree->SetBranchAddress("Phi_NuNu",&phiGen);
       BSMTree->SetBranchAddress("PtNuNu",&metGen);
       BSMTree->SetBranchAddress("genDecayMode",&genDecayMode);
@@ -233,6 +279,11 @@ void run()
    signalTree->ResetBranchAddresses();
    signalTree->SetBranchAddress("Phi_rec",&phiRec);
    signalTree->SetBranchAddress("MET",&metRec);
+   signalTree->SetBranchAddress("genMET",&genMET);
+   if(withPuppi) {
+      signalTree->SetBranchAddress("Phi_recPuppi",&phiRec);
+      signalTree->SetBranchAddress("PuppiMET",&metRec);
+   }
    // ~signalTree->SetBranchAddress("istriggered",&istriggered);
    signalTree->SetBranchAddress("Phi_NuNu",&phiGen);
    signalTree->SetBranchAddress("PtNuNu",&metGen);
@@ -248,7 +299,13 @@ void run()
       if(signalTree->GetEntry(ievent)<=0) break;
       
       //only bin to bin migration
-      // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      
+      //ignore acceptance
+      // ~if(metRec<0) continue;
+      
+      //ignore fakes
+      // ~if(genDecayMode>3 || metGen<0) continue;
 
       //remove tau events, which are not reconstructed (no gen match, no reco match, should be included into distributions.cpp!!!!)
       if(metRec<0 && genDecayMode>3) continue;
