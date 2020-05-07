@@ -436,7 +436,7 @@ void run()
    //Ntuple and file to save minimal ttbar tree used for binning studies
    float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
    minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
-   minTree_PhiPtnunuMet, minTree_leadTop;
+   minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi;
    UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions;
    ULong64_t minTree_evtNo;
    io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res"+met_sf_string+"%.1f_new.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
@@ -469,6 +469,8 @@ void run()
    ttbar_res.Branch("n_Interactions",&minTree_n_Interactions,"n_Interactions/i");
    ttbar_res.Branch("dPhiPtnunuMet",&minTree_PhiPtnunuMet,"dPhiPtnunuMet/f");
    ttbar_res.Branch("leadTop_pT",&minTree_leadTop,"leadTop_pT/f");
+   ttbar_res.Branch("dPhiNuNu",&minTree_dPhiNuNu,"dPhiNuNu/f");
+   ttbar_res.Branch("Phi_recPuppi",&minTree_PhiRecPuppi,"Phi_recPuppi/f");
    
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
@@ -508,6 +510,10 @@ void run()
       //Check if current sample is TTbar madGraph high MET
       bool ttBar_madGraph150=false;
       if (dss.datasetName=="TTbar_madGraph150") ttBar_madGraph150=true;
+      
+      //Check if current sample is TTbar madGraph high MET
+      bool ttBar_amcatnlo=false;
+      if (dss.datasetName=="TTbar_amcatnlo") ttBar_amcatnlo=true;
       
       //Check if current sample is selectedSusy scenario 
       bool SUSY_T2tt_650_350=false;
@@ -677,13 +683,18 @@ void run()
          
          //Get DeltaPhi between MET (or genMet or neutrino pT) and nearest Lepton
          float dPhiMETnearLep=4;
+         float dPhiMETnearLepPuppi=4;
          float mt_MetNextLep=0; 
          float mt_NuNuNextLep=0; 
          for (TLorentzVector const lep : {p_l1,p_l2}){
             const float dPhi=MET->p.DeltaPhi(lep);
+            const float dPhi_Puppi=MET_Puppi->p.DeltaPhi(lep);
             if (std::abs(dPhi) < std::abs(dPhiMETnearLep)) {
                dPhiMETnearLep=dPhi;
                mt_MetNextLep=phys::M_T(MET->p,lep);
+            }
+            if (std::abs(dPhi_Puppi) < std::abs(dPhiMETnearLepPuppi)) {
+               dPhiMETnearLepPuppi=dPhi_Puppi;
             }
          }
          float dPhigenMETnearLep=4;
@@ -726,6 +737,7 @@ void run()
          float mt_MetLep2=phys::M_T(MET->p,p_l2);
          float sum_mlb=phys::sumMlb(p_l1,p_l2,cjets,BJets);
          float conMt_Lep1Lep2=phys::conM_T(p_l1,p_l2);
+         float dPhiNuNu=genNeutrino->DeltaPhi(*genAntiNeutrino);
          
          TLorentzVector leadGenLepton;
          if (genLepton->Pt()>genAntiLepton->Pt()) leadGenLepton=*genLepton;
@@ -745,7 +757,7 @@ void run()
          pT_top2=gen_tops[1].Pt();
          
          //Fill minimal tree for TTbar resolution used in binning studies
-         if (ttBar_dilepton || ttBar_madGraph || ttBar_madGraph150 || SUSY_T2tt_650_350 || ttBar_standard){
+         if (ttBar_dilepton || ttBar_madGraph || ttBar_madGraph150 || SUSY_T2tt_650_350 || ttBar_standard || ttBar_amcatnlo){
             minTree_MET=met;
             minTree_PtNuNu=neutrinoPair.Pt();
             minTree_PhiRec=abs(dPhiMETnearLep);
@@ -773,6 +785,8 @@ void run()
             minTree_MT_nextLep=mt_MetNextLep;
             minTree_genMT_nextLep=mt_NuNuNextLep;
             minTree_leadTop=pT_top1;
+            minTree_dPhiNuNu=abs(dPhiNuNu);
+            minTree_PhiRecPuppi=abs(dPhiMETnearLepPuppi);
             if (rec_selection==false) {
                minTree_MET=-1.;
                minTree_PhiRec=-1.;
@@ -789,18 +803,18 @@ void run()
                minTree_MT_nextLep=-1.;
                minTree_SF=0.;
                minTree_PhiPtnunuMet=-1;
+               minTree_PhiRecPuppi=-1;
             }
             else if (pseudo_selection==false) {
                minTree_PtNuNu=-1.;
                minTree_PhiGen=-1.;
                minTree_PhiNuNu=-1.;
-               minTree_genDecayMode=0.;
-               minTree_genMet=-1.;
                minTree_n_Interactions=0;
                minTree_genMT=-1;
                minTree_genMT_nextLep=-1;
                minTree_PhiPtnunuMet=-1;
                minTree_leadTop=-1;
+               minTree_dPhiNuNu=-1;
             }
             else {
                minTree_PhiPtnunuMet=abs(neutrinoPair.DeltaPhi(MET->p));
@@ -1086,6 +1100,10 @@ void run()
       }
       else if (ttBar_dilepton) {
          ttbar_res_saver.save(ttbar_res,"ttbar_res_dilepton");
+         ttbar_res.Reset();
+      }
+      else if (ttBar_amcatnlo) {
+         ttbar_res_saver.save(ttbar_res,"ttbar_res_amcatnlo");
          ttbar_res.Reset();
       }
       
