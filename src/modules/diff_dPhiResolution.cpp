@@ -244,7 +244,8 @@ void run()
       bool bTag=false;
       std::vector<tree::Jet> BJets;
       for (tree::Jet const &jet : cjets) {
-         if (jet.bTagCSVv2>0.5426) {      //Loose working point for CSVv2 (Should be replaced in the future by deep CSV!!!)
+         // ~if (jet.bTagCSVv2>0.5426) {      //Loose working point for CSVv2 (Should be replaced in the future by deep CSV!!!)
+         if (jet.bTagDeepCSV>0.2217) {      //Loose working point for deepCSV
             bTag=true;
             BJets.push_back(jet);
          }
