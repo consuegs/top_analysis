@@ -337,6 +337,13 @@ TH2F hist::fromWidths_2d(const char *name, const char *title, std::vector<float>
    return TH2F(name,title,xbins.size()-1,&xbins[0],ybins.size()-1,&ybins[0]);
 }
 
+TProfile2D hist::ProfilefromWidths_2d(const char *name, const char *title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y)
+{
+   std::vector<double> xbins=getBinVector(edges_x, widths_x);
+   std::vector<double> ybins=getBinVector(edges_y, widths_y);
+   return TProfile2D(name,title,xbins.size()-1,&xbins[0],ybins.size()-1,&ybins[0]);
+}
+
 std::vector<float> hist::getWidths(std::vector<float> const &bins){
    std::vector<float> widths;
    int nBins=bins.size();
