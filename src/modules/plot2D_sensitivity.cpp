@@ -51,7 +51,9 @@ extern "C"
 void run()
 {
    io::RootFileSaver saver(TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100),"plot2D_sensitivity");
+   // ~io::RootFileSaver saver(TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100),"plot2D_sensitivity_0.91");
    io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("histograms_SF0.910000_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
    TCanvas can;
    
    TH2F signal;
@@ -71,7 +73,8 @@ void run()
    std::vector<float> met_bins3={0,70,140,250,400};
    std::vector<float> phi_bins3={0,0.4,0.8,1.2,3.14};
    
-   std::vector<float> met_bins4={0,60,120,230,400};
+   // ~std::vector<float> met_bins4={0,40,120,230,400};
+   std::vector<float> met_bins4={0,32,96,184,400};
    std::vector<float> phi_bins4={0,0.7,1.4,3.14};
    // ~std::vector<float> met_bins4={0,400};
    // ~std::vector<float> phi_bins4={0,3.14};
@@ -80,10 +83,10 @@ void run()
    int numberBinningSchemeMet=1;
    int numberBinningSchemePhi=1;
    
-   for(std::vector<float> met_bins : {met_bins1,met_bins2,met_bins3,met_bins4}){
-      for(std::vector<float> phi_bins : {phi_bins1,phi_bins2,phi_bins3,phi_bins4}){
-   // ~for(std::vector<float> met_bins : {met_bins4}){
-      // ~for(std::vector<float> phi_bins : {phi_bins4}){
+   // ~for(std::vector<float> met_bins : {met_bins1,met_bins2,met_bins3,met_bins4}){
+      // ~for(std::vector<float> phi_bins : {phi_bins1,phi_bins2,phi_bins3,phi_bins4}){
+   for(std::vector<float> met_bins : {met_bins4}){
+      for(std::vector<float> phi_bins : {phi_bins4}){
                
          for (TString bkgSample :{"SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttZ_SM","ttH_SM"}) {     //Add all SM backgrounds except ttbar
             add_Categories("2d_MetVSdPhiMetNearLep/"+bkgSample,histReader,temp_hist);
@@ -92,6 +95,8 @@ void run()
          }
          
          add_Categories("2d_MetVSdPhiMetNearLep/TTbar",histReader,ttbar);
+         
+         std::cout<<"Correlation in ttbar: "<<ttbar.GetCorrelationFactor()<<std::endl;
          
          SMbkg=hist::rebinned(SMbkg,met_bins,phi_bins);
          ttbar=hist::rebinned(ttbar,met_bins,phi_bins);
@@ -194,10 +199,6 @@ void run()
          Int_t fix[] ={-3,3,1,-1};
          for (int i=0;i<nTotBins;i++){
             Float_t vals[7];
-            for (int j=0;j<7;j++){
-               vals[j]= bin_ratios[i][j];
-               std::cout<<vals[j]<<std::endl;
-            }
             TString binName="Bin"+std::to_string(i+1);
             TPie *pie1 = new TPie("pie1",binName,7,vals,colors);
             
@@ -214,6 +215,7 @@ void run()
             pie1->GetSlice(6)->SetTitle("TTbar");
             pie1->SetLabelsOffset(-.2);
             pie1->SetLabelFormat("%txt(%perc)");
+            pie1->SetPercentFormat("%2.0f");
             pie1->SetRadius(.3);
             
             can.cd(nTotBins-i+fix[(nTotBins-i)%(met_bins.size()-1)]);

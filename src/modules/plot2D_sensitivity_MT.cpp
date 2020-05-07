@@ -92,6 +92,8 @@ void run()
          
          add_Categories("2d_MetVSMT_nextLep/TTbar",histReader,ttbar);
          
+         std::cout<<"Correlation in ttbar: "<<ttbar.GetCorrelationFactor()<<std::endl;
+         
          SMbkg=hist::rebinned(SMbkg,met_bins,mt_bins);
          ttbar=hist::rebinned(ttbar,met_bins,mt_bins);
          
