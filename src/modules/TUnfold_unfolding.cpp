@@ -198,6 +198,7 @@ void run()
 
    
    // ~unfold.ScanTau(1000,0,0,0);
+   // ~unfold.ScanLcurve(1000,0,0,0);
    // ~std::cout<<unfold.GetTau()<<std::endl;
    // run the unfolding
    //

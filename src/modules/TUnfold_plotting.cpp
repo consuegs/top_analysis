@@ -249,8 +249,10 @@ void run()
    can.pL_.SetBottomMargin(0.45);
    can.pL_.SetTickx(0);
    TH1F ratio=hist::getRatio(*realDis,*unfolded,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
-   ratio.SetMaximum(1.12);
-   ratio.SetMinimum(0.9);
+   // ~ratio.SetMaximum(1.12);
+   // ~ratio.SetMinimum(0.9);
+   ratio.SetMaximum(1.2);
+   ratio.SetMinimum(0.8);
    ratio.SetLineColor(kRed-6);
    ratio.SetMarkerColor(kRed-6);
    ratio.GetYaxis()->SetTitleOffset(0.3);

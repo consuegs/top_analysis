@@ -58,15 +58,19 @@ void run()
    // ~bool withScaleFactor = true;
    
    // number of met and phi bins and binning
-   int NBIN_MET_FINE=6;
+   // ~int NBIN_MET_FINE=6;
+   int NBIN_MET_FINE=8;
    // ~int NBIN_MET_FINE=12;
    int NBIN_PHI_FINE=6;
-   std::vector<double> metBinsFine_vector={0,20,40,80,120,175,230};
+   // ~std::vector<double> metBinsFine_vector={0,20,40,80,120,175,230};
+   std::vector<double> metBinsFine_vector={0,20,40,60,80,100,120,175,230};
+   // ~std::vector<double> metBinsFine_vector={0,20,40,50,60,70,80,90,100,110,120,175,230};
    // ~std::vector<double> metBinsFine_vector={40,60,70,80,120,175,230};
    // ~std::vector<double> metBinsFine_vector={0,20,40,50,60,70,80,90,100,110,120,140,175,230};
    std::vector<double> phiBinsFine_vector={0,0.35,0.7,1.05,1.4,2.27,3.141};
    // ~std::vector<double> phiBinsFine_vector={0,0.35,0.7,1.05,1.4,1.8,3.141};
    if(withSameBins){
+      // ~NBIN_MET_FINE=3;
       NBIN_MET_FINE=3;
       NBIN_PHI_FINE=3;
       metBinsFine_vector.resize(NBIN_MET_FINE+1);
@@ -77,9 +81,13 @@ void run()
    Double_t* metBinsFine=&metBinsFine_vector[0];
    Double_t* phiBinsFine=&phiBinsFine_vector[0];
 
-   int NBIN_MET_COARSE=3;
+   // ~int NBIN_MET_COARSE=3;
+   int NBIN_MET_COARSE=4;
+   // ~int NBIN_MET_COARSE=6;
    int NBIN_PHI_COARSE=3;
-   Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,120,230};
+   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,120,230};
+   Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,80,120,230};
+   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,60,80,100,120,230};
    // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={40,80,120,230};
    Double_t phiBinsCoarse[NBIN_PHI_COARSE+1]={0,0.7,1.4,3.141};
    
@@ -153,6 +161,8 @@ void run()
    TH1 *histDataTruth_fakes=generatorBinning->CreateHistogram("histDataTruth_fakes");
 
    TString inputFile = TString::Format("ttbar_res%.1f.root",cfg.processFraction*100);
+   // ~TString inputFile = TString::Format("ttbar_res%.1f_ptReweightPerBin.root",cfg.processFraction*100);
+   // ~TString inputFile = TString::Format("ttbar_res%.1f_extremeReweight.root",cfg.processFraction*100);
    TString inputString = TString::Format("ttbar_res%.1f",cfg.processFraction*100);
    if (withScaleFactor) inputFile = "ttbar_res_SF0.910000100.0.root";
    TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/"+inputFile);
@@ -172,7 +182,8 @@ void run()
    dataTree->ResetBranchAddresses();
    dataTree->SetBranchAddress("Phi_rec",&phiRec);
    dataTree->SetBranchAddress("MET",&metRec);
-   dataTree->SetBranchAddress("genMET",&genMET);
+   // ~dataTree->SetBranchAddress("genMET",&metRec);
+   // ~dataTree->SetBranchAddress("genMET",&genMET);
    if(withPuppi) {
       dataTree->SetBranchAddress("Phi_recPuppi",&phiRec);
       dataTree->SetBranchAddress("PuppiMET",&metRec);
@@ -279,7 +290,8 @@ void run()
    signalTree->ResetBranchAddresses();
    signalTree->SetBranchAddress("Phi_rec",&phiRec);
    signalTree->SetBranchAddress("MET",&metRec);
-   signalTree->SetBranchAddress("genMET",&genMET);
+   // ~signalTree->SetBranchAddress("genMET",&metRec);
+   // ~signalTree->SetBranchAddress("genMET",&genMET);
    if(withPuppi) {
       signalTree->SetBranchAddress("Phi_recPuppi",&phiRec);
       signalTree->SetBranchAddress("PuppiMET",&metRec);
