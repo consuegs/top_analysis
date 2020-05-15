@@ -21,26 +21,39 @@
 #include "tools/io.hpp"
 #include "tools/weighters.hpp"
 
+void saveProfileFrom2D(TH2F* hist, TString name,io::RootFileSaver* saver){
+   TProfile profile;
+   profile=*(hist->ProfileX("Profile"));
+   saver->save(*hist,name);
+   profile.SetTitle("Profile;pt_NuNu;mean weight");
+   saver->save(profile,name+"_profile");
+}
+
 Config const &cfg=Config::get();
 
 extern "C"
 void run()
-{
+{   
+    //Use constant weight per met-bin
+    // ~bool binWeighting=true;
+    bool binWeighting=false;
     
     //Define reweighting variables
-    float A=1.0;
-    float B=0.55;
-    float C=5.5;
-    float D=0.;
-    float E=0.;
+    // ~float A=1.0;
+    // ~float B=0.55;
+    // ~float C=5.5;
+    // ~float D=0.;
+    // ~float E=0.;
     
-    float slope=0.001;
+    // ~float slope=0.001;
+    float slope=0.002;
+    // ~float slope=0.004;
     // ~float slope=-0.001;
     
     //Define binning
-    int NBIN_MET_COARSE=3;
+    int NBIN_MET_COARSE=4;
     int NBIN_PHI_COARSE=3;
-    Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,120,230};
+    Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,80,120,230};
     Double_t phiBinsCoarse[NBIN_PHI_COARSE+1]={0,0.7,1.4,3.141};
     TUnfoldBinning *generatorBinning=new TUnfoldBinning("generator");
     TUnfoldBinning *signalBinning = generatorBinning->AddBinning("signal");
@@ -84,9 +97,11 @@ void run()
         
         float x=genMET/2000.;
         // ~weight=(A*std::pow(x,B)*pow(1-x,C)*(1+D*x+E*x*x));
-        weight=std::max((1.+(genMET-100.)*slope)*(1.+(genMET-100.)*slope),0.1);
+        weight=std::max((1.+(metGen-100.)*slope)*(1.+(metGen-100.)*slope),0.1);
+        // ~weight=std::max((1.+(metGen-100.)*slope),0.1);
+        if(metGen<0) weight=0;
         
-        if (weight!=weight) std::cout<<x<<std::endl;
+        if(binWeighting) weight=((genBin-1)%4)+1;
         
         histGen_reweight->Fill(genBin,mcWeight*weight);
     }
@@ -110,15 +125,31 @@ void run()
         std::cout<<histGen_reweight->GetBinContent(i)<<std::endl;
     }
     
+    TH2F hist2D_weights("","",100,0,800,1000,0,10);
+    TH2F hist2D_weights_binning("","",13,-0.5,12.5,1000,-10,10);
+    
     for(Int_t ievent=0;ievent<PowhegTree->GetEntriesFast();ievent++) {
         if(PowhegTree->GetEntry(ievent)<=0) break;
+        Int_t genBin=signalBinning->GetGlobalBinNumber(metGen,phiGen);
         float x=genMET/2000.;
         // ~weight=(A*std::pow(x,B)*pow(1-x,C)*(1+D*x+E*x*x))*norm;
-        weight=std::max((1.+(genMET-100.)*slope)*(1.+(genMET-100.)*slope),0.1)*norm;
+        weight=std::max((1.+(metGen-100.)*slope)*(1.+(metGen-100.)*slope),0.1)*norm;
+        // ~weight=std::max((1.+(metGen-100.)*slope),0.1)*norm;
+        if(metGen<0) weight=0;
+                
+        if(binWeighting) weight=(((genBin-1)%4)+1)*norm;
+        
+        hist2D_weights.Fill(metGen,weight);
+        
+        hist2D_weights_binning.Fill(genBin,weight);
         
         bpt->Fill();
     }
         
     dataFile->cd(TString::Format("ttbar_res%.1f",cfg.processFraction*100));
     PowhegTree->Write("ttbar_res_dilepton_PTreweight",TObject::kOverwrite);
+    
+    io::RootFileSaver saver(TString::Format("TUnfold%.1f.root",cfg.processFraction*100),"reweightingSF");
+    saveProfileFrom2D(&hist2D_weights,"weights/weights_ptNuNu_2D",&saver);
+    saveProfileFrom2D(&hist2D_weights_binning,"weights/weights_binning_2D",&saver);
 }
