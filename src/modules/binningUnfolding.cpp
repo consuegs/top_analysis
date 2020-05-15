@@ -45,6 +45,7 @@ void run()
    std::vector<float> phi_bins3={0,0.4,0.8,1.2,3.14};
    
    std::vector<float> met_bins4={0,40,120,230,400};
+   // ~std::vector<float> met_bins4={0,40,80,120,230,400};
    std::vector<float> phi_bins4={0,0.7,1.4,3.14};
    
    TH2F N_gen;
@@ -210,9 +211,9 @@ void run()
          TopPt_profile=hist::ProfilefromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
          // ~TString sampleName="";
-         // ~TString sampleName="dilepton";
+         TString sampleName="dilepton";
          // ~TString sampleName="MadGraph";
-         TString sampleName="T2tt_650_350";
+         // ~TString sampleName="T2tt_650_350";
          TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0.root","read");
          TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/ttbar_res_"+sampleName, &file);
          
