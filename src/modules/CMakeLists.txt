@@ -25,6 +25,14 @@ set(MODULES
   TUnfold_minimalTest
   RooUnfold_test
   plot_metSF
+  TUnfold_binning_fakeBin
+  TUnfold_unfolding_fakeBin
+  TUnfold_plotting_fakeBin
+  diff_fakes
+  plot_diff_fakes
+  diff_MET
+  plot_metStudies
+  reweightingSF
   )
 
 foreach(MODULE ${MODULES})
