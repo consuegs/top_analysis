@@ -435,7 +435,7 @@ void run()
    
    //Ntuple and file to save minimal ttbar tree used for binning studies
    float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
-   minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
+   minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_DeepMet, minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
    minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi;
    UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions;
    ULong64_t minTree_evtNo;
@@ -461,6 +461,7 @@ void run()
    ttbar_res.Branch("genDecayMode",&minTree_genDecayMode,"genDecayMode/i");
    ttbar_res.Branch("genMET",&minTree_genMet,"genMET/f");
    ttbar_res.Branch("PuppiMET",&minTree_PuppiMet,"PuppiMET/f");
+   ttbar_res.Branch("DeepMET",&minTree_DeepMet,"DeepMET/f");
    ttbar_res.Branch("HT",&minTree_HT,"HT/f");
    ttbar_res.Branch("MT",&minTree_MT,"MT/f");
    ttbar_res.Branch("genMT",&minTree_genMT,"genMT/f");
@@ -542,6 +543,7 @@ void run()
       TTreeReaderValue<tree::MET> MET_JESu(reader, "met_JESu");
       TTreeReaderValue<tree::MET> MET_JESd(reader, "met_JESd");
       TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
+      TTreeReaderValue<tree::MET> MET_Deep(reader, "metDeep");
       TTreeReaderValue<tree::MET> MET_NoHF(reader, "metNoHF");
       TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
       TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
@@ -778,6 +780,7 @@ void run()
             minTree_genDecayMode=*genDecayMode;
             minTree_genMet=genMet;
             minTree_PuppiMet=MET_Puppi->p.Pt();
+            minTree_DeepMet=MET_Deep->p.Pt();
             minTree_HT=HT;
             minTree_MT=mt_MetLep1;
             minTree_genMT=mt_genNeutrinosLep1;
@@ -798,6 +801,7 @@ void run()
                minTree_PhiMetbJet=-1.;
                minTree_METsig=-1.;
                minTree_PuppiMet=-1.;
+               minTree_DeepMet=-1.;
                minTree_HT=-1.;
                minTree_MT=-1.;
                minTree_MT_nextLep=-1.;
