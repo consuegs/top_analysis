@@ -436,7 +436,7 @@ void run()
    //Ntuple and file to save minimal ttbar tree used for binning studies
    float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
    minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_DeepMet, minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
-   minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi;
+   minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi, minTree_PhiRecDeep;
    UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions;
    ULong64_t minTree_evtNo;
    io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res"+met_sf_string+"%.1f_new.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
@@ -472,6 +472,7 @@ void run()
    ttbar_res.Branch("leadTop_pT",&minTree_leadTop,"leadTop_pT/f");
    ttbar_res.Branch("dPhiNuNu",&minTree_dPhiNuNu,"dPhiNuNu/f");
    ttbar_res.Branch("Phi_recPuppi",&minTree_PhiRecPuppi,"Phi_recPuppi/f");
+   ttbar_res.Branch("Phi_recDeep",&minTree_PhiRecDeep,"Phi_recDeep/f");
    
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
@@ -686,17 +687,22 @@ void run()
          //Get DeltaPhi between MET (or genMet or neutrino pT) and nearest Lepton
          float dPhiMETnearLep=4;
          float dPhiMETnearLepPuppi=4;
+         float dPhiMETnearLepDeep=4;
          float mt_MetNextLep=0; 
          float mt_NuNuNextLep=0; 
          for (TLorentzVector const lep : {p_l1,p_l2}){
             const float dPhi=MET->p.DeltaPhi(lep);
             const float dPhi_Puppi=MET_Puppi->p.DeltaPhi(lep);
+            const float dPhi_Deep=MET_Deep->p.DeltaPhi(lep);
             if (std::abs(dPhi) < std::abs(dPhiMETnearLep)) {
                dPhiMETnearLep=dPhi;
                mt_MetNextLep=phys::M_T(MET->p,lep);
             }
             if (std::abs(dPhi_Puppi) < std::abs(dPhiMETnearLepPuppi)) {
                dPhiMETnearLepPuppi=dPhi_Puppi;
+            }
+            if (std::abs(dPhi_Deep) < std::abs(dPhiMETnearLepDeep)) {
+               dPhiMETnearLepDeep=dPhi_Deep;
             }
          }
          float dPhigenMETnearLep=4;
@@ -790,6 +796,7 @@ void run()
             minTree_leadTop=pT_top1;
             minTree_dPhiNuNu=abs(dPhiNuNu);
             minTree_PhiRecPuppi=abs(dPhiMETnearLepPuppi);
+            minTree_PhiRecDeep=abs(dPhiMETnearLepDeep);
             if (rec_selection==false) {
                minTree_MET=-1.;
                minTree_PhiRec=-1.;
@@ -808,6 +815,7 @@ void run()
                minTree_SF=0.;
                minTree_PhiPtnunuMet=-1;
                minTree_PhiRecPuppi=-1;
+               minTree_PhiRecDeep=-1;
             }
             else if (pseudo_selection==false) {
                minTree_PtNuNu=-1.;
