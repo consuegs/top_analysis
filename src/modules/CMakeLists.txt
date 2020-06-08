@@ -33,6 +33,7 @@ set(MODULES
   diff_MET
   plot_metStudies
   reweightingSF
+  test_TMVA
   )
 
 foreach(MODULE ${MODULES})
