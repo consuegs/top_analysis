@@ -24,31 +24,42 @@ using namespace std;
 
 void analyzeToy(TH1 const *hist_toy,
                        TH1 const *hist_truth,
-                       TProfile *&prof_pull,TH1 *&hist_coverage,TH1 *&hist_pull,int nToyTotal) {
+                       TProfile *&prof_pull,TH1 *&hist_coverage,TH1 *&hist_pull,TProfile *&prof_res,TH1 *&hist_res,int nToyTotal) {
    if(!prof_pull) {
       TString namePull(hist_truth->GetName()+TString("_toyPull"));
+      TString nameRes(hist_truth->GetName()+TString("_toyRes"));
       TString nameCoverage(hist_truth->GetName()+TString("_toyCoverage"));
       TString namePullHist(hist_truth->GetName()+TString("_toyPullHist"));
+      TString nameResHist(hist_truth->GetName()+TString("_toyResHist"));
       TString title=hist_truth->GetTitle();
       TArrayD const *xBins=hist_toy->GetXaxis()->GetXbins();
       if(xBins && (xBins->GetSize()>1)) {
          prof_pull=new TProfile(namePull,title,xBins->GetSize()-1,xBins->GetArray());
+         prof_res=new TProfile(nameRes,title,xBins->GetSize()-1,xBins->GetArray());
          hist_coverage=new TH1D(nameCoverage,title,xBins->GetSize()-1,xBins->GetArray());
-         hist_pull=new TH1D(namePullHist,title,20,-3,3);
+         hist_pull=new TH1D(namePullHist,title,50,-3,3);
+         hist_res=new TH1D(nameResHist,title,50,-0.2,0.2);
       } else {
          int nBins=hist_toy->GetNbinsX();
          double x0=hist_toy->GetXaxis()->GetXmin();
          double x1=hist_toy->GetXaxis()->GetXmax();
          prof_pull=new TProfile(namePull,title,nBins,x0,x1);
+         prof_res=new TProfile(namePull,title,nBins,x0,x1);
          hist_coverage=new TH1D(nameCoverage,title,nBins,x0,x1);
-         hist_pull=new TH1D(namePullHist,title,20,-3,3);
+         hist_pull=new TH1D(namePullHist,title,50,-3,3);
+         hist_res=new TH1D(nameResHist,title,50,-0.2,0.2);
       }
    }
    
-   for(int i=0;i<=hist_toy->GetNbinsX()+1;i++) {
-      double pullI=(hist_toy->GetBinContent(i)-hist_truth->GetBinContent(i))/hist_truth->GetBinError(i);
+   for(int i=1;i<hist_toy->GetNbinsX()+1;i++) {
+      double pullI=(hist_truth->GetBinContent(i)-hist_toy->GetBinContent(i))/hist_truth->GetBinError(i);
+      double resI=(hist_truth->GetBinContent(i)-hist_toy->GetBinContent(i))/hist_truth->GetBinContent(i);
       prof_pull->Fill(hist_toy->GetBinCenter(i),pullI);
       hist_pull->Fill(pullI);
+      prof_res->Fill(hist_toy->GetBinCenter(i),resI);
+      hist_res->Fill(resI);
+      
+      // ~std::cout<<hist_truth->GetBinContent(i)<<"   "<<hist_toy->GetBinContent(i)<<"   "<<hist_toy->GetBinCenter(i)<<std::endl;
       
       if(TMath::Abs(pullI)<1.) {
          hist_coverage->Fill(hist_toy->GetBinCenter(i),1./nToyTotal);
@@ -58,7 +69,7 @@ void analyzeToy(TH1 const *hist_toy,
 
 TH1 *generatePoissonToy(TH1 *base,int ntoy) {
    static TRandom *rnd=0;
-   if(!rnd) rnd=new TRandom3();
+   if(!rnd) rnd=new TRandom3(5);
    TH1 *r=(TH1 *)base->Clone(base->GetName()+TString::Format("_toy%d",ntoy));
    for(int ibin=0;ibin<=r->GetNbinsX()+1;ibin++) {
       double mu=r->GetBinContent(ibin);
@@ -73,13 +84,13 @@ TH1 *generatePoissonToy(TH1 *base,int ntoy) {
 }
 
 Config const &cfg=Config::get();
-
+ 
 extern "C"
 void run()
 {
    // unfolded sample
-   // ~TString sample="MadGraph";
-   TString sample="dilepton";
+   TString sample="MadGraph";
+   // ~TString sample="dilepton";
    // ~TString sample="";
    
    // response sample
@@ -88,8 +99,12 @@ void run()
    // ~TString sample_response="";
    
    // Use pT reweighted
-   // ~bool withPTreweight = false;
-   bool withPTreweight = true;
+   bool withPTreweight = false;
+   // ~bool withPTreweight = true;
+   
+   // Use Deep instead of pfMET
+   bool withDeep = false;
+   // ~bool withDeep = true;
    
    // Use puppi instead of pfMET
    bool withPuppi = false;
@@ -108,8 +123,8 @@ void run()
    // ~bool withScaleFactor = true;
    
    // perform toys studies?
-   bool toy_studies=false;
-   // ~bool toy_studies=true;
+   // ~bool toy_studies=false;
+   bool toy_studies=true;
    
    // switch on histogram errors
    TH1::SetDefaultSumw2();
@@ -119,6 +134,7 @@ void run()
    TString save_path = "TUnfold_results_"+sample+"_"+sample_response;
    if (withBSM) save_path+="_BSM";
    if (withPuppi) save_path+="_Puppi";
+   if (withDeep) save_path+="_Deep";
    if (withSameBins) save_path+="_SameBins";
    if (withPTreweight) save_path+="_PTreweight";
    io::RootFileSaver saver(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
@@ -131,6 +147,7 @@ void run()
    TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
    if (withBSM) input_loc+="_BSM";
    if (withPuppi) input_loc+="_Puppi";
+   if (withDeep) input_loc+="_Deep";
    if (withSameBins) input_loc+="_SameBins";
    if (withPTreweight) input_loc+="_PTreweight";
 
@@ -143,6 +160,7 @@ void run()
 
    // read histograms
    TH1 *histDataReco=histReader.read<TH1>(input_loc+"/histDataReco");
+   TH1 *histDataReco_unscaled=(TH1*)histDataReco->Clone();
    TH1 *histDataTruth=histReader.read<TH1>(input_loc+"/histDataTruth");
    TH1 *histSignalFraction=histReader.read<TH1>(input_loc+"/hist_SignalFraction");
    // ~TH1 *histSignalFraction=histReader.read<TH1>("TUnfold_binning_MadGraph_MadGraph/hist_SignalFraction");
@@ -207,9 +225,11 @@ void run()
    
    // run the unfolding for toys
    TProfile *prof_pull_noRegularisation=0;
+   TProfile *prof_res_noRegularisation=0;
    TH1 *hist_coverage_noRegularisation=0;
    TH1 *hist_pull_noRegularisation=0;
-   int MAXTOY=1000;
+   TH1 *hist_res_noRegularisation=0;
+   int MAXTOY=6000;
    
    // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult");
    // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
@@ -224,23 +244,27 @@ void run()
    std::cout<<unfold.GetRhoAvg()<<std::endl;
    
    if(toy_studies){
-      for(int itoy=0;itoy<=MAXTOY;itoy++) {
+      for(int itoy=0;itoy<MAXTOY;itoy++) {
          std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
          TH1 *hist_toybase_noRegularisation=unfold.GetFoldedOutput("",";bin",0,0,false,true);
          // ~unfold.SetInput(generatePoissonToy(hist_folded,itoy),1.0);
-         unfold.SetInput(generatePoissonToy(histDataReco,itoy),1.0);
+         TH1 *reco_toy=generatePoissonToy(histDataReco_unscaled,itoy);
+         reco_toy->Multiply(histSignalFraction);
+         unfold.SetInput(reco_toy,1.0);
          unfold.DoUnfold(0.);//Without regularization
-         if (itoy==0)hist_unfolded_firstToy=unfold.GetOutput("");
+         if (itoy==0)hist_unfolded_firstToy=unfold.GetOutput("",";bin",0,0,false);
          analyzeToy(unfold.GetOutput("","",0,0,false),
                        hist_unfolded,
                        // ~histDataTruth,
                        prof_pull_noRegularisation,
-                       hist_coverage_noRegularisation,hist_pull_noRegularisation,MAXTOY);
+                       hist_coverage_noRegularisation,hist_pull_noRegularisation,prof_res_noRegularisation,hist_res_noRegularisation,MAXTOY);
       }
       saver.save(*hist_unfolded_firstToy,"hist_unfolded_firstToy");
       saver.save(*prof_pull_noRegularisation,"prof_pull_noRegularisation");
+      saver.save(*prof_res_noRegularisation,"prof_res_noRegularisation");
       saver.save(*hist_coverage_noRegularisation,"hist_coverage_noRegularisation");
       saver.save(*hist_pull_noRegularisation,"hist_pull_noRegularisation");
+      saver.save(*hist_res_noRegularisation,"hist_res_noRegularisation");
    }
    
    //Set stat. error to combined stat. error from input and response matrix

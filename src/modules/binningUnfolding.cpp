@@ -44,8 +44,9 @@ void run()
    std::vector<float> met_bins3={0,70,140,250,400};
    std::vector<float> phi_bins3={0,0.4,0.8,1.2,3.14};
    
-   std::vector<float> met_bins4={0,40,120,230,400};
-   // ~std::vector<float> met_bins4={0,40,80,120,230,400};
+   // ~std::vector<float> met_bins4={0,40,120,230,400};
+   std::vector<float> met_bins4={0,40,80,120,230,400};
+   // ~std::vector<float> met_bins4={0,40,80,120,160,230,400};
    std::vector<float> phi_bins4={0,0.7,1.4,3.14};
    
    TH2F N_gen;
@@ -218,12 +219,14 @@ void run()
          TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/ttbar_res_"+sampleName, &file);
          
          
-         TTreeReaderValue<float> MET   (reader, "MET");
-         // ~TTreeReaderValue<float> MET   (reader, "PuppiMET");
+         // ~TTreeReaderValue<float> MET   (reader, "MET");
+         // ~TTreeReaderValue<float> MET   (reader, "DeepMET");
+         TTreeReaderValue<float> MET   (reader, "PuppiMET");
          TTreeReaderValue<float> PtNuNu   (reader, "PtNuNu");
          // ~TTreeReaderValue<float> PtNuNu   (reader, "genMET");
-         TTreeReaderValue<float> Phi_rec   (reader, "Phi_rec");
-         // ~TTreeReaderValue<float> Phi_rec   (reader, "Phi_recPuppi");
+         // ~TTreeReaderValue<float> Phi_rec   (reader, "Phi_rec");
+         // ~TTreeReaderValue<float> Phi_rec   (reader, "Phi_recDeep");
+         TTreeReaderValue<float> Phi_rec   (reader, "Phi_recPuppi");
          TTreeReaderValue<float> Phi_gen   (reader, "Phi_NuNu");
          // ~TTreeReaderValue<float> Phi_gen   (reader, "Phi_gen");
          TTreeReaderValue<float> dPhiMETnearJet   (reader, "dPhiMETnearJet");

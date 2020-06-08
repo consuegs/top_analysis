@@ -28,8 +28,8 @@ void run()
    std::cout<<"---------------------------------------"<<std::endl;
    
    // unfolded sample
-   // ~TString sample="MadGraph";
-   TString sample="dilepton";
+   TString sample="MadGraph";
+   // ~TString sample="dilepton";
    // ~TString sample="";
    
    // response sample
@@ -38,8 +38,12 @@ void run()
    // ~TString sample_response=""; 
    
    // Use pT reweighted
-   // ~bool withPTreweight = false;
-   bool withPTreweight = true;
+   bool withPTreweight = false;
+   // ~bool withPTreweight = true;
+   
+   // Use deep instead of pfMET
+   bool withDeep = false;
+   // ~bool withDeep = true;
    
    // Use puppi instead of pfMET
    bool withPuppi = false;
@@ -60,13 +64,12 @@ void run()
    // number of met and phi bins and binning
    // ~int NBIN_MET_FINE=6;
    int NBIN_MET_FINE=8;
+   // ~int NBIN_MET_FINE=10;
    // ~int NBIN_MET_FINE=12;
    int NBIN_PHI_FINE=6;
    // ~std::vector<double> metBinsFine_vector={0,20,40,80,120,175,230};
    std::vector<double> metBinsFine_vector={0,20,40,60,80,100,120,175,230};
-   // ~std::vector<double> metBinsFine_vector={0,20,40,50,60,70,80,90,100,110,120,175,230};
-   // ~std::vector<double> metBinsFine_vector={40,60,70,80,120,175,230};
-   // ~std::vector<double> metBinsFine_vector={0,20,40,50,60,70,80,90,100,110,120,140,175,230};
+   // ~std::vector<double> metBinsFine_vector={0,20,40,60,80,100,120,140,160,195,230};
    std::vector<double> phiBinsFine_vector={0,0.35,0.7,1.05,1.4,2.27,3.141};
    // ~std::vector<double> phiBinsFine_vector={0,0.35,0.7,1.05,1.4,1.8,3.141};
    if(withSameBins){
@@ -83,12 +86,12 @@ void run()
 
    // ~int NBIN_MET_COARSE=3;
    int NBIN_MET_COARSE=4;
+   // ~int NBIN_MET_COARSE=5;
    // ~int NBIN_MET_COARSE=6;
    int NBIN_PHI_COARSE=3;
    // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,120,230};
    Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,80,120,230};
-   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,60,80,100,120,230};
-   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={40,80,120,230};
+   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,80,120,160,230};
    Double_t phiBinsCoarse[NBIN_PHI_COARSE+1]={0,0.7,1.4,3.141};
    
    //=======================================================================
@@ -134,6 +137,7 @@ void run()
    TString save_path = "TUnfold_binning_"+sample+"_"+sample_response;
    if (withBSM) save_path+="_BSM";
    if (withPuppi) save_path+="_Puppi";
+   if (withDeep) save_path+="_Deep";
    if (withSameBins) save_path+="_SameBins";
    if (withPTreweight) {
       save_path+="_PTreweight";
@@ -188,6 +192,10 @@ void run()
       dataTree->SetBranchAddress("Phi_recPuppi",&phiRec);
       dataTree->SetBranchAddress("PuppiMET",&metRec);
    }
+   if(withDeep) {
+      dataTree->SetBranchAddress("Phi_recDeep",&phiRec);
+      dataTree->SetBranchAddress("DeepMET",&metRec);
+   }
    dataTree->SetBranchAddress("Phi_NuNu",&phiGen);
    dataTree->SetBranchAddress("PtNuNu",&metGen);
    dataTree->SetBranchAddress("genDecayMode",&genDecayMode);
@@ -205,7 +213,7 @@ void run()
       if(dataTree->GetEntry(ievent)<=0) break;
 
       //only bin to bin migration
-      if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
       
       //ignore acceptance
       // ~if(metRec<0) continue;
@@ -245,6 +253,10 @@ void run()
       if(withPuppi) {
          BSMTree->SetBranchAddress("Phi_recPuppi",&phiRec);
          BSMTree->SetBranchAddress("PuppiMET",&metRec);
+      }
+      if(withDeep) {
+         BSMTree->SetBranchAddress("Phi_recDeep",&phiRec);
+         BSMTree->SetBranchAddress("DeepMET",&metRec);
       }
       BSMTree->SetBranchAddress("Phi_NuNu",&phiGen);
       BSMTree->SetBranchAddress("PtNuNu",&metGen);
@@ -296,6 +308,10 @@ void run()
       signalTree->SetBranchAddress("Phi_recPuppi",&phiRec);
       signalTree->SetBranchAddress("PuppiMET",&metRec);
    }
+   if(withDeep) {
+      signalTree->SetBranchAddress("Phi_recDeep",&phiRec);
+      signalTree->SetBranchAddress("DeepMET",&metRec);
+   }
    // ~signalTree->SetBranchAddress("istriggered",&istriggered);
    signalTree->SetBranchAddress("Phi_NuNu",&phiGen);
    signalTree->SetBranchAddress("PtNuNu",&metGen);
@@ -311,7 +327,7 @@ void run()
       if(signalTree->GetEntry(ievent)<=0) break;
       
       //only bin to bin migration
-      if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
       
       //ignore acceptance
       // ~if(metRec<0) continue;
@@ -364,6 +380,11 @@ void run()
    hist_SignalFraction->Add(histMCRec);
    histMCRec->Add(histMCRec_fakes);
    hist_SignalFraction->Divide(histMCRec);
+   
+   for(int i=1; i<=hist_SignalFraction->GetNbinsX(); i++){  //Is this correct or not????
+      hist_SignalFraction->SetBinError(i,0);
+   }
+   
    saver.save(*hist_SignalFraction,"hist_SignalFraction");
    
    //Save normalized reco distribution for fake and non fake events

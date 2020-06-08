@@ -69,12 +69,59 @@ std::pair<float,int> getChi2NDF_withCorr(TH1F* hist_res, TH1F* hist_true, TH2F* 
    }
 }
 
+void plot_response(TH2F* responseHist, TString name, io::RootFileSaver* saver) {
+   
+   //Normalize each individual line of diagram
+   float sum;
+   for (int y=1; y<=responseHist->GetNbinsY(); y++){
+      sum=responseHist->Integral(1,responseHist->GetNbinsX(),y,y);
+      if (sum==0) continue;
+      for (int x=1; x<=responseHist->GetNbinsY(); x++){
+         if (responseHist->GetBinContent(x,y)!=0)responseHist->SetBinContent(x,y,responseHist->GetBinContent(x,y)/sum);
+         else responseHist->SetBinContent(x,y,0.000002);
+      }
+   }
+         
+   TCanvas can;
+   can.cd();
+   gPad->SetRightMargin(0.2);
+   gPad->SetLeftMargin(0.13);
+   gPad->SetBottomMargin(0.11);
+   
+   responseHist->GetYaxis()->SetTitleOffset(1.3);
+   responseHist->GetXaxis()->SetTitleOffset(0.9);
+   responseHist->GetZaxis()->SetTitleOffset(1.3);
+   responseHist->GetYaxis()->SetTitleSize(0.05);
+   responseHist->GetXaxis()->SetTitleSize(0.05);
+   responseHist->GetZaxis()->SetTitleSize(0.05);
+   responseHist->GetYaxis()->SetLabelSize(0.04);
+   responseHist->GetXaxis()->SetLabelSize(0.04);
+   responseHist->GetZaxis()->SetLabelSize(0.04);
+   
+   responseHist->SetMarkerColor(kRed);
+   responseHist->SetMarkerSize(1.5);
+   responseHist->SetTitle("");
+   responseHist->GetZaxis()->SetTitle("line normalized distribution");
+   responseHist->SetMinimum(0.000001);
+   responseHist->SetMaximum(1.);
+   
+   responseHist->SetStats(false);
+   responseHist->Draw("colz text");
+   
+   responseHist->GetYaxis()->SetTitle("reco binNumber");
+   responseHist->GetXaxis()->SetTitle("gen binNumber");
+   
+   can.RedrawAxis();
+   saver->save(can,"response/"+name,true,true);
+}
+   
+
 extern "C"
 void run()
 {
    // unfolded sample
-   // ~TString sample="MadGraph";
-   TString sample="dilepton";
+   TString sample="MadGraph";
+   // ~TString sample="dilepton";
    // ~TString sample="";
    
    // response sample
@@ -83,8 +130,12 @@ void run()
    // ~TString sample_response="";
    
    // Use pT reweighted
-   // ~bool withPTreweight = false;
-   bool withPTreweight = true;
+   bool withPTreweight = false;
+   // ~bool withPTreweight = true;
+   
+   // ~// Use deep instead of pfMET
+   bool withDeep = false;
+   // ~bool withDeep = true;
    
    // ~// Use puppi instead of pfMET
    bool withPuppi = false;
@@ -120,6 +171,10 @@ void run()
       input_loc+="_Puppi";
       input_loc_result+="_Puppi";
    }
+   if (withDeep) {
+      input_loc+="_Deep";
+      input_loc_result+="_Deep";
+   }
    if (withSameBins) {
       input_loc+="_SameBins";
       input_loc_result+="_SameBins";
@@ -142,6 +197,7 @@ void run()
    TH1F *unfolded=histReader.read<TH1F>(input_loc_result+"/hist_unfoldedResult");
    TH2F *corrMatrix=histReader.read<TH2F>(input_loc_result+"/corr_matrix");
    TH2F *covMatrix=histReader.read<TH2F>(input_loc_result+"/cov_output");
+   TH2F *responseMatrix=histReader.read<TH2F>(input_loc+"/histMCGenRec_sameBins");
 
    if((!realDis)||(!realDis_response)||(!unfolded)) {
       cout<<"problem to read input histograms\n";
@@ -302,6 +358,10 @@ void run()
       saveName+="_Puppi";
       saveName2D+="_Puppi";
    }
+   if (withDeep)  {
+      saveName+="_Deep";
+      saveName2D+="_Deep";
+   }
    if (withSameBins) {
       saveName+="_SameBins";
       saveName2D+="_SameBins";
@@ -312,5 +372,8 @@ void run()
    }
    saver.save(can,saveName);
    saver.save(can2D,saveName2D);
+   
+   //Plot response matrix
+   plot_response(responseMatrix,saveName,&saver);
 
 }
