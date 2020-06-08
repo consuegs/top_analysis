@@ -419,6 +419,7 @@ void hist::divideByBinWidth(TH1& h,bool divideLastBin)
 void hist::mergeOverflow(TH1& h, bool includeUnderflow)
 {
    int N=h.GetNbinsX();
+   int entries=h.GetEntries();
    // -- overflow
    float cont=h.GetBinContent(N)+h.GetBinContent(N+1);
    float err2=util::quadSum<double>({h.GetBinError(N),h.GetBinError(N+1)});
@@ -438,12 +439,15 @@ void hist::mergeOverflow(TH1& h, bool includeUnderflow)
    // clear overflow
    h.SetBinContent(0,0);
    h.SetBinError(0,0);
+   // restore correct number of entries
+   h.SetEntries(entries);
 }
 
 void hist::mergeOverflow(TH2& h, bool includeUnderflow)
 {
    int N_X=h.GetNbinsX();
    int N_Y=h.GetNbinsY();
+   int entries=h.GetEntries();
    includeUnderflow = true;
    //loop over Y-bins
    for (int i=0; i<=N_Y+1; i++){
@@ -489,6 +493,8 @@ void hist::mergeOverflow(TH2& h, bool includeUnderflow)
       h.SetBinContent(i,0,0);
       h.SetBinError(i,0,0);
    }
+   // restore correct number of entries
+   h.SetEntries(entries);
 }
 
 

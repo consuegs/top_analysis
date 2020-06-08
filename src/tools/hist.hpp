@@ -75,7 +75,7 @@ namespace hist
       std::map<TString,std::map<TString,float>> mCount_; // [var][sample]
       std::map<TString,std::map<TString,float>> mCountError2_; // [var][sample]
 
-      float fWeight_;
+      float fWeight_=1.0;
 
       gfx::LegendEntries le_;
    };
