@@ -378,13 +378,23 @@ TH2F hist::rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::ve
    std::string name(hClone.GetName());
    name+="_rebinned";
    TH2F hnew=(TH2F)fromWidths_2d("","",binedges_x,getWidths(binedges_x),binedges_y,getWidths(binedges_y));
+   float_t errors[hnew.GetNbinsX()+2][hnew.GetNbinsY()+2] = {};
    TAxis *xaxis = hClone.GetXaxis();
    TAxis *yaxis = hClone.GetYaxis();
+   TAxis *xaxis_new = hnew.GetXaxis();
+   TAxis *yaxis_new = hnew.GetYaxis();
    for (int j=1; j<=yaxis->GetNbins();j++) {
       for (int i=1; i<=xaxis->GetNbins();i++) {
          hnew.Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),h.GetBinContent(i,j));
+         errors[xaxis_new->FindBin(xaxis->GetBinCenter(i))][yaxis_new->FindBin(yaxis->GetBinCenter(j))] += h.GetBinError(i,j)*h.GetBinError(i,j);
       } 
-   } 
+   }
+   for (int i=0; i<hnew.GetNbinsX()+2; i++) {
+      for (int j=0; j<hnew.GetNbinsY()+2; j++) {
+         hnew.SetBinError(i,j,sqrt(errors[i][j]));
+      }
+   }
+   
    if (mergeOverflow) hist::mergeOverflow(hnew,mergeUnderflow);
    TString yTitle=hClone.GetYaxis()->GetTitle();
    TString xTitle=hClone.GetXaxis()->GetTitle();
