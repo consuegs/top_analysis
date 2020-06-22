@@ -59,6 +59,14 @@ void hist::Histograms<HIST>::addFilledHist(TString const &varName,TString const 
 }
 
 template <class HIST>
+void hist::Histograms<HIST>::addFilledHist(TString const &varName,TString const &s,TH2F const &filledHist)
+{
+   TH1::SetDefaultSumw2();
+   if (mmH_.find(varName)==mmH_.end()) mmH_[varName]=std::map<TString,HIST>();
+   mmH_[varName][s]=filledHist;
+}
+
+template <class HIST>
 void hist::Histograms<HIST>::addHist(TString const &varName,TString const &title, Int_t nbinsx, Double_t xlow, Double_t xup, Int_t nbinsy, Double_t ylow, Double_t yup)
 {
    TH1::SetDefaultSumw2();

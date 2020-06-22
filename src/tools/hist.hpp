@@ -40,6 +40,7 @@ namespace hist
       // 2d
       void addHist(TString const &varName,TString const &title, Int_t nbinsx, Double_t xlow, Double_t xup, Int_t nbinsy, Double_t ylow, Double_t yup);
       void addHist(TString const &varName,TString const &title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y);
+      void addFilledHist(TString const &varName,TString const &s,TH2F const &filledHist);
       // simple counters
       void addCounter(TString const &varName);
 
@@ -89,6 +90,8 @@ namespace hist
    void Histograms<TH2F>::addHist(TString const&,TString const&,std::vector<float>,std::vector<float>)=delete;
    template <>
    void Histograms<TH2F>::addFilledHist(TString const&, TString const&, TH1F const&)=delete;
+   template <>
+   void Histograms<TH1F>::addFilledHist(TString const&, TString const&, TH2F const&)=delete;
    template <>
    void Histograms<TH1F>::addHist(TString const&,TString const&,Int_t,Double_t,Double_t,Int_t,Double_t,Double_t)=delete;
    template <>
