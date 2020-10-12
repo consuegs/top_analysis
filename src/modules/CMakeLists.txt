@@ -34,6 +34,12 @@ set(MODULES
   plot_metStudies
   reweightingSF
   test_TMVA
+  distributions_Philipp
+  plot_distributions_Philipp
+  Routin
+  test_BJetRegression
+  triggerEff
+  plot_triggerEff
   )
 
 foreach(MODULE ${MODULES})
