@@ -260,7 +260,7 @@ HIST* hist::Histograms<HIST>::getHistogram(TString const &varName,TString const 
 
 
 template <class HIST>
-THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TString> const& samples,bool divideByBinWidth)
+THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TString> const& samples,bool divideByBinWidth, bool includeData)
 {
    le_.clear();
    THStack st;
@@ -281,6 +281,7 @@ THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TStr
       h->SetLineColor(kBlack);
       h->SetLineWidth(1);
       try {
+         if (!includeData && datasets.getDataset(s).isData) continue;
          h->SetFillColor(datasets.getDataset(s).color);
          le_.prepend(*h,datasets.getDataset(s).label,"f");
       } catch (const std::out_of_range& exc) {
@@ -636,6 +637,16 @@ TH1F hist::getPull(TH1F const &h1,THStack &h2,TString title,ErrorType et)
    return getPull(h1,*(TH1F*)h2.GetStack()->Last(),title,et);
 }
 
+TH1F hist::getRatio(THStack &h1,THStack &h2,TString title,ErrorType et)
+{
+   return getRatio(*(TH1F*)h1.GetStack()->Last(),*(TH1F*)h2.GetStack()->Last(),title,et);
+}
+
+TH1F hist::getPull(THStack &h1,THStack &h2,TString title,ErrorType et)
+{
+   return getPull(*(TH1F*)h1.GetStack()->Last(),*(TH1F*)h2.GetStack()->Last(),title,et);
+}
+
 TGraphErrors hist::getRatioGraph(TH1F const &h1,TH1F const &h2,TString title,ErrorType et)
 {
    TH1F h = getRatio(h1,h2,title,et);
@@ -643,6 +654,12 @@ TGraphErrors hist::getRatioGraph(TH1F const &h1,TH1F const &h2,TString title,Err
 }
 
 TGraphErrors hist::getRatioGraph(TH1F const &h1,THStack &h2,TString title,ErrorType et)
+{
+   TH1F h = getRatio(h1,h2,title,et);
+   return TGraphErrors(&h);
+}
+
+TGraphErrors hist::getRatioGraph(THStack &h1,THStack &h2,TString title,ErrorType et)
 {
    TH1F h = getRatio(h1,h2,title,et);
    return TGraphErrors(&h);

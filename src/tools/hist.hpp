@@ -59,7 +59,7 @@ namespace hist
       std::vector<TString> getVariableNames();
       std::vector<HIST*> getHistograms(TString const &varName,std::vector<TString> const &samples,bool divideByBinWidth=false);
       HIST* getHistogram(TString const &varName,TString const &sample,bool divideByBinWidth=false);
-      THStack getStack(TString const &varName,std::vector<TString> const& samples,bool divideByBinWidth=false);
+      THStack getStack(TString const &varName,std::vector<TString> const& samples,bool divideByBinWidth=false, bool includeData=false);
       float getCount(TString const &varName, TString const &sample);
       float getCountError(TString const &varName, TString const &sample);
 
@@ -128,9 +128,12 @@ namespace hist
    TH1F getPull    (TH1F const &h1,TH1F const &h2,TString title="pull",ErrorType et=COMB);
    TH1F getRatio   (TH1F const &h1,THStack &h2,TString title="ratio",ErrorType et=COMB);
    TH1F getPull    (TH1F const &h1,THStack &h2,TString title="pull",ErrorType et=COMB);
+   TH1F getRatio   (THStack &h1,THStack &h2,TString title="ratio",ErrorType et=COMB);
+   TH1F getPull    (THStack &h1,THStack &h2,TString title="pull",ErrorType et=COMB);
 
    TGraphErrors getRatioGraph(TH1F const &h1,TH1F const &h2,TString title="ratio",ErrorType et=COMB);
    TGraphErrors getRatioGraph(TH1F const &h1,THStack &h2,TString title="ratio",ErrorType et=COMB);
+   TGraphErrors getRatioGraph(THStack &h1,THStack &h2,TString title="ratio",ErrorType et=COMB);
 
    THStack stackPrepend(THStack const& stOld, TH1F &h, Option_t *option="");
 }
