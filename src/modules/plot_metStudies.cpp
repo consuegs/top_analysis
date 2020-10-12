@@ -29,6 +29,7 @@ void run()
          std::vector<TString> var_vec = {"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep"};
          if (sel=="baseline_met120") {
             var_vec.push_back("GenMetDiffMETRelReco_dPhiMETLep");
+            var_vec.push_back("GenMetDiffMETRel_dPhigenMETLep");
             var_vec.push_back("Met_dPhiMETLep");
          }
          
@@ -48,36 +49,34 @@ void run()
             TTbar_profile_Puppi.SetMarkerSize(0);
             
             TTbar_profile.SetStats(0);
-            if (var=="GenMetDiffMETRel_dPhiMETLep") {
-                  TTbar_profile.SetMaximum(0.1);
-                  TTbar_profile.SetMinimum(-0.5);
-                  TTbar_profile.GetYaxis()->SetTitle("mean[genMET-p_{T}^{miss}]/genMET]");
-            }
-            else if (var=="GenMetDiffMETRelReco_dPhiMETLep") {
-                  TTbar_profile.SetMaximum(0.1);
-                  TTbar_profile.SetMinimum(-0.5);
-                  TTbar_profile.GetYaxis()->SetTitle("mean[genMET-p_{T}^{miss}]/p_{T}^{miss}]");
+            TTbar_profile.SetMaximum(0.1);
+            TTbar_profile.SetMinimum(-0.5);
+            TTbar_profile.GetYaxis()->SetTitle("mean[genMET-p_{T}^{miss}]/genMET]");
+            if (var=="GenMetDiffMETRelReco_dPhiMETLep") {
+               TTbar_profile.SetMaximum(0.1);
+               TTbar_profile.SetMinimum(-0.5);
+               TTbar_profile.GetYaxis()->SetTitle("mean[genMET-p_{T}^{miss}]/p_{T}^{miss}]");
             }
             else if (var=="Met_dPhiMETLep") {
-                  TTbar_profile.SetMaximum(190);
-                  TTbar_profile.SetMinimum(120);
-                  TTbar_profile.GetYaxis()->SetTitle("mean[p_{T}^{miss}] (GeV)");
+               TTbar_profile.SetMaximum(190);
+               TTbar_profile.SetMinimum(120);
+               TTbar_profile.GetYaxis()->SetTitle("mean[p_{T}^{miss}] (GeV)");
             }
             else if (var=="MetSig_dPhiMETLep") {
-                  // ~TTbar_profile.SetMaximum(200);
-                  TTbar_profile.SetMaximum(400);
-                  TTbar_profile.SetMinimum(20);
-                  TTbar_profile.GetYaxis()->SetTitle("mean[metSig]");
+               // ~TTbar_profile.SetMaximum(200);
+               TTbar_profile.SetMaximum(400);
+               TTbar_profile.SetMinimum(20);
+               TTbar_profile.GetYaxis()->SetTitle("mean[metSig]");
             }
             
             gPad->SetLeftMargin(0.13);
             TTbar_profile.GetYaxis()->SetTitleOffset(1.0);
             TTbar_profile.Draw("e1");
-            // ~TTbar_profile_Puppi.Draw("same e1");
+            TTbar_profile_Puppi.Draw("same e1");
             
             gfx::LegendEntries le;
             le.append(TTbar_profile,"pfMET","pl");
-            // ~le.append(TTbar_profile_Puppi,"Puppi","pl");;
+            le.append(TTbar_profile_Puppi,"Puppi","pl");
             TLegend leg=le.buildLegend(.6,.7,1-1.5*gPad->GetRightMargin(),-1,1);
             leg.Draw();
             
@@ -109,6 +108,17 @@ void run()
    TLatex label=gfx::cornerLabel(stringLabel,1);
    label.Draw();
    saver.save(can,"nVerticesVSdPhi/met120",true,true);  
+   
+   //Plotting genMet as a function of dPhi
+   TTbar_2D = histReader.read<TH2F>("diff_MET100.0/baseline_met120/genMet_dPhiMETLep/TTbar_diLepton");
+   TTbar_profile=*(TTbar_2D->ProfileX("Profile"));
+   gPad->SetLeftMargin(0.13);
+   TTbar_profile.SetStats(0);
+   TTbar_profile.GetYaxis()->SetTitleOffset(1.1);
+   TTbar_profile.GetYaxis()->SetTitle("mean(genMET) [GeV]");
+   TTbar_profile.Draw("e1");
+   label.Draw();
+   saver.save(can,"genMetVSdPhi/met120",true,true);  
    
    //Plotting dPhi gen and reco distr in same plot
    gfx::SplitCan spcan;
@@ -233,4 +243,35 @@ void run()
       saver.save(can,var,true,true);
    }
    */
+   
+   //Plotting MET Res Comparison including BJet Regression
+   for (TString selection:{"baseline","baseline_genmet120"}){
+      can.Clear();
+      can.cd();
+      gPad->SetLeftMargin(0.13);
+      TH1F* PFMET_res = histReader.read<TH1F>("diff_MET100.0/"+selection+"/METres/TTbar_diLepton"); 
+      TH1F* Puppi_res = histReader.read<TH1F>("diff_MET100.0/"+selection+"/METresPuppi/TTbar_diLepton");
+      TH1F* BReg_res = histReader.read<TH1F>("diff_MET100.0/"+selection+"/METresBJetRegr/TTbar_diLepton");
+      TH1F* BRegLB_res = histReader.read<TH1F>("diff_MET100.0/"+selection+"/METresBJetLBRegr/TTbar_diLepton");
+      
+      Puppi_res->SetStats(0);
+      Puppi_res->Draw("axis");
+      
+      int color=1;
+      gfx::LegendEntries le_res;
+      std::vector<TString> names={"PFMET","PUPPI","BReg","BRegLB"};
+      for (auto hist:{PFMET_res,Puppi_res,BReg_res,BRegLB_res}){
+         hist->Rebin(2);
+         hist->SetMarkerColor(color);
+         hist->SetMarkerSize(0.8);
+         hist->Draw("same");
+         le_res.append(*hist,TString::Format(names[color-1]+", #mu=%.1f #sigma=%.1f",hist->GetMean(),hist->GetRMS()),"p");
+         color++;
+      }
+      
+      TLegend leg_res=le_res.buildLegend(.6,.7,1-1.5*gPad->GetRightMargin(),-1,1);
+      leg_res.Draw();
+      if (selection=="baseline") saver.save(can,"BRegrComparisons/CompareMetRes",true,true);
+      else saver.save(can,"BRegrComparisons/CompareMetRes_genMet120",true,true);
+   }
 }
