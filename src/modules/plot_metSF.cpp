@@ -617,4 +617,36 @@ void run()
       saver.save(can,"MetSig_met120/MetSig_"+sSample,true,true);
    }
    
+      //Plot ptnunu/met and ptnunu/genmet for each sample
+   for (TString sSample :{"dilepton"}){
+      io::RootFileReader histReader((sSample=="") ? TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sSample+"%.1f.root",cfg.processFraction*100));
+
+      TCanvas can;
+      can.cd();
+      
+      // ~TGraph* SF_profile = histReader.read<TGraph>("binningUnfolding/METdiff_vs_MET_profile");
+      // ~TGraph* SFgen_profile = histReader.read<TGraph>("binningUnfolding/METdiffgen_vs_MET_profile");
+      TH1D* SF_profile = histReader.read<TH1D>("binningUnfolding/METdiff_vs_PHI_profile");
+      TH1D* SFgen_profile = histReader.read<TH1D>("binningUnfolding/METdiffgen_vs_PHI_profile");
+      
+      SF_profile->SetLineColor(kBlue);
+      SFgen_profile->SetLineColor(kRed);
+      SF_profile->SetMarkerColor(kBlue);
+      SFgen_profile->SetMarkerColor(kRed);
+      
+      SF_profile->SetStats(0);
+      SF_profile->SetMaximum(1.4);
+      SF_profile->GetYaxis()->SetRangeUser(0.5,SF_profile->GetMaximum());
+      SF_profile->Draw("hist");
+      SFgen_profile->Draw("same hist");
+      
+      gfx::LegendEntries le;
+      le.append(*SF_profile,"p_{T}^{#nu#nu}/p_{T}^{miss}","l");
+      le.append(*SFgen_profile,"p_{T}^{#nu#nu}/genMET","l");
+      TLegend leg=le.buildLegend(.6,.7,1-1.5*gPad->GetRightMargin(),-1,1);
+      leg.Draw();
+      
+      saver.save(can,"ScaleFactor_vs_PHI",true,true);
+   }
+   
 }
