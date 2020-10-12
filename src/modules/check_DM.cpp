@@ -25,7 +25,8 @@ void run()
    // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v03/TTbarDMJets_DiLept_pseudoscalar_Mchi-50_Mphi-50_TuneCUETP8M1_v2_13TeV-madgraphMLM-pythia8.root","read");
    // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v05/SMS-T1tttt_mGluino-1500_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root","read");
    // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v05/SMS-T2tt_mStop-850_mLSP-100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root","read");
-   TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v05/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root","read");
+   // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v05/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root","read");
+   TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v08/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root","read");
    // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v05/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8.root","read");
 
    TTreeReader reader(cfg.treeName, &file);
@@ -58,6 +59,7 @@ void run()
    TTreeReaderValue<TLorentzVector> genAntiLepton(reader, "genAntiLepton");
    TTreeReaderValue<TLorentzVector> pseudoLepton(reader, "pseudoLepton");
    TTreeReaderValue<TLorentzVector> pseudoAntiLepton(reader, "pseudoAntiLepton");
+   TTreeReaderValue<int> genDecayMode_pseudo(reader, "ttbarPseudoDecayMode");
    
    TH1F hist_neutrinos("","",6,-0.5,5.5);
    TH1F hist_neutrinosPt("","",20,0,150);
@@ -81,16 +83,22 @@ void run()
       
       if (*is_ee){
          if(!(*electrons)[0].isTight || !(*electrons)[1].isTight) continue; //currently double check since trees only have tight leptons!!
+         if(abs((*electrons)[0].etaSC)>2.4 || abs((*electrons)[1].etaSC)>2.4) continue; //To use same region as for muons, cut on supercluster eta
          p_l1=(*electrons)[0].p;
          p_l2=(*electrons)[1].p;
       }
       else if (*is_mumu){
          if(!(*muons)[0].isTight || !(*muons)[1].isTight) continue;
+         if((*muons)[0].rIso>0.15 || (*muons)[1].rIso>0.15) continue;
+         if(abs((*muons)[0].p.Eta())>2.4 || abs((*muons)[1].p.Eta())>2.4) continue;
          p_l1=(*muons)[0].p;
          p_l2=(*muons)[1].p;
       }
       else if (*is_emu){
          if(!(*muons)[0].isTight || !(*electrons)[0].isTight) continue;
+         if((*muons)[0].rIso>0.15 ) continue;
+         if(abs((*muons)[0].p.Eta())>2.4) continue;
+         if((*electrons)[0].etaSC>2.4 ) continue;
          if ((*muons)[0].p.Pt()>(*electrons)[0].p.Pt()){
             p_l1=(*muons)[0].p;
             p_l2=(*electrons)[0].p;
@@ -120,7 +128,8 @@ void run()
       
       // Get pT of Neutrino Pair, which is further changed in case of BSM scenarios!!
       TLorentzVector neutrinoPair(0,0,0,0);
-      neutrinoPair=(*genNeutrino)+(*genAntiNeutrino);
+      // ~neutrinoPair=(*genNeutrino)+(*genAntiNeutrino);
+      neutrinoPair=(*pseudoNeutrino)+(*pseudoAntiNeutrino);
       
       //Calculate MET before parton shower and hadronization for DM scenario and SUSY scenarios
       for (auto const &genParticle : *genParticles){
@@ -129,12 +138,16 @@ void run()
          }
       }
       
+      if(*genDecayMode_pseudo==1){
+         std::cout<<neutrinoPair.Pt()<<std::endl;
+      }
+      
       // ~std::cout<<"------------------------------"<<std::endl;
       // ~std::cout<<genNeutrino->Pt()<<"   "<<pseudoNeutrino->Pt()<<std::endl;
       // ~std::cout<<genAntiNeutrino->Pt()<<"   "<<pseudoAntiNeutrino->Pt()<<std::endl;
-      std::cout<<"------------------------------"<<std::endl;
-      std::cout<<genLepton->Pt()<<"   "<<pseudoLepton->Pt()<<std::endl;
-      std::cout<<genAntiLepton->Pt()<<"   "<<pseudoAntiLepton->Pt()<<std::endl;
+      // ~std::cout<<"------------------------------"<<std::endl;
+      // ~std::cout<<genLepton->Pt()<<"   "<<pseudoLepton->Pt()<<std::endl;
+      // ~std::cout<<genAntiLepton->Pt()<<"   "<<pseudoAntiLepton->Pt()<<std::endl;
       
       // ~std::cout<<"---------------------"<<std::endl;
       // ~std::cout<<*runNo<<":"<<*lumNo<<":"<<*evtNo<<std::endl;
