@@ -153,20 +153,22 @@ void run()
          
          if (*is_ee){
             if(!(*electrons)[0].isTight || !(*electrons)[1].isTight) rec_selection=false; //currently double check since trees only have tight leptons!!
-            if((*electrons)[0].etaSC>2.4 || (*electrons)[1].etaSC>2.4) rec_selection=false; //To use same region as for muons, cut on supercluster eta
+            if(abs((*electrons)[0].etaSC)>2.4 || abs((*electrons)[1].etaSC>2.4)) rec_selection=false; //To use same region as for muons, cut on supercluster eta
             p_l1=(*electrons)[0].p;
             p_l2=(*electrons)[1].p;
          }
          else if (*is_mumu){
             if(!(*muons)[0].isTight || !(*muons)[1].isTight) rec_selection=false;
             if((*muons)[0].rIso>0.15 || (*muons)[1].rIso>0.15) rec_selection=false;
+            if(abs((*muons)[0].p.Eta())>2.4 || abs((*muons)[1].p.Eta())>2.4) rec_selection=false;
             p_l1=(*muons)[0].p;
             p_l2=(*muons)[1].p;
          }
          else if (*is_emu){
             if(!(*muons)[0].isTight || !(*electrons)[0].isTight) rec_selection=false;
             if((*muons)[0].rIso>0.15 ) rec_selection=false;
-            if((*electrons)[0].etaSC>2.4 ) rec_selection=false;
+            if(abs((*muons)[0].p.Eta())>2.4) rec_selection=false;
+            if(abs((*electrons)[0].etaSC)>2.4 ) rec_selection=false;
             if ((*muons)[0].p.Pt()>(*electrons)[0].p.Pt()){
                p_l1=(*muons)[0].p;
                p_l2=(*electrons)[0].p;
