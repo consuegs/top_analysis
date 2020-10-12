@@ -98,7 +98,7 @@ void run()
          if(!(*muons)[0].isTight || !(*electrons)[0].isTight) continue;
          if((*muons)[0].rIso>0.15 ) continue;
          if(abs((*muons)[0].p.Eta())>2.4) continue;
-         if((*electrons)[0].etaSC>2.4 ) continue;
+         if(abs((*electrons)[0].etaSC)>2.4 ) continue;
          if ((*muons)[0].p.Pt()>(*electrons)[0].p.Pt()){
             p_l1=(*muons)[0].p;
             p_l2=(*electrons)[0].p;
