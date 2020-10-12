@@ -46,8 +46,8 @@ void run()
     // ~float E=0.;
     
     // ~float slope=0.001;
-    float slope=0.002;
-    // ~float slope=0.004;
+    // ~float slope=0.002;
+    float slope=0.004;
     // ~float slope=-0.001;
     
     //Define binning
@@ -147,7 +147,7 @@ void run()
     }
         
     dataFile->cd(TString::Format("ttbar_res%.1f",cfg.processFraction*100));
-    PowhegTree->Write("ttbar_res_dilepton_PTreweight",TObject::kOverwrite);
+    PowhegTree->Write(TString::Format("ttbar_res_dilepton_PTreweight%.3f",slope),TObject::kOverwrite);
     
     io::RootFileSaver saver(TString::Format("TUnfold%.1f.root",cfg.processFraction*100),"reweightingSF");
     saveProfileFrom2D(&hist2D_weights,"weights/weights_ptNuNu_2D",&saver);
