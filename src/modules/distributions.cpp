@@ -300,6 +300,10 @@ void run()
       hs.addHist(selection+"/ee/pTtop2"   ,";p_{T}^{gen}(t_{2});EventsBIN"           ,100,0,1000);
       hs.addHist(selection+"/emu/pTtop2"   ,";p_{T}^{gen}(t_{2});EventsBIN"           ,100,0,1000);
       hs.addHist(selection+"/mumu/pTtop2"   ,";%p_{T}^{gen}(t_{2});EventsBIN"           ,100,0,1000);
+      
+      hs.addHist(selection+"/ee/genHT"   ,";genHT;EventsBIN"           ,100,0,1000);
+      hs.addHist(selection+"/emu/genHT"   ,";genHT;EventsBIN"           ,100,0,1000);
+      hs.addHist(selection+"/mumu/genHT"   ,";genHT;EventsBIN"           ,100,0,1000);
    }//End 1D Gen Histograms
    
    //Define 2D histograms in the following
@@ -359,6 +363,10 @@ void run()
    hs2d.addHist("baseline/ee/2d_MetVSdPhiMetNearLep", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
+   
+   hs2d.addHist("baseline/ee/2d_MetVSdPhiMetNearLep_Puppi", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
+   hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_Puppi", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
+   hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_Puppi", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    
    hs2d.addHist("baseline/ee/2d_MetVSCosdPhiMetNearLep", ";p_{T}^{miss} (GeV);cos(|#Delta#phi|(p_{T}^{miss}),nearest l);EventsBIN" ,100,0,1000,100,-1,1);
    hs2d.addHist("baseline/emu/2d_MetVSCosdPhiMetNearLep", ";p_{T}^{miss} (GeV);cos(|#Delta#phi|(p_{T}^{miss}),nearest l);EventsBIN" ,100,0,1000,100,-1,1);
@@ -435,9 +443,10 @@ void run()
    
    //Ntuple and file to save minimal ttbar tree used for binning studies
    float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
-   minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_DeepMet, minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
-   minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi, minTree_PhiRecDeep;
-   UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions;
+   minTree_PhiMetbJet, minTree_PhiLep1Lep2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_DeepMet, minTree_XYcorrMet, 
+   minTree_HT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
+   minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi, minTree_PhiRecDeep, minTree_PhiRecXYcorr;
+   UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions, minTree_looseLeptonVeto;
    ULong64_t minTree_evtNo;
    io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res"+met_sf_string+"%.1f_new.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
    TTree ttbar_res("ttbar_res","ttbar_res");
@@ -462,6 +471,7 @@ void run()
    ttbar_res.Branch("genMET",&minTree_genMet,"genMET/f");
    ttbar_res.Branch("PuppiMET",&minTree_PuppiMet,"PuppiMET/f");
    ttbar_res.Branch("DeepMET",&minTree_DeepMet,"DeepMET/f");
+   ttbar_res.Branch("XYcorrMET",&minTree_XYcorrMet,"XYcorrMET/f");
    ttbar_res.Branch("HT",&minTree_HT,"HT/f");
    ttbar_res.Branch("MT",&minTree_MT,"MT/f");
    ttbar_res.Branch("genMT",&minTree_genMT,"genMT/f");
@@ -473,6 +483,8 @@ void run()
    ttbar_res.Branch("dPhiNuNu",&minTree_dPhiNuNu,"dPhiNuNu/f");
    ttbar_res.Branch("Phi_recPuppi",&minTree_PhiRecPuppi,"Phi_recPuppi/f");
    ttbar_res.Branch("Phi_recDeep",&minTree_PhiRecDeep,"Phi_recDeep/f");
+   ttbar_res.Branch("Phi_recXYcorr",&minTree_PhiRecXYcorr,"Phi_recXYcorr/f");
+   ttbar_res.Branch("looseLeptonVeto",&minTree_looseLeptonVeto,"looseLeptonVeto/i");
    
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
@@ -520,7 +532,10 @@ void run()
       //Check if current sample is selectedSusy scenario 
       bool SUSY_T2tt_650_350=false;
       if (dss.datasetName=="T2tt_650_350") SUSY_T2tt_650_350=true;
-
+      
+      //Check if current sample is selectedDM scenario 
+      bool DM_scalar_1_200=false;
+      if (dss.datasetName=="DM_scalar_1_200") DM_scalar_1_200=true;
       
       //Check if current sample is SUSY scenario
       bool SUSY_scen=false;
@@ -545,6 +560,7 @@ void run()
       TTreeReaderValue<tree::MET> MET_JESd(reader, "met_JESd");
       TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
       TTreeReaderValue<tree::MET> MET_Deep(reader, "metDeep");
+      TTreeReaderValue<tree::MET> MET_XYcorr(reader, "metXYcorr");
       TTreeReaderValue<tree::MET> MET_NoHF(reader, "metNoHF");
       TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
       TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
@@ -553,6 +569,7 @@ void run()
       TTreeReaderValue<bool> is_ee   (reader, "ee");
       TTreeReaderValue<bool> is_emu   (reader, "emu");
       TTreeReaderValue<bool> is_mumu   (reader, "mumu");
+      TTreeReaderValue<bool> addLepton   (reader, "addLepton");
       TTreeReaderValue<float> mll   (reader, "mll");
       TTreeReaderValue<float> mt2   (reader, "MT2");
       TTreeReaderValue<float> genMT2   (reader, "genMT2");
@@ -622,20 +639,22 @@ void run()
          
          if (*is_ee){
             if(!(*electrons)[0].isTight || !(*electrons)[1].isTight) rec_selection=false; //currently double check since trees only have tight leptons!!
-            if((*electrons)[0].etaSC>2.4 || (*electrons)[1].etaSC>2.4) rec_selection=false; //To use same region as for muons, cut on supercluster eta
+            if(abs((*electrons)[0].etaSC)>2.4 || abs((*electrons)[1].etaSC)>2.4) rec_selection=false; //To use same region as for muons, cut on supercluster eta
             p_l1=(*electrons)[0].p;
             p_l2=(*electrons)[1].p;
          }
          else if (*is_mumu){
             if(!(*muons)[0].isTight || !(*muons)[1].isTight) rec_selection=false;
             if((*muons)[0].rIso>0.15 || (*muons)[1].rIso>0.15) rec_selection=false;
+            if(abs((*muons)[0].p.Eta())>2.4 || abs((*muons)[1].p.Eta())>2.4) rec_selection=false;
             p_l1=(*muons)[0].p;
             p_l2=(*muons)[1].p;
          }
          else if (*is_emu){
             if(!(*muons)[0].isTight || !(*electrons)[0].isTight) rec_selection=false;
             if((*muons)[0].rIso>0.15 ) rec_selection=false;
-            if((*electrons)[0].etaSC>2.4 ) rec_selection=false;
+            if(abs((*muons)[0].p.Eta())>2.4) rec_selection=false;
+            if(abs((*electrons)[0].etaSC)>2.4 ) rec_selection=false;
             if ((*muons)[0].p.Pt()>(*electrons)[0].p.Pt()){
                p_l1=(*muons)[0].p;
                p_l2=(*electrons)[0].p;
@@ -688,12 +707,14 @@ void run()
          float dPhiMETnearLep=4;
          float dPhiMETnearLepPuppi=4;
          float dPhiMETnearLepDeep=4;
+         float dPhiMETnearLepXYcorr=4;
          float mt_MetNextLep=0; 
          float mt_NuNuNextLep=0; 
          for (TLorentzVector const lep : {p_l1,p_l2}){
             const float dPhi=MET->p.DeltaPhi(lep);
             const float dPhi_Puppi=MET_Puppi->p.DeltaPhi(lep);
             const float dPhi_Deep=MET_Deep->p.DeltaPhi(lep);
+            const float dPhi_XYcorr=MET_XYcorr->p.DeltaPhi(lep);
             if (std::abs(dPhi) < std::abs(dPhiMETnearLep)) {
                dPhiMETnearLep=dPhi;
                mt_MetNextLep=phys::M_T(MET->p,lep);
@@ -703,6 +724,9 @@ void run()
             }
             if (std::abs(dPhi_Deep) < std::abs(dPhiMETnearLepDeep)) {
                dPhiMETnearLepDeep=dPhi_Deep;
+            }
+            if (std::abs(dPhi_XYcorr) < std::abs(dPhiMETnearLepXYcorr)) {
+               dPhiMETnearLepXYcorr=dPhi_XYcorr;
             }
          }
          float dPhigenMETnearLep=4;
@@ -765,7 +789,7 @@ void run()
          pT_top2=gen_tops[1].Pt();
          
          //Fill minimal tree for TTbar resolution used in binning studies
-         if (ttBar_dilepton || ttBar_madGraph || ttBar_madGraph150 || SUSY_T2tt_650_350 || ttBar_standard || ttBar_amcatnlo){
+         if (ttBar_dilepton || ttBar_madGraph || ttBar_madGraph150 || SUSY_T2tt_650_350 || DM_scalar_1_200 || ttBar_standard || ttBar_amcatnlo){
             minTree_MET=met;
             minTree_PtNuNu=neutrinoPair.Pt();
             minTree_PhiRec=abs(dPhiMETnearLep);
@@ -787,6 +811,7 @@ void run()
             minTree_genMet=genMet;
             minTree_PuppiMet=MET_Puppi->p.Pt();
             minTree_DeepMet=MET_Deep->p.Pt();
+            minTree_XYcorrMet=MET_XYcorr->p.Pt();
             minTree_HT=HT;
             minTree_MT=mt_MetLep1;
             minTree_genMT=mt_genNeutrinosLep1;
@@ -797,6 +822,8 @@ void run()
             minTree_dPhiNuNu=abs(dPhiNuNu);
             minTree_PhiRecPuppi=abs(dPhiMETnearLepPuppi);
             minTree_PhiRecDeep=abs(dPhiMETnearLepDeep);
+            minTree_PhiRecXYcorr=abs(dPhiMETnearLepXYcorr);
+            minTree_looseLeptonVeto= *addLepton? 1: 0;
             if (rec_selection==false) {
                minTree_MET=-1.;
                minTree_PhiRec=-1.;
@@ -809,6 +836,7 @@ void run()
                minTree_METsig=-1.;
                minTree_PuppiMet=-1.;
                minTree_DeepMet=-1.;
+               minTree_XYcorrMet=-1.;
                minTree_HT=-1.;
                minTree_MT=-1.;
                minTree_MT_nextLep=-1.;
@@ -816,6 +844,8 @@ void run()
                minTree_PhiPtnunuMet=-1;
                minTree_PhiRecPuppi=-1;
                minTree_PhiRecDeep=-1;
+               minTree_PhiRecXYcorr=-1;
+               minTree_looseLeptonVeto=5;
             }
             else if (pseudo_selection==false) {
                minTree_PtNuNu=-1.;
@@ -950,6 +980,7 @@ void run()
          hs.fill("genParticles/"+path_cat+"/dR_NeutrinoLep",abs(dRNeutrinoLep2));
          hs.fill("genParticles/"+path_cat+"/pTtop1",pT_top1);
          hs.fill("genParticles/"+path_cat+"/pTtop2",pT_top2);
+         hs.fill("genParticles/"+path_cat+"/genHT",*HTgen);
          hs2d.fill("genParticles/"+path_cat+"/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
          hs2d.fill("genParticles/"+path_cat+"/2d_nunuVSDMgenMet",DMgenMET.Pt(),neutrinoPair.Pt());
          hs2d.fill("genParticles/"+path_cat+"/MetVSgenMet",met,genMet);
@@ -964,6 +995,7 @@ void run()
          hs2d.fill("genParticles/"+path_cat+"/2d_dPhiMetNearLep_Response",abs(dPhiMETnearLep),abs(dPhiPtNunearLep));
          hs2d.fill("baseline/"+path_cat+"/2d_MT2VSdPhiMetNearLep",*mt2,abs(dPhiMETnearLep));
          hs2d.fill("baseline/"+path_cat+"/2d_MetVSdPhiMetNearLep",met,abs(dPhiMETnearLep));
+         hs2d.fill("baseline/"+path_cat+"/2d_MetVSdPhiMetNearLep_Puppi",MET_Puppi->p.Pt(),abs(dPhiMETnearLepPuppi));
          hs2d.fill("baseline/"+path_cat+"/2d_MetVSCosdPhiMetNearLep",met,TMath::Cos(abs(dPhiMETnearLep)));
          hs2d.fill("baseline/"+path_cat+"/2d_MetVSMT",met,mt_MetLep1);
          hs2d.fill("baseline/"+path_cat+"/2d_MetVSMT_nextLep",met,mt_MetNextLep);
@@ -1030,6 +1062,7 @@ void run()
             hs.fill("genParticles_Met200/"+path_cat+"/dR_NeutrinoLep",abs(dRNeutrinoLep2));
             hs.fill("genParticles_Met200/"+path_cat+"/pTtop1",pT_top1);
             hs.fill("genParticles_Met200/"+path_cat+"/pTtop2",pT_top2);
+            hs.fill("genParticles_Met200/"+path_cat+"/genHT",*HTgen);
             hs2d.fill("genParticles_Met200/"+path_cat+"/2d_nunuVSgenMet",genMet,neutrinoPair.Pt());
             hs2d.fill("genParticles_Met200/"+path_cat+"/2d_nunuVSDMgenMet",DMgenMET.Pt(),neutrinoPair.Pt());
             hs2d.fill("genParticles_Met200/"+path_cat+"/MetVSgenMet",met,genMet);
@@ -1110,6 +1143,10 @@ void run()
          ttbar_res_saver.save(ttbar_res,"ttbar_res_T2tt_650_350");
          ttbar_res.Reset();
       }
+      else if (DM_scalar_1_200) {
+         ttbar_res_saver.save(ttbar_res,"ttbar_res_DM_scalar_1_200");
+         ttbar_res.Reset();
+      }
       else if (ttBar_dilepton) {
          ttbar_res_saver.save(ttbar_res,"ttbar_res_dilepton");
          ttbar_res.Reset();
@@ -1138,9 +1175,9 @@ void run()
    hs2d.combineFromSubsamples(samplesToCombine);
    
    //Combine ttBar madGraph with high genMet sample
-   hs.combineSamples("TTbar_madGraphCOMB",{"TTbar_madGraph","TTbar_madGraph150"});
-   hs2d.combineSamples("TTbar_madGraphCOMB",{"TTbar_madGraph","TTbar_madGraph150"});
-   samplesToCombine.push_back("TTbar_madGraphCOMB");
+   // ~hs.combineSamples("TTbar_madGraphCOMB",{"TTbar_madGraph","TTbar_madGraph150"});
+   // ~hs2d.combineSamples("TTbar_madGraphCOMB",{"TTbar_madGraph","TTbar_madGraph150"});
+   // ~samplesToCombine.push_back("TTbar_madGraphCOMB");
    
    //Plotting part 1D
    io::RootFileSaver saver(TString::Format("plots"+met_sf_string+"%.1f.root",cfg.processFraction*100),TString::Format("distributions%.1f",cfg.processFraction*100));
@@ -1158,12 +1195,12 @@ void run()
       {"baseline_Met400/ee/",{"met","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTbJet","pTJet1","pTJet2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
       {"baseline_Met400/emu/",{"met","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTbJet","pTJet1","pTJet2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
       {"baseline_Met400/mumu/",{"met","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTbJet","pTJet1","pTJet2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"genParticles/ee/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
-      {"genParticles/emu/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
-      {"genParticles/mumu/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
-      {"genParticles_Met200/ee/",{"diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_dPhiMetNearLep_gen","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
-      {"genParticles_Met200/emu/",{"diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_dPhiMetNearLep_gen","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
-      {"genParticles_Met200/mumu/",{"diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_dPhiMetNearLep_gen","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
+      {"genParticles/ee/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","genHT"}},
+      {"genParticles/emu/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","genHT"}},
+      {"genParticles/mumu/",{"pT_nunu","genMet","DMgenMet","diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep_gen","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","genHT"}},
+      {"genParticles_Met200/ee/",{"diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_dPhiMetNearLep_gen","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","genHT"}},
+      {"genParticles_Met200/emu/",{"diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_dPhiMetNearLep_gen","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","genHT"}},
+      {"genParticles_Met200/mumu/",{"diff_ptNuNu_genMET","diff_ptNuNu_DMgenMET","diff_Met_genMET","diff_Met_DMgenMET","diff_Met_genMET_norm","diff_Met_DMgenMET_norm","diff_Met_genMET_normSUM","diff_Met_DMgenMET_normSUM","diff_ptNuNu_Met","diff_dPhiMetNearLep_gen","diff_genMT2_MT2","diff_genMT2neutrino_MT2","diff_genMT_MT","diff_genMTneutrino_MT","diff_dPhiMetNearLep","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","genHT"}},
       };
    
    // The following can be used for plotting, which is currently done with an extra module   
@@ -1221,9 +1258,9 @@ void run()
       {"genParticles_Met200/ee/",{"2d_nunuVSgenMet","2d_nunuVSDMgenMet","MetVSgenMet","MetVSDMgenMet","2d_nunuVSMet","2d_MT2VSgenMT2","2d_MT2VSgenMT2neutrino","2d_MT_l1METVSgenMT","2d_MT_l1METVSgenMTneutrino","2d_dPhiMetNearLep_genResponse","2d_dPhiMetNearLep_Response"}},
       {"genParticles_Met200/emu/",{"2d_nunuVSgenMet","2d_nunuVSDMgenMet","MetVSDMgenMet","MetVSgenMet","2d_nunuVSMet","2d_MT2VSgenMT2","2d_MT2VSgenMT2neutrino","2d_MT_l1METVSgenMT","2d_MT_l1METVSgenMTneutrino","2d_dPhiMetNearLep_genResponse","2d_dPhiMetNearLep_Response"}},
       {"genParticles_Met200/mumu/",{"2d_nunuVSgenMet","2d_nunuVSDMgenMet","MetVSDMgenMet","MetVSgenMet","2d_nunuVSMet","2d_MT2VSgenMT2","2d_MT2VSgenMT2neutrino","2d_MT_l1METVSgenMT","2d_MT_l1METVSgenMTneutrino","2d_dPhiMetNearLep_genResponse","2d_dPhiMetNearLep_Response"}},
-      {"baseline/ee/",{"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep","2d_MetVSCosdPhiMetNearLep","2d_MetVSMT","2d_MetVSMT_nextLep"}},
-      {"baseline/emu/",{"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep","2d_MetVSCosdPhiMetNearLep","2d_MetVSMT","2d_MetVSMT_nextLep"}},
-      {"baseline/mumu/",{"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep","2d_MetVSCosdPhiMetNearLep","2d_MetVSMT","2d_MetVSMT_nextLep"}},
+      {"baseline/ee/",{"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep","2d_MetVSdPhiMetNearLep_Puppi","2d_MetVSCosdPhiMetNearLep","2d_MetVSMT","2d_MetVSMT_nextLep"}},
+      {"baseline/emu/",{"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep","2d_MetVSdPhiMetNearLep_Puppi","2d_MetVSCosdPhiMetNearLep","2d_MetVSMT","2d_MetVSMT_nextLep"}},
+      {"baseline/mumu/",{"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep","2d_MetVSdPhiMetNearLep_Puppi","2d_MetVSCosdPhiMetNearLep","2d_MetVSMT","2d_MetVSMT_nextLep"}},
       {"baseline_Met200/ee/",{"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep","2d_MetVSCosdPhiMetNearLep"}},
       {"baseline_Met200/emu/",{"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep","2d_MetVSCosdPhiMetNearLep"}},
       {"baseline_Met200/mumu/",{"2d_MT2VSdPhiMetNearLep","2d_MetVSdPhiMetNearLep","2d_MetVSCosdPhiMetNearLep"}},
