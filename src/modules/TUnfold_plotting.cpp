@@ -71,48 +71,82 @@ std::pair<float,int> getChi2NDF_withCorr(TH1F* hist_res, TH1F* hist_true, TH2F* 
 
 void plot_response(TH2F* responseHist, TString name, io::RootFileSaver* saver) {
    
-   //Normalize each individual line of diagram
-   float sum;
-   for (int y=1; y<=responseHist->GetNbinsY(); y++){
-      sum=responseHist->Integral(1,responseHist->GetNbinsX(),y,y);
-      if (sum==0) continue;
-      for (int x=1; x<=responseHist->GetNbinsY(); x++){
-         if (responseHist->GetBinContent(x,y)!=0)responseHist->SetBinContent(x,y,responseHist->GetBinContent(x,y)/sum);
-         else responseHist->SetBinContent(x,y,0.000002);
+   TH2F* tempHist;
+   for (TString norm :{"","column"}){
+      float sum=0;
+      if (norm=="column"){ //Normalize each individual column of diagram
+         tempHist=(TH2F*)responseHist->Clone();
+         for (int x=1; x<=tempHist->GetNbinsX(); x++){
+            sum=tempHist->Integral(x,x,1,tempHist->GetNbinsY());
+            if (sum==0) continue;
+            for (int y=1; y<=tempHist->GetNbinsY(); y++){
+               if (tempHist->GetBinContent(x,y)!=0)tempHist->SetBinContent(x,y,tempHist->GetBinContent(x,y)/sum);
+               else tempHist->SetBinContent(x,y,0.000002);
+            }
+         }
       }
+      else { //Normalize each individual line of diagram
+         tempHist=(TH2F*)responseHist->Clone();
+         for (int y=1; y<=tempHist->GetNbinsY(); y++){
+            sum=tempHist->Integral(1,tempHist->GetNbinsX(),y,y);
+            if (sum==0) continue;
+            for (int x=1; x<=tempHist->GetNbinsY(); x++){
+               if (tempHist->GetBinContent(x,y)!=0)tempHist->SetBinContent(x,y,tempHist->GetBinContent(x,y)/sum);
+               else tempHist->SetBinContent(x,y,0.000002);
+            }
+         }
+      }
+            
+      TCanvas can;
+      can.cd();
+      gPad->SetRightMargin(0.2);
+      gPad->SetLeftMargin(0.13);
+      gPad->SetBottomMargin(0.11);
+      
+      tempHist->GetYaxis()->SetTitleOffset(1.3);
+      tempHist->GetXaxis()->SetTitleOffset(0.9);
+      tempHist->GetZaxis()->SetTitleOffset(1.3);
+      tempHist->GetYaxis()->SetTitleSize(0.05);
+      tempHist->GetXaxis()->SetTitleSize(0.05);
+      tempHist->GetZaxis()->SetTitleSize(0.05);
+      tempHist->GetYaxis()->SetLabelSize(0.04);
+      tempHist->GetXaxis()->SetLabelSize(0.04);
+      tempHist->GetZaxis()->SetLabelSize(0.04);
+      
+      tempHist->SetMarkerColor(kRed);
+      tempHist->SetMarkerSize(1.5);
+      tempHist->SetTitle("");
+      tempHist->GetZaxis()->SetTitle((norm=="column")?"column normalized distribution":"line normalized distribution");
+      tempHist->SetMinimum(0.000001);
+      tempHist->SetMaximum(1.);
+      
+      tempHist->SetStats(false);
+      tempHist->Draw("colz text");
+      
+      tempHist->GetYaxis()->SetTitle("reco binNumber");
+      tempHist->GetXaxis()->SetTitle("gen binNumber");
+      
+      can.RedrawAxis();
+      saver->save(can,"response"+norm+"/"+name,true,true);
    }
-         
-   TCanvas can;
-   can.cd();
+}
+
+void plot_correlation(TH2F* corrMatrix, TString name, io::RootFileSaver* saver){
+   TCanvas can2D;
+   can2D.cd();
+   
    gPad->SetRightMargin(0.2);
-   gPad->SetLeftMargin(0.13);
-   gPad->SetBottomMargin(0.11);
-   
-   responseHist->GetYaxis()->SetTitleOffset(1.3);
-   responseHist->GetXaxis()->SetTitleOffset(0.9);
-   responseHist->GetZaxis()->SetTitleOffset(1.3);
-   responseHist->GetYaxis()->SetTitleSize(0.05);
-   responseHist->GetXaxis()->SetTitleSize(0.05);
-   responseHist->GetZaxis()->SetTitleSize(0.05);
-   responseHist->GetYaxis()->SetLabelSize(0.04);
-   responseHist->GetXaxis()->SetLabelSize(0.04);
-   responseHist->GetZaxis()->SetLabelSize(0.04);
-   
-   responseHist->SetMarkerColor(kRed);
-   responseHist->SetMarkerSize(1.5);
-   responseHist->SetTitle("");
-   responseHist->GetZaxis()->SetTitle("line normalized distribution");
-   responseHist->SetMinimum(0.000001);
-   responseHist->SetMaximum(1.);
-   
-   responseHist->SetStats(false);
-   responseHist->Draw("colz text");
-   
-   responseHist->GetYaxis()->SetTitle("reco binNumber");
-   responseHist->GetXaxis()->SetTitle("gen binNumber");
-   
-   can.RedrawAxis();
-   saver->save(can,"response/"+name,true,true);
+   corrMatrix->SetStats(0);
+   corrMatrix->SetTitle("");
+   corrMatrix->GetYaxis()->SetTitleOffset(0.6);
+   corrMatrix->GetYaxis()->SetTitle("BinNo");
+   corrMatrix->GetXaxis()->SetTitle("BinNo");
+   corrMatrix->GetZaxis()->SetTitle("Correlation");
+   corrMatrix->GetZaxis()->SetTitleOffset(1.2);
+   corrMatrix->GetZaxis()->SetLabelOffset(0.01);
+   corrMatrix->SetMarkerColor(kRed);
+   corrMatrix->Draw("hcolz text");
+   saver->save(can2D,name,true,true);
 }
    
 
@@ -120,8 +154,8 @@ extern "C"
 void run()
 {
    // unfolded sample
-   TString sample="MadGraph";
-   // ~TString sample="dilepton";
+   // ~TString sample="MadGraph";
+   TString sample="dilepton";
    // ~TString sample="";
    
    // response sample
@@ -132,14 +166,15 @@ void run()
    // Use pT reweighted
    bool withPTreweight = false;
    // ~bool withPTreweight = true;
+   TString scale="0.001";
    
    // ~// Use deep instead of pfMET
    bool withDeep = false;
    // ~bool withDeep = true;
    
    // ~// Use puppi instead of pfMET
-   bool withPuppi = false;
-   // ~bool withPuppi = true;
+   // ~bool withPuppi = false;
+   bool withPuppi = true;
    
    // Use same bin numbers for gen/true
    bool withSameBins = false;
@@ -152,6 +187,14 @@ void run()
    //Use scale factor
    bool withScaleFactor = false;
    // ~bool withScaleFactor = true;
+   
+   //Plot comparison
+   // ~bool plotComparison = false;
+   bool plotComparison = true;
+   
+   //Plot toy studies
+   bool plotToyStudies = false;
+   // ~bool plotToyStudies = true;
    
    //==============================================
    // step 1 : open output file
@@ -180,8 +223,8 @@ void run()
       input_loc_result+="_SameBins";
    }
    if (withPTreweight) {
-      input_loc+="_PTreweight";
-      input_loc_result+="_PTreweight";
+      input_loc+="_PTreweight"+scale;
+      input_loc_result+="_PTreweight"+scale;
    }
 
    TUnfoldBinning *detectorBinning=histReader.read<TUnfoldBinning>(input_loc+"/detector_binning");
@@ -195,8 +238,13 @@ void run()
    TH1F *realDis=histReader.read<TH1F>(input_loc+"/histDataTruth");
    TH1F *realDis_response=histReader.read<TH1F>(input_loc+"/histMCGenRec_projX");
    TH1F *unfolded=histReader.read<TH1F>(input_loc_result+"/hist_unfoldedResult");
+   TH1F *unfolded_reg=histReader.read<TH1F>(input_loc_result+"/reg/hist_unfoldedResult");
+   TH1F *unfolded_bbb=histReader.read<TH1F>(input_loc_result+"/BBB/hist_unfoldedResult");
    TH2F *corrMatrix=histReader.read<TH2F>(input_loc_result+"/corr_matrix");
+   TH2F *corrMatrix_reg=histReader.read<TH2F>(input_loc_result+"/reg/corr_matrix");
    TH2F *covMatrix=histReader.read<TH2F>(input_loc_result+"/cov_output");
+   TH2F *covMatrix_reg=histReader.read<TH2F>(input_loc_result+"/reg/cov_output");
+   TH2F *covMatrix_bbb=histReader.read<TH2F>(input_loc_result+"/BBB/cov_output");
    TH2F *responseMatrix=histReader.read<TH2F>(input_loc+"/histMCGenRec_sameBins");
 
    if((!realDis)||(!realDis_response)||(!unfolded)) {
@@ -223,15 +271,24 @@ void run()
    binning_met[binning_met.GetNoElements()-1] = 400;  //Plotting end for overflow bin
    
    Double_t xbins[num_bins+1];
+   Double_t xbins_minus[num_bins+1];
+   Double_t xbins_plus[num_bins+1];
    xbins[0] = 0;   //Plotting start
+   xbins_minus[0] = -10;
+   xbins_plus[0] = 10;
+   
    
    int phi_bin = 0;
    for (int i=0; i<(num_bins); i++)   {
       xbins[i+1] = binning_met[i%num_bins_met+1]+phi_bin*400;
+      xbins_minus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*400-10;
+      xbins_plus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*400+10;
       if (i%num_bins_met==num_bins_met-1) phi_bin++;
    }
    
    unfolded->SetBins(num_bins,xbins);
+   unfolded_reg->SetBins(num_bins,xbins_minus);
+   unfolded_bbb->SetBins(num_bins,xbins_plus);
    realDis->SetBins(num_bins,xbins);
    realDis_response->SetBins(num_bins,xbins);
    for (int i=1; i<=num_bins; i++) {  //Set proper label for x axis
@@ -258,10 +315,21 @@ void run()
    realDis->SetTitle(";p_{T}^{#nu#nu} (GeV);arbitrary unit");
    realDis->SetStats(false);
    
-   unfolded->Draw("pe1");  //Draw into current canvas 
+   
+   if (plotComparison) {
+      unfolded_reg->SetLineColor(kGreen+2);
+      unfolded_bbb->SetLineColor(kViolet);
+      unfolded_reg->SetMarkerColor(kGreen+2);
+      unfolded_bbb->SetMarkerColor(kViolet);
+      unfolded->Draw("pe1x0");  //Draw into current canvas
+      unfolded_reg->Draw("pe1x0 same");
+      unfolded_bbb->Draw("pe1x0 same");
+   }
+   else unfolded->Draw("pe1");  //Draw into current canvas
+   
    realDis->SetLineColor(kRed-6);
    realDis->SetFillColor(kRed-6);
-   realDis->Draw("hist same");   //Dra into current canvas (axis are not drawn again due to "same")
+   realDis->Draw("hist same");   //Draw into current canvas (axis are not drawn again due to "same")
    
    realDis_response->SetLineColor(kBlue);
    realDis_response->SetFillColor(kBlue);
@@ -279,13 +347,30 @@ void run()
    atext->DrawLatex(475,0.5*unfolded->GetMaximum(),"0.7<|#Delta#phi|(p_{T}^{#nu#nu},nearest l)<1.4");
    atext->DrawLatex(875,0.5*unfolded->GetMaximum(),"1.4<|#Delta#phi|(p_{T}^{#nu#nu},nearest l)<3.14");
    
+   //Get Chi2 and NDF
+   auto Chi2Pair = getChi2NDF(unfolded,realDis);
+   auto Chi2Pair_corr = getChi2NDF_withCorr(unfolded,realDis,covMatrix);
+   
    //Draw legend
    gfx::LegendEntries legE;
-   legE.append(*unfolded,"Unfolded","pe");
+   if (plotComparison) {
+      auto Chi2Pair_reg = getChi2NDF(unfolded_reg,realDis);
+      auto Chi2Pair_corr_reg = getChi2NDF_withCorr(unfolded_reg,realDis,covMatrix_reg);
+      auto Chi2Pair_bbb = getChi2NDF(unfolded_bbb,realDis);
+      auto Chi2Pair_corr_bbb = getChi2NDF_withCorr(unfolded_bbb,realDis,covMatrix_bbb);
+      legE.append(*unfolded,TString::Format("NoReg [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair.first,Chi2Pair.second,Chi2Pair_corr.first,Chi2Pair_corr.second),"pe");
+      legE.append(*unfolded_reg,TString::Format("Reg [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair_reg.first,Chi2Pair_reg.second,Chi2Pair_corr_reg.first,Chi2Pair_corr_reg.second),"pe");
+      legE.append(*unfolded_bbb,TString::Format("BBB [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair_bbb.first,Chi2Pair_bbb.second,Chi2Pair_corr_bbb.first,Chi2Pair_corr_bbb.second),"pe");
+   }
+   else {
+      legE.append(*unfolded,"Unfolded","pe");
+      atext->DrawLatex(30,10,TString::Format("#chi^{2}/NDF=%.1f/%i",Chi2Pair.first,Chi2Pair.second));
+      atext->DrawLatex(30,3,TString::Format("#chi^{2}/NDF(corr.)=%.1f/%i",Chi2Pair_corr.first,Chi2Pair_corr.second));
+   }
    legE.append(*realDis,"MC true ttbar","l");
    legE.append(*realDis_response,"MC true ttbar (response)","l");
-   TLegend leg=legE.buildLegend(.15,.45,0.3,.6,1);
-   leg.SetTextSize(0.035);
+   TLegend leg=legE.buildLegend(.10,.45,0.25,.65,1);
+   leg.SetTextSize(0.03);
    leg.Draw();
    
    unfolded->Draw("axis same");
@@ -294,17 +379,28 @@ void run()
       atext->DrawLatex(75,10,"With ScaleFactor");
    }
    
-   //Get Chi2 and NDF
-   auto Chi2Pair = getChi2NDF(unfolded,realDis);
-   auto Chi2Pair_corr = getChi2NDF_withCorr(unfolded,realDis,covMatrix);
-   atext->DrawLatex(75,10,TString::Format("#chi^{2}/NDF=%.1f/%i",Chi2Pair.first,Chi2Pair.second));
-   atext->DrawLatex(75,3,TString::Format("#chi^{2}/NDF(corr.)=%.1f/%i",Chi2Pair_corr.first,Chi2Pair_corr.second));
-   
    //Change to lower part of canvas
    can.pL_.cd();
    can.pL_.SetBottomMargin(0.45);
    can.pL_.SetTickx(0);
-   TH1F ratio=hist::getRatio(*realDis,*unfolded,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
+   TH1F ratio;
+   TH1F ratio_response;
+   TH1F ratio_unfolded;
+   TH1F ratio_unfolded_reg;
+   TH1F ratio_unfolded_bbb;
+   if (plotComparison) {
+      ratio=hist::getRatio(*realDis,*realDis,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
+      ratio_response=hist::getRatio(*realDis_response,*realDis,"ratio",hist::NOERR);
+      ratio_unfolded=hist::getRatio(*unfolded,*realDis,"ratio",hist::ONLY1);
+      ratio_unfolded_reg=hist::getRatio(*unfolded_reg,*realDis,"ratio",hist::ONLY1);
+      ratio_unfolded_bbb=hist::getRatio(*unfolded_bbb,*realDis,"ratio",hist::ONLY1);
+   }
+   else {
+      ratio=hist::getRatio(*realDis,*unfolded,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
+      ratio_response=hist::getRatio(*realDis_response,*unfolded,"ratio",hist::NOERR);
+      ratio_unfolded=hist::getRatio(*unfolded,*unfolded,"ratio",hist::ONLY1);
+   }
+      
    // ~ratio.SetMaximum(1.12);
    // ~ratio.SetMinimum(0.9);
    ratio.SetMaximum(1.2);
@@ -314,37 +410,27 @@ void run()
    ratio.GetYaxis()->SetTitleOffset(0.3);
    ratio.GetXaxis()->SetTitleOffset(1.3);
    ratio.GetXaxis()->SetTickLength(0.);
-   ratio.Draw();
+   if (plotComparison) ratio.Draw("hist");
+   else ratio.Draw();
    
-   TH1F ratio_response=hist::getRatio(*realDis_response,*unfolded,"ratio",hist::NOERR);
    ratio_response.SetLineColor(kBlue);
    ratio_response.SetMarkerColor(kBlue);
    ratio_response.Draw("same");
    
-   TH1F uncertainty_unfolded=hist::getRatio(*unfolded,*unfolded,"ratio",hist::ONLY1);  //Get Ratio between unfolded and unfolded to draw unfolded uncertainty around 1
-   uncertainty_unfolded.SetMarkerSize(0);
-   uncertainty_unfolded.Draw("same");
+   if (plotComparison) {
+      ratio_unfolded.Draw("pe1x0 same");
+      ratio_unfolded_reg.Draw("pe1x0 same");
+      ratio_unfolded_bbb.Draw("pe1x0 same");
+   }
+   else {
+      ratio_unfolded.SetMarkerSize(0);
+      ratio_unfolded.Draw("same");
+   }
    
    // ~aline->SetLineStyle(2);
    aline->DrawLine(800,ratio.GetMinimum(),800,ratio.GetMaximum());
    aline->DrawLine(400,ratio.GetMinimum(),400,ratio.GetMaximum());
    aline->DrawLine(800,ratio.GetMinimum(),800,ratio.GetMaximum());
-   
-   //Plot correlation matrix
-   TCanvas can2D;
-   can2D.cd();
-   
-   gPad->SetRightMargin(0.2);
-   corrMatrix->SetStats(0);
-   corrMatrix->SetTitle("");
-   corrMatrix->GetYaxis()->SetTitleOffset(0.6);
-   corrMatrix->GetYaxis()->SetTitle("BinNo");
-   corrMatrix->GetXaxis()->SetTitle("BinNo");
-   corrMatrix->GetZaxis()->SetTitleOffset(1.2);
-   corrMatrix->GetZaxis()->SetLabelOffset(0.01);
-   corrMatrix->SetMarkerColor(kRed);
-   corrMatrix->Draw("hcolz text");
-
    
    //===========================
    // Step 4: save plot
@@ -367,13 +453,164 @@ void run()
       saveName2D+="_SameBins";
    }
    if (withPTreweight) {
-      saveName+="_PTreweight";
-      saveName2D+="_PTreweight";
+      saveName+="_PTreweight"+scale;
+      saveName2D+="_PTreweight"+scale;
    }
+   if (plotComparison) saveName="compareMethods/"+saveName;
    saver.save(can,saveName);
-   saver.save(can2D,saveName2D);
    
    //Plot response matrix
    plot_response(responseMatrix,saveName,&saver);
-
+   plot_correlation(corrMatrix,saveName2D,&saver);
+   plot_correlation(corrMatrix_reg,saveName2D+"_reg",&saver);
+   
+   //Plot toy studies
+   if (plotComparison) saveName=sample+"_"+sample_response;
+   if (plotToyStudies) {
+      TProfile *profPull=histReader.read<TProfile>(input_loc_result+"/prof_pull");
+      TProfile *profPull_reg=histReader.read<TProfile>(input_loc_result+"/reg/prof_pull");
+      TProfile *profPull_bbb=histReader.read<TProfile>(input_loc_result+"/BBB/prof_pull");
+      TProfile *profRes=histReader.read<TProfile>(input_loc_result+"/prof_res");
+      TProfile *profRes_reg=histReader.read<TProfile>(input_loc_result+"/reg/prof_res");
+      TProfile *profRes_bbb=histReader.read<TProfile>(input_loc_result+"/BBB/prof_res");
+      TH1F *histPull=histReader.read<TH1F>(input_loc_result+"/hist_pull");
+      TH1F *histPull_reg=histReader.read<TH1F>(input_loc_result+"/reg/hist_pull");
+      TH1F *histPull_bbb=histReader.read<TH1F>(input_loc_result+"/BBB/hist_pull");
+      TH1F *histRes=histReader.read<TH1F>(input_loc_result+"/hist_res");
+      TH1F *histRes_reg=histReader.read<TH1F>(input_loc_result+"/reg/hist_res");
+      TH1F *histRes_bbb=histReader.read<TH1F>(input_loc_result+"/BBB/hist_res");
+      TH1F *histChi=histReader.read<TH1F>(input_loc_result+"/hist_chi");
+      TH1F *histChi_reg=histReader.read<TH1F>(input_loc_result+"/reg/hist_chi");
+      TH1F *histChi_bbb=histReader.read<TH1F>(input_loc_result+"/BBB/hist_chi");
+      for (TString type : {"Pull","Residual"}) {   //Plot bin-wise pull and residual
+         TCanvas canToy;
+         canToy.cd();
+         
+         //Set temp profiles/hists
+         TProfile* temp=0;
+         TProfile* temp_reg=0;
+         TProfile* temp_bbb=0;
+         if (type=="Pull") {
+            temp=profPull;
+            temp_reg=profPull_reg;
+            temp_bbb=profPull_bbb;
+         }
+         else {
+            temp=profRes;
+            temp_reg=profRes_reg;
+            temp_bbb=profRes_bbb;
+         }
+         
+         //Get RMS from profile
+         TH1D tempRMS=*(temp->ProjectionX());
+         TH1D tempRMS_reg=*(TH1D*)tempRMS.Clone();
+         TH1D tempRMS_bbb=*(TH1D*)tempRMS.Clone();
+         for (int i=1; i<=profPull->GetNbinsX(); i++){
+            tempRMS.SetBinContent(i,temp->GetBinError(i)*sqrt(temp->GetBinEntries(i)));
+            tempRMS_reg.SetBinContent(i,temp_reg->GetBinError(i)*sqrt(temp_reg->GetBinEntries(i)));
+            tempRMS_bbb.SetBinContent(i,temp_bbb->GetBinError(i)*sqrt(temp_bbb->GetBinEntries(i)));
+         }
+         
+         temp->SetStats(0);
+         temp->GetXaxis()->SetTitle("Bin");
+         if (type=="Pull") temp->SetMaximum(1.2);
+         else temp->SetMaximum(1.5);
+         
+         temp->SetMarkerColor(kBlue);
+         temp_reg->SetMarkerColor(kRed);
+         temp_bbb->SetMarkerColor(kBlack);
+         tempRMS.SetMarkerColor(kBlue);
+         tempRMS_reg.SetMarkerColor(kRed);
+         tempRMS_bbb.SetMarkerColor(kBlack);
+         
+         temp->SetLineWidth(0);
+         temp_reg->SetLineWidth(0);
+         temp_bbb->SetLineWidth(0);
+         tempRMS.SetLineWidth(0);
+         tempRMS_reg.SetLineWidth(0);
+         tempRMS_bbb.SetLineWidth(0);
+         
+         temp->SetMarkerSize(1.3);
+         temp_reg->SetMarkerSize(1.3);
+         temp_bbb->SetMarkerSize(1.3);
+         tempRMS.SetMarkerSize(1.3);
+         tempRMS_reg.SetMarkerSize(1.3);
+         tempRMS_bbb.SetMarkerSize(1.3);
+         
+         tempRMS.SetMarkerStyle(4);
+         tempRMS_reg.SetMarkerStyle(4);
+         tempRMS_bbb.SetMarkerStyle(4);
+         
+         temp->Draw("");
+         temp_reg->Draw("same");
+         temp_bbb->Draw("same");
+         tempRMS.Draw("same");
+         tempRMS_reg.Draw("same");
+         tempRMS_bbb.Draw("same");
+         
+         aline->DrawLine(0.5,0,num_bins+0.5,0);
+         if (type=="Pull") aline->DrawLine(0.5,1,num_bins+0.5,1);
+         
+         gfx::LegendEntries legE_pull;
+         legE_pull.append(*temp,"NoReg "+type+" Mean","p");
+         legE_pull.append(tempRMS,"NoReg "+type+" RMS","p");
+         legE_pull.append(*temp_reg,"Reg "+type+" Mean","p");
+         legE_pull.append(tempRMS_reg,"Reg "+type+" RMS","p");
+         legE_pull.append(*temp_bbb,"BBB "+type+" Mean","p");
+         legE_pull.append(tempRMS_bbb,"BBB "+type+" RMS","p");
+         TLegend leg_pull=legE_pull.buildLegend(.10,.45,0.8,.65,2);
+         leg_pull.SetTextSize(0.04);
+         leg_pull.Draw();
+         
+         saver.save(canToy,"toyStudies/"+saveName+"/prof"+type);
+      }
+      
+      for (TString type : {"Pull","Residual","Chi"}) {
+         TCanvas canToy;
+         canToy.cd();
+         
+         //Set temp profiles/hists
+         TH1* temp=0;
+         TH1* temp_reg=0;
+         TH1* temp_bbb=0;
+         if (type=="Pull") {
+            temp=histPull;
+            temp_reg=histPull_reg;
+            temp_bbb=histPull_bbb;
+         }
+         else if (type=="Residual") {
+            temp=histRes;
+            temp_reg=histRes_reg;
+            temp_bbb=histRes_bbb;
+         }
+         else {
+            temp=histChi;
+            temp_reg=histChi_reg;
+            temp_bbb=histChi_bbb;
+         }
+         
+         temp->SetLineColor(kBlue);
+         temp_reg->SetLineColor(kRed);
+         temp_bbb->SetLineColor(kBlack);
+         temp->SetLineWidth(2);
+         temp_reg->SetLineWidth(2);
+         temp_bbb->SetLineWidth(2);
+         
+         temp_bbb->SetStats(0);
+         temp_bbb->Draw("hist");
+         temp->Draw("hist same");
+         temp_reg->Draw("hist same");
+         gfx::LegendEntries legE_pull;
+         legE_pull.append(*temp,TString::Format("NoReg [#mu=%.3f #sigma=%.3f]",temp->GetMean(),temp->GetRMS()),"l");
+         legE_pull.append(*temp_reg,TString::Format("Reg [#mu=%.3f #sigma=%.3f]",temp_reg->GetMean(),temp_reg->GetRMS()),"l");
+         legE_pull.append(*temp_bbb,TString::Format("BBB [#mu=%.3f #sigma=%.3f]",temp_bbb->GetMean(),temp_bbb->GetRMS()),"l");
+         TLegend leg_pull=legE_pull.buildLegend(.10,.45,0.4,.65,1);
+         leg_pull.SetTextSize(0.04);
+         leg_pull.Draw();
+         
+         saver.save(canToy,"toyStudies/"+saveName+"/hist"+type);
+      }
+         
+   }
+      
 }

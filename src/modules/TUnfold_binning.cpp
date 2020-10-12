@@ -28,8 +28,8 @@ void run()
    std::cout<<"---------------------------------------"<<std::endl;
    
    // unfolded sample
-   TString sample="MadGraph";
-   // ~TString sample="dilepton";
+   // ~TString sample="MadGraph";
+   TString sample="dilepton";
    // ~TString sample="";
    
    // response sample
@@ -40,14 +40,15 @@ void run()
    // Use pT reweighted
    bool withPTreweight = false;
    // ~bool withPTreweight = true;
+   TString scale="0.001";
    
    // Use deep instead of pfMET
    bool withDeep = false;
    // ~bool withDeep = true;
    
    // Use puppi instead of pfMET
-   bool withPuppi = false;
-   // ~bool withPuppi = true;
+   // ~bool withPuppi = false;
+   bool withPuppi = true;
    
    // Use same bin numbers for gen/true
    bool withSameBins = false;
@@ -63,13 +64,13 @@ void run()
    
    // number of met and phi bins and binning
    // ~int NBIN_MET_FINE=6;
-   int NBIN_MET_FINE=8;
-   // ~int NBIN_MET_FINE=10;
+   // ~int NBIN_MET_FINE=8;
+   int NBIN_MET_FINE=10;
    // ~int NBIN_MET_FINE=12;
    int NBIN_PHI_FINE=6;
    // ~std::vector<double> metBinsFine_vector={0,20,40,80,120,175,230};
-   std::vector<double> metBinsFine_vector={0,20,40,60,80,100,120,175,230};
-   // ~std::vector<double> metBinsFine_vector={0,20,40,60,80,100,120,140,160,195,230};
+   // ~std::vector<double> metBinsFine_vector={0,20,40,60,80,100,120,175,230};
+   std::vector<double> metBinsFine_vector={0,20,40,60,80,100,120,140,160,195,230};
    std::vector<double> phiBinsFine_vector={0,0.35,0.7,1.05,1.4,2.27,3.141};
    // ~std::vector<double> phiBinsFine_vector={0,0.35,0.7,1.05,1.4,1.8,3.141};
    if(withSameBins){
@@ -85,13 +86,13 @@ void run()
    Double_t* phiBinsFine=&phiBinsFine_vector[0];
 
    // ~int NBIN_MET_COARSE=3;
-   int NBIN_MET_COARSE=4;
-   // ~int NBIN_MET_COARSE=5;
+   // ~int NBIN_MET_COARSE=4;
+   int NBIN_MET_COARSE=5;
    // ~int NBIN_MET_COARSE=6;
    int NBIN_PHI_COARSE=3;
    // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,120,230};
-   Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,80,120,230};
-   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,80,120,160,230};
+   // ~Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,80,120,230};
+   Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,80,120,160,230};
    Double_t phiBinsCoarse[NBIN_PHI_COARSE+1]={0,0.7,1.4,3.141};
    
    //=======================================================================
@@ -140,8 +141,8 @@ void run()
    if (withDeep) save_path+="_Deep";
    if (withSameBins) save_path+="_SameBins";
    if (withPTreweight) {
-      save_path+="_PTreweight";
-      sample+="_PTreweight";
+      save_path+="_PTreweight"+scale;
+      sample+="_PTreweight"+scale;
    }
    
    io::RootFileSaver saver(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
@@ -165,7 +166,7 @@ void run()
    TH1 *histDataTruth_fakes=generatorBinning->CreateHistogram("histDataTruth_fakes");
 
    TString inputFile = TString::Format("ttbar_res%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile = TString::Format("ttbar_res%.1f_ptReweightPerBin.root",cfg.processFraction*100);
+   // ~TString inputFile = TString::Format("ttbar_res%.1f_reweightAlsoFakes.root",cfg.processFraction*100);
    // ~TString inputFile = TString::Format("ttbar_res%.1f_extremeReweight.root",cfg.processFraction*100);
    TString inputString = TString::Format("ttbar_res%.1f",cfg.processFraction*100);
    if (withScaleFactor) inputFile = "ttbar_res_SF0.910000100.0.root";
@@ -213,7 +214,7 @@ void run()
       if(dataTree->GetEntry(ievent)<=0) break;
 
       //only bin to bin migration
-      // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      if(metRec<0 || genDecayMode>3 || metGen<0) continue;
       
       //ignore acceptance
       // ~if(metRec<0) continue;
@@ -278,8 +279,12 @@ void run()
    for(int i=0;i<=histDataReco->GetNbinsX()+1;i++) {
       histDataReco->SetBinError(i,sqrt(histDataReco->GetBinContent(i)));
    }
+   for(int i=0;i<=histDataReco_coarse->GetNbinsX()+1;i++) {
+      histDataReco_coarse->SetBinError(i,sqrt(histDataReco_coarse->GetBinContent(i)));
+   }
    
    saver.save(*histDataReco,"histDataReco");
+   saver.save(*histDataReco_coarse,"histDataReco_coarse");
    saver.save(*histDataTruth_fakes,"histDataTruth_fakes");
    saver.save(*histDataTruth,"histDataTruth");
 
@@ -292,6 +297,7 @@ void run()
    TH2 *histMCGenRec=TUnfoldBinning::CreateHistogramOfMigrations(generatorBinning,detectorBinning,"histMCGenRec");
    TH2 *histMCGenRec_purity=TUnfoldBinning::CreateHistogramOfMigrations(generatorBinning,generatorBinning,"histMCGenRec_purity");
    TH1 *histMCRec_fakes=detectorBinning->CreateHistogram("histMCRec_fakes");
+   TH1 *histMCRec_fakes_coarse=generatorBinning->CreateHistogram("histMCRec_fakes_coarse");
 
    TTree *signalTree=(TTree *) dataFile->Get(sample_response!=""? inputString+"/ttbar_res_"+sample_response: inputString+"/ttbar_res");
    
@@ -327,7 +333,7 @@ void run()
       if(signalTree->GetEntry(ievent)<=0) break;
       
       //only bin to bin migration
-      // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      if(metRec<0 || genDecayMode>3 || metGen<0) continue;
       
       //ignore acceptance
       // ~if(metRec<0) continue;
@@ -351,6 +357,7 @@ void run()
       // ~if (metGen<0 || genDecayMode>3) continue;
       if (metGen<0 || genDecayMode>3) {
          histMCRec_fakes->Fill(recBin,mcWeight);
+         histMCRec_fakes_coarse->Fill(recBin_purity,mcWeight);
          continue;
       }
 
@@ -384,8 +391,20 @@ void run()
    for(int i=1; i<=hist_SignalFraction->GetNbinsX(); i++){  //Is this correct or not????
       hist_SignalFraction->SetBinError(i,0);
    }
-   
    saver.save(*hist_SignalFraction,"hist_SignalFraction");
+   
+   //Calculate Signal fration for coarse binning
+   TH1 *hist_SignalFraction_coarse=generatorBinning->CreateHistogram("hist_SignalFraction_coarse");
+   TH1 *histMCRec_coarse=histMCGenRec_purity->ProjectionY("",1,-1);
+   saver.save(*histMCRec_coarse,"histMCRec_coarse");
+   hist_SignalFraction_coarse->Add(histMCRec_coarse);
+   histMCRec_coarse->Add(histMCRec_fakes_coarse);
+   hist_SignalFraction_coarse->Divide(histMCRec_coarse);
+   
+   for(int i=1; i<=hist_SignalFraction_coarse->GetNbinsX(); i++){  //Is this correct or not????
+      hist_SignalFraction_coarse->SetBinError(i,0);
+   }
+   saver.save(*hist_SignalFraction_coarse,"hist_SignalFraction_coarse");
    
    //Save normalized reco distribution for fake and non fake events
    TH1D histGen_fakes=*(histMCGenRec_purity->ProjectionY("Fakes",1,1));
