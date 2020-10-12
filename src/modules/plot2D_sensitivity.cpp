@@ -53,6 +53,7 @@ void run()
    io::RootFileSaver saver(TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100),"plot2D_sensitivity");
    // ~io::RootFileSaver saver(TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100),"plot2D_sensitivity_0.91");
    io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   // ~io::RootFileReader histReader("histograms_v10.root",TString::Format("distributions%.1f",cfg.processFraction*100));
    // ~io::RootFileReader histReader(TString::Format("histograms_SF0.910000_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
    TCanvas can;
    
@@ -74,10 +75,10 @@ void run()
    std::vector<float> phi_bins3={0,0.4,0.8,1.2,3.14};
    
    // ~std::vector<float> met_bins4={0,40,120,230,400};
-   std::vector<float> met_bins4={0,32,96,184,400};
-   std::vector<float> phi_bins4={0,0.7,1.4,3.14};
-   // ~std::vector<float> met_bins4={0,400};
-   // ~std::vector<float> phi_bins4={0,3.14};
+   // ~std::vector<float> met_bins4={0,40,80,120,160,230,400};
+   // ~std::vector<float> phi_bins4={0,0.7,1.4,3.141};
+   std::vector<float> met_bins4={0,400};
+   std::vector<float> phi_bins4={0,3.14};
    
    //Used for names in the savin process
    int numberBinningSchemeMet=1;
@@ -95,6 +96,8 @@ void run()
          }
          
          add_Categories("2d_MetVSdPhiMetNearLep/TTbar",histReader,ttbar);
+         // ~add_Categories("2d_MetVSdPhiMetNearLep/TTbar_diLepton",histReader,ttbar);
+         // ~add_Categories("2d_MetVSdPhiMetNearLep_Puppi/TTbar_diLepton",histReader,ttbar);
          
          std::cout<<"Correlation in ttbar: "<<ttbar.GetCorrelationFactor()<<std::endl;
          
@@ -186,6 +189,7 @@ void run()
             std::vector<float> ratios=get_Ratio(temp,SMbkg);      //Get ratios needed for the pie charts
             for (int i=0;i<int(ratios.size());i++){
                bin_ratios[i][j]=ratios[i];
+               std::cout<<ratios[i]<<std::endl;
             }
             j++;
          }
@@ -200,7 +204,8 @@ void run()
          for (int i=0;i<nTotBins;i++){
             Float_t vals[7];
             TString binName="Bin"+std::to_string(i+1);
-            TPie *pie1 = new TPie("pie1",binName,7,vals,colors);
+            // ~TPie *pie1 = new TPie("pie1",binName,7,vals,colors);
+            TPie *pie1 = new TPie("pie1",binName,7,bin_ratios[i],colors);
             
             pie1->GetSlice(0)->SetTitle("SingleTop");
             pie1->GetSlice(1)->SetTitle("DrellYan");
@@ -215,7 +220,7 @@ void run()
             pie1->GetSlice(6)->SetTitle("TTbar");
             pie1->SetLabelsOffset(-.2);
             pie1->SetLabelFormat("%txt(%perc)");
-            pie1->SetPercentFormat("%2.0f");
+            pie1->SetPercentFormat("%2.1f");
             pie1->SetRadius(.3);
             
             can.cd(nTotBins-i+fix[(nTotBins-i)%(met_bins.size()-1)]);
@@ -223,12 +228,12 @@ void run()
             pie1->Draw("nol R <");
             if ((nTotBins-i+fix[(nTotBins-i)%(met_bins.size()-1)])==1) pie1->MakeLegend();
             
-            can_noTTbar.cd(nTotBins-i+fix[(nTotBins-i)%(met_bins.size()-1)]);
-            TPie *pie2=(TPie*) pie1->Clone("pie2");
-            pie2->GetSlice(6)->SetTitle("");
-            pie2->GetSlice(6)->SetValue(0);
-            pie2->Draw("nol R <");
-            if ((nTotBins-i+fix[(nTotBins-i)%(met_bins.size()-1)])==1) pie2->MakeLegend();
+            // ~can_noTTbar.cd(nTotBins-i+fix[(nTotBins-i)%(met_bins.size()-1)]);
+            // ~TPie *pie2=(TPie*) pie1->Clone("pie2");
+            // ~pie2->GetSlice(6)->SetTitle("");
+            // ~pie2->GetSlice(6)->SetValue(0);
+            // ~pie2->Draw("nol R <");
+            // ~if ((nTotBins-i+fix[(nTotBins-i)%(met_bins.size()-1)])==1) pie2->MakeLegend();
          }
          // Save pie charts
          TString plotLoc="../output/BKGratios/BinningMet_"+std::to_string(numberBinningSchemeMet)+"_Phi"+std::to_string(numberBinningSchemePhi)+".pdf";
