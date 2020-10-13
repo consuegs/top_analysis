@@ -270,7 +270,7 @@ void run()
             if(!(*muons)[0].isTight || !(*electrons)[0].isTight) rec_selection=false;
             if((*muons)[0].rIso>0.15 ) rec_selection=false;
             if(abs((*muons)[0].p.Eta())>2.4) rec_selection=false;
-            if(abs(*electrons)[0].etaSC)>2.4 ) rec_selection=false;
+            if(abs((*electrons)[0].etaSC)>2.4 ) rec_selection=false;
             if ((*muons)[0].p.Pt()>(*electrons)[0].p.Pt()){
                p_l1=(*muons)[0].p;
                p_l2=(*electrons)[0].p;
