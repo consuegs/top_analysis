@@ -16,8 +16,9 @@ class Config
 public:
    static Config& get();
    float lumi;
-   //~ float trigger_eff_PhMET;
-   //~ float trigger_eff_Ph;
+   TString trigger_SF_ee;
+   TString trigger_SF_mumu;
+   TString trigger_SF_emu;
    //~ struct {
       //~ float f,f_mc; // the fake rate
       //~ float syst_unc;

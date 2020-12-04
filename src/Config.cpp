@@ -24,9 +24,10 @@ Config::Config()
    gitHash=io::shellOutput("git log -1 --pretty=format:%h");
    if (TString(io::shellOutput("git status")).Contains("modified")) gitHash+="*";
    lumi=pt.get<float>("general.lumi");
-
-   //~ trigger_eff_Ph   =pt.get<float>("general.trigger_eff_Ph")   /100.0;
-   //~ trigger_eff_PhMET=pt.get<float>("general.trigger_eff_PhMET")/100.0;
+   
+   trigger_SF_ee=pt.get<std::string>("sf.trigger_SF_ee");
+   trigger_SF_mumu=pt.get<std::string>("sf.trigger_SF_mumu");
+   trigger_SF_emu=pt.get<std::string>("sf.trigger_SF_emu");
 
    //~ std::vector<float> vsf=util::to_vector<float>(pt.get<std::string>("sf.Vg"));
    //~ assert(vsf.size()==2);
