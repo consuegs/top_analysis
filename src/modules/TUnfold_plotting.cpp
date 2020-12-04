@@ -168,21 +168,21 @@ void run()
    // ~bool withPTreweight = true;
    TString scale="0.001";
    
-   // ~// Use deep instead of pfMET
-   bool withDeep = false;
-   // ~bool withDeep = true;
+   // ~// Use DNN instead of pfMET
+   // ~bool withDNN = false;
+   bool withDNN = true;
    
    // ~// Use puppi instead of pfMET
-   // ~bool withPuppi = false;
-   bool withPuppi = true;
+   bool withPuppi = false;
+   // ~bool withPuppi = true;
    
    // Use same bin numbers for gen/true
    bool withSameBins = false;
    // ~bool withSameBins = true;
    
    // include signal to pseudo data
-   // ~bool withBSM = true;
-   bool withBSM = false;
+   bool withBSM = true;
+   // ~bool withBSM = false;
    
    //Use scale factor
    bool withScaleFactor = false;
@@ -214,9 +214,9 @@ void run()
       input_loc+="_Puppi";
       input_loc_result+="_Puppi";
    }
-   if (withDeep) {
-      input_loc+="_Deep";
-      input_loc_result+="_Deep";
+   if (withDNN) {
+      input_loc+="_DNN";
+      input_loc_result+="_DNN";
    }
    if (withSameBins) {
       input_loc+="_SameBins";
@@ -444,9 +444,9 @@ void run()
       saveName+="_Puppi";
       saveName2D+="_Puppi";
    }
-   if (withDeep)  {
-      saveName+="_Deep";
-      saveName2D+="_Deep";
+   if (withDNN)  {
+      saveName+="_DNN";
+      saveName2D+="_DNN";
    }
    if (withSameBins) {
       saveName+="_SameBins";

@@ -141,21 +141,21 @@ void run()
    // ~bool withPTreweight = true;
    TString scale="0.001";
    
-   // Use Deep instead of pfMET
-   bool withDeep = false;
-   // ~bool withDeep = true;
+   // Use DNN instead of pfMET
+   // ~bool withDNN = false;
+   bool withDNN = true;
    
    // Use puppi instead of pfMET
-   // ~bool withPuppi = false;
-   bool withPuppi = true;
+   bool withPuppi = false;
+   // ~bool withPuppi = true;
    
    // Use same bin numbers for gen/true
    bool withSameBins = false;
    // ~bool withSameBins = true;
    
    // include signal to pseudo data
-   // ~bool withBSM = true;
-   bool withBSM = false;
+   bool withBSM = true;
+   // ~bool withBSM = false;
    
    //Use scale factor
    bool withScaleFactor = false;
@@ -174,7 +174,7 @@ void run()
    TString save_path = "TUnfold_results_"+sample+"_"+sample_response;
    if (withBSM) save_path+="_BSM";
    if (withPuppi) save_path+="_Puppi";
-   if (withDeep) save_path+="_Deep";
+   if (withDNN) save_path+="_DNN";
    if (withSameBins) save_path+="_SameBins";
    if (withPTreweight) save_path+="_PTreweight"+scale;
    io::RootFileSaver saver(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
@@ -187,7 +187,7 @@ void run()
    TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
    if (withBSM) input_loc+="_BSM";
    if (withPuppi) input_loc+="_Puppi";
-   if (withDeep) input_loc+="_Deep";
+   if (withDNN) input_loc+="_DNN";
    if (withSameBins) input_loc+="_SameBins";
    if (withPTreweight) input_loc+="_PTreweight"+scale;
 

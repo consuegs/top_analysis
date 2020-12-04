@@ -42,21 +42,21 @@ void run()
    // ~bool withPTreweight = true;
    TString scale="0.001";
    
-   // Use deep instead of pfMET
-   bool withDeep = false;
-   // ~bool withDeep = true;
+   // Use DNN instead of pfMET
+   // ~bool withDNN = false;
+   bool withDNN = true;
    
    // Use puppi instead of pfMET
-   // ~bool withPuppi = false;
-   bool withPuppi = true;
+   bool withPuppi = false;
+   // ~bool withPuppi = true;
    
    // Use same bin numbers for gen/true
    bool withSameBins = false;
    // ~bool withSameBins = true;
    
    // include signal to pseudo data
-   // ~bool withBSM = true;
-   bool withBSM = false;
+   bool withBSM = true;
+   // ~bool withBSM = false;
    
    //Use scale factor
    bool withScaleFactor = false;
@@ -138,7 +138,8 @@ void run()
    TString save_path = "TUnfold_binning_"+sample+"_"+sample_response;
    if (withBSM) save_path+="_BSM";
    if (withPuppi) save_path+="_Puppi";
-   if (withDeep) save_path+="_Deep";
+   if (withPuppi) save_path+="_Puppi";
+   if (withDNN) save_path+="_DNN";
    if (withSameBins) save_path+="_SameBins";
    if (withPTreweight) {
       save_path+="_PTreweight"+scale;
@@ -165,12 +166,10 @@ void run()
    TH1 *histDataTruth=generatorBinning->CreateHistogram("histDataTruth");
    TH1 *histDataTruth_fakes=generatorBinning->CreateHistogram("histDataTruth_fakes");
 
-   TString inputFile = TString::Format("ttbar_res%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile = TString::Format("ttbar_res%.1f_reweightAlsoFakes.root",cfg.processFraction*100);
-   // ~TString inputFile = TString::Format("ttbar_res%.1f_extremeReweight.root",cfg.processFraction*100);
+   TString inputFile = TString::Format("ttbar_res%.1f_new.root",cfg.processFraction*100);
    TString inputString = TString::Format("ttbar_res%.1f",cfg.processFraction*100);
    if (withScaleFactor) inputFile = "ttbar_res_SF0.910000100.0.root";
-   TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/"+inputFile);
+   TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/DNNapplied/"+inputFile);
    TTree *dataTree=(TTree *) dataFile->Get(sample!=""? inputString+"/ttbar_res_"+sample: inputString+"/ttbar_res");
    // ~TFile *dataFile_alt=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0_new.root");
    // ~TTree *dataTree=(TTree *) dataFile_alt->Get(sample!=""? inputString+"/ttbar_res_"+sample: inputString+"/ttbar_res");
@@ -193,9 +192,9 @@ void run()
       dataTree->SetBranchAddress("Phi_recPuppi",&phiRec);
       dataTree->SetBranchAddress("PuppiMET",&metRec);
    }
-   if(withDeep) {
-      dataTree->SetBranchAddress("Phi_recDeep",&phiRec);
-      dataTree->SetBranchAddress("DeepMET",&metRec);
+   if(withDNN) {
+      dataTree->SetBranchAddress("Phi_recPuppi",&phiRec);
+      dataTree->SetBranchAddress("DNN_regression",&metRec);
    }
    dataTree->SetBranchAddress("Phi_NuNu",&phiGen);
    dataTree->SetBranchAddress("PtNuNu",&metGen);
@@ -205,6 +204,7 @@ void run()
    // ~dataTree->SetBranchAddress("issignal",&issignal);
    if(withPTreweight) dataTree->SetBranchAddress("reweight_PTnunu",&reweight);
    else reweight=1.0;
+   
 
    cout<<"loop over data events\n";
    
@@ -212,9 +212,11 @@ void run()
    for(Int_t ievent=0;ievent<dataTree->GetEntriesFast();ievent++) {
    // ~for(Int_t ievent=0;ievent<dataTree->GetEntriesFast()/2;ievent++) {
       if(dataTree->GetEntry(ievent)<=0) break;
+      
+      mcWeight=mcWeight*(137191.0/35867.05998);   //scale to full Run2 Lumi
 
       //only bin to bin migration
-      if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
       
       //ignore acceptance
       // ~if(metRec<0) continue;
@@ -255,9 +257,9 @@ void run()
          BSMTree->SetBranchAddress("Phi_recPuppi",&phiRec);
          BSMTree->SetBranchAddress("PuppiMET",&metRec);
       }
-      if(withDeep) {
-         BSMTree->SetBranchAddress("Phi_recDeep",&phiRec);
-         BSMTree->SetBranchAddress("DeepMET",&metRec);
+      if(withDNN) {
+         BSMTree->SetBranchAddress("Phi_recPuppi",&phiRec);
+         BSMTree->SetBranchAddress("DNN_regression",&metRec);
       }
       BSMTree->SetBranchAddress("Phi_NuNu",&phiGen);
       BSMTree->SetBranchAddress("PtNuNu",&metGen);
@@ -267,6 +269,8 @@ void run()
       
       for(Int_t ievent=0;ievent<BSMTree->GetEntriesFast();ievent++) {
          if(BSMTree->GetEntry(ievent)<=0) break;
+         
+         mcWeight=mcWeight*(137191.0/35867.05998);   //scale to full Run2 Lumi
 
          // fill histogram with reconstructed quantities
          if (metRec<0) continue;   //events that are not reconstructed
@@ -314,9 +318,9 @@ void run()
       signalTree->SetBranchAddress("Phi_recPuppi",&phiRec);
       signalTree->SetBranchAddress("PuppiMET",&metRec);
    }
-   if(withDeep) {
-      signalTree->SetBranchAddress("Phi_recDeep",&phiRec);
-      signalTree->SetBranchAddress("DeepMET",&metRec);
+   if(withDNN) {
+      signalTree->SetBranchAddress("Phi_recPuppi",&phiRec);
+      signalTree->SetBranchAddress("DNN_regression",&metRec);
    }
    // ~signalTree->SetBranchAddress("istriggered",&istriggered);
    signalTree->SetBranchAddress("Phi_NuNu",&phiGen);
@@ -332,8 +336,10 @@ void run()
    // ~for(Int_t ievent=signalTree->GetEntriesFast()/2;ievent<signalTree->GetEntriesFast();ievent++) {
       if(signalTree->GetEntry(ievent)<=0) break;
       
+      mcWeight=mcWeight*(137191.0/35867.05998);   //scale to full Run2 Lumi
+      
       //only bin to bin migration
-      if(metRec<0 || genDecayMode>3 || metGen<0) continue;
+      // ~if(metRec<0 || genDecayMode>3 || metGen<0) continue;
       
       //ignore acceptance
       // ~if(metRec<0) continue;
