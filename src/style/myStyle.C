@@ -7,11 +7,11 @@
    // Calculating the same t+b and l+r margins does
    // not give quadratic result (height does not fit).
    // These settings are determined experimentally.
-   gStyle->SetPadTopMargin   (.06);
-   gStyle->SetPadBottomMargin(.13);
+   // ~gStyle->SetPadTopMargin   (.06);
+   // ~gStyle->SetPadBottomMargin(.13);
    // ~gStyle->SetPadLeftMargin  (.16);
-   gStyle->SetPadLeftMargin  (.10);
-   gStyle->SetPadRightMargin (.06); // fits with 4 digits on y-axis
+   // ~gStyle->SetPadLeftMargin  (.10);
+   // ~gStyle->SetPadRightMargin (.06); // fits with 4 digits on y-axis
 
    // calling with kNAME does not work at PZ
    // kBird=57 does not look right at PZ...

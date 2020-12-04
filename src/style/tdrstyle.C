@@ -20,12 +20,12 @@ void setTDRStyle() {
 // For the canvas:
   tdrStyle->SetCanvasBorderMode(0);
   tdrStyle->SetCanvasColor(kWhite);
-  //~ tdrStyle->SetCanvasDefH(600); //Height of canvas match johannes stack plots with ratio
+  // ~tdrStyle->SetCanvasDefH(600); //Height of canvas match johannes stack plots with ratio
   //~ tdrStyle->SetCanvasDefH(550); //Height of canvas for limits
-  // ~tdrStyle->SetCanvasDefH(500); //for 2d ggm parameter
-  // ~tdrStyle->SetCanvasDefW(600); //Width of canvas
-  tdrStyle->SetCanvasDefH(600); //for unfolding result
-  tdrStyle->SetCanvasDefW(1200); //Width of canvas
+  tdrStyle->SetCanvasDefH(500); //for 2d ggm parameter
+  tdrStyle->SetCanvasDefW(600); //Width of canvas
+  // ~tdrStyle->SetCanvasDefH(600); //for unfolding result
+  // ~tdrStyle->SetCanvasDefW(1200); //Width of canvas
   tdrStyle->SetCanvasDefX(0);   //POsition on screen
   tdrStyle->SetCanvasDefY(0);
 
@@ -93,8 +93,8 @@ void setTDRStyle() {
 // Margins:
   tdrStyle->SetPadTopMargin(0.05);
   tdrStyle->SetPadBottomMargin(0.13);
-  tdrStyle->SetPadLeftMargin(0.16);
-  tdrStyle->SetPadRightMargin(0.02);
+  tdrStyle->SetPadLeftMargin(0.15);
+  tdrStyle->SetPadRightMargin(0.06);
 
 // For the Global title:
 
@@ -133,7 +133,7 @@ void setTDRStyle() {
 
   tdrStyle->SetAxisColor(1, "XYZ");
   tdrStyle->SetStripDecimals(kTRUE);
-  tdrStyle->SetTickLength(0.03, "XYZ");
+  tdrStyle->SetTickLength(0.01, "XYZ");
   tdrStyle->SetNdivisions(510, "XYZ");
   tdrStyle->SetPadTickX(1);  // To get tick marks on the opposite side of the frame
   tdrStyle->SetPadTickY(1);
@@ -160,7 +160,7 @@ void setTDRStyle() {
   tdrStyle->SetHatchesLineWidth(5);
   tdrStyle->SetHatchesSpacing(0.05);
   
-  //~ tdrStyle->SetPalette(55);
+  // ~tdrStyle->SetPalette(55);
   tdrStyle->cd();
 
 }
