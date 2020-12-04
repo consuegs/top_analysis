@@ -40,6 +40,12 @@ set(MODULES
   test_BJetRegression
   triggerEff
   plot_triggerEff
+  dnn_Classification
+  dnn_Classification_fourVec
+  binningUnfolding_DNN
+  binningUnfolding_DNN_multi
+  plot_DNNresolution
+  applyDNN
   )
 
 foreach(MODULE ${MODULES})
