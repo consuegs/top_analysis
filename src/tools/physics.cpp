@@ -6,7 +6,8 @@ std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets)
 {
    std::vector<tree::Jet> cjets;
    for (tree::Jet j: jets){
-      if (!j.isLoose || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
+      // ~if (!j.isLoose || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
+      if (!j.TightIDlepVeto || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
       if (j.hasElectronMatch || j.hasMuonMatch) continue;
       cjets.push_back(j);
    }
