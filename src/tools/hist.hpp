@@ -59,7 +59,7 @@ namespace hist
       std::vector<TString> getVariableNames();
       std::vector<HIST*> getHistograms(TString const &varName,std::vector<TString> const &samples,bool divideByBinWidth=false);
       HIST* getHistogram(TString const &varName,TString const &sample,bool divideByBinWidth=false);
-      THStack getStack(TString const &varName,std::vector<TString> const& samples,bool divideByBinWidth=false, bool includeData=false);
+      THStack getStack(TString const &varName,std::vector<TString> const& samples,std::map<const TString,Color_t> const& colormap={},bool divideByBinWidth=false, bool includeData=false);
       float getCount(TString const &varName, TString const &sample);
       float getCountError(TString const &varName, TString const &sample);
 

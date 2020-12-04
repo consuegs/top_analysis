@@ -260,7 +260,7 @@ HIST* hist::Histograms<HIST>::getHistogram(TString const &varName,TString const 
 
 
 template <class HIST>
-THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TString> const& samples,bool divideByBinWidth, bool includeData)
+THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TString> const& samples,std::map<const TString,Color_t> const& colormap,bool divideByBinWidth, bool includeData)
 {
    le_.clear();
    THStack st;
@@ -285,8 +285,9 @@ THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TStr
          h->SetFillColor(datasets.getDataset(s).color);
          le_.prepend(*h,datasets.getDataset(s).label,"f");
       } catch (const std::out_of_range& exc) {
-         // no full dataset, use default colors
-         h->SetFillColor(Color::next());
+         // no full dataset, use default colors or color defined in colormap
+         if (colormap.find(s)!=colormap.end()) h->SetFillColor(colormap.at(s));
+         else h->SetFillColor(Color::next());
          le_.prepend(*h,s,"f");
       }
       h->SetFillStyle(1001);
@@ -384,6 +385,7 @@ TH1F hist::rebinned(TH1F const &h, std::vector<double> const &binedges,bool merg
 TH2F hist::rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::vector<float> const &binedges_y,bool mergeOverflow,bool mergeUnderflow)
 {
    TH2F hClone(h);
+   int entries = h.GetEntries();
    std::string name(hClone.GetName());
    name+="_rebinned";
    TH2F hnew=(TH2F)fromWidths_2d("","",binedges_x,getWidths(binedges_x),binedges_y,getWidths(binedges_y));
@@ -410,6 +412,7 @@ TH2F hist::rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::ve
    yTitle.ReplaceAll("BIN"," / bin");
    hnew.GetYaxis()->SetTitle(yTitle);
    hnew.GetXaxis()->SetTitle(xTitle);
+   hnew.SetEntries(entries);
    return hnew;
 }
 
