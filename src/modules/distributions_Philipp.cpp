@@ -504,6 +504,7 @@ void run()
          }
          
          float met=MET->p.Pt();
+         float const met_puppi=MET_Puppi->p.Pt();
          
          //Booleans for reco and zpeak selection
          bool rec_selection=true;
@@ -567,7 +568,8 @@ void run()
          if (p_l1.Pt()<25 || p_l2.Pt()<20) rec_selection=false; //eta cuts already done in TreeWriter
          if (*mll<20) rec_selection=false;
          if ((*is_ee || *is_mumu) && *mll<106 && *mll>76) mllRequ=true;
-         if ((*is_ee || *is_mumu) && met<40) metRequ=false;
+         // ~if ((*is_ee || *is_mumu) && met<40) metRequ=false;
+         if ((*is_ee || *is_mumu) && met_puppi<40) metRequ=false;
          
          
          bool jetRequirement=true;

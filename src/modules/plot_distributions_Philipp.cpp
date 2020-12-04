@@ -48,6 +48,7 @@ void run()
             TH1F* tempHist=histReader.read<TH1F>(loc+"/"+sSample);
             // ~if (sVar!="nBjets" and sVar!="nJets") tempHist->Rebin(5);
             if(sSample=="DrellYan_NLO")tempHist->Scale(5931.9/6225.4);
+            if(sVar=="etal1" || sVar=="etal2")tempHist->Rebin(2);
             hs.addFilledHist(loc,sSample,*(tempHist));
          }
       }
@@ -96,6 +97,7 @@ void run()
          data->Draw("axis");
          st_mc.Draw("same");
          data->Draw("pe1 same");
+         data->Draw("axis same");
          
          TLegend leg=le.buildLegend(.42,.7,1-(gPad->GetRightMargin()+0.02),-1,2);
          leg.Draw();
