@@ -22,13 +22,14 @@ void run()
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot_triggerEff");
    io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("triggerEff%.1f",cfg.processFraction*100));
    
+   //Plot efficiencies
    TCanvas can;
    for(TString selection:{"baseline","Zpeak","Zpeak_noJetRequ"}){
       for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
          for(TString channel:{"ee","mumu","emu"}){
             for(TString var:{"pTl1","pTl2","etal1","etal2"}){
-               TH1F* base_data=histReader.read<TH1F>(selection+"/referenceTrigg/"+channel+"/"+var+"/MET_split");
-               TH1F* data=histReader.read<TH1F>(selection+"/"+trigg+"/"+channel+"/"+var+"/MET_split");
+               TH1F* base_data=histReader.read<TH1F>(selection+"/referenceTrigg/"+channel+"/"+var+"/MET");
+               TH1F* data=histReader.read<TH1F>(selection+"/"+trigg+"/"+channel+"/"+var+"/MET");
                // ~TH1F* base_MC=histReader.read<TH1F>(selection+"/referenceTrigg/"+channel+"/"+var+"/DrellYan_NLO_M50");
                // ~TH1F* MC=histReader.read<TH1F>(selection+"/analysisTrigg/"+channel+"/"+var+"/DrellYan_NLO_M50");
                TH1F* base_MC=histReader.read<TH1F>(selection+"/referenceTrigg/"+channel+"/"+var+"/TTbar_diLepton");
@@ -70,6 +71,72 @@ void run()
          }
       }
    }
+   
+   //Plot 2D scale factors (Data/MC)
+   for(TString selection:{"baseline","Zpeak","Zpeak_noJetRequ"}){
+      for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+         for(TString channel:{"ee","mumu","emu"}){
+            TString var=(channel!="emu")? "pTl1_pTl2":"pTlmu_pTle";
+            TH2F* base_data=histReader.read<TH2F>(selection+"/referenceTrigg/"+channel+"/"+var+"/MET");
+            TH2F* data=histReader.read<TH2F>(selection+"/"+trigg+"/"+channel+"/"+var+"/MET");
+            // ~TH1F* base_MC=histReader.read<TH1F>(selection+"/referenceTrigg/"+channel+"/"+var+"/DrellYan_NLO_M50");
+            // ~TH1F* MC=histReader.read<TH1F>(selection+"/analysisTrigg/"+channel+"/"+var+"/DrellYan_NLO_M50");
+            TH2F* base_MC=histReader.read<TH2F>(selection+"/referenceTrigg/"+channel+"/"+var+"/TTbar_diLepton");
+            TH2F* MC=histReader.read<TH2F>(selection+"/analysisTrigg/"+channel+"/"+var+"/TTbar_diLepton");
+            
+            std::vector<float> Edges={20,40,60,80,100,150,200};
+            *base_data=hist::rebinned(*base_data,Edges,Edges);
+            *data=hist::rebinned(*data,Edges,Edges);
+            *base_MC=hist::rebinned(*base_MC,Edges,Edges);
+            *MC=hist::rebinned(*MC,Edges,Edges);
+
+            TEfficiency eff_data(*data,*base_data);
+            TH2* eff_data_hist = eff_data.CreateHistogram();
+            TEfficiency eff_MC(*MC,*base_MC);
+            TH2* eff_MC_hist = eff_MC.CreateHistogram();
+            
+            for(int i=0; i<=eff_MC_hist->GetNbinsX();i++){
+               for(int j=0; j<=eff_MC_hist->GetNbinsY();j++){
+                  eff_MC_hist->SetBinError(i,j,eff_MC.GetEfficiencyErrorUp(eff_MC.GetGlobalBin(i,j)));
+                  eff_data_hist->SetBinError(i,j,eff_data.GetEfficiencyErrorUp(eff_data.GetGlobalBin(i,j)));
+               }
+            }
+            
+            gPad->SetRightMargin(0.2);
+            gPad->SetLeftMargin(0.13);
+            
+            eff_MC_hist->GetYaxis()->SetTitleOffset(1.0);
+            eff_MC_hist->GetZaxis()->SetLabelOffset(0.02);
+            eff_MC_hist->SetMaximum(1.05);
+            eff_MC_hist->SetMinimum(0.95);
+            eff_MC_hist->Draw("colz text e");
+            saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+"_MC",true,false);
+            
+            can.Clear();
+            eff_data_hist->SetMaximum(1.05);
+            eff_data_hist->SetMinimum(0.95);
+            eff_data_hist->GetYaxis()->SetTitleOffset(1.0);
+            eff_data_hist->GetZaxis()->SetLabelOffset(0.02);
+            eff_data_hist->Draw("colz text e");
+            saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+"_data",true,false);
+            
+            can.Clear();
+            eff_data_hist->SetMaximum(1.05);
+            eff_data_hist->SetMinimum(0.95);
+            eff_data_hist->Divide(eff_MC_hist);
+            eff_data_hist->GetYaxis()->SetTitleOffset(1.0);
+            eff_data_hist->GetZaxis()->SetLabelOffset(0.02);
+            eff_data_hist->Draw("colz text e");
+            saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+"_SF",true,false);
+            
+            if(trigg=="analysisTrigg" && selection=="baseline"){
+               eff_data_hist->SaveAs("../output/data/TriggerSF_"+channel+"_2016.root");
+            }
+            
+         }
+      }
+   }
+   
    
    
    // ~gfx::SplitCan spcan;                    

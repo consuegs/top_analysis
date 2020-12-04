@@ -91,6 +91,10 @@ void run()
          hs.addHist(selection+"/"+base+"/ee/etal2"   ,";#eta_{l2};EventsBIN"           ,15,-2.4,2.4);
          hs.addHist(selection+"/"+base+"/emu/etal2"   ,";#eta_{l2};EventsBIN"           ,15,-2.4,2.4);
          hs.addHist(selection+"/"+base+"/mumu/etal2"   ,";#eta_{l2};EventsBIN"           ,15,-2.4,2.4);
+         
+         hs2d.addHist(selection+"/"+base+"/ee/pTl1_pTl2"   ,";%pTl1;%pTl2;EventsBIN"           ,40,0,200,40,0,200);
+         hs2d.addHist(selection+"/"+base+"/emu/pTlmu_pTle"   ,";%pTlmu;%pTle;EventsBIN"           ,40,0,200,40,0,200);
+         hs2d.addHist(selection+"/"+base+"/mumu/pTl1_pTl2"   ,";%pTl1;%pTl2;EventsBIN"           ,40,0,200,40,0,200);
       }
    }
 
@@ -125,6 +129,7 @@ void run()
       TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
       TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
       TTreeReaderValue<tree::MET> MET(reader, "met");
+      TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
       TTreeReaderValue<bool> is_ee   (reader, "ee");
       TTreeReaderValue<bool> is_emu   (reader, "emu");
       TTreeReaderValue<bool> is_mumu   (reader, "mumu");
@@ -164,8 +169,8 @@ void run()
          
          
          float fEventWeight=*w_pu * *w_mc;     //Set event weight 
-         // ~float SFWeight=*sf_lep1 * *sf_lep2 * *btagWeight;     //Set combined SF weight
-         float SFWeight=*sf_lep1 * *sf_lep2;     //Set combined SF weight
+         float SFWeight=*sf_lep1 * *sf_lep2 * *btagWeight;     //Set combined SF weight
+         // ~float SFWeight=*sf_lep1 * *sf_lep2;     //Set combined SF weight
          // ~if(!isData) {
             // ~hs.setFillWeight(fEventWeight*SFWeight);
             // ~hs2d.setFillWeight(fEventWeight*SFWeight);
@@ -176,11 +181,15 @@ void run()
          // ~}
          
          float met=MET->p.Pt();
+         float const met_puppi=MET_Puppi->p.Pt();
          
          //Booleans for reco and zpeak selection
          bool rec_selection=true;
          bool mllRequ=false;
          bool metRequ=true;
+         
+         //Boolean for emu channel
+         bool muonLead=true;
          
          //Baseline selection (separation into ee, emu, mumu already done at TreeWriter
          TLorentzVector p_l1;
@@ -190,34 +199,38 @@ void run()
          
          int charge_l1;
          int charge_l2;
+         int leadLepton=0;
+         int subleadLepton=1;
          
          if (*is_ee){
             if(!(*electrons)[0].isTight || !(*electrons)[1].isTight) rec_selection=false; //currently double check since trees only have tight leptons!!
             if(abs((*electrons)[0].etaSC)>2.4 || abs((*electrons)[1].etaSC>2.4)) rec_selection=false; //To use same region as for muons, cut on supercluster eta
-            p_l1=(*electrons)[0].p*(*electrons)[0].corr;
-            p_l2=(*electrons)[1].p*(*electrons)[1].corr;
-            p_l1_miniIso=(*electrons)[0].PFminiIso;
-            p_l2_miniIso=(*electrons)[1].PFminiIso;
-            charge_l1=(*electrons)[0].charge;
-            charge_l2=(*electrons)[1].charge;
+            if((*electrons)[0].p.Pt()*(*electrons)[0].corr<(*electrons)[1].p.Pt()*(*electrons)[1].corr) leadLepton=1,subleadLepton=0;
+            p_l1=(*electrons)[leadLepton].p*(*electrons)[leadLepton].corr;
+            p_l2=(*electrons)[subleadLepton].p*(*electrons)[subleadLepton].corr;
+            p_l1_miniIso=(*electrons)[leadLepton].PFminiIso;
+            p_l2_miniIso=(*electrons)[subleadLepton].PFminiIso;
+            charge_l1=(*electrons)[leadLepton].charge;
+            charge_l2=(*electrons)[subleadLepton].charge;
          }
          else if (*is_mumu){
             if(!(*muons)[0].isTight || !(*muons)[1].isTight) rec_selection=false;
             if((*muons)[0].rIso>0.15 || (*muons)[1].rIso>0.15) rec_selection=false;
             if(abs((*muons)[0].p.Eta())>2.4 || abs((*muons)[1].p.Eta())>2.4) rec_selection=false;
-            p_l1=(*muons)[0].p*(*muons)[0].rochesterCorrection;
-            p_l2=(*muons)[1].p*(*muons)[1].rochesterCorrection;
-            p_l1_miniIso=(*muons)[0].PFminiIso;
-            p_l2_miniIso=(*muons)[1].PFminiIso;
-            charge_l1=(*muons)[0].charge;
-            charge_l2=(*muons)[1].charge;
+            if((*muons)[0].p.Pt()*(*muons)[0].rochesterCorrection<(*muons)[1].p.Pt()*(*muons)[1].rochesterCorrection) leadLepton=1,subleadLepton=0;
+            p_l1=(*muons)[leadLepton].p*(*muons)[leadLepton].rochesterCorrection;
+            p_l2=(*muons)[1].p*(*muons)[subleadLepton].rochesterCorrection;
+            p_l1_miniIso=(*muons)[leadLepton].PFminiIso;
+            p_l2_miniIso=(*muons)[subleadLepton].PFminiIso;
+            charge_l1=(*muons)[leadLepton].charge;
+            charge_l2=(*muons)[subleadLepton].charge;
          }
          else if (*is_emu){
             if(!(*muons)[0].isTight || !(*electrons)[0].isTight) rec_selection=false;
             if((*muons)[0].rIso>0.15 ) rec_selection=false;
             if(abs((*muons)[0].p.Eta())>2.4) rec_selection=false;
             if(abs((*electrons)[0].etaSC>2.4) ) rec_selection=false;
-            if ((*muons)[0].p.Pt()>(*electrons)[0].p.Pt()){
+            if ((*muons)[0].p.Pt()*(*muons)[0].rochesterCorrection>(*electrons)[0].p.Pt()*(*electrons)[0].corr){
                p_l1=(*muons)[0].p*(*muons)[0].rochesterCorrection;
                p_l2=(*electrons)[0].p*(*electrons)[0].corr;
                p_l1_miniIso=(*muons)[0].PFminiIso;
@@ -232,13 +245,15 @@ void run()
                p_l2_miniIso=(*muons)[0].PFminiIso;
                charge_l1=(*electrons)[0].charge;
                charge_l2=(*muons)[0].charge;
+               muonLead=false;
             }
          }
          
          if (p_l1.Pt()<25 || p_l2.Pt()<20) rec_selection=false; //eta cuts already done in TreeWriter
          if (*mll<20) rec_selection=false;
          if ((*is_ee || *is_mumu) && *mll<106 && *mll>76) mllRequ=true;
-         if ((*is_ee || *is_mumu) && met<40) metRequ=false;
+         // ~if ((*is_ee || *is_mumu) && met<40) metRequ=false;
+         if ((*is_ee || *is_mumu) && met_puppi<40) metRequ=false;
          
          
          bool jetRequirement=true;
@@ -302,6 +317,11 @@ void run()
                hs.fill("baseline/"+base+"/"+path_cat+"/pTl2",p_l2.Pt());
                hs.fill("baseline/"+base+"/"+path_cat+"/etal1",p_l1.Eta());
                hs.fill("baseline/"+base+"/"+path_cat+"/etal2",p_l2.Eta());
+               if(!*is_emu) hs2d.fill("baseline/"+base+"/"+path_cat+"/pTl1_pTl2",p_l1.Pt(),p_l2.Pt());
+               else{
+                  if(muonLead) hs2d.fill("baseline/"+base+"/"+path_cat+"/pTlmu_pTle",p_l1.Pt(),p_l2.Pt());
+                  else hs2d.fill("baseline/"+base+"/"+path_cat+"/pTlmu_pTle",p_l2.Pt(),p_l1.Pt());
+               }
             }
             
             if(rec_selection==true && mllRequ==true && jetRequirement && bTag && metRequ && triggerVec[i]){
@@ -338,10 +358,12 @@ void run()
    
    // what to plot in which preselection
    std::map<TString,std::vector<TString>> msPresel_vVars;
+   std::map<TString,std::vector<TString>> msPresel_vVars2D;
    for(TString selection:{"baseline","Zpeak","Zpeak_noJetRequ"}){
       for(TString base:{"referenceTrigg","analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
          for(TString channel:{"ee","mumu","emu"}){
             msPresel_vVars.insert(std::pair<TString,std::vector<TString>>(selection+"/"+base+"/"+channel+"/",{"pTl1","pTl2","etal1","etal2"}));
+            msPresel_vVars2D.insert(std::pair<TString,std::vector<TString>>(selection+"/"+base+"/"+channel+"/",{(channel!="emu")?"pTl1_pTl2":"pTlmu_pTle"}));
          }
       }
    }
@@ -349,5 +371,6 @@ void run()
    // Save 1d histograms
    io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("triggerEff%.1f",cfg.processFraction*100),false);
    saveHistograms(msPresel_vVars,saver_hist,hs,samplesToCombine);
+   saveHistograms2D(msPresel_vVars2D,saver_hist,hs2d,samplesToCombine);
    
 }
