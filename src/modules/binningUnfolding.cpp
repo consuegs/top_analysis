@@ -34,6 +34,7 @@ extern "C"
 void run()
 {
    double scaleFactor = 1.0;
+   // ~double scaleFactor = 0.912;
    
    std::vector<float> met_bins1={0,100,200,300,400};
    std::vector<float> phi_bins1={0,0.8,1.6,2.4,3.2};
@@ -99,12 +100,12 @@ void run()
    TH1F diffPuppi_goodReso("diffPuppi_good"   ,";|PFp_{T}^{miss}-PUPPIp_{T}^{miss}|/H_{T};EventsBIN"           ,100,0,0.5);
    
    //Histograms for 2D unfolding (current benchmark)
-   std::vector<float>met_bins_unfold={0,30,60,90,120,175,230,315,400};
+   std::vector<float>met_bins_unfold={0,20,40,60,80,100,120,140,160,195,230,400};
    std::vector<float>phi_bins_unfold={0,0.35,0.7,1.05,1.4,2.27,3.14};
-   TH2F response("response",";binNumber;EventsBIN",48,-0.5,47.5,12,-0.5,11.5);
-   TH2F response_sameBins("response_sameBins",";binNumber;EventsBIN",12,-0.5,11.5,12,-0.5,11.5);
-   TH1F trueDistributions("trueDistributions",";binNumber;EventsBIN",12,-0.5,11.5);
-   TH1F recoDistributions("recoDistributions",";binNumber;EventsBIN",48,-0.5,47.5);
+   TH2F response("response",";binNumber;EventsBIN",66,-0.5,65.5,18,-0.5,17.5);
+   TH2F response_sameBins("response_sameBins",";binNumber;EventsBIN",18,-0.5,17.5,18,-0.5,17.5);
+   TH1F trueDistributions("trueDistributions",";binNumber;EventsBIN",18,-0.5,17.5);
+   TH1F recoDistributions("recoDistributions",";binNumber;EventsBIN",66,-0.5,65.5);
    TH2F reco2D=hist::fromWidths_2d("reco2D",";p_{T}^{miss}(GeV);|#Delta#phi|(p_{T}^{miss},nearest l);",met_bins_unfold,hist::getWidths(met_bins_unfold),phi_bins_unfold,hist::getWidths(phi_bins_unfold));
    
    //Hist for METdiff vs. measured MET
@@ -182,6 +183,26 @@ void run()
    
    TH2F METsig_dPhiMETLep_met120("METsig_dPhiMETLep_met120",";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",50,0,3.14,6000,0,1000);
    
+   // Plots for last bin
+   // ~TH2F GenMETvsPTnunu_lastBin("GenMETvsPTnunu_lastBin",";p_{T}^{#nu#nu} (GeV);genMET (GeV);Events/Bin",100,0,400,100,230,400);
+   TH2F GenMETvsPTnunu_lastBin("GenMETvsPTnunu_lastBin",";p_{T}^{#nu#nu} (GeV);genMET (GeV);Events/Bin",100,0,400,100,0,400);
+   TH2F GenMETvsPTnunu_lastBin_nonPromptNu("GenMETvsPTnunu_lastBin_nonPromptNu",";p_{T}^{#nu#nu} (GeV);genMET (GeV);Events/Bin",100,0,400,100,0,400);
+   TH2F GenMETvsPTnunu_lastBin_PromptNu("GenMETvsPTnunu_lastBin_PromptNu",";p_{T}^{#nu#nu} (GeV);genMET (GeV);Events/Bin",100,0,400,100,0,400);
+   TH1F dPhiReco_lastBin_PromptNu("dPhiReco_lastBin_PromptNu",";|#Delta#phi|(p_{T}^{miss},nearest l);Events/Bin",30,0,3.14);
+   TH1F dPhiReco_lastBin_nonPromptNu("dPhiReco_lastBin_nonPromptNu",";|#Delta#phi|(p_{T}^{miss},nearest l);Events/Bin",30,0,3.14);
+   TH1F maxMuonF_bJET_lastBin_PromptNu("maxMuonF_bJET_lastBin_PromptNu",";max(MuonFraction_bJet);Events/Bin",100,0,1);
+   TH1F maxMuonF_bJET_lastBin_nonPromptNu("maxMuonF_bJET_lastBin_nonPromptNu",";max(MuonFraction_bJet);Events/Bin",100,0,1);
+   TH1F maxElectronF_bJET_lastBin_PromptNu("maxElectronF_bJET_lastBin_PromptNu",";max(ElectronFraction_bJet);Events/Bin",100,0,1);
+   TH1F maxElectronF_bJET_lastBin_nonPromptNu("maxElectronF_bJET_lastBin_nonPromptNu",";max(ElectronFraction_bJet);Events/Bin",100,0,1);
+   TH2F maxMuonF_bJET_vs_diff_lastBin("maxMuonF_bJET_vs_diff_lastBin",";max(ElectronFraction_bJet);|genMET-pTnunu|;Events/Bin",100,0,1,100,0,100);
+   TH2F maxElectronF_bJET_vs_diff_lastBin("maxElectronF_bJET_vs_diff_lastBin",";max(ElectronFraction_bJet);|genMET-pTnunu|;Events/Bin",100,0,1,100,0,100);
+   TH1F maxMuonEnergy_bJET_lastBin_PromptNu("maxMuonEnergy_bJET_lastBin_PromptNu",";max(MuonEnergy_bJet) (GeV);Events/Bin",100,0,100);
+   TH1F maxMuonEnergy_bJET_lastBin_nonPromptNu("maxMuonEnergy_bJET_lastBin_nonPromptNu",";max(MuonEnergy_bJet) (GeV);Events/Bin",100,0,100);
+   TH1F maxElectronEnergy_bJET_lastBin_PromptNu("maxElectronEnergy_bJET_lastBin_PromptNu",";max(ElectronEnergy_bJet) (GeV);Events/Bin",100,0,100);
+   TH1F maxElectronEnergy_bJET_lastBin_nonPromptNu("maxElectronEnergy_bJET_lastBin_nonPromptNu",";max(ElectronEnergy_bJet) (GeV);Events/Bin",100,0,100);
+   TH2F maxMuonEnergy_bJET_vs_diff_lastBin("maxMuonEnergy_bJET_vs_diff_lastBin",";max(ElectronEnergy_bJet);|genMET-pTnunu|;Events/Bin",100,0,100,100,0,100);
+   TH2F maxElectronEnergy_bJET_vs_diff_lastBin("maxElectronEnergy_bJET_vs_diff_lastBin",";max(ElectronEnergy_bJet);|genMET-pTnunu|;Events/Bin",100,0,100,100,0,100);
+   
    
    // ~for(std::vector<float> met_bins : {met_bins1,met_bins2,met_bins3,met_bins4}){    //Test every possible combination of the binning defined above
       // ~for(std::vector<float> phi_bins : {phi_bins1,phi_bins2,phi_bins3,phi_bins4}){
@@ -219,22 +240,27 @@ void run()
          
          // ~TString sampleName="";
          TString sampleName="dilepton";
+         // ~TString sampleName="dilepton_CP5";
          // ~TString sampleName="MadGraph";
          // ~TString sampleName="T2tt_650_350";
-         TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0.root","read");
-         // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0_new.root","read");
+         // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0.root","read");
+         TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0_new.root","read");
          TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/ttbar_res_"+sampleName, &file);
+         // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res1.0_new.root","read");
+         // ~TTreeReader reader((sampleName=="") ? "ttbar_res1.0/ttbar_res" : "ttbar_res1.0/ttbar_res_"+sampleName, &file);
          
          
          // ~TTreeReaderValue<float> MET   (reader, "MET");
          // ~TTreeReaderValue<float> MET   (reader, "DeepMET");
          TTreeReaderValue<float> MET   (reader, "PuppiMET");
+         // ~TTreeReaderValue<float> MET   (reader, "genMET");
          // ~TTreeReaderValue<float> MET   (reader, "XYcorrMET");
          TTreeReaderValue<float> PtNuNu   (reader, "PtNuNu");
          // ~TTreeReaderValue<float> PtNuNu   (reader, "genMET");
          // ~TTreeReaderValue<float> Phi_rec   (reader, "Phi_rec");
          // ~TTreeReaderValue<float> Phi_rec   (reader, "Phi_recDeep");
          TTreeReaderValue<float> Phi_rec   (reader, "Phi_recPuppi");
+         // ~TTreeReaderValue<float> Phi_rec   (reader, "Phi_gen");
          // ~TTreeReaderValue<float> Phi_rec   (reader, "Phi_recXYcorr");
          TTreeReaderValue<float> Phi_gen   (reader, "Phi_NuNu");
          // ~TTreeReaderValue<float> Phi_gen   (reader, "Phi_gen");
@@ -252,14 +278,26 @@ void run()
          TTreeReaderValue<UInt_t> genDecayMode   (reader, "genDecayMode");
          TTreeReaderValue<float> genMET   (reader, "genMET");
          TTreeReaderValue<float> PuppiMET   (reader, "PuppiMET");
+         TTreeReaderValue<float> PFMET   (reader, "MET");
          TTreeReaderValue<float> Phi_recPuppi   (reader, "Phi_recPuppi");
          // ~TTreeReaderValue<float> PuppiMET   (reader, "MET");
          TTreeReaderValue<float> HT_tree   (reader, "HT");
-         TTreeReaderValue<UInt_t> n_Interactions(reader, "n_Interactions");
+         TTreeReaderValue<float> n_Interactions(reader, "n_Interactions");
          TTreeReaderValue<float> dPhiPtnunuMet(reader, "dPhiPtnunuMet");
          TTreeReaderValue<float> leadTop_pT(reader, "leadTop_pT");
          TTreeReaderValue<float> dPhiNuNu(reader, "dPhiNuNu");
-         // ~TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
+         TTreeReaderValue<float> Lep1_flavor(reader, "Lep1_flavor");
+         TTreeReaderValue<float> Lep2_flavor(reader, "Lep2_flavor");
+         TTreeReaderValue<UInt_t> NnonPromptNeutrinos(reader, "NnonpromptNeutrinos");
+         TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
+         // ~TTreeReaderValue<std::vector<float>> v_bJet_muonFraction(reader, "bJet_muonFraction");
+         // ~TTreeReaderValue<std::vector<float>> v_bJet_electronFraction(reader, "bJet_electronFraction");
+         // ~TTreeReaderValue<std::vector<float>> v_Jet_muonFraction(reader, "Jet_muonFraction");
+         // ~TTreeReaderValue<std::vector<float>> v_Jet_electronFraction(reader, "Jet_electronFraction");
+         // ~TTreeReaderValue<std::vector<float>> v_bJet_muonEnergy(reader, "bJet_muonEnergy");
+         // ~TTreeReaderValue<std::vector<float>> v_bJet_electronEnergy(reader, "bJet_electronEnergy");
+         // ~TTreeReaderValue<std::vector<float>> v_Jet_muonEnergy(reader, "Jet_muonEnergy");
+         // ~TTreeReaderValue<std::vector<float>> v_Jet_electronEnergy(reader, "Jet_electronEnergy");
          
           int migrated=0;
          
@@ -287,7 +325,27 @@ void run()
             
             if(*genDecayMode>3) continue;    //Remove tau events
             
-            if (*MET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
+            if(*genDecayMode!=3 && *PtNuNu<40) continue;   //Remove SF events if ptNuNu is smaler than 40GeV
+            // ~if(*NnonPromptNeutrinos>0) continue;
+            // ~if(*looseLeptonVeto==1) continue;
+            
+            // ~if (*MET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
+            if (*PFMET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
+            
+            /*
+            std::vector<float>::iterator max_it_muon=std::max_element(v_bJet_muonFraction->begin(),v_bJet_muonFraction->end());
+            std::vector<float>::iterator max_it_electron=std::max_element(v_bJet_electronFraction->begin(),v_bJet_electronFraction->end());
+            float maxMuonF=(*v_bJet_muonFraction)[std::distance(v_bJet_muonFraction->begin(),max_it_muon)];
+            float maxElectronF=(*v_bJet_electronFraction)[std::distance(v_bJet_electronFraction->begin(),max_it_electron)];
+            // ~if(maxMuonF>0.1 || maxElectronF>0.1) continue;
+            
+            max_it_muon=std::max_element(v_bJet_muonEnergy->begin(),v_bJet_muonEnergy->end());
+            max_it_electron=std::max_element(v_bJet_electronEnergy->begin(),v_bJet_electronEnergy->end());
+            float maxMuonEnergy=(*v_bJet_muonEnergy)[std::distance(v_bJet_muonEnergy->begin(),max_it_muon)];
+            float maxElectronEnergy=(*v_bJet_electronEnergy)[std::distance(v_bJet_electronEnergy->begin(),max_it_electron)];
+            // ~if(maxMuonEnergy>20 || maxElectronEnergy>20) continue;
+            // ~if(maxMuonEnergy>10) continue;
+            */
             
             // ~if (*looseLeptonVeto==1) continue;
             // ~if(*MET<60) *MET=-1;    //Additional cuts, which might solve problem of poor dPhi resolution
@@ -480,9 +538,30 @@ void run()
             //Fill profile2d for lead top pt
             TopPt_profile.Fill(*PtNuNu,*Phi_gen,*leadTop_pT,*N);
             
-            // ~std::cout<<realBin_gen<<"   "<<*PtNuNu<<"   "<<*Phi_gen<<std::endl;
-            // ~std::cout<<realBin_rec_unfold<<"   "<<*MET<<"   "<<*Phi_rec<<std::endl;
-            // ~std::cout<<"--------------------------------------"<<std::endl;
+            //Fill hist for last bin
+            // ~if(realBin==17){
+               // ~GenMETvsPTnunu_lastBin.Fill(*PtNuNu,*genMET);
+               // ~maxMuonF_bJET_vs_diff_lastBin.Fill(maxMuonF,abs(*genMET-*PtNuNu));
+               // ~maxElectronF_bJET_vs_diff_lastBin.Fill(maxElectronF,abs(*genMET-*PtNuNu));
+               // ~maxMuonEnergy_bJET_vs_diff_lastBin.Fill(maxMuonEnergy,abs(*genMET-*PtNuNu));
+               // ~maxElectronEnergy_bJET_vs_diff_lastBin.Fill(maxElectronEnergy,abs(*genMET-*PtNuNu));
+               // ~if(*NnonPromptNeutrinos>0){
+                  // ~GenMETvsPTnunu_lastBin_nonPromptNu.Fill(*PtNuNu,*genMET);
+                  // ~dPhiReco_lastBin_nonPromptNu.Fill(*Phi_rec);
+                  // ~maxMuonF_bJET_lastBin_nonPromptNu.Fill(maxMuonF);
+                  // ~maxElectronF_bJET_lastBin_nonPromptNu.Fill(maxElectronF);
+                  // ~maxMuonEnergy_bJET_lastBin_nonPromptNu.Fill(maxMuonEnergy);
+                  // ~maxElectronEnergy_bJET_lastBin_nonPromptNu.Fill(maxElectronEnergy);
+               // ~}
+               // ~else {
+                  // ~GenMETvsPTnunu_lastBin_PromptNu.Fill(*PtNuNu,*genMET);
+                  // ~dPhiReco_lastBin_PromptNu.Fill(*Phi_rec);
+                  // ~maxMuonF_bJET_lastBin_PromptNu.Fill(maxMuonF);
+                  // ~maxElectronF_bJET_lastBin_PromptNu.Fill(maxElectronF);
+                  // ~maxMuonEnergy_bJET_lastBin_PromptNu.Fill(maxMuonEnergy);
+                  // ~maxElectronEnergy_bJET_lastBin_PromptNu.Fill(maxElectronEnergy);
+               // ~}
+            // ~}
             
             
          }
@@ -565,6 +644,8 @@ void run()
             else if (z_axis[i]=="res_phi") current_hist.GetZaxis()->SetTitle("#Delta#phi resolution");
             else if (z_axis[i]=="res_met") current_hist.GetZaxis()->SetTitle("p_{T}^{miss} resolution (GeV)");
             else current_hist.GetZaxis()->SetTitle(z_axis[i]);
+            
+            if (z_axis[i]=="purity" || z_axis[i]=="stability") current_hist.GetZaxis()->SetRangeUser(0.1,0.75);
             
             current_hist.SetStats(false);
             current_hist.SetMarkerColor(kRed);
@@ -718,6 +799,37 @@ void run()
          saver.save(response,Binning+"/Unfolding/response");
          saver.save(response_sameBins,Binning+"/Unfolding/response_sameBins");
          saver.save(reco2D,Binning+"/Unfolding/reco2D");
+         
+         //Save hists for last bin
+         saver.save(GenMETvsPTnunu_lastBin,"lastBin/GenMETvsPTnunu");
+         saver.save(GenMETvsPTnunu_lastBin_nonPromptNu,"lastBin/GenMETvsPTnunu_nonPromptNu");
+         saver.save(GenMETvsPTnunu_lastBin_PromptNu,"lastBin/GenMETvsPTnunu_PromptNu");
+         dPhiReco_lastBin_PromptNu.Scale(1./dPhiReco_lastBin_PromptNu.Integral());
+         dPhiReco_lastBin_nonPromptNu.Scale(1./dPhiReco_lastBin_nonPromptNu.Integral());
+         saver.save(dPhiReco_lastBin_PromptNu,"lastBin/dPhiReco_lastBin_PromptNu");
+         saver.save(dPhiReco_lastBin_nonPromptNu,"lastBin/dPhiReco_lastBin_nonPromptNu");
+         
+         maxMuonF_bJET_lastBin_nonPromptNu.Scale(1./maxMuonF_bJET_lastBin_nonPromptNu.Integral());
+         maxMuonF_bJET_lastBin_PromptNu.Scale(1./maxMuonF_bJET_lastBin_PromptNu.Integral());
+         saver.save(maxMuonF_bJET_lastBin_nonPromptNu,"lastBin/maxMuonF_bJET_lastBin_nonPromptNu");
+         saver.save(maxMuonF_bJET_lastBin_PromptNu,"lastBin/maxMuonF_bJET_lastBin_PromptNu");
+         maxElectronF_bJET_lastBin_nonPromptNu.Scale(1./maxElectronF_bJET_lastBin_nonPromptNu.Integral());
+         maxElectronF_bJET_lastBin_PromptNu.Scale(1./maxElectronF_bJET_lastBin_PromptNu.Integral());
+         saver.save(maxElectronF_bJET_lastBin_nonPromptNu,"lastBin/maxElectronF_bJET_lastBin_nonPromptNu");
+         saver.save(maxElectronF_bJET_lastBin_PromptNu,"lastBin/maxElectronF_bJET_lastBin_PromptNu");
+         saver.save(maxElectronF_bJET_vs_diff_lastBin,"lastBin/maxElectronF_bJET_vs_diff_lastBin");
+         saver.save(maxMuonF_bJET_vs_diff_lastBin,"lastBin/maxMuonF_bJET_vs_diff_lastBin");
+         
+         // ~maxMuonEnergy_bJET_lastBin_nonPromptNu.Scale(1./maxMuonEnergy_bJET_lastBin_nonPromptNu.Integral());
+         // ~maxMuonEnergy_bJET_lastBin_PromptNu.Scale(1./maxMuonEnergy_bJET_lastBin_PromptNu.Integral());
+         saver.save(maxMuonEnergy_bJET_lastBin_nonPromptNu,"lastBin/maxMuonEnergy_bJET_lastBin_nonPromptNu");
+         saver.save(maxMuonEnergy_bJET_lastBin_PromptNu,"lastBin/maxMuonEnergy_bJET_lastBin_PromptNu");
+         // ~maxElectronEnergy_bJET_lastBin_nonPromptNu.Scale(1./maxElectronEnergy_bJET_lastBin_nonPromptNu.Integral());
+         // ~maxElectronEnergy_bJET_lastBin_PromptNu.Scale(1./maxElectronEnergy_bJET_lastBin_PromptNu.Integral());
+         saver.save(maxElectronEnergy_bJET_lastBin_nonPromptNu,"lastBin/maxElectronEnergy_bJET_lastBin_nonPromptNu");
+         saver.save(maxElectronEnergy_bJET_lastBin_PromptNu,"lastBin/maxElectronEnergy_bJET_lastBin_PromptNu");
+         saver.save(maxElectronEnergy_bJET_vs_diff_lastBin,"lastBin/maxElectronEnergy_bJET_vs_diff_lastBin");
+         saver.save(maxMuonEnergy_bJET_vs_diff_lastBin,"lastBin/maxMuonEnergy_bJET_vs_diff_lastBin");
          
          numberBinningSchemePhi++;
       }
