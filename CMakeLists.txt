@@ -13,7 +13,8 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 
 ### add ROOT
 # ~find_package(ROOT REQUIRED TreePlayer PyROOT Unfold XMLParser)
-find_package(ROOT REQUIRED TreePlayer PyROOT Unfold XMLParser TMVA)
+# ~find_package(ROOT REQUIRED TreePlayer PyROOT Unfold XMLParser TMVA)
+find_package(ROOT REQUIRED TreePlayer PyROOT Unfold XMLParser TMVA PyMVA)
 include(RootUseFile)
 
 # change version: cmake --help-module FindPythonLibs
