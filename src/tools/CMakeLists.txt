@@ -6,6 +6,7 @@ set(SRCS
   hist.cpp
   efficiency.cpp
   MT2Functor.cc
+  selection.cpp
   )
 
 add_library(tools SHARED ${SRCS})

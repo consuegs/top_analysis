@@ -3,6 +3,7 @@
 #include "tools/physics.hpp"
 #include "tools/io.hpp"
 #include "tools/weighters.hpp"
+#include "tools/selection.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -551,173 +552,53 @@ void run()
          if (ttBar_dilepton && *genDecayMode>3) continue;
          
          //Trigger selection
-         bool diElectronTriggers=*eleTrigg || *singleEleTrigg;
-         bool diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *muonTrigg3 || *muonTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2;
-         bool electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *eleMuTrigg3 || *eleMuTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg;
-         bool triggerData=false;
-         bool triggerData_veto=true;
+         std::vector<bool> diElectronTriggers={*eleTrigg,*singleEleTrigg};
+         std::vector<bool> diMuonTriggers={*muonTrigg1,*muonTrigg2,*muonTrigg3,*muonTrigg4,*singleMuonTrigg1,*singleMuonTrigg2};
+         std::vector<bool> electronMuonTriggers={*eleMuTrigg1,*eleMuTrigg2,*eleMuTrigg3,*eleMuTrigg4,*singleMuonTrigg1,*singleMuonTrigg2,*singleEleTrigg};
+         std::vector<bool> channel={*is_ee,*is_mumu,*is_emu};
+         std::vector<bool> PD={SingleElectron,DoubleEG,SingleMuon,DoubleMuon,MuonEG};
          bool triggerMC=true;
          
          if (!isData){
-            if(!(*is_ee && diElectronTriggers) && !(*is_mumu && diMuonTriggers) && !(*is_emu && electronMuonTriggers)) triggerMC=false;
+            triggerMC=selection::triggerSelection(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,false);
          }
          else{
-            //ee
-            if(SingleElectron && *is_ee){
-               triggerData=*singleEleTrigg;
-               triggerData_veto=*eleTrigg;
-            }
-            else if(DoubleEG && *is_ee){
-               triggerData=*eleTrigg;
-               triggerData_veto=false;
-            }
-            //mumu
-            else if(SingleMuon && *is_mumu){
-               triggerData=*singleMuonTrigg1 || *singleMuonTrigg2;
-               if (Run2016H) triggerData_veto=*muonTrigg3 || *muonTrigg4;
-               else triggerData_veto=*muonTrigg1 || *muonTrigg2 || *muonTrigg3 || *muonTrigg4;
-            }
-            else if(DoubleMuon && *is_mumu){
-               if (Run2016H) triggerData=*muonTrigg3 || *muonTrigg4;
-               else triggerData=*muonTrigg1 || *muonTrigg2 || *muonTrigg3 || *muonTrigg4;
-               triggerData_veto=false;
-            }
-            //emu
-            else if(SingleMuon && *is_emu){
-               triggerData=*singleMuonTrigg1 || *singleMuonTrigg2;
-               if (Run2016H) triggerData_veto=*eleMuTrigg3 || *eleMuTrigg4;
-               else triggerData_veto=*eleMuTrigg1 || *eleMuTrigg2 || *eleMuTrigg3 || *eleMuTrigg4;
-            }
-            else if(SingleElectron && *is_emu){
-               triggerData=*singleEleTrigg;
-               if (Run2016H) triggerData_veto=*eleMuTrigg3 || *eleMuTrigg4;
-               else triggerData_veto=*eleMuTrigg1 || *eleMuTrigg2 || *eleMuTrigg3 || *eleMuTrigg4;
-            }
-            else if(MuonEG && *is_emu){
-               if (Run2016H) triggerData=*eleMuTrigg3 || *eleMuTrigg4;
-               else triggerData=*eleMuTrigg1 || *eleMuTrigg2 || *eleMuTrigg3 || *eleMuTrigg4;
-               triggerData_veto=false;
-            }
-            else continue;
-            
-            if(!(triggerData && !triggerData_veto)) continue;
+            if(!selection::triggerSelection(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,true,PD,Run2016H)) continue;
          }
-         
          
          //Baseline selection (separation into ee, emu, mumu already done at TreeWriter)
          TLorentzVector p_l1;
          TLorentzVector p_l2;
          int flavor_l1=0;  //1 for electron and 2 for muon
          int flavor_l2=0;
-         
-         int leadLepton=0;
-         int subleadLepton=1;
          bool muonLead=true; //Boolean for emu channel
          TString cat="";
+         float cutFlow_weight=(isData)? 1: *w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_topPT;
          
-         
-         if (*is_ee){
-            rec_selection=true;
-            if(!(*electrons)[0].isTight || !(*electrons)[1].isTight) rec_selection=false; //currently double check since trees only have tight leptons!!
-            if(abs((*electrons)[0].etaSC)>2.4 || abs((*electrons)[1].etaSC>2.4)) rec_selection=false; //To use same region as for muons, cut on supercluster eta
-            if((*electrons)[0].p.Pt()*(*electrons)[0].corr<(*electrons)[1].p.Pt()*(*electrons)[1].corr) leadLepton=1,subleadLepton=0;
-            p_l1=(*electrons)[leadLepton].p*(*electrons)[leadLepton].corr;
-            p_l2=(*electrons)[subleadLepton].p*(*electrons)[subleadLepton].corr;
-            p_l1=(*electrons)[leadLepton].p*(*electrons)[leadLepton].corr;
-            p_l2=(*electrons)[subleadLepton].p*(*electrons)[subleadLepton].corr;
-            flavor_l1=1;
-            flavor_l2=1;
-            cat="ee";
-         }
-         else if (*is_mumu){
-            rec_selection=true;
-            if(!(*muons)[0].isTight || !(*muons)[1].isTight) rec_selection=false;
-            if((*muons)[0].rIso>0.15 || (*muons)[1].rIso>0.15) rec_selection=false;
-            if(abs((*muons)[0].p.Eta())>2.4 || abs((*muons)[1].p.Eta())>2.4) rec_selection=false;
-            if((*muons)[0].p.Pt()*(*muons)[0].rochesterCorrection<(*muons)[1].p.Pt()*(*muons)[1].rochesterCorrection) leadLepton=1,subleadLepton=0;
-            p_l1=(*muons)[leadLepton].p*(*muons)[leadLepton].rochesterCorrection;
-            p_l2=(*muons)[1].p*(*muons)[subleadLepton].rochesterCorrection;
-            flavor_l1=2;
-            flavor_l2=2;
-            cat="mumu";
-         }
-         else if (*is_emu){
-            rec_selection=true;
-            if(!(*muons)[0].isTight || !(*electrons)[0].isTight) rec_selection=false;
-            if((*muons)[0].rIso>0.15 ) rec_selection=false;
-            if(abs((*muons)[0].p.Eta())>2.4) rec_selection=false;
-            if(abs((*electrons)[0].etaSC>2.4) ) rec_selection=false;
-            if ((*muons)[0].p.Pt()*(*muons)[0].rochesterCorrection>(*electrons)[0].p.Pt()*(*electrons)[0].corr){
-               p_l1=(*muons)[0].p*(*muons)[0].rochesterCorrection;
-               p_l2=(*electrons)[0].p*(*electrons)[0].corr;
-               flavor_l1=2;
-               flavor_l2=1;
-            }
-            else {
-               p_l1=(*electrons)[0].p*(*electrons)[0].corr;
-               p_l2=(*muons)[0].p*(*muons)[0].rochesterCorrection;
-               flavor_l1=1;
-               flavor_l2=2;
-               muonLead=false;
-            }
-            cat="emu";
-         }
+         rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead);
          
          if (triggerMC==false) rec_selection=false;
          
-         if(triggerMC){
-            if(isData) hs_cutflow.fillweight("cutflow/"+cat,1,1);
-            else hs_cutflow.fillweight("cutflow/"+cat,1,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_topPT);
-         }
+         if(rec_selection) hs_cutflow.fillweight("cutflow/"+cat,1,cutFlow_weight);
          
-         if(rec_selection){
-            if(isData) hs_cutflow.fillweight("cutflow/"+cat,2,1);
-            else hs_cutflow.fillweight("cutflow/"+cat,2,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_topPT);
-         }
-         
-         if (p_l1.Pt()<25 || p_l2.Pt()<20) rec_selection=false; //eta cuts already done in TreeWriter
-         if(rec_selection){
-            if(isData) hs_cutflow.fillweight("cutflow/"+cat,3,1);
-            else hs_cutflow.fillweight("cutflow/"+cat,3,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_topPT);
-         }
-         
-         // ~if (*mll<20 || ((*is_ee || *is_mumu) && *mll<106 && *mll>76)) rec_selection=false;
-         float mll_corr=(p_l1+p_l2).M();
-         if (mll_corr<20 || ((*is_ee || *is_mumu) && mll_corr<106 && mll_corr>76)) rec_selection=false;
-         if(rec_selection){
-            if(isData) hs_cutflow.fillweight("cutflow/"+cat,4,1);
-            else hs_cutflow.fillweight("cutflow/"+cat,4,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_topPT);
-         }
-         
-         std::vector<tree::Jet> cjets=phys::getCleanedJets(*jets);
-         if (cjets.size()<2) rec_selection=false;
-         if(rec_selection){
-            if(isData) hs_cutflow.fillweight("cutflow/"+cat,5,1);
-            else hs_cutflow.fillweight("cutflow/"+cat,5,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_topPT);
-         }
-         
-         // ~if ((*is_ee || *is_mumu) && met<40) rec_selection=false;
-         if ((*is_ee || *is_mumu) && met_puppi<40) rec_selection=false;
-         if(rec_selection){
-            if(isData) hs_cutflow.fillweight("cutflow/"+cat,6,1);
-            else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_topPT);
-         }
-         
-         
-         bool bTag=false;
+         std::vector<tree::Jet> cjets;
          std::vector<tree::Jet> BJets;
-         for (tree::Jet const &jet : cjets) {
-            // ~if (jet.bTagCSVv2>0.5426) {      //Loose working point for CSVv2 (Should be replaced in the future by deep CSV!!!)
-            if (jet.bTagDeepCSV>0.2217) {      //Loose working point for deepCSV
-               bTag=true;
-               BJets.push_back(jet);
+         std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
+         
+         if(rec_selection && ttbarSelection[0]){
+            hs_cutflow.fillweight("cutflow/"+cat,2,cutFlow_weight);
+            if(ttbarSelection[1]){
+               hs_cutflow.fillweight("cutflow/"+cat,3,cutFlow_weight);
+               if(ttbarSelection[2]){
+                  hs_cutflow.fillweight("cutflow/"+cat,4,cutFlow_weight);
+                  if(ttbarSelection[3]){
+                     hs_cutflow.fillweight("cutflow/"+cat,5,(isData)? cutFlow_weight : cutFlow_weight * *w_bTag);
+                  }
+               }
             }
          }
-         if (!bTag) rec_selection=false;
-         if(rec_selection){
-            if(isData) hs_cutflow.fillweight("cutflow/"+cat,7,1);
-            else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_bTag * *w_topPT);
-         }
+         
+         if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
                            
          // end reco baseline selection
          
@@ -749,12 +630,12 @@ void run()
             hs_cutflow.setFillWeight(1);
          }
          if(rec_selection){
-            if(isData) hs_cutflow.fillweight("cutflow/"+cat,8,1);
-            else hs_cutflow.fillweight("cutflow/"+cat,8,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_bTag * *w_topPT *triggerSF);
+            if(isData) hs_cutflow.fillweight("cutflow/"+cat,6,1);
+            else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_bTag * *w_topPT *triggerSF);
          }
          if(rec_selection && !*addLepton){
-            if(isData) hs_cutflow.fillweight("cutflow/"+cat,9,1);
-            else hs_cutflow.fillweight("cutflow/"+cat,9,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_bTag * *w_topPT *triggerSF);
+            if(isData) hs_cutflow.fillweight("cutflow/"+cat,7,1);
+            else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_bTag * *w_topPT *triggerSF);
          }
                   
          //Muon and Electron Fraction for bJets and cleaned jets

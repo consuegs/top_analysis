@@ -4,6 +4,7 @@
 #include "tools/physics.hpp"
 #include "tools/io.hpp"
 #include "tools/weighters.hpp"
+#include "tools/selection.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -134,60 +135,27 @@ void run()
       hs.setFillWeight(fEventWeight);
       
       float const met=MET->p.Pt();
+      float const met_puppi=MET_Puppi->p.Pt();
       float const genMet=GENMET->p.Pt();
       
       bool rec_selection=true;
       bool pseudo_selection=true;
       
-      //Baseline selection (separation into ee, emu, mumu already done at TreeWriter
+      //Baseline selection (separation into ee, emu, mumu already done at TreeWriter)
+      std::vector<bool> channel={*is_ee,*is_mumu,*is_emu};
       TLorentzVector p_l1;
       TLorentzVector p_l2;
+      int flavor_l1=0;  //1 for electron and 2 for muon
+      int flavor_l2=0;
+      bool muonLead=true; //Boolean for emu channel
+      TString cat="";
       
-      if (*is_ee){
-         if(!(*electrons)[0].isTight || !(*electrons)[1].isTight) rec_selection=false; //currently double check since trees only have tight leptons!!
-         if(abs((*electrons)[0].etaSC)>2.4 || abs((*electrons)[1].etaSC)>2.4) rec_selection=false; //To use same region as for muons, cut on supercluster eta
-         p_l1=(*electrons)[0].p;
-         p_l2=(*electrons)[1].p;
-      }
-      else if (*is_mumu){
-         if(!(*muons)[0].isTight || !(*muons)[1].isTight) rec_selection=false;
-         if((*muons)[0].rIso>0.15 || (*muons)[1].rIso>0.15) rec_selection=false;
-         if(abs((*muons)[0].p.Eta())>2.4 || abs((*muons)[1].p.Eta())>2.4) rec_selection=false;
-         p_l1=(*muons)[0].p;
-         p_l2=(*muons)[1].p;
-      }
-      else if (*is_emu){
-         if(!(*muons)[0].isTight || !(*electrons)[0].isTight) rec_selection=false;
-         if((*muons)[0].rIso>0.15 ) rec_selection=false;
-         if(abs((*muons)[0].p.Eta())>2.4) rec_selection=false;
-         if(abs((*electrons)[0].etaSC)>2.4 ) rec_selection=false;
-         if ((*muons)[0].p.Pt()>(*electrons)[0].p.Pt()){
-            p_l1=(*muons)[0].p;
-            p_l2=(*electrons)[0].p;
-         }
-         else {
-            p_l1=(*electrons)[0].p;
-            p_l2=(*muons)[0].p;
-         }
-      }
-      
-      if (p_l1.Pt()<25 || p_l2.Pt()<20) rec_selection=false; //eta cuts already done in TreeWriter
-      if (*mll<20 || ((*is_ee || *is_mumu) && *mll<106 && *mll>76)) rec_selection=false;
-      if ((*is_ee || *is_mumu) && met<40) rec_selection=false;
-      
-      std::vector<tree::Jet> cjets=phys::getCleanedJets(*jets);
-      if (cjets.size()<2) rec_selection=false;
-      
-      bool bTag=false;
+      rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead);
+            
+      std::vector<tree::Jet> cjets;
       std::vector<tree::Jet> BJets;
-      for (tree::Jet const &jet : cjets) {
-         // ~if (jet.bTagCSVv2>0.5426) {      //Loose working point for CSVv2 (Should be replaced in the future by deep CSV!!!)
-         if (jet.bTagDeepCSV>0.2217) {      //Loose working point for deepCSV
-            bTag=true;
-            BJets.push_back(jet);
-         }
-      }
-      if (!bTag) rec_selection=false; // end reco baseline selection
+      std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
+      if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
       
       if (*genDecayMode_pseudo==0) pseudo_selection=false; //pseudo baseline selection
             

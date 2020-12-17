@@ -24,7 +24,7 @@ void run()
    
    //Plot efficiencies
    TCanvas can;
-   for(TString selection:{"baseline","Zpeak","Zpeak_noJetRequ"}){
+   for(TString selection:{"baseline"}){
       for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
          for(TString channel:{"ee","mumu","emu"}){
             for(TString var:{"pTl1","pTl2","etal1","etal2"}){
@@ -102,6 +102,12 @@ void run()
                }
             }
             
+            TString cat;
+            if (channel.Contains("ee")) cat="ee";
+            else if (channel.Contains("emu")) cat="e#mu";
+            else if (channel.Contains("mumu")) cat="#mu#mu";
+            TLatex label=gfx::cornerLabel(cat,1);
+            
             gPad->SetRightMargin(0.2);
             gPad->SetLeftMargin(0.13);
             
@@ -109,7 +115,9 @@ void run()
             eff_MC_hist->GetZaxis()->SetLabelOffset(0.02);
             eff_MC_hist->SetMaximum(1.05);
             eff_MC_hist->SetMinimum(0.95);
+            eff_MC_hist->SetMarkerSize(1.2);
             eff_MC_hist->Draw("colz text e");
+            label.Draw();
             saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+"_MC",true,false);
             
             can.Clear();
@@ -117,7 +125,9 @@ void run()
             eff_data_hist->SetMinimum(0.95);
             eff_data_hist->GetYaxis()->SetTitleOffset(1.0);
             eff_data_hist->GetZaxis()->SetLabelOffset(0.02);
+            eff_data_hist->SetMarkerSize(1.2);
             eff_data_hist->Draw("colz text e");
+            label.Draw();
             saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+"_data",true,false);
             
             can.Clear();
@@ -126,7 +136,9 @@ void run()
             eff_data_hist->Divide(eff_MC_hist);
             eff_data_hist->GetYaxis()->SetTitleOffset(1.0);
             eff_data_hist->GetZaxis()->SetLabelOffset(0.02);
+            eff_data_hist->SetMarkerSize(1.2);
             eff_data_hist->Draw("colz text e");
+            label.Draw();
             saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+"_SF",true,false);
             
             if(trigg=="analysisTrigg" && selection=="baseline"){
