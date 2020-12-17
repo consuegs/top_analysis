@@ -34,6 +34,7 @@ public:
    } sf; // scale factors
 
    TString treeVersion;
+   TString year;
    TString treeName;
    TString gitHash;
    TString dataBasePath;

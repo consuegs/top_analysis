@@ -19,6 +19,7 @@ Config::Config()
    boost::property_tree::read_ini(cfgFile,pt);
 
    treeVersion=pt.get<std::string>("input.version");
+   year=pt.get<std::string>("input.year");
    treeName=pt.get<std::string>("input.treeName");
    dataBasePath=pt.get<std::string>("input.dataBasePath")+treeVersion+"/";
    gitHash=io::shellOutput("git log -1 --pretty=format:%h");
