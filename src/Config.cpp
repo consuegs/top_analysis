@@ -40,7 +40,6 @@ Config::Config()
    //~ sf.rho=pt.get<float>("sf.rho");
    //~ sf.uncert_Vgamma=pt.get<float>("sf.uncert_Vgamma");   
    //~ sf.uncert_gammaJ=pt.get<float>("sf.uncert_gammaJ");
-   sf.met_sf=pt.get<float>("sf.met_sf");
 
    //~ efake.f=pt.get<float>("efake.f")/100.0;
    //~ efake.f_mc=pt.get<float>("efake.f_mc")/100.0;

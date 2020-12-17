@@ -22,11 +22,7 @@ extern "C"
 void run()
 {
    std::vector<std::string> vsDatasubsets(cfg.datasets.getDatasubsetNames());
-   
-   float met_sf = cfg.sf.met_sf;
-   TString met_sf_string="";
-   if (met_sf!=1.0) met_sf_string="_SF"+std::to_string(met_sf);
-   
+      
    //Read TriggerSF hists
    io::RootFileReader triggerSF_ee(cfg.trigger_SF_ee,"");
    TH2F* triggerSF_ee_hist = (TH2F*)(triggerSF_ee.read<TH2F>("eff_histo"));
@@ -280,7 +276,7 @@ void run()
    // ~std::vector<float> minTree_v_bJet_electronEnergy;
    // ~std::vector<float> minTree_v_Jet_muonEnergy;
    // ~std::vector<float> minTree_v_Jet_electronEnergy;
-   io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res"+met_sf_string+"%.1f_new.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
+   io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res%.1f_new.root",cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
    TTree ttbar_res("ttbar_res","ttbar_res");
    ttbar_res.Branch("MET",&minTree_MET,"MET/f");
    ttbar_res.Branch("PtNuNu",&minTree_PtNuNu,"PtNuNu/f");
@@ -667,9 +663,6 @@ void run()
             // ~minTree_v_Jet_muonEnergy.push_back(jet.muonf*jet.p.Pt());
             // ~minTree_v_Jet_electronEnergy.push_back(jet.electronf*jet.p.Pt());
          // ~}
-         
-         //Scale measured met by met_sf from config
-         met=met_sf*met;
          
          // Get pT of Neutrino Pair, which is further changed in case of BSM scenarios!!
          TLorentzVector neutrinoPair(0,0,0,0);
@@ -1143,7 +1136,7 @@ void run()
    hs2d.combineFromSubsamples(samplesToCombine);
    
    // Save 1d histograms
-   io::RootFileSaver saver_hist(TString::Format("histograms"+met_sf_string+"_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),false);
+   io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),false);
    hs.saveHistograms(saver_hist,samplesToCombine);
    hs_cutflow.saveHistograms(saver_hist,samplesToCombine);
    

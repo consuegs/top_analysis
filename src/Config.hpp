@@ -31,7 +31,6 @@ public:
       // ~float rho;
       // ~float uncert_Vgamma;     
       // ~float uncert_gammaJ;
-      float met_sf;
    } sf; // scale factors
 
    TString treeVersion;
