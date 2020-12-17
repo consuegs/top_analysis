@@ -18,25 +18,12 @@
 
 Config const &cfg=Config::get();
 
-void saveHistograms(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH1F> &hs, std::vector<TString> const &Samples)
-{
-   for (auto const &sPresel_vVars:msPresel_vVars){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         for (TString sSample: Samples){
-            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
-         }       
-      }
-   }
-}
-
 extern "C"
 void run()
 {
    std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8"});
    
-   std::vector<TString> samplesToCombine={"TTbar_diLepton"};
+   std::vector<TString> samplesToCombine={"TTbar_diLepton_CUETP8M2"};
    
    hist::Histograms<TH1F> hs(vsDatasubsets);
    hs.addHist("baseline/pt_genJet"   ,";%pT;EventsBIN"           ,1000,0,1000);
@@ -47,16 +34,16 @@ void run()
    hs.addHist("baseline/pt_recoJet1"   ,";%pT(Jet1);EventsBIN"           ,1000,0,1000);
    hs.addHist("baseline/pt_recoJet1_BReg"   ,";%pT(Jet1);EventsBIN"           ,1000,0,1000);
    
-   hs.addHist("baseline/diff_pt_recoJet1"   ,";%pT(Jet1)-%pT(genJet1);EventsBIN"           ,500,-100,100);
-   hs.addHist("baseline/diff_pt_recoJet1_BReg"   ,";%pT(Jet1)-%pT(genJet1);EventsBIN"           ,500,-100,100);
-   hs.addHist("baseline/ratio_pt_recoJet1"   ,";%pT(genJet1)/%pT(Jet1)-;EventsBIN"           ,500,0,2);
-   hs.addHist("baseline/ratio_pt_recoJet1_BReg"   ,";%pT(genJet1)/%pT(Jet1)-;EventsBIN"           ,500,0,2);
-   hs.addHist("baseline_onlyBTag/ratio_pt_recoJet1"   ,";%pT(genJet1)/%pT(Jet1)-;EventsBIN"           ,500,0,2);
-   hs.addHist("baseline_onlyBTag/ratio_pt_recoJet1_BReg"   ,";%pT(genJet1)/%pT(Jet1)-;EventsBIN"           ,500,0,2);
-   hs.addHist("baseline/ratio_E_recoJet1"   ,";E(genJet1)/E(Jet1);EventsBIN"           ,500,0,2);
-   hs.addHist("baseline/ratio_E_recoJet1_BReg"   ,";E(genJet1)/E(Jet1)-;EventsBIN"           ,500,0,2);
-   hs.addHist("baseline_onlyBTag/ratio_E_recoJet1"   ,";E(genJet1)/E(Jet1)-;EventsBIN"           ,500,0,2);
-   hs.addHist("baseline_onlyBTag/ratio_E_recoJet1_BReg"   ,";E(genJet1)/E(Jet1)-;EventsBIN"           ,500,0,2);
+   hs.addHist("baseline/diff_pt_recoJet1"   ,";%pT(Jet1)-%pT(genJet1);EventsBIN"           ,50,-100,100);
+   hs.addHist("baseline/diff_pt_recoJet1_BReg"   ,";%pT(Jet1)-%pT(genJet1);EventsBIN"           ,50,-100,100);
+   hs.addHist("baseline/ratio_pt_recoJet1"   ,";%pT(genJet1)/%pT(Jet1)-;EventsBIN"           ,50,0,2);
+   hs.addHist("baseline/ratio_pt_recoJet1_BReg"   ,";%pT(genJet1)/%pT(Jet1)-;EventsBIN"           ,50,0,2);
+   hs.addHist("baseline_onlyBTag/ratio_pt_recoJet1"   ,";%pT(genJet1)/%pT(Jet1)-;EventsBIN"           ,50,0,2);
+   hs.addHist("baseline_onlyBTag/ratio_pt_recoJet1_BReg"   ,";%pT(genJet1)/%pT(Jet1)-;EventsBIN"           ,50,0,2);
+   hs.addHist("baseline/ratio_E_recoJet1"   ,";E(genJet1)/E(Jet1);EventsBIN"           ,50,0,2);
+   hs.addHist("baseline/ratio_E_recoJet1_BReg"   ,";E(genJet1)/E(Jet1)-;EventsBIN"           ,50,0,2);
+   hs.addHist("baseline_onlyBTag/ratio_E_recoJet1"   ,";E(genJet1)/E(Jet1)-;EventsBIN"           ,50,0,2);
+   hs.addHist("baseline_onlyBTag/ratio_E_recoJet1_BReg"   ,";E(genJet1)/E(Jet1)-;EventsBIN"           ,50,0,2);
    
    hs.addHist("baseline_vetoJ1noCSVscore/diff_pt_recoJet1"   ,";%pT(Jet1)-%pT(genJet1);EventsBIN"           ,500,-100,100);
    hs.addHist("baseline_vetoJ1noCSVscore/diff_pt_recoJet1_BReg"   ,";%pT(Jet1)-%pT(genJet1);EventsBIN"           ,500,-100,100);
@@ -64,12 +51,16 @@ void run()
    hs.addHist("baseline/pt_genJet2"   ,";%pT(Jet2);EventsBIN"           ,1000,0,1000);
    hs.addHist("baseline/pt_recoJet2"   ,";%pT(Jet2);EventsBIN"           ,1000,0,1000);
    hs.addHist("baseline/pt_recoJet2_BReg"   ,";%pT(Jet2);EventsBIN"           ,1000,0,1000);
+   
+   hs.addHist("baseline/diff_MET_PF"   ,";genMET-PFMET;EventsBIN"           ,50,-100,100);
+   hs.addHist("baseline/diff_MET_bJetRegression"   ,";genMET-MET_bJetRegression;EventsBIN"           ,50,-100,100);
+   hs.addHist("baseline/diff_MET_bJetRegressionLoose"   ,";genMET-MET_bJetRegressionLoose;EventsBIN"           ,50,-100,100);
 
    
    for(auto const set : vsDatasubsets) {
       auto const dss = cfg.datasets.getDatasubset(set);
-      // ~TFile file(dss.getPath(),"read");
-      TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v13/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8.root","read");
+      TFile file(dss.getPath(),"read");
+      // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/2016/v13/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8.root","read");
       if (file.IsZombie()) {
          return;
       }
@@ -99,10 +90,12 @@ void run()
       TTreeReaderValue<tree::MET> MET_JESu(reader, "met_JESu");
       TTreeReaderValue<tree::MET> MET_JESd(reader, "met_JESd");
       TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
-      TTreeReaderValue<tree::MET> MET_Deep(reader, "metDeep");
+      // ~TTreeReaderValue<tree::MET> MET_Deep(reader, "metDeep");
       TTreeReaderValue<tree::MET> MET_NoHF(reader, "metNoHF");
       TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
       TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
+      TTreeReaderValue<tree::MET> MET_BJetRegression(reader, "metBJetRegression");
+      TTreeReaderValue<tree::MET> MET_BJetRegressionLoose(reader, "metBJetRegressionLoose");
       TTreeReaderValue<int> n_Interactions(reader, "true_nPV");
       TTreeReaderValue<float> HTgen(reader, "genHt");
       TTreeReaderValue<bool> is_ee   (reader, "ee");
@@ -199,7 +192,7 @@ void run()
          if (*mll<20 || ((*is_ee || *is_mumu) && *mll<106 && *mll>76)) rec_selection=false;
          if ((*is_ee || *is_mumu) && met<40) rec_selection=false;
          
-         std::vector<tree::Jet> cjets=phys::getCleanedJets(*jets);
+         std::vector<tree::Jet> cjets=phys::getCleanedJets_looseID(*jets);
          if (cjets.size()<2) rec_selection=false;
          
          bool bTag=false;
@@ -226,29 +219,34 @@ void run()
             hs.fill("baseline/pt_recoJet_BReg",jet.p.Pt()*jet.bJetRegressionCorr);
          }
          
+         if((cjets)[0].p.DeltaPhi((*genJets)[0].p)>0.5 || (cjets)[0].p.DeltaR((*genJets)[0].p)>0.5) continue;
+         
          hs.fill("baseline/pt_genJet1",(*genJets)[0].p.Pt());
-         hs.fill("baseline/pt_recoJet1",(*jets)[0].p.Pt());
-         hs.fill("baseline/pt_recoJet1_BReg",(*jets)[0].p.Pt()*(*jets)[0].bJetRegressionCorr);
-         hs.fill("baseline/diff_pt_recoJet1",(*jets)[0].p.Pt()-(*genJets)[0].p.Pt());
-         hs.fill("baseline/diff_pt_recoJet1_BReg",(*jets)[0].p.Pt()*(*jets)[0].bJetRegressionCorr-(*genJets)[0].p.Pt());
-         hs.fill("baseline/ratio_pt_recoJet1",(*genJets)[0].p.Pt()/((*jets)[0].p.Pt()));
-         hs.fill("baseline/ratio_pt_recoJet1_BReg",(*genJets)[0].p.Pt()/((*jets)[0].p.Pt()*(*jets)[0].bJetRegressionCorr));
-         hs.fill("baseline/ratio_E_recoJet1",(*genJets)[0].p.E()/((*jets)[0].p.E()));
-         hs.fill("baseline/ratio_E_recoJet1_BReg",(*genJets)[0].p.E()/((*jets)[0].p.E()*(*jets)[0].bJetRegressionCorr));
-         if((*jets)[0].bTagDeepCSV>0) {
-            hs.fill("baseline_vetoJ1noCSVscore/diff_pt_recoJet1",(*jets)[0].p.Pt()-(*genJets)[0].p.Pt());
-            hs.fill("baseline_vetoJ1noCSVscore/diff_pt_recoJet1_BReg",(*jets)[0].p.Pt()*(*jets)[0].bJetRegressionCorr-(*genJets)[0].p.Pt());
+         hs.fill("baseline/pt_recoJet1",(cjets)[0].p.Pt());
+         hs.fill("baseline/pt_recoJet1_BReg",(cjets)[0].p.Pt()*(cjets)[0].bJetRegressionCorr);
+         hs.fill("baseline/diff_pt_recoJet1",(cjets)[0].p.Pt()-(*genJets)[0].p.Pt());
+         hs.fill("baseline/diff_pt_recoJet1_BReg",(cjets)[0].p.Pt()*(cjets)[0].bJetRegressionCorr-(*genJets)[0].p.Pt());
+         hs.fill("baseline/ratio_pt_recoJet1",(*genJets)[0].p.Pt()/((cjets)[0].p.Pt()));
+         hs.fill("baseline/ratio_pt_recoJet1_BReg",(*genJets)[0].p.Pt()/((cjets)[0].p.Pt()*(cjets)[0].bJetRegressionCorr));
+         hs.fill("baseline/ratio_E_recoJet1",(*genJets)[0].p.E()/((cjets)[0].p.E()));
+         hs.fill("baseline/ratio_E_recoJet1_BReg",(*genJets)[0].p.E()/((cjets)[0].p.E()*(cjets)[0].bJetRegressionCorr));
+         hs.fill("baseline/diff_MET_PF",genMet-met);
+         hs.fill("baseline/diff_MET_bJetRegression",genMet-MET_BJetRegression->p.Pt());
+         hs.fill("baseline/diff_MET_bJetRegressionLoose",genMet-MET_BJetRegressionLoose->p.Pt());
+         if((cjets)[0].bTagDeepCSV>0) {
+            hs.fill("baseline_vetoJ1noCSVscore/diff_pt_recoJet1",(cjets)[0].p.Pt()-(*genJets)[0].p.Pt());
+            hs.fill("baseline_vetoJ1noCSVscore/diff_pt_recoJet1_BReg",(cjets)[0].p.Pt()*(cjets)[0].bJetRegressionCorr-(*genJets)[0].p.Pt());
          }
-         if((*jets)[0].bTagDeepCSV>0.2213) {
-            hs.fill("baseline_onlyBTag/ratio_pt_recoJet1",(*genJets)[0].p.Pt()/((*jets)[0].p.Pt()));
-            hs.fill("baseline_onlyBTag/ratio_pt_recoJet1_BReg",(*genJets)[0].p.Pt()/((*jets)[0].p.Pt()*(*jets)[0].bJetRegressionCorr));
-            hs.fill("baseline_onlyBTag/ratio_E_recoJet1",(*genJets)[0].p.E()/((*jets)[0].p.E()));
-            hs.fill("baseline_onlyBTag/ratio_E_recoJet1_BReg",(*genJets)[0].p.E()/((*jets)[0].p.E()*(*jets)[0].bJetRegressionCorr));
+         if((cjets)[0].bTagDeepCSV>0.2213) {
+            hs.fill("baseline_onlyBTag/ratio_pt_recoJet1",(*genJets)[0].p.Pt()/((cjets)[0].p.Pt()));
+            hs.fill("baseline_onlyBTag/ratio_pt_recoJet1_BReg",(*genJets)[0].p.Pt()/((cjets)[0].p.Pt()*(cjets)[0].bJetRegressionCorr));
+            hs.fill("baseline_onlyBTag/ratio_E_recoJet1",(*genJets)[0].p.E()/((cjets)[0].p.E()));
+            hs.fill("baseline_onlyBTag/ratio_E_recoJet1_BReg",(*genJets)[0].p.E()/((cjets)[0].p.E()*(cjets)[0].bJetRegressionCorr));
          }
          
          hs.fill("baseline/pt_genJet2",(*genJets)[1].p.Pt());
-         hs.fill("baseline/pt_recoJet2",(*jets)[1].p.Pt());
-         hs.fill("baseline/pt_recoJet2_BReg",(*jets)[1].p.Pt()*(*jets)[1].bJetRegressionCorr);
+         hs.fill("baseline/pt_recoJet2",(cjets)[1].p.Pt());
+         hs.fill("baseline/pt_recoJet2_BReg",(cjets)[1].p.Pt()*(cjets)[1].bJetRegressionCorr);
                
       }// evt loop
       io::log<<"";
@@ -260,14 +258,8 @@ void run()
    
    hs.combineFromSubsamples(samplesToCombine);
    
-   std::map<TString,std::vector<TString>> msPresel_vVars={
-      {"baseline/",{"pt_genJet","pt_recoJet","pt_recoJet_BReg","pt_genJet1","pt_recoJet1","pt_recoJet1_BReg","pt_genJet2","pt_recoJet2","pt_recoJet2_BReg","diff_pt_recoJet1","diff_pt_recoJet1_BReg","ratio_pt_recoJet1","ratio_pt_recoJet1_BReg","ratio_E_recoJet1","ratio_E_recoJet1_BReg"}},
-      {"baseline_vetoJ1noCSVscore/",{"diff_pt_recoJet1","diff_pt_recoJet1_BReg"}},
-      {"baseline_onlyBTag/",{"ratio_pt_recoJet1","ratio_pt_recoJet1_BReg","ratio_E_recoJet1","ratio_E_recoJet1_BReg"}},
-      };
-   
    // Save 1d histograms
    io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("test_BJetRegression_v13%.1f",cfg.processFraction*100),false);
-   saveHistograms(msPresel_vVars,saver_hist,hs,samplesToCombine);
+   hs.saveHistograms(saver_hist,samplesToCombine);
    
 }

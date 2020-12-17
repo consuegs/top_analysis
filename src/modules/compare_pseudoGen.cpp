@@ -17,31 +17,6 @@
 
 Config const &cfg=Config::get();
 
-void saveHistograms(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH1F> &hs, std::vector<TString> const &Samples)
-{
-   for (auto const &sPresel_vVars:msPresel_vVars){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         for (TString sSample: Samples){
-            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
-         }       
-      }
-   }
-}
-void saveHistograms2D(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH2F> &hs, std::vector<TString> const &Samples)
-{
-   for (auto const &sPresel_vVars:msPresel_vVars){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         for (TString sSample: Samples){
-            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
-         }       
-      }
-   }
-}
-
 extern "C"
 void run()
 {
@@ -307,34 +282,30 @@ void run()
    
    // The following can be used for plotting, which is currently done with an extra module 
    TCanvas can_2d;
-   for (auto const &sPresel_vVars:msPresel_vVars2D){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         can_2d.cd();
-         // ~can_2d.SetLogz();
-         gPad->SetRightMargin(0.2);
-         gPad->SetLeftMargin(0.13);
-         gPad->SetBottomMargin(0.10);
-         TString loc=sPresel+sVar;
-         TH2F *hist=hs2d.getHistogram(loc,"TTbar");
-         
-         hist->GetYaxis()->SetTitleOffset(1.3);
-         hist->GetXaxis()->SetTitleOffset(0.9);
-         hist->GetZaxis()->SetTitleOffset(1.3);
-         hist->GetYaxis()->SetTitleSize(0.05);
-         hist->GetXaxis()->SetTitleSize(0.05);
-         hist->GetZaxis()->SetTitleSize(0.05);
-         hist->GetYaxis()->SetLabelSize(0.04);
-         hist->GetXaxis()->SetLabelSize(0.04);
-         hist->GetZaxis()->SetLabelSize(0.04);
-                  
-         hist->SetStats(0);
-         hist->Draw("colz");
-         saver.save(can_2d,loc);
-      }
+   for(TString loc:hs2d.getVariableNames()){
+      can_2d.cd();
+      // ~can_2d.SetLogz();
+      gPad->SetRightMargin(0.2);
+      gPad->SetLeftMargin(0.13);
+      gPad->SetBottomMargin(0.10);
+      TH2F *hist=hs2d.getHistogram(loc,"TTbar");
+      
+      hist->GetYaxis()->SetTitleOffset(1.3);
+      hist->GetXaxis()->SetTitleOffset(0.9);
+      hist->GetZaxis()->SetTitleOffset(1.3);
+      hist->GetYaxis()->SetTitleSize(0.05);
+      hist->GetXaxis()->SetTitleSize(0.05);
+      hist->GetZaxis()->SetTitleSize(0.05);
+      hist->GetYaxis()->SetLabelSize(0.04);
+      hist->GetXaxis()->SetLabelSize(0.04);
+      hist->GetZaxis()->SetLabelSize(0.04);
+               
+      hist->SetStats(0);
+      hist->Draw("colz");
+      saver.save(can_2d,loc);
    }
    
    // Save histograms
    io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("compare_pseudoGen%.1f",cfg.processFraction*100),false);   
-   saveHistograms2D(msPresel_vVars2D,saver_hist,hs2d,samplesToCombine);
+   hs2d.saveHistograms(saver_hist,samplesToCombine);
 }

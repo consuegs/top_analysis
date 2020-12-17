@@ -4,6 +4,7 @@
 #include "Config.hpp"
 #include "Dataset.hpp"
 #include "tools/gfx.hpp"
+#include "tools/io.hpp"
 
 #include <map>
 
@@ -62,6 +63,7 @@ namespace hist
       THStack getStack(TString const &varName,std::vector<TString> const& samples,std::map<const TString,Color_t> const& colormap={},bool divideByBinWidth=false, bool includeData=false);
       float getCount(TString const &varName, TString const &sample);
       float getCountError(TString const &varName, TString const &sample);
+      void saveHistograms(io::RootFileSaver const &saver_hist, std::vector<TString> const &Samples);
 
       gfx::LegendEntries getLegendEntries();
    private:

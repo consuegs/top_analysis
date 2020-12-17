@@ -316,6 +316,16 @@ gfx::LegendEntries hist::Histograms<HIST>::getLegendEntries()
    return le_;
 }
 
+template <class HIST>
+void hist::Histograms<HIST>::saveHistograms(io::RootFileSaver const &saver_hist, std::vector<TString> const &Samples)
+{   
+   for (auto const &mv:mmH_){
+      for (TString sSample: Samples){
+         saver_hist.save(*getHistogram(mv.first,sSample),mv.first+"/"+sSample);
+      }
+   }
+}
+
 /*******************************************************************************
  * end class Histograms
  ******************************************************************************/

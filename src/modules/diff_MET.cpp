@@ -18,32 +18,6 @@
 
 Config const &cfg=Config::get();
 
-void saveHistograms_2D(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH2F> &hs, std::vector<TString> const &Samples)
-{
-   for (auto const &sPresel_vVars:msPresel_vVars){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         for (TString sSample: Samples){
-            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
-         }       
-      }
-   }
-}
-
-void saveHistograms(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH1F> &hs, std::vector<TString> const &Samples)
-{
-   for (auto const &sPresel_vVars:msPresel_vVars){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         for (TString sSample: Samples){
-            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
-         }       
-      }
-   }
-}
-
 bool matchLepton(TLorentzVector recoLep, TLorentzVector genLep) {
    // ~return (abs(recoLep.DeltaR(genLep))<0.5) && ((abs(recoLep.Pt()-genLep.Pt())/recoLep.Pt())<0.5); //probably wrong numbers
    return (abs(recoLep.DeltaR(genLep))<0.05) && ((abs(recoLep.Pt()-genLep.Pt())/recoLep.Pt())<0.1);
@@ -52,7 +26,7 @@ bool matchLepton(TLorentzVector recoLep, TLorentzVector genLep) {
 extern "C"
 void run()
 {
-   std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8"});
+   std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"});
    // ~std::vector<TString> vsDatasubsets({"ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4","ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4"});
    // ~std::vector<TString> vsDatasubsets({"DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8","DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_merged"});
    // ~std::vector<TString> vsDatasubsets({"WW_TuneCUETP8M1_13TeV-pythia8_merged"});
@@ -65,6 +39,7 @@ void run()
    // ~std::vector<TString> samplesToCombine={"T2tt_650_350"};
    
    hist::Histograms<TH2F> hs2D(vsDatasubsets);    //Define histograms in the following
+   hs2D.addHist("baseline/GenMetDiffMETRel_dPhiMETLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
    hs2D.addHist("baseline_met120/GenMetDiffMETRel_dPhiMETLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
    hs2D.addHist("baseline_met120/GenMetDiffMETRel_dPhigenMETLep"   ,";|#Delta#phi|(GenMet,nearest gen l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
    hs2D.addHist("baseline_met120/MetSig_dPhiMETLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
@@ -88,7 +63,8 @@ void run()
    hs2D.addHist("baseline_met120_mumu/GenMetDiffMETRel_dPhiMETLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
    hs2D.addHist("baseline_met120_mumu/MetSig_dPhiMETLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
    
-   hs2D.addHist("baseline_met120/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{#nu#nu(+BSM)}-GenMet|/genMET",20,0,3.14,6000,-5,5);
+   hs2D.addHist("baseline/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
+   hs2D.addHist("baseline_met120/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
    hs2D.addHist("baseline_met120/GenMetDiffMETRel_dPhigenMETLep_Puppi"   ,";|#Delta#phi|(GenMet,nearest gen l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
    hs2D.addHist("baseline_met120/MetSig_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
    hs2D.addHist("baseline_met120/Met_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);met",20,0,3.14,6000,0,1000);
@@ -109,28 +85,6 @@ void run()
    hs2D.addHist("baseline_met120_emu/MetSig_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
    hs2D.addHist("baseline_met120_mumu/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
    hs2D.addHist("baseline_met120_mumu/MetSig_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
-   
-   hs2D.addHist("baseline_met120/GenMetDiffMETRel_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{#nu#nu(+BSM)}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_met120/GenMetDiffMETRel_dPhigenMETLep_Deep"   ,";|#Delta#phi|(GenMet,nearest gen l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_met120/MetSig_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
-   hs2D.addHist("baseline_met120/Met_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);met",20,0,3.14,6000,0,1000);
-   hs2D.addHist("baseline_met120/GenMetDiffMETRelReco_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/|p_{T}^{miss}",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_matchedLep_met120/GenMetDiffMETRel_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{#nu#nu(+BSM)}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_matchedLep_met120/MetSig_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
-   hs2D.addHist("baseline_genmet120/GenMetDiffMETRel_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{#nu#nu(+BSM)}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_genmet120/MetSig_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
-   hs2D.addHist("baseline_met230/GenMetDiffMETRel_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{#nu#nu(+BSM)}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_met230/MetSig_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
-   hs2D.addHist("baseline_met200/GenMetDiffMETRel_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{#nu#nu(+BSM)}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_met200/MetSig_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
-   hs2D.addHist("baseline_met120_230/GenMetDiffMETRel_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{#nu#nu(+BSM)}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_met120_230/MetSig_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
-   hs2D.addHist("baseline_met120_ee/GenMetDiffMETRel_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_met120_ee/MetSig_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
-   hs2D.addHist("baseline_met120_emu/GenMetDiffMETRel_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_met120_emu/MetSig_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
-   hs2D.addHist("baseline_met120_mumu/GenMetDiffMETRel_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-   hs2D.addHist("baseline_met120_mumu/MetSig_dPhiMETLep_Deep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
    
    hs2D.addHist("baseline_met120/nVertex"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);nVertices",20,0,3.14,6000,0,60);
    
@@ -180,7 +134,6 @@ void run()
       TTreeReaderValue<tree::MET> MET_JESu(reader, "met_JESu");
       TTreeReaderValue<tree::MET> MET_JESd(reader, "met_JESd");
       TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
-      TTreeReaderValue<tree::MET> MET_Deep(reader, "metDeep");
       // ~TTreeReaderValue<tree::MET> MET_BReg(reader, "metBJetRegression");
       // ~TTreeReaderValue<tree::MET> MET_BRegLB(reader, "metBJetRegressionLoose");
       TTreeReaderValue<tree::MET> MET_NoHF(reader, "metNoHF");
@@ -244,49 +197,83 @@ void run()
          hs.setFillWeight(fEventWeight);
          
          float const met=MET->p.Pt();
+         float const met_puppi=MET_Puppi->p.Pt();
          float const genMet=GENMET->p.Pt();
          
          bool rec_selection=true;
          bool pseudo_selection=true;
          
-         //Baseline selection (separation into ee, emu, mumu already done at TreeWriter
          TLorentzVector p_l1;
          TLorentzVector p_l2;
+         int flavor_l1=0;  //1 for electron and 2 for muon
+         int flavor_l2=0;
+         
+         int leadLepton=0;
+         int subleadLepton=1;
+         bool muonLead=true; //Boolean for emu channel
+         TString cat="";
+         
          
          if (*is_ee){
+            rec_selection=true;
             if(!(*electrons)[0].isTight || !(*electrons)[1].isTight) rec_selection=false; //currently double check since trees only have tight leptons!!
             if(abs((*electrons)[0].etaSC)>2.4 || abs((*electrons)[1].etaSC>2.4)) rec_selection=false; //To use same region as for muons, cut on supercluster eta
-            p_l1=(*electrons)[0].p;
-            p_l2=(*electrons)[1].p;
+            if((*electrons)[0].p.Pt()*(*electrons)[0].corr<(*electrons)[1].p.Pt()*(*electrons)[1].corr) leadLepton=1,subleadLepton=0;
+            p_l1=(*electrons)[leadLepton].p*(*electrons)[leadLepton].corr;
+            p_l2=(*electrons)[subleadLepton].p*(*electrons)[subleadLepton].corr;
+            p_l1=(*electrons)[leadLepton].p*(*electrons)[leadLepton].corr;
+            p_l2=(*electrons)[subleadLepton].p*(*electrons)[subleadLepton].corr;
+            flavor_l1=1;
+            flavor_l2=1;
+            cat="ee";
          }
          else if (*is_mumu){
+            rec_selection=true;
             if(!(*muons)[0].isTight || !(*muons)[1].isTight) rec_selection=false;
             if((*muons)[0].rIso>0.15 || (*muons)[1].rIso>0.15) rec_selection=false;
             if(abs((*muons)[0].p.Eta())>2.4 || abs((*muons)[1].p.Eta())>2.4) rec_selection=false;
-            p_l1=(*muons)[0].p;
-            p_l2=(*muons)[1].p;
+            if((*muons)[0].p.Pt()*(*muons)[0].rochesterCorrection<(*muons)[1].p.Pt()*(*muons)[1].rochesterCorrection) leadLepton=1,subleadLepton=0;
+            p_l1=(*muons)[leadLepton].p*(*muons)[leadLepton].rochesterCorrection;
+            p_l2=(*muons)[1].p*(*muons)[subleadLepton].rochesterCorrection;
+            flavor_l1=2;
+            flavor_l2=2;
+            cat="mumu";
          }
          else if (*is_emu){
+            rec_selection=true;
             if(!(*muons)[0].isTight || !(*electrons)[0].isTight) rec_selection=false;
             if((*muons)[0].rIso>0.15 ) rec_selection=false;
             if(abs((*muons)[0].p.Eta())>2.4) rec_selection=false;
-            if(abs((*electrons)[0].etaSC)>2.4 ) rec_selection=false;
-            if ((*muons)[0].p.Pt()>(*electrons)[0].p.Pt()){
-               p_l1=(*muons)[0].p;
-               p_l2=(*electrons)[0].p;
+            if(abs((*electrons)[0].etaSC>2.4) ) rec_selection=false;
+            if ((*muons)[0].p.Pt()*(*muons)[0].rochesterCorrection>(*electrons)[0].p.Pt()*(*electrons)[0].corr){
+               p_l1=(*muons)[0].p*(*muons)[0].rochesterCorrection;
+               p_l2=(*electrons)[0].p*(*electrons)[0].corr;
+               flavor_l1=2;
+               flavor_l2=1;
             }
             else {
-               p_l1=(*electrons)[0].p;
-               p_l2=(*muons)[0].p;
+               p_l1=(*electrons)[0].p*(*electrons)[0].corr;
+               p_l2=(*muons)[0].p*(*muons)[0].rochesterCorrection;
+               flavor_l1=1;
+               flavor_l2=2;
+               muonLead=false;
             }
+            cat="emu";
          }
+                  
          
          if (p_l1.Pt()<25 || p_l2.Pt()<20) rec_selection=false; //eta cuts already done in TreeWriter
-         if (*mll<20 || ((*is_ee || *is_mumu) && *mll<106 && *mll>76)) rec_selection=false;
-         if ((*is_ee || *is_mumu) && met<40) rec_selection=false;
+         
+         // ~if (*mll<20 || ((*is_ee || *is_mumu) && *mll<106 && *mll>76)) rec_selection=false;
+         float mll_corr=(p_l1+p_l2).M();
+         if (mll_corr<20 || ((*is_ee || *is_mumu) && mll_corr<106 && mll_corr>76)) rec_selection=false;
          
          std::vector<tree::Jet> cjets=phys::getCleanedJets(*jets);
          if (cjets.size()<2) rec_selection=false;
+         
+         // ~if ((*is_ee || *is_mumu) && met<40) rec_selection=false;
+         if ((*is_ee || *is_mumu) && met_puppi<40) rec_selection=false;
+         
          
          bool bTag=false;
          std::vector<tree::Jet> BJets;
@@ -297,7 +284,9 @@ void run()
                BJets.push_back(jet);
             }
          }
-         if (!bTag) rec_selection=false; // end reco baseline selection
+         if (!bTag) rec_selection=false;
+         
+         // end reco baseline selection
          
          if (*genDecayMode_pseudo==0) pseudo_selection=false; //pseudo baseline selection
                
@@ -310,7 +299,6 @@ void run()
          
          float dPhiMETnearLep=4;
          float dPhiMETnearLep_Puppi=4;
-         float dPhiMETnearLep_Deep=4;
          for (TLorentzVector const lep : {p_l1,p_l2}){
             const float dPhi=MET->p.DeltaPhi(lep);
             if (std::abs(dPhi) < std::abs(dPhiMETnearLep)) {
@@ -319,10 +307,6 @@ void run()
             const float dPhi_Puppi=MET_Puppi->p.DeltaPhi(lep);
             if (std::abs(dPhi_Puppi) < std::abs(dPhiMETnearLep_Puppi)) {
                dPhiMETnearLep_Puppi=dPhi_Puppi;
-            }
-            const float dPhi_Deep=MET_Deep->p.DeltaPhi(lep);
-            if (std::abs(dPhi_Deep) < std::abs(dPhiMETnearLep_Deep)) {
-               dPhiMETnearLep_Deep=dPhi_Deep;
             }
          }
          
@@ -344,13 +328,14 @@ void run()
          // ~hs.fill("baseline/METresBJetRegr",MET_BReg->p.Pt()-genMet);
          // ~hs.fill("baseline/METresBJetLBRegr",MET_BRegLB->p.Pt()-genMet);
          
+         hs2D.fill("baseline/GenMetDiffMETRel_dPhiMETLep",abs(dPhiMETnearLep_Puppi),(genMet-met)/genMet);
+         hs2D.fill("baseline/GenMetDiffMETRel_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),(genMet-MET_Puppi->p.Pt())/genMet);
+         
          if (genMet>120) {
             hs2D.fill("baseline_genmet120/GenMetDiffMETRel_dPhiMETLep",abs(dPhiMETnearLep),(genMet-met)/genMet);
             hs2D.fill("baseline_genmet120/MetSig_dPhiMETLep",abs(dPhiMETnearLep),MET->sig);
             hs2D.fill("baseline_genmet120/GenMetDiffMETRel_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),(genMet-MET_Puppi->p.Pt())/genMet);
             hs2D.fill("baseline_genmet120/MetSig_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),MET_Puppi->sig);
-            hs2D.fill("baseline_genmet120/GenMetDiffMETRel_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),(genMet-MET_Deep->p.Pt())/genMet);
-            hs2D.fill("baseline_genmet120/MetSig_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),MET_Deep->sig);
             
             // ~hs.fill("baseline_genmet120/METres",met-genMet);
             // ~hs.fill("baseline_genmet120/METresPuppi",MET_Puppi->p.Pt()-genMet);
@@ -360,8 +345,7 @@ void run()
          
          bool pfMET120 = (met>120);
          bool puppi120 = (MET_Puppi->p.Pt()>120);
-         bool deep120 = (MET_Deep->p.Pt()>120);
-         if (!pfMET120 && !puppi120 && !deep120) continue;
+         if (!pfMET120 && !puppi120) continue;
          
          if (pfMET120) {
             hs2D.fill("baseline_met120/GenMetDiffMETRel_dPhiMETLep",abs(dPhiMETnearLep),(genMet-met)/genMet);
@@ -379,13 +363,6 @@ void run()
             hs2D.fill("baseline_met120/MetSig_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),MET_Puppi->sig);
             hs2D.fill("baseline_met120/Met_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),MET_Puppi->p.Pt());
          }
-         if (deep120) {
-            hs2D.fill("baseline_met120/GenMetDiffMETRel_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),(genMet-MET_Deep->p.Pt())/genMet);
-            hs2D.fill("baseline_met120/GenMetDiffMETRel_dPhigenMETLep_Deep",abs(dPhiMETnearLep_gen),(genMet-MET_Deep->p.Pt())/genMet);
-            hs2D.fill("baseline_met120/GenMetDiffMETRelReco_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),(genMet-MET_Deep->p.Pt())/MET_Deep->p.Pt());
-            hs2D.fill("baseline_met120/MetSig_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),MET_Deep->sig);
-            hs2D.fill("baseline_met120/Met_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),MET_Deep->p.Pt());
-         }
          
          if (*is_ee){
             if (pfMET120) {
@@ -395,10 +372,6 @@ void run()
             if (puppi120) {
                hs2D.fill("baseline_met120_ee/GenMetDiffMETRel_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),(genMet-MET_Puppi->p.Pt())/genMet);
                hs2D.fill("baseline_met120_ee/MetSig_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),MET_Puppi->sig);
-            }
-            if (deep120) {
-               hs2D.fill("baseline_met120_ee/GenMetDiffMETRel_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),(genMet-MET_Deep->p.Pt())/genMet);
-               hs2D.fill("baseline_met120_ee/MetSig_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),MET->sig);
             }
          }
          else if (*is_emu){
@@ -410,10 +383,6 @@ void run()
                hs2D.fill("baseline_met120_emu/GenMetDiffMETRel_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),(genMet-MET_Puppi->p.Pt())/genMet);
                hs2D.fill("baseline_met120_emu/MetSig_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),MET_Puppi->sig);
             }
-            if (deep120) {
-               hs2D.fill("baseline_met120_emu/GenMetDiffMETRel_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),(genMet-MET_Deep->p.Pt())/genMet);
-               hs2D.fill("baseline_met120_emu/MetSig_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),MET->sig);
-            }
          }
          else {
             if (pfMET120) {
@@ -423,10 +392,6 @@ void run()
             if (puppi120) {
                hs2D.fill("baseline_met120_mumu/GenMetDiffMETRel_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),(genMet-MET_Puppi->p.Pt())/genMet);
                hs2D.fill("baseline_met120_mumu/MetSig_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),MET_Puppi->sig);
-            }
-            if (deep120) {
-               hs2D.fill("baseline_met120_mumu/GenMetDiffMETRel_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),(genMet-MET_Deep->p.Pt())/genMet);
-               hs2D.fill("baseline_met120_mumu/MetSig_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),MET->sig);
             }
          }
          
@@ -439,10 +404,6 @@ void run()
                hs2D.fill("baseline_matchedLep_met120/GenMetDiffMETRel_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),(genMet-MET_Puppi->p.Pt())/genMet);
                hs2D.fill("baseline_matchedLep_met120/MetSig_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),MET_Puppi->sig);
             }
-            if (deep120) {
-               hs2D.fill("baseline_matchedLep_met120/GenMetDiffMETRel_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),(genMet-MET_Deep->p.Pt())/genMet);
-               hs2D.fill("baseline_matchedLep_met120/MetSig_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),MET_Deep->sig);
-            }
          }
          
          if (met>200) {
@@ -450,8 +411,6 @@ void run()
             hs2D.fill("baseline_met200/MetSig_dPhiMETLep",abs(dPhiMETnearLep),MET->sig);
             hs2D.fill("baseline_met200/GenMetDiffMETRel_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),(genMet-MET_Puppi->p.Pt())/genMet);
             hs2D.fill("baseline_met200/MetSig_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),MET_Puppi->sig);
-            hs2D.fill("baseline_met200/GenMetDiffMETRel_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),(genMet-MET_Deep->p.Pt())/genMet);
-            hs2D.fill("baseline_met200/MetSig_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),MET_Deep->sig);
          }
          
          if (met<230) {
@@ -459,16 +418,12 @@ void run()
             hs2D.fill("baseline_met120_230/MetSig_dPhiMETLep",abs(dPhiMETnearLep),MET->sig);
             hs2D.fill("baseline_met120_230/GenMetDiffMETRel_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),(genMet-MET_Puppi->p.Pt())/genMet);
             hs2D.fill("baseline_met120_230/MetSig_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),MET_Puppi->sig);
-            hs2D.fill("baseline_met120_230/GenMetDiffMETRel_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),(genMet-MET_Deep->p.Pt())/genMet);
-            hs2D.fill("baseline_met120_230/MetSig_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),MET_Deep->sig);
          }
          else {
             hs2D.fill("baseline_met230/GenMetDiffMETRel_dPhiMETLep",abs(dPhiMETnearLep),(genMet-met)/genMet);
             hs2D.fill("baseline_met230/MetSig_dPhiMETLep",abs(dPhiMETnearLep),MET->sig);
             hs2D.fill("baseline_met230/GenMetDiffMETRel_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),(genMet-MET_Puppi->p.Pt())/genMet);
             hs2D.fill("baseline_met230/MetSig_dPhiMETLep_Puppi",abs(dPhiMETnearLep_Puppi),MET_Puppi->sig);
-            hs2D.fill("baseline_met230/GenMetDiffMETRel_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),(genMet-MET_Deep->p.Pt())/genMet);
-            hs2D.fill("baseline_met230/MetSig_dPhiMETLep_Deep",abs(dPhiMETnearLep_Deep),MET_Deep->sig);
          }
                
       }// evt loop
@@ -484,26 +439,9 @@ void run()
    hs2D.combineFromSubsamples(samplesToCombine);
    hs.combineFromSubsamples(samplesToCombine);
    
-   std::map<TString,std::vector<TString>> msPresel_vVars_2D={
-      {"baseline_met120/",{"GenMetDiffMETRel_dPhiMETLep","GenMetDiffMETRelReco_dPhiMETLep","MetSig_dPhiMETLep","Met_dPhiMETLep","genMet_dPhiMETLep","GenMetDiffMETRel_dPhiMETLep_Puppi","GenMetDiffMETRelReco_dPhiMETLep_Puppi","MetSig_dPhiMETLep_Puppi","Met_dPhiMETLep_Puppi","GenMetDiffMETRel_dPhiMETLep_Deep","GenMetDiffMETRelReco_dPhiMETLep_Deep","MetSig_dPhiMETLep_Deep","Met_dPhiMETLep_Deep","nVertex","GenMetDiffMETRel_dPhigenMETLep","GenMetDiffMETRel_dPhigenMETLep_Puppi","GenMetDiffMETRel_dPhigenMETLep_Deep"}},
-      {"baseline_matchedLep_met120/",{"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep","GenMetDiffMETRel_dPhiMETLep_Puppi","MetSig_dPhiMETLep_Puppi","GenMetDiffMETRel_dPhiMETLep_Deep","MetSig_dPhiMETLep_Deep"}},
-      {"baseline_genmet120/",{"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep","GenMetDiffMETRel_dPhiMETLep_Puppi","MetSig_dPhiMETLep_Puppi","GenMetDiffMETRel_dPhiMETLep_Deep","MetSig_dPhiMETLep_Deep"}},
-      {"baseline_met120_ee/",{"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep","GenMetDiffMETRel_dPhiMETLep_Puppi","MetSig_dPhiMETLep_Puppi","GenMetDiffMETRel_dPhiMETLep_Deep","MetSig_dPhiMETLep_Deep"}},
-      {"baseline_met120_emu/",{"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep","GenMetDiffMETRel_dPhiMETLep_Puppi","MetSig_dPhiMETLep_Puppi","GenMetDiffMETRel_dPhiMETLep_Deep","MetSig_dPhiMETLep_Deep"}},
-      {"baseline_met120_mumu/",{"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep","GenMetDiffMETRel_dPhiMETLep_Puppi","MetSig_dPhiMETLep_Puppi","GenMetDiffMETRel_dPhiMETLep_Deep","MetSig_dPhiMETLep_Deep"}},
-      {"baseline_met200/",{"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep","GenMetDiffMETRel_dPhiMETLep_Puppi","MetSig_dPhiMETLep_Puppi","GenMetDiffMETRel_dPhiMETLep_Deep","MetSig_dPhiMETLep_Deep"}},
-      {"baseline_met120_230/",{"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep","GenMetDiffMETRel_dPhiMETLep_Puppi","MetSig_dPhiMETLep_Puppi","GenMetDiffMETRel_dPhiMETLep_Deep","MetSig_dPhiMETLep_Deep"}},
-      {"baseline_met230/",{"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep","GenMetDiffMETRel_dPhiMETLep_Puppi","MetSig_dPhiMETLep_Puppi","GenMetDiffMETRel_dPhiMETLep_Deep","MetSig_dPhiMETLep_Deep"}},
-      };
-   
-   std::map<TString,std::vector<TString>> msPresel_vVars={
-      {"baseline/",{"dPhiMETLep","dPhiMETLep_gen","METres","METresPuppi","METresBJetRegr","METresBJetLBRegr"}},
-      {"baseline_genmet120/",{"METres","METresPuppi","METresBJetRegr","METresBJetLBRegr"}},
-      };
-   
    // Save histograms
    io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("diff_MET%.1f",cfg.processFraction*100),false);
-   saveHistograms_2D(msPresel_vVars_2D,saver_hist,hs2D,samplesToCombine);
-   saveHistograms(msPresel_vVars,saver_hist,hs,samplesToCombine);
+   hs2D.saveHistograms(saver_hist,samplesToCombine);
+   hs.saveHistograms(saver_hist,samplesToCombine);
    
 }

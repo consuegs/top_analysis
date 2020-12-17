@@ -17,50 +17,6 @@
 
 Config const &cfg=Config::get();
 
-void saveHistograms(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH1F> &hs, std::vector<TString> const &Samples)
-{
-   for (auto const &sPresel_vVars:msPresel_vVars){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         for (TString sSample: Samples){
-            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
-         }       
-      }
-   }
-}
-int saveRatios(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH1F> &hs, std::vector<TString> const &Samples)
-{  
-   if (Samples.size()!=2){
-      std::cout<<"Number of samples != 2, no ratios are saved"<<std::endl;
-      return 0;
-   }
-   else{
-      for (auto const &sPresel_vVars:msPresel_vVars){
-         TString const &sPresel=sPresel_vVars.first;
-         for (TString sVar:sPresel_vVars.second){
-            sVar=sPresel+sVar;
-            TH1F* temp=hs.getHistogram(sVar,Samples[0]);
-            temp->Divide(hs.getHistogram(sVar,Samples[1]));
-            saver_hist.save(*temp,"ratios/"+sVar);    
-         }
-      }
-      return 0;
-   }
-}
-void saveHistograms2D(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH2F> &hs, std::vector<TString> const &Samples)
-{
-   for (auto const &sPresel_vVars:msPresel_vVars){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         for (TString sSample: Samples){
-            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
-         }       
-      }
-   }
-}
-
 bool matchLepton(TLorentzVector recoLep, TLorentzVector genLep) {
    // ~return (abs(recoLep.DeltaR(genLep))<0.5) && ((abs(recoLep.Pt()-genLep.Pt())/recoLep.Pt())<0.5); //probably wrong numbers
    return (abs(recoLep.DeltaR(genLep))<0.05) && ((abs(recoLep.Pt()-genLep.Pt())/recoLep.Pt())<0.1);
@@ -356,21 +312,9 @@ void run()
    hs.combineFromSubsamples(samplesToCombine);
    hs2d.combineFromSubsamples(samplesToCombine);
    
-   // what to plot in which preselection
-   std::map<TString,std::vector<TString>> msPresel_vVars;
-   std::map<TString,std::vector<TString>> msPresel_vVars2D;
-   for(TString selection:{"baseline","Zpeak","Zpeak_noJetRequ"}){
-      for(TString base:{"referenceTrigg","analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
-         for(TString channel:{"ee","mumu","emu"}){
-            msPresel_vVars.insert(std::pair<TString,std::vector<TString>>(selection+"/"+base+"/"+channel+"/",{"pTl1","pTl2","etal1","etal2"}));
-            msPresel_vVars2D.insert(std::pair<TString,std::vector<TString>>(selection+"/"+base+"/"+channel+"/",{(channel!="emu")?"pTl1_pTl2":"pTlmu_pTle"}));
-         }
-      }
-   }
-   
    // Save 1d histograms
    io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("triggerEff%.1f",cfg.processFraction*100),false);
-   saveHistograms(msPresel_vVars,saver_hist,hs,samplesToCombine);
-   saveHistograms2D(msPresel_vVars2D,saver_hist,hs2d,samplesToCombine);
+   hs.saveHistograms(saver_hist,samplesToCombine);
+   hs2d.saveHistograms(saver_hist,samplesToCombine);
    
 }

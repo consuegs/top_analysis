@@ -17,31 +17,6 @@
 
 Config const &cfg=Config::get();
 
-void saveHistograms(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH1F> &hs, std::vector<TString> const &Samples)
-{
-   for (auto const &sPresel_vVars:msPresel_vVars){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         for (TString sSample: Samples){
-            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
-         }       
-      }
-   }
-}
-void saveHistograms2D(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH2F> &hs, std::vector<TString> const &Samples)
-{
-   for (auto const &sPresel_vVars:msPresel_vVars){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         for (TString sSample: Samples){
-            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
-         }       
-      }
-   }
-}
-
 extern "C"
 void run()
 {
@@ -1279,151 +1254,19 @@ void run()
       }
       
    } // dataset loop
-   // ~ttbar_res_saver.closeFile();
    
    
    std::vector<TString> samplesToCombine=cfg.datasets.getDatasetNames();
-   // ~std::vector<TString> samplesToCombine={"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","TTbar_diLepton","TTbar_madGraph","TTbar_madGraph150","TTbar_singleLepton",
-      // ~"T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","ttZ_SM","ttH_SM"};
-   // ~std::vector<TString> samplesToCombine={"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","TTbar_madGraph","TTbar_madGraph150",
-      // ~"T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","ttZ_SM","ttH_SM"};
-   // ~std::vector<TString> samplesToCombine={"TTbar","TTbar_diLepton","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ",
-      // ~"T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","ttZ_SM","ttH_SM"};
-   // ~std::vector<TString> samplesToCombine={"TTbar","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ",
-      // ~"T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","ttZ_SM","ttH_SM"};
-   // ~std::vector<TString> samplesToCombine={"TTbar",
-      // ~"T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","ttZ_SM","ttH_SM"};
    hs.combineFromSubsamples(samplesToCombine);
    hs_cutflow.combineFromSubsamples(samplesToCombine);
    hs2d.combineFromSubsamples(samplesToCombine);
    
-   //Combine ttBar madGraph with high genMet sample
-   // ~hs.combineSamples("TTbar_madGraphCOMB",{"TTbar_madGraph","TTbar_madGraph150"});
-   // ~hs2d.combineSamples("TTbar_madGraphCOMB",{"TTbar_madGraph","TTbar_madGraph150"});
-   // ~samplesToCombine.push_back("TTbar_madGraphCOMB");
-   
-   //Plotting part 1D
-   io::RootFileSaver saver(TString::Format("plots"+met_sf_string+"%.1f.root",cfg.processFraction*100),TString::Format("distributions%.1f",cfg.processFraction*100));
-   
-   TCanvas can;
-   can.SetLogy();
-   // what to plot in which preselection
-   std::map<TString,std::vector<TString>> msPresel_vVars={
-      {"baseline/ee/",{"met","met_puppi","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTbJet","pTJet1","pTJet2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","dphi_metNearLep_puppi","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline/emu/",{"met","met_puppi","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTbJet","pTJet1","pTJet2","dphi_metJet","dphi_metBJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","dphi_metNearLep_puppi","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline/mumu/",{"met","met_puppi","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTbJet","pTJet1","pTJet2","dphi_metJet","dphi_metBJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","dphi_metNearLep_puppi","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline_Met200/ee/",{"met","met_puppi","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTbJet","pTJet1","pTJet2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","dphi_metNearLep_puppi","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline_Met200/emu/",{"met","met_puppi","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTbJet","pTJet1","pTJet2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","dphi_metNearLep_puppi","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"baseline_Met200/mumu/",{"met","met_puppi","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTbJet","pTJet1","pTJet2","dphi_metJet","dphi_metLeadJet","dphi_metLead2Jet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","dphi_metNearLep_puppi","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      {"genParticles/ee/",{"pT_nunu","genMet","DMgenMet","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","genHT"}},
-      {"genParticles/emu/",{"pT_nunu","genMet","DMgenMet","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","genHT"}},
-      {"genParticles/mumu/",{"pT_nunu","genMet","DMgenMet","dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2","genHT"}},
-      };
-   
-   // The following can be used for plotting, which is currently done with an extra module   
-   // ~for (auto const &sPresel_vVars:msPresel_vVars){
-      // ~TString const &sPresel=sPresel_vVars.first;
-      // ~for (TString sVar:sPresel_vVars.second){
-         // ~TString loc;
-         // ~loc=sPresel+sVar;
-         // ~TH1F* hist=hs.getHistogram(loc,"TTbar");
-         // ~gfx::LegendEntries le=hs.getLegendEntries();
-         // ~TString cat;
-         // ~if (sPresel.Contains("ee/")) cat="ee";
-         // ~else if (sPresel.Contains("emu/")) cat="e#mu";
-         // ~else if (sPresel.Contains("mumu/")) cat="#mu#mu";
-         // ~TLatex label=gfx::cornerLabel(cat,2);
-         // ~hist->SetStats(0);
-         // ~hist->SetMarkerSize(0);
-         // ~if (sVar=="diff_ptNuNu_genMET") can.SetLogy(0);
-         // ~hist->Draw("histE");
-         // ~TLegend leg=le.buildLegend(.4,.7,1-gPad->GetRightMargin(),-1,2);
-         // ~leg.Draw();
-         // ~label.Draw();
-         // ~saver.save(can,"tt_only/"+loc);
-         
-         // ~THStack st_mc=hs.getStack(loc,{"SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","TTbar"});
-         // ~le=hs.getLegendEntries();
-         // ~st_mc.Draw();
-         // ~TLegend leg2=le.buildLegend(.4,.7,1-gPad->GetRightMargin(),-1,2);
-         // ~leg2.Draw();
-         // ~label.Draw();
-         // ~saver.save(can,"all/"+loc);
-         
-         // ~//Plot Stack also with Signal
-         // ~le=hs.getLegendEntries();
-         // ~st_mc.Draw();
-         // ~auto hists=hs.getHistograms(loc,{"T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","ttZ_SM"});
-         // ~for (auto const &h: hists) h->Draw("same hist");
-         // ~le+=hs.getLegendEntries();
-         // ~TLegend leg3=le.buildLegend(.4,.7,1-gPad->GetRightMargin(),-1,2);
-         // ~leg3.Draw();
-         // ~label.Draw();
-         // ~saver.save(can,"all_withSignal/"+loc);
-      // ~}
-   // ~}
-      
    // Save 1d histograms
    io::RootFileSaver saver_hist(TString::Format("histograms"+met_sf_string+"_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),false);
-   saveHistograms(msPresel_vVars,saver_hist,hs,samplesToCombine);
-   saveHistograms({{"cutflow/",{"ee","emu","mumu"}}},saver_hist,hs_cutflow,samplesToCombine);
-   
-   //Plotting part 2D
-   std::map<TString,std::vector<TString>> msPresel_vVars2D={
-      {"genParticles/ee/",{"2d_PtNuNuVSdPhiNuNuNearLep"}},
-      {"genParticles/emu/",{"2d_PtNuNuVSdPhiNuNuNearLep"}},
-      {"genParticles/mumu/",{"2d_PtNuNuVSdPhiNuNuNearLep"}},
-      {"baseline/ee/",{"2d_MetVSdPhiMetNearLep","2d_MetVSdPhiMetNearLep_Puppi"}},
-      {"baseline/emu/",{"2d_MetVSdPhiMetNearLep","2d_MetVSdPhiMetNearLep_Puppi"}},
-      {"baseline/mumu/",{"2d_MetVSdPhiMetNearLep","2d_MetVSdPhiMetNearLep_Puppi"}},
-      };
-   
-   // The following can be used for plotting, which is currently done with an extra module 
-   // ~TCanvas can_2d;
-   // ~for (auto const &sPresel_vVars:msPresel_vVars2D){
-      // ~TString const &sPresel=sPresel_vVars.first;
-      // ~for (TString sVar:sPresel_vVars.second){
-         // ~can_2d.cd();
-         // ~can_2d.SetLogz();
-         // ~gPad->SetRightMargin(0.2);
-         // ~gPad->SetLeftMargin(0.13);
-         // ~gPad->SetBottomMargin(0.10);
-         // ~TString loc=sPresel+sVar;
-         // ~TH2F *hist=hs2d.getHistogram(loc,"TTbar");
-         
-         // ~hist->GetYaxis()->SetTitleOffset(1.3);
-         // ~hist->GetXaxis()->SetTitleOffset(0.9);
-         // ~hist->GetZaxis()->SetTitleOffset(1.3);
-         // ~hist->GetYaxis()->SetTitleSize(0.05);
-         // ~hist->GetXaxis()->SetTitleSize(0.05);
-         // ~hist->GetZaxis()->SetTitleSize(0.05);
-         // ~hist->GetYaxis()->SetLabelSize(0.04);
-         // ~hist->GetXaxis()->SetLabelSize(0.04);
-         // ~hist->GetZaxis()->SetLabelSize(0.04);
-                  
-         // ~hist->SetStats(0);
-         // ~hist->Draw("colz");
-         // ~TString cat;
-         // ~if (sPresel.Contains("ee/")) cat="ee";
-         // ~else if (sPresel.Contains("emu/")) cat="e#mu";
-         // ~else if (sPresel.Contains("mumu/")) cat="#mu#mu";
-         // ~TLatex label=gfx::cornerLabel(cat,2);
-         // ~label.Draw();
-         // ~saver.save(can_2d,"tt_only/"+loc);
-      // ~}
-   // ~}
+   hs.saveHistograms(saver_hist,samplesToCombine);
+   hs_cutflow.saveHistograms(saver_hist,samplesToCombine);
    
    //Save 2d histograms
-   saveHistograms2D(msPresel_vVars2D,saver_hist,hs2d,samplesToCombine);
-   
-   
-   // ~//Print efficiencies
-   // ~std::ofstream out;
-   // ~out.open(TString::Format("../output/txt/efficiencies%.1f.txt",cfg.processFraction*100));
-   // ~out.precision(4);
-   // ~for (TString sample : samplesToCombine){
-      // ~out<<sample<<"   "<<count[sample]/(1.*Ngen[sample])<<std::endl;
-   // ~}
-   // ~out.close();
+   hs2d.saveHistograms(saver_hist,samplesToCombine);
    
 }

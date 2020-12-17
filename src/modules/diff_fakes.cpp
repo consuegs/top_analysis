@@ -18,24 +18,11 @@
 
 Config const &cfg=Config::get();
 
-void saveHistograms(std::map<TString,std::vector<TString>> const &msPresel_vVars, io::RootFileSaver const &saver_hist,hist::Histograms<TH1F> &hs, std::vector<TString> const &Samples)
-{
-   for (auto const &sPresel_vVars:msPresel_vVars){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         sVar=sPresel+sVar;
-         for (TString sSample: Samples){
-            saver_hist.save(*hs.getHistogram(sVar,sSample),sVar+"/"+sSample);
-         }       
-      }
-   }
-}
-
 extern "C"
 void run()
 {
    // ~std::vector<TString> vsDatasubsets({"TT_TuneCUETP8M2T4_13TeV-powheg-pythia8_merged"});
-   std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8"});
+   std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"});
    
    hist::Histograms<TH1F> hs(vsDatasubsets);    //Define histograms in the following
    for (TString selection:{"Fakes/","NoFakes/","Taus/"}){
@@ -239,14 +226,8 @@ void run()
    std::vector<TString> samplesToCombine={"TTbar_diLepton"};
    hs.combineFromSubsamples(samplesToCombine);
    
-   std::map<TString,std::vector<TString>> msPresel_vVars={
-      {"Fakes/",{"met","met1000","pTlep1","pTlep2","etalep1","etalep2","pTbJet","etabJet","pTjet1","pTjet2","etajet1","etajet2","deepCSV",}},
-      {"NoFakes/",{"met","met1000","pTlep1","pTlep2","etalep1","etalep2","pTbJet","etabJet","pTjet1","pTjet2","etajet1","etajet2","deepCSV",}},
-      {"Taus/",{"met","met1000","pTlep1","pTlep2","etalep1","etalep2","pTbJet","etabJet","pTjet1","pTjet2","etajet1","etajet2","deepCSV",}}
-      };
-   
    // Save 1d histograms
    io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("diff_fakes%.1f",cfg.processFraction*100),false);
-   saveHistograms(msPresel_vVars,saver_hist,hs,samplesToCombine);
+   hs.saveHistograms(saver_hist,samplesToCombine);
    
 }
