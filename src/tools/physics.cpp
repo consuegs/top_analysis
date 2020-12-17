@@ -15,6 +15,18 @@ std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets)
    return cjets;
 }
 
+std::vector<tree::Jet> phys::getCleanedJets_looseID(std::vector<tree::Jet> const &jets)
+{
+   std::vector<tree::Jet> cjets;
+   for (tree::Jet j: jets){
+      if (!j.isLoose || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
+      if (j.hasElectronMatch || j.hasMuonMatch) continue;
+      cjets.push_back(j);
+   }
+   sort(cjets.begin(), cjets.end(), tree::PtGreater);
+   return cjets;
+}
+
 
 /*
  * - compute HT using the given jet collection

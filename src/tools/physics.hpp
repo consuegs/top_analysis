@@ -6,6 +6,7 @@
 namespace phys
 {
    std::vector<tree::Jet> getCleanedJets(std::vector<tree::Jet> const &jets);
+   std::vector<tree::Jet> getCleanedJets_looseID(std::vector<tree::Jet> const &jets);
    float computeHT(std::vector<tree::Jet> const &jets);
    float METoverSqrtHT(float MET, float HT); // returns inf for HT=0.0
 
