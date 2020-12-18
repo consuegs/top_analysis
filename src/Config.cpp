@@ -29,24 +29,8 @@ Config::Config()
    trigger_SF_ee=pt.get<std::string>("sf.trigger_SF_ee");
    trigger_SF_mumu=pt.get<std::string>("sf.trigger_SF_mumu");
    trigger_SF_emu=pt.get<std::string>("sf.trigger_SF_emu");
-
-   //~ std::vector<float> vsf=util::to_vector<float>(pt.get<std::string>("sf.Vg"));
-   //~ assert(vsf.size()==2);
-   //~ sf.Vg=vsf[0];
-   //~ sf.e_Vg=vsf[1];
-   //~ vsf=util::to_vector<float>(pt.get<std::string>("sf.GJ"));
-   //~ assert(vsf.size()==2);
-   //~ sf.GJ=vsf[0];
-   //~ sf.e_GJ=vsf[1];
-   //~ sf.rho=pt.get<float>("sf.rho");
-   //~ sf.uncert_Vgamma=pt.get<float>("sf.uncert_Vgamma");   
-   //~ sf.uncert_gammaJ=pt.get<float>("sf.uncert_gammaJ");
-
-   //~ efake.f=pt.get<float>("efake.f")/100.0;
-   //~ efake.f_mc=pt.get<float>("efake.f_mc")/100.0;
-   //~ efake.syst_unc=pt.get<float>("efake.syst_unc");
-   //~ efake.label=pt.get<std::string>("efake.label");
-   //~ efake.color=gROOT->ProcessLine((pt.get<std::string>("efake.color")+";").c_str());
+   
+   applyDNN=pt.get<bool>("others.applyDNN");
 
    lumiText=TString::Format("%.1f fb^{-1}",lumi*1e-3);
    sqrtsText=pt.get<std::string>("general.sqrtsText");

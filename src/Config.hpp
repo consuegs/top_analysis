@@ -19,19 +19,8 @@ public:
    TString trigger_SF_ee;
    TString trigger_SF_mumu;
    TString trigger_SF_emu;
-   //~ struct {
-      //~ float f,f_mc; // the fake rate
-      //~ float syst_unc;
-      //~ TString label;
-      //~ int color;
-   //~ } efake;
-   struct {
-      // ~float Vg,e_Vg;
-      // ~float GJ,e_GJ;
-      // ~float rho;
-      // ~float uncert_Vgamma;     
-      // ~float uncert_gammaJ;
-   } sf; // scale factors
+   
+   bool applyDNN;
 
    TString treeVersion;
    TString year;

@@ -259,40 +259,43 @@ void run()
    TMVA::Reader* reader_TMVA_Bin4=new TMVA::Reader("Silent");
    TMVA::Reader* reader_TMVA_Bin5=new TMVA::Reader("Silent");
    TMVA::Reader* reader_TMVA_Bin6=new TMVA::Reader("Silent");
-   for(TMVA::Reader* tempreader:{reader_TMVA_Bin1, reader_TMVA_Bin2, reader_TMVA_Bin3, reader_TMVA_Bin4, reader_TMVA_Bin5, reader_TMVA_Bin6}){
-      tempreader->AddVariable("PuppiMET", &minTree_PuppiMet);
-      tempreader->AddVariable("METunc_Puppi", &minTree_METunc_Puppi);
-      tempreader->AddVariable("MET", &minTree_MET);
-      tempreader->AddVariable("HT", &minTree_HT);
-      tempreader->AddVariable("nJets", &minTree_nJets);
-      tempreader->AddVariable("n_Interactions", &minTree_n_Interactions);
-      tempreader->AddVariable("Lep1_flavor", &minTree_Lep1_flavor);
-      tempreader->AddVariable("Lep2_flavor", &minTree_Lep2_flavor);
-      tempreader->AddVariable("Lep1_pt", &minTree_Lep1_pt);
-      tempreader->AddVariable("Lep1_phi", &minTree_Lep1_phi);
-      tempreader->AddVariable("Lep1_eta", &minTree_Lep1_eta);
-      tempreader->AddVariable("Lep1_E", &minTree_Lep1_E);
-      tempreader->AddVariable("Lep2_pt", &minTree_Lep2_pt);
-      tempreader->AddVariable("Lep2_phi", &minTree_Lep2_phi);
-      tempreader->AddVariable("Lep2_eta", &minTree_Lep2_eta);
-      tempreader->AddVariable("Lep2_E", &minTree_Lep2_E);
-      tempreader->AddVariable("Jet1_pt", &minTree_Jet1_pt);
-      tempreader->AddVariable("Jet1_phi", &minTree_Jet1_phi);
-      tempreader->AddVariable("Jet1_eta", &minTree_Jet1_eta);
-      tempreader->AddVariable("Jet1_E", &minTree_Jet1_E);
-      tempreader->AddVariable("Jet2_pt", &minTree_Jet2_pt);
-      tempreader->AddVariable("Jet2_phi", &minTree_Jet2_phi);
-      tempreader->AddVariable("Jet2_eta", &minTree_Jet2_eta);
-      tempreader->AddVariable("Jet2_E", &minTree_Jet2_E);
-      tempreader->AddSpectator("PuppiMET", &minTree_PuppiMet);   //Placeholder
-      tempreader->AddSpectator("genMET", &minTree_genMT);    //Placeholder
+   bool applyDNN=cfg.applyDNN;
+   if(applyDNN){
+      for(TMVA::Reader* tempreader:{reader_TMVA_Bin1, reader_TMVA_Bin2, reader_TMVA_Bin3, reader_TMVA_Bin4, reader_TMVA_Bin5, reader_TMVA_Bin6}){
+         tempreader->AddVariable("PuppiMET", &minTree_PuppiMet);
+         tempreader->AddVariable("METunc_Puppi", &minTree_METunc_Puppi);
+         tempreader->AddVariable("MET", &minTree_MET);
+         tempreader->AddVariable("HT", &minTree_HT);
+         tempreader->AddVariable("nJets", &minTree_nJets);
+         tempreader->AddVariable("n_Interactions", &minTree_n_Interactions);
+         tempreader->AddVariable("Lep1_flavor", &minTree_Lep1_flavor);
+         tempreader->AddVariable("Lep2_flavor", &minTree_Lep2_flavor);
+         tempreader->AddVariable("Lep1_pt", &minTree_Lep1_pt);
+         tempreader->AddVariable("Lep1_phi", &minTree_Lep1_phi);
+         tempreader->AddVariable("Lep1_eta", &minTree_Lep1_eta);
+         tempreader->AddVariable("Lep1_E", &minTree_Lep1_E);
+         tempreader->AddVariable("Lep2_pt", &minTree_Lep2_pt);
+         tempreader->AddVariable("Lep2_phi", &minTree_Lep2_phi);
+         tempreader->AddVariable("Lep2_eta", &minTree_Lep2_eta);
+         tempreader->AddVariable("Lep2_E", &minTree_Lep2_E);
+         tempreader->AddVariable("Jet1_pt", &minTree_Jet1_pt);
+         tempreader->AddVariable("Jet1_phi", &minTree_Jet1_phi);
+         tempreader->AddVariable("Jet1_eta", &minTree_Jet1_eta);
+         tempreader->AddVariable("Jet1_E", &minTree_Jet1_E);
+         tempreader->AddVariable("Jet2_pt", &minTree_Jet2_pt);
+         tempreader->AddVariable("Jet2_phi", &minTree_Jet2_phi);
+         tempreader->AddVariable("Jet2_eta", &minTree_Jet2_eta);
+         tempreader->AddVariable("Jet2_E", &minTree_Jet2_E);
+         tempreader->AddSpectator("PuppiMET", &minTree_PuppiMet);   //Placeholder
+         tempreader->AddSpectator("genMET", &minTree_genMT);    //Placeholder
+      }
+      reader_TMVA_Bin1->BookMVA("PyKerasBin1", "dataset/weights/TMVARegression_PyKerasBin1.weights.xml");
+      reader_TMVA_Bin2->BookMVA("PyKerasBin2", "dataset/weights/TMVARegression_PyKerasBin2.weights.xml");
+      reader_TMVA_Bin3->BookMVA("PyKerasBin3", "dataset/weights/TMVARegression_PyKerasBin3.weights.xml");
+      reader_TMVA_Bin4->BookMVA("PyKerasBin4", "dataset/weights/TMVARegression_PyKerasBin4.weights.xml");
+      reader_TMVA_Bin5->BookMVA("PyKerasBin5", "dataset/weights/TMVARegression_PyKerasBin5.weights.xml");
+      reader_TMVA_Bin6->BookMVA("PyKerasBin6", "dataset/weights/TMVARegression_PyKerasBin6.weights.xml");
    }
-   reader_TMVA_Bin1->BookMVA("PyKerasBin1", "dataset/weights/TMVARegression_PyKerasBin1.weights.xml");
-   reader_TMVA_Bin2->BookMVA("PyKerasBin2", "dataset/weights/TMVARegression_PyKerasBin2.weights.xml");
-   reader_TMVA_Bin3->BookMVA("PyKerasBin3", "dataset/weights/TMVARegression_PyKerasBin3.weights.xml");
-   reader_TMVA_Bin4->BookMVA("PyKerasBin4", "dataset/weights/TMVARegression_PyKerasBin4.weights.xml");
-   reader_TMVA_Bin5->BookMVA("PyKerasBin5", "dataset/weights/TMVARegression_PyKerasBin5.weights.xml");
-   reader_TMVA_Bin6->BookMVA("PyKerasBin6", "dataset/weights/TMVARegression_PyKerasBin6.weights.xml");
 
    
    //Additional map to calculate signal efficiencies
@@ -734,12 +737,14 @@ void run()
             minTree_Jet2_phi=cjets[1].p.Phi();
             minTree_Jet2_eta=cjets[1].p.Eta();
             minTree_Jet2_E=cjets[1].p.E();
-            if(met_puppi<40) DNN_regression=reader_TMVA_Bin1->EvaluateRegression("PyKerasBin1")[0];
-            else if(met_puppi<80) DNN_regression=reader_TMVA_Bin2->EvaluateRegression("PyKerasBin2")[0];
-            else if(met_puppi<120) DNN_regression=reader_TMVA_Bin3->EvaluateRegression("PyKerasBin3")[0];
-            else if(met_puppi<160) DNN_regression=reader_TMVA_Bin4->EvaluateRegression("PyKerasBin4")[0];
-            else if(met_puppi<230) DNN_regression=reader_TMVA_Bin5->EvaluateRegression("PyKerasBin5")[0];
-            else DNN_regression=reader_TMVA_Bin6->EvaluateRegression("PyKerasBin6")[0];
+            if(applyDNN){
+               if(met_puppi<40) DNN_regression=reader_TMVA_Bin1->EvaluateRegression("PyKerasBin1")[0];
+               else if(met_puppi<80) DNN_regression=reader_TMVA_Bin2->EvaluateRegression("PyKerasBin2")[0];
+               else if(met_puppi<120) DNN_regression=reader_TMVA_Bin3->EvaluateRegression("PyKerasBin3")[0];
+               else if(met_puppi<160) DNN_regression=reader_TMVA_Bin4->EvaluateRegression("PyKerasBin4")[0];
+               else if(met_puppi<230) DNN_regression=reader_TMVA_Bin5->EvaluateRegression("PyKerasBin5")[0];
+               else DNN_regression=reader_TMVA_Bin6->EvaluateRegression("PyKerasBin6")[0];
+            }
          }
          
          
