@@ -14,6 +14,7 @@
 class Config
 {
 public:
+   boost::property_tree::ptree pt;
    static Config& get();
    float lumi;
    TString trigger_SF_ee;
@@ -32,6 +33,9 @@ public:
 
    float processFraction;
    bool  releaseMode;
+   std::string datasetMC_single;
+   std::string datasetDATA_single;
+   std::string datasetSIGNAL_single;
 
    std::vector<std::string> modules;
 

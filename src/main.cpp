@@ -40,6 +40,9 @@ static int parseCLIopt(int argc, char* argv[])
    vis_desc.add_options()
       ("help,h", "produce help message")
       ("fraction,f", po::value<float>(&cfg.processFraction)->default_value(1.0), "Fraction of events to process")
+      ("mc_dataset", po::value<std::string>(&cfg.datasetMC_single)->default_value(""), "Single MC dataset to be processed, if empty datasets are taken from config.ini")
+      ("data_dataset", po::value<std::string>(&cfg.datasetDATA_single)->default_value(""), "Single data dataset to be processed, if empty datasets are taken from config.ini")
+      ("signal_dataset", po::value<std::string>(&cfg.datasetSIGNAL_single)->default_value(""), "Single signal dataset to be processed, if empty datasets are taken from config.ini")
       ("release",  po::bool_switch(&cfg.releaseMode)->default_value(false), "Release mode (don't draw version labels)")
       ;
    hid_desc.add_options()
@@ -72,6 +75,11 @@ static int parseCLIopt(int argc, char* argv[])
       // run tests, if nothing specified
       cfg.modules.push_back("tests");
    }
+   
+   if(!cfg.datasetMC_single.empty() || !cfg.datasetDATA_single.empty() || !cfg.datasetSIGNAL_single.empty()){
+      cfg.datasets=DatasetCollection(cfg.pt,cfg.dataBasePath,true,cfg.datasetMC_single,cfg.datasetDATA_single,cfg.datasetSIGNAL_single);
+   }
+   
 
    return 0;
 }

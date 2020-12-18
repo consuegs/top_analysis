@@ -9,6 +9,7 @@
 #include <TROOT.h>
 #include <TTree.h>
 
+
 /*
  * Arguments:
  * - `name`: simple name to use/display
@@ -79,7 +80,7 @@ TString Datasubset::getPath() const{
 }
 
 
-DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TString dataBasePath)
+DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TString dataBasePath,bool single,std::string const &datasetMC_single,std::string const &datasetDATA_single,std::string const &datasetSIGNAL_single)
 {
    // MC
    std::vector<std::string> filenames;
@@ -88,7 +89,9 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    std::vector<float> feffs;
    std::string label;
    float syst_unc;
-   for (std::string sDs: util::to_vector<std::string>(pt.get<std::string>("input.mc_datasets"))){
+   std::vector<std::string> mcDataset = util::to_vector<std::string>(pt.get<std::string>("input.mc_datasets"));
+   if(single) mcDataset = util::to_vector<std::string>(datasetMC_single);
+   for (std::string sDs: mcDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
       assert(filenames.size()==xsecs.size());
@@ -130,7 +133,9 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
       mc_alternative_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath));
    }
    // Signals
-   for (std::string sDs: util::to_vector<std::string>(pt.get<std::string>("input.signals"))){
+   std::vector<std::string> signalDataset = util::to_vector<std::string>(pt.get<std::string>("input.signals"));
+   if(single) signalDataset = util::to_vector<std::string>(datasetSIGNAL_single);
+   for (std::string sDs: signalDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
       assert(filenames.size()==xsecs.size());
@@ -151,7 +156,9 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
       signal_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,true));
    }
    // Data
-   for (std::string sDs: util::to_vector<std::string>(pt.get<std::string>("input.data_streams"))){
+   std::vector<std::string> dataDataset = util::to_vector<std::string>(pt.get<std::string>("input.data_streams"));
+   if(single) dataDataset = util::to_vector<std::string>(datasetDATA_single);
+   for (std::string sDs: dataDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs=std::vector<float>(filenames.size(),-1);
       assert(filenames.size()==xsecs.size());

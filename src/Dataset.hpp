@@ -49,7 +49,7 @@ class DatasetCollection
 {
 public:
    DatasetCollection(){}
-   DatasetCollection(boost::property_tree::ptree const& pt,TString dataBasePath);
+   DatasetCollection(boost::property_tree::ptree const& pt,TString dataBasePath,bool single=false,std::string const &datasetMC_single="",std::string const &datasetDATA_single="",std::string const &datasetSIGNAL_single="");
    DatasetCollection(std::vector<Dataset> mc_datasets,std::vector<Dataset> mc_alternative_datasets,std::vector<Dataset> data_datasets,std::vector<Dataset> signal_datasets);
    std::vector<Dataset>    getDatasets() const {return mc_datasets_;}
    std::vector<Datasubset> getDatasubsets(bool mc=true, bool signal=false, bool data=false) const;

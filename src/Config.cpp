@@ -13,7 +13,7 @@ Config& Config::get(){
 
 Config::Config()
 {
-   boost::property_tree::ptree pt;
+   // ~boost::property_tree::ptree pt;
    std::string cfgFile(CMAKE_SOURCE_DIR);
    cfgFile+="config.ini";
    boost::property_tree::read_ini(cfgFile,pt);
