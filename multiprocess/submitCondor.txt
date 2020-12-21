@@ -1,0 +1,9 @@
+
+Universe        = vanilla
+Executable      = run.sh
+Arguments       = -f1.0 distributions --mc_dataset=TTbar_diLepton
+Log             = logs/TTbar_diLepton.log
+Output          = logs/TTbar_diLepton.out
+Error           = logs/TTbar_diLepton.error
+Request_Memory  = 6000 Mb
+Queue

@@ -78,6 +78,7 @@ static int parseCLIopt(int argc, char* argv[])
    
    if(!cfg.datasetMC_single.empty() || !cfg.datasetDATA_single.empty() || !cfg.datasetSIGNAL_single.empty()){
       cfg.datasets=DatasetCollection(cfg.pt,cfg.dataBasePath,true,cfg.datasetMC_single,cfg.datasetDATA_single,cfg.datasetSIGNAL_single);
+      cfg.multi=true;
    }
    
 

@@ -27,7 +27,8 @@ extern "C"
 void run()
 {
    std::vector<std::string> vsDatasubsets(cfg.datasets.getDatasubsetNames());
-      
+   
+   TString dssName_multi="";
    //Read TriggerSF hists
    io::RootFileReader triggerSF_ee(cfg.trigger_SF_ee,"");
    TH2F* triggerSF_ee_hist = (TH2F*)(triggerSF_ee.read<TH2F>("eff_histo"));
@@ -139,165 +140,7 @@ void run()
    hs2d.addHist("genParticles/ee/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("genParticles/emu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("genParticles/mumu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
-   
-   //Ntuple and file to save minimal ttbar tree used for binning studies
-   float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
-   minTree_PhiMetbJet, minTree_dPhiLep1Lep2, minTree_dPhiJet1Jet2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_XYcorrMet, 
-   minTree_HT, minTree_MHT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
-   minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi, minTree_PhiRecXYcorr, minTree_PhiMetNearJet_Puppi, minTree_PhiMetFarJet_Puppi,
-   minTree_PhiMetLeadJet_Puppi, minTree_PhiMetLead2Jet_Puppi, minTree_PhiMetbJet_Puppi, minTree_dPhiLep1bJet, minTree_dPhiLep1Jet1, minTree_ratioMET_sqrtMETunc_Puppi,
-   minTree_ratio_pTj1_vecsum_pT_l1_l2_bjet, minTree_METunc_Puppi, minTree_METunc_PF, minTree_absmetres_PUPPI,
-   minTree_Lep1_pt, minTree_Lep1_phi, minTree_Lep1_eta, minTree_Lep1_E, minTree_Lep1_flavor,
-   minTree_Lep2_pt, minTree_Lep2_phi, minTree_Lep2_eta, minTree_Lep2_E, minTree_Lep2_flavor,
-   minTree_Jet1_pt, minTree_Jet1_phi, minTree_Jet1_eta, minTree_Jet1_E, minTree_Jet1_bTagScore, minTree_Jet1_unc,
-   minTree_Jet2_pt, minTree_Jet2_phi, minTree_Jet2_eta, minTree_Jet2_E, minTree_Jet2_bTagScore, minTree_Jet2_unc,
-   minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_nJets, minTree_n_Interactions, minTree_DNN_regression;
-   UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions_gen, minTree_looseLeptonVeto, minTree_NpromptNeutrinos, minTree_NnonpromptNeutrinos;
-   ULong64_t minTree_evtNo;
-   // ~std::vector<float> minTree_v_bJet_muonFraction;
-   // ~std::vector<float> minTree_v_bJet_electronFraction;
-   // ~std::vector<float> minTree_v_Jet_muonFraction;
-   // ~std::vector<float> minTree_v_Jet_electronFraction;
-   // ~std::vector<float> minTree_v_bJet_muonEnergy;
-   // ~std::vector<float> minTree_v_bJet_electronEnergy;
-   // ~std::vector<float> minTree_v_Jet_muonEnergy;
-   // ~std::vector<float> minTree_v_Jet_electronEnergy;
-   io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/ttbar_res%.1f.root",cfg.year.Data(),cfg.treeVersion.Data(),cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
-   TTree ttbar_res("ttbar_res","ttbar_res");
-   ttbar_res.Branch("MET",&minTree_MET,"MET/f");
-   ttbar_res.Branch("PtNuNu",&minTree_PtNuNu,"PtNuNu/f");
-   ttbar_res.Branch("Phi_rec",&minTree_PhiRec,"Phi_rec/f");
-   ttbar_res.Branch("Phi_gen",&minTree_PhiGen,"Phi_gen/f");
-   ttbar_res.Branch("Phi_NuNu",&minTree_PhiNuNu,"Phi_NuNu/f");
-   ttbar_res.Branch("dPhiMETnearJet",&minTree_PhiMetNearJet,"dPhiMETnearJet/f");
-   ttbar_res.Branch("dPhiMETfarJet",&minTree_PhiMetFarJet,"dPhiMETfarJet/f");
-   ttbar_res.Branch("dPhiMETleadJet",&minTree_PhiMetLeadJet,"dPhiMETleadJet/f");
-   ttbar_res.Branch("dPhiMETlead2Jet",&minTree_PhiMetLead2Jet,"dPhiMETlead2Jet/f");
-   ttbar_res.Branch("dPhiMETbJet",&minTree_PhiMetbJet,"dPhiMETbJet/f");
-   ttbar_res.Branch("dPhiLep1Lep2",&minTree_dPhiLep1Lep2,"dPhiLep1Lep2/f");
-   ttbar_res.Branch("dPhiJet1Jet2",&minTree_dPhiJet1Jet2,"dPhiJet1Jet2/f");
-   ttbar_res.Branch("METsig",&minTree_METsig,"METsig/f");
-   ttbar_res.Branch("N",&minTree_N,"N/f");
-   ttbar_res.Branch("SF",&minTree_SF,"SF/f");
-   ttbar_res.Branch("runNo",&minTree_runNo,"runNo/i");
-   ttbar_res.Branch("lumNo",&minTree_lumNo,"lumNo/i");
-   ttbar_res.Branch("evtNo",&minTree_evtNo,"evtNo/l");
-   ttbar_res.Branch("genDecayMode",&minTree_genDecayMode,"genDecayMode/i");
-   ttbar_res.Branch("genMET",&minTree_genMet,"genMET/f");
-   ttbar_res.Branch("PuppiMET",&minTree_PuppiMet,"PuppiMET/f");
-   ttbar_res.Branch("XYcorrMET",&minTree_XYcorrMet,"XYcorrMET/f");
-   ttbar_res.Branch("HT",&minTree_HT,"HT/f");
-   ttbar_res.Branch("MHT",&minTree_MHT,"MHT/f");
-   ttbar_res.Branch("MT",&minTree_MT,"MT/f");
-   ttbar_res.Branch("genMT",&minTree_genMT,"genMT/f");
-   ttbar_res.Branch("MT_nextLep",&minTree_MT_nextLep,"MT_nextLep/f");
-   ttbar_res.Branch("genMT_nextLep",&minTree_genMT_nextLep,"genMT_nextLep/f");
-   ttbar_res.Branch("n_Interactions",&minTree_n_Interactions,"n_Interactions/f");
-   ttbar_res.Branch("n_Interactions_gen",&minTree_n_Interactions_gen,"n_Interactions_gen/i");
-   ttbar_res.Branch("dPhiPtnunuMet",&minTree_PhiPtnunuMet,"dPhiPtnunuMet/f");
-   ttbar_res.Branch("leadTop_pT",&minTree_leadTop,"leadTop_pT/f");
-   ttbar_res.Branch("dPhiNuNu",&minTree_dPhiNuNu,"dPhiNuNu/f");
-   ttbar_res.Branch("Phi_recPuppi",&minTree_PhiRecPuppi,"Phi_recPuppi/f");
-   ttbar_res.Branch("Phi_recXYcorr",&minTree_PhiRecXYcorr,"Phi_recXYcorr/f");
-   ttbar_res.Branch("looseLeptonVeto",&minTree_looseLeptonVeto,"looseLeptonVeto/i");
-   ttbar_res.Branch("nJets",&minTree_nJets,"nJets/f");
-   ttbar_res.Branch("dPhiMETnearJet_Puppi",&minTree_PhiMetNearJet_Puppi,"dPhiMETnearJet_Puppi/f");
-   ttbar_res.Branch("dPhiMETfarJet_Puppi",&minTree_PhiMetFarJet_Puppi,"dPhiMETfarJet_Puppi/f");
-   ttbar_res.Branch("dPhiMETleadJet_Puppi",&minTree_PhiMetLeadJet_Puppi,"dPhiMETleadJet_Puppi/f");
-   ttbar_res.Branch("dPhiMETlead2Jet_Puppi",&minTree_PhiMetLead2Jet_Puppi,"dPhiMETlead2Jet_Puppi/f");
-   ttbar_res.Branch("dPhiMETbJet_Puppi",&minTree_PhiMetbJet_Puppi,"dPhiMETbJet_Puppi/f");
-   ttbar_res.Branch("dPhiLep1bJet",&minTree_dPhiLep1bJet,"dPhiLep1bJet/f");
-   ttbar_res.Branch("dPhiLep1Jet1",&minTree_dPhiLep1Jet1,"dPhiLep1Jet1/f");
-   ttbar_res.Branch("ratioMET_sqrtMETunc_Puppi",&minTree_ratioMET_sqrtMETunc_Puppi,"ratioMET_sqrtMETunc_Puppi/f");
-   ttbar_res.Branch("ratio_pTj1_vecsum_pT_l1_l2_bjet",&minTree_ratio_pTj1_vecsum_pT_l1_l2_bjet,"ratio_pTj1_vecsum_pT_l1_l2_bjet/f");
-   ttbar_res.Branch("METunc_Puppi",&minTree_METunc_Puppi,"METunc_Puppi/f");
-   ttbar_res.Branch("METunc_PF",&minTree_METunc_PF,"METunc_PF/f");
-   ttbar_res.Branch("absmetres_PUPPI",&minTree_absmetres_PUPPI,"absmetres_PUPPI/f");
-   ttbar_res.Branch("Lep1_pt",&minTree_Lep1_pt,"Lep1_pt/f");
-   ttbar_res.Branch("Lep1_phi",&minTree_Lep1_phi,"Lep1_phi/f");
-   ttbar_res.Branch("Lep1_eta",&minTree_Lep1_eta,"Lep1_eta/f");
-   ttbar_res.Branch("Lep1_E",&minTree_Lep1_E,"Lep1_E/f");
-   ttbar_res.Branch("Lep1_flavor",&minTree_Lep1_flavor,"Lep1_flavor/f");
-   ttbar_res.Branch("Lep2_pt",&minTree_Lep2_pt,"Lep2_pt/f");
-   ttbar_res.Branch("Lep2_phi",&minTree_Lep2_phi,"Lep2_phi/f");
-   ttbar_res.Branch("Lep2_eta",&minTree_Lep2_eta,"Lep2_eta/f");
-   ttbar_res.Branch("Lep2_E",&minTree_Lep2_E,"Lep2_E/f");
-   ttbar_res.Branch("Lep2_flavor",&minTree_Lep2_flavor,"Lep2_flavor/f");
-   ttbar_res.Branch("Jet1_pt",&minTree_Jet1_pt,"Jet1_pt/f");
-   ttbar_res.Branch("Jet1_phi",&minTree_Jet1_phi,"Jet1_phi/f");
-   ttbar_res.Branch("Jet1_eta",&minTree_Jet1_eta,"Jet1_eta/f");
-   ttbar_res.Branch("Jet1_E",&minTree_Jet1_E,"Jet1_E/f");
-   ttbar_res.Branch("Jet1_bTagScore",&minTree_Jet1_bTagScore,"Jet1_bTagScore/f");
-   ttbar_res.Branch("Jet1_unc",&minTree_Jet1_unc,"Jet1_unc/f");
-   ttbar_res.Branch("Jet2_pt",&minTree_Jet2_pt,"Jet2_pt/f");
-   ttbar_res.Branch("Jet2_phi",&minTree_Jet2_phi,"Jet2_phi/f");
-   ttbar_res.Branch("Jet2_eta",&minTree_Jet2_eta,"Jet2_eta/f");
-   ttbar_res.Branch("Jet2_E",&minTree_Jet2_E,"Jet2_E/f");
-   ttbar_res.Branch("Jet2_bTagScore",&minTree_Jet2_bTagScore,"Jet2_bTagScore/f");
-   ttbar_res.Branch("Jet2_unc",&minTree_Jet2_unc,"Jet2_unc/f");
-   ttbar_res.Branch("PFMET_phi",&minTree_PFMET_phi,"PFMET_phi/f");
-   ttbar_res.Branch("PuppiMET_phi",&minTree_PuppiMET_phi,"PuppiMET_phi/f");
-   ttbar_res.Branch("CaloMET",&minTree_CaloMET,"CaloMET/f");
-   ttbar_res.Branch("CaloMET_phi",&minTree_CaloMET_phi,"CaloMET_phi/f");
-   ttbar_res.Branch("NpromptNeutrinos",&minTree_NpromptNeutrinos,"NpromptNeutrinos/i");
-   ttbar_res.Branch("NnonpromptNeutrinos",&minTree_NnonpromptNeutrinos,"NnonpromptNeutrinos/i");
-   ttbar_res.Branch("DNN_regression",&minTree_DNN_regression,"DNN_regression/f");
-   // ~ttbar_res.Branch("bJet_muonFraction",&minTree_v_bJet_muonFraction);
-   // ~ttbar_res.Branch("bJet_electronFraction",&minTree_v_bJet_electronFraction);
-   // ~ttbar_res.Branch("Jet_muonFraction",&minTree_v_Jet_muonFraction);
-   // ~ttbar_res.Branch("Jet_electronFraction",&minTree_v_Jet_electronFraction);
-   // ~ttbar_res.Branch("bJet_muonEnergy",&minTree_v_bJet_muonEnergy);
-   // ~ttbar_res.Branch("bJet_electronEnergy",&minTree_v_bJet_electronEnergy);
-   // ~ttbar_res.Branch("Jet_muonEnergy",&minTree_v_Jet_muonEnergy);
-   // ~ttbar_res.Branch("Jet_electronEnergy",&minTree_v_Jet_electronEnergy);
-   
-   //Initialize DNN regression
-   TMVA::PyMethodBase::PyInitialize();
-   TMVA::Reader* reader_TMVA_Bin1=new TMVA::Reader("Silent");
-   TMVA::Reader* reader_TMVA_Bin2=new TMVA::Reader("Silent");
-   TMVA::Reader* reader_TMVA_Bin3=new TMVA::Reader("Silent");
-   TMVA::Reader* reader_TMVA_Bin4=new TMVA::Reader("Silent");
-   TMVA::Reader* reader_TMVA_Bin5=new TMVA::Reader("Silent");
-   TMVA::Reader* reader_TMVA_Bin6=new TMVA::Reader("Silent");
-   bool applyDNN=cfg.applyDNN;
-   if(applyDNN){
-      for(TMVA::Reader* tempreader:{reader_TMVA_Bin1, reader_TMVA_Bin2, reader_TMVA_Bin3, reader_TMVA_Bin4, reader_TMVA_Bin5, reader_TMVA_Bin6}){
-         tempreader->AddVariable("PuppiMET", &minTree_PuppiMet);
-         tempreader->AddVariable("METunc_Puppi", &minTree_METunc_Puppi);
-         tempreader->AddVariable("MET", &minTree_MET);
-         tempreader->AddVariable("HT", &minTree_HT);
-         tempreader->AddVariable("nJets", &minTree_nJets);
-         tempreader->AddVariable("n_Interactions", &minTree_n_Interactions);
-         tempreader->AddVariable("Lep1_flavor", &minTree_Lep1_flavor);
-         tempreader->AddVariable("Lep2_flavor", &minTree_Lep2_flavor);
-         tempreader->AddVariable("Lep1_pt", &minTree_Lep1_pt);
-         tempreader->AddVariable("Lep1_phi", &minTree_Lep1_phi);
-         tempreader->AddVariable("Lep1_eta", &minTree_Lep1_eta);
-         tempreader->AddVariable("Lep1_E", &minTree_Lep1_E);
-         tempreader->AddVariable("Lep2_pt", &minTree_Lep2_pt);
-         tempreader->AddVariable("Lep2_phi", &minTree_Lep2_phi);
-         tempreader->AddVariable("Lep2_eta", &minTree_Lep2_eta);
-         tempreader->AddVariable("Lep2_E", &minTree_Lep2_E);
-         tempreader->AddVariable("Jet1_pt", &minTree_Jet1_pt);
-         tempreader->AddVariable("Jet1_phi", &minTree_Jet1_phi);
-         tempreader->AddVariable("Jet1_eta", &minTree_Jet1_eta);
-         tempreader->AddVariable("Jet1_E", &minTree_Jet1_E);
-         tempreader->AddVariable("Jet2_pt", &minTree_Jet2_pt);
-         tempreader->AddVariable("Jet2_phi", &minTree_Jet2_phi);
-         tempreader->AddVariable("Jet2_eta", &minTree_Jet2_eta);
-         tempreader->AddVariable("Jet2_E", &minTree_Jet2_E);
-         tempreader->AddSpectator("PuppiMET", &minTree_PuppiMet);   //Placeholder
-         tempreader->AddSpectator("genMET", &minTree_genMT);    //Placeholder
-      }
-      reader_TMVA_Bin1->BookMVA("PyKerasBin1", "dataset/weights/TMVARegression_PyKerasBin1.weights.xml");
-      reader_TMVA_Bin2->BookMVA("PyKerasBin2", "dataset/weights/TMVARegression_PyKerasBin2.weights.xml");
-      reader_TMVA_Bin3->BookMVA("PyKerasBin3", "dataset/weights/TMVARegression_PyKerasBin3.weights.xml");
-      reader_TMVA_Bin4->BookMVA("PyKerasBin4", "dataset/weights/TMVARegression_PyKerasBin4.weights.xml");
-      reader_TMVA_Bin5->BookMVA("PyKerasBin5", "dataset/weights/TMVARegression_PyKerasBin5.weights.xml");
-      reader_TMVA_Bin6->BookMVA("PyKerasBin6", "dataset/weights/TMVARegression_PyKerasBin6.weights.xml");
-   }
 
-   
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
    std::map<TString,float> Ngen;
@@ -311,7 +154,7 @@ void run()
 
       bool const isData=dss.isData;
       bool const isSignal=dss.isSignal;
-      
+            
       hs.setCurrentSample(dss.name);
       hs_cutflow.setCurrentSample(dss.name);
       hs2d.setCurrentSample(dss.name);
@@ -368,7 +211,167 @@ void run()
       
       //Set boolean for savin minimalTree
       bool minimalTree=ttBar_dilepton || ttBar_dilepton_tau || ttBar_singleLepton || ttBar_hadronic || SUSY_T2tt_650_350 || DM_scalar_1_200;
-
+      
+      //Ntuple and file to save minimal ttbar tree used for binning studies
+      float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
+      minTree_PhiMetbJet, minTree_dPhiLep1Lep2, minTree_dPhiJet1Jet2, minTree_METsig, minTree_N, minTree_SF, minTree_genMet, minTree_PuppiMet, minTree_XYcorrMet, 
+      minTree_HT, minTree_MHT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
+      minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi, minTree_PhiRecXYcorr, minTree_PhiMetNearJet_Puppi, minTree_PhiMetFarJet_Puppi,
+      minTree_PhiMetLeadJet_Puppi, minTree_PhiMetLead2Jet_Puppi, minTree_PhiMetbJet_Puppi, minTree_dPhiLep1bJet, minTree_dPhiLep1Jet1, minTree_ratioMET_sqrtMETunc_Puppi,
+      minTree_ratio_pTj1_vecsum_pT_l1_l2_bjet, minTree_METunc_Puppi, minTree_METunc_PF, minTree_absmetres_PUPPI,
+      minTree_Lep1_pt, minTree_Lep1_phi, minTree_Lep1_eta, minTree_Lep1_E, minTree_Lep1_flavor,
+      minTree_Lep2_pt, minTree_Lep2_phi, minTree_Lep2_eta, minTree_Lep2_E, minTree_Lep2_flavor,
+      minTree_Jet1_pt, minTree_Jet1_phi, minTree_Jet1_eta, minTree_Jet1_E, minTree_Jet1_bTagScore, minTree_Jet1_unc,
+      minTree_Jet2_pt, minTree_Jet2_phi, minTree_Jet2_eta, minTree_Jet2_E, minTree_Jet2_bTagScore, minTree_Jet2_unc,
+      minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_nJets, minTree_n_Interactions, minTree_DNN_regression;
+      UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions_gen, minTree_looseLeptonVeto, minTree_NpromptNeutrinos, minTree_NnonpromptNeutrinos;
+      ULong64_t minTree_evtNo;
+      // ~std::vector<float> minTree_v_bJet_muonFraction;
+      // ~std::vector<float> minTree_v_bJet_electronFraction;
+      // ~std::vector<float> minTree_v_Jet_muonFraction;
+      // ~std::vector<float> minTree_v_Jet_electronFraction;
+      // ~std::vector<float> minTree_v_bJet_muonEnergy;
+      // ~std::vector<float> minTree_v_bJet_electronEnergy;
+      // ~std::vector<float> minTree_v_Jet_muonEnergy;
+      // ~std::vector<float> minTree_v_Jet_electronEnergy;
+      io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/%s_%.1f.root",cfg.year.Data(),cfg.treeVersion.Data(),TString(dss.datasetName).Data(),cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
+      TTree ttbar_res("ttbar_res","ttbar_res");
+      if(minimalTree){
+         ttbar_res.Branch("MET",&minTree_MET,"MET/f");
+         ttbar_res.Branch("PtNuNu",&minTree_PtNuNu,"PtNuNu/f");
+         ttbar_res.Branch("Phi_rec",&minTree_PhiRec,"Phi_rec/f");
+         ttbar_res.Branch("Phi_gen",&minTree_PhiGen,"Phi_gen/f");
+         ttbar_res.Branch("Phi_NuNu",&minTree_PhiNuNu,"Phi_NuNu/f");
+         ttbar_res.Branch("dPhiMETnearJet",&minTree_PhiMetNearJet,"dPhiMETnearJet/f");
+         ttbar_res.Branch("dPhiMETfarJet",&minTree_PhiMetFarJet,"dPhiMETfarJet/f");
+         ttbar_res.Branch("dPhiMETleadJet",&minTree_PhiMetLeadJet,"dPhiMETleadJet/f");
+         ttbar_res.Branch("dPhiMETlead2Jet",&minTree_PhiMetLead2Jet,"dPhiMETlead2Jet/f");
+         ttbar_res.Branch("dPhiMETbJet",&minTree_PhiMetbJet,"dPhiMETbJet/f");
+         ttbar_res.Branch("dPhiLep1Lep2",&minTree_dPhiLep1Lep2,"dPhiLep1Lep2/f");
+         ttbar_res.Branch("dPhiJet1Jet2",&minTree_dPhiJet1Jet2,"dPhiJet1Jet2/f");
+         ttbar_res.Branch("METsig",&minTree_METsig,"METsig/f");
+         ttbar_res.Branch("N",&minTree_N,"N/f");
+         ttbar_res.Branch("SF",&minTree_SF,"SF/f");
+         ttbar_res.Branch("runNo",&minTree_runNo,"runNo/i");
+         ttbar_res.Branch("lumNo",&minTree_lumNo,"lumNo/i");
+         ttbar_res.Branch("evtNo",&minTree_evtNo,"evtNo/l");
+         ttbar_res.Branch("genDecayMode",&minTree_genDecayMode,"genDecayMode/i");
+         ttbar_res.Branch("genMET",&minTree_genMet,"genMET/f");
+         ttbar_res.Branch("PuppiMET",&minTree_PuppiMet,"PuppiMET/f");
+         ttbar_res.Branch("XYcorrMET",&minTree_XYcorrMet,"XYcorrMET/f");
+         ttbar_res.Branch("HT",&minTree_HT,"HT/f");
+         ttbar_res.Branch("MHT",&minTree_MHT,"MHT/f");
+         ttbar_res.Branch("MT",&minTree_MT,"MT/f");
+         ttbar_res.Branch("genMT",&minTree_genMT,"genMT/f");
+         ttbar_res.Branch("MT_nextLep",&minTree_MT_nextLep,"MT_nextLep/f");
+         ttbar_res.Branch("genMT_nextLep",&minTree_genMT_nextLep,"genMT_nextLep/f");
+         ttbar_res.Branch("n_Interactions",&minTree_n_Interactions,"n_Interactions/f");
+         ttbar_res.Branch("n_Interactions_gen",&minTree_n_Interactions_gen,"n_Interactions_gen/i");
+         ttbar_res.Branch("dPhiPtnunuMet",&minTree_PhiPtnunuMet,"dPhiPtnunuMet/f");
+         ttbar_res.Branch("leadTop_pT",&minTree_leadTop,"leadTop_pT/f");
+         ttbar_res.Branch("dPhiNuNu",&minTree_dPhiNuNu,"dPhiNuNu/f");
+         ttbar_res.Branch("Phi_recPuppi",&minTree_PhiRecPuppi,"Phi_recPuppi/f");
+         ttbar_res.Branch("Phi_recXYcorr",&minTree_PhiRecXYcorr,"Phi_recXYcorr/f");
+         ttbar_res.Branch("looseLeptonVeto",&minTree_looseLeptonVeto,"looseLeptonVeto/i");
+         ttbar_res.Branch("nJets",&minTree_nJets,"nJets/f");
+         ttbar_res.Branch("dPhiMETnearJet_Puppi",&minTree_PhiMetNearJet_Puppi,"dPhiMETnearJet_Puppi/f");
+         ttbar_res.Branch("dPhiMETfarJet_Puppi",&minTree_PhiMetFarJet_Puppi,"dPhiMETfarJet_Puppi/f");
+         ttbar_res.Branch("dPhiMETleadJet_Puppi",&minTree_PhiMetLeadJet_Puppi,"dPhiMETleadJet_Puppi/f");
+         ttbar_res.Branch("dPhiMETlead2Jet_Puppi",&minTree_PhiMetLead2Jet_Puppi,"dPhiMETlead2Jet_Puppi/f");
+         ttbar_res.Branch("dPhiMETbJet_Puppi",&minTree_PhiMetbJet_Puppi,"dPhiMETbJet_Puppi/f");
+         ttbar_res.Branch("dPhiLep1bJet",&minTree_dPhiLep1bJet,"dPhiLep1bJet/f");
+         ttbar_res.Branch("dPhiLep1Jet1",&minTree_dPhiLep1Jet1,"dPhiLep1Jet1/f");
+         ttbar_res.Branch("ratioMET_sqrtMETunc_Puppi",&minTree_ratioMET_sqrtMETunc_Puppi,"ratioMET_sqrtMETunc_Puppi/f");
+         ttbar_res.Branch("ratio_pTj1_vecsum_pT_l1_l2_bjet",&minTree_ratio_pTj1_vecsum_pT_l1_l2_bjet,"ratio_pTj1_vecsum_pT_l1_l2_bjet/f");
+         ttbar_res.Branch("METunc_Puppi",&minTree_METunc_Puppi,"METunc_Puppi/f");
+         ttbar_res.Branch("METunc_PF",&minTree_METunc_PF,"METunc_PF/f");
+         ttbar_res.Branch("absmetres_PUPPI",&minTree_absmetres_PUPPI,"absmetres_PUPPI/f");
+         ttbar_res.Branch("Lep1_pt",&minTree_Lep1_pt,"Lep1_pt/f");
+         ttbar_res.Branch("Lep1_phi",&minTree_Lep1_phi,"Lep1_phi/f");
+         ttbar_res.Branch("Lep1_eta",&minTree_Lep1_eta,"Lep1_eta/f");
+         ttbar_res.Branch("Lep1_E",&minTree_Lep1_E,"Lep1_E/f");
+         ttbar_res.Branch("Lep1_flavor",&minTree_Lep1_flavor,"Lep1_flavor/f");
+         ttbar_res.Branch("Lep2_pt",&minTree_Lep2_pt,"Lep2_pt/f");
+         ttbar_res.Branch("Lep2_phi",&minTree_Lep2_phi,"Lep2_phi/f");
+         ttbar_res.Branch("Lep2_eta",&minTree_Lep2_eta,"Lep2_eta/f");
+         ttbar_res.Branch("Lep2_E",&minTree_Lep2_E,"Lep2_E/f");
+         ttbar_res.Branch("Lep2_flavor",&minTree_Lep2_flavor,"Lep2_flavor/f");
+         ttbar_res.Branch("Jet1_pt",&minTree_Jet1_pt,"Jet1_pt/f");
+         ttbar_res.Branch("Jet1_phi",&minTree_Jet1_phi,"Jet1_phi/f");
+         ttbar_res.Branch("Jet1_eta",&minTree_Jet1_eta,"Jet1_eta/f");
+         ttbar_res.Branch("Jet1_E",&minTree_Jet1_E,"Jet1_E/f");
+         ttbar_res.Branch("Jet1_bTagScore",&minTree_Jet1_bTagScore,"Jet1_bTagScore/f");
+         ttbar_res.Branch("Jet1_unc",&minTree_Jet1_unc,"Jet1_unc/f");
+         ttbar_res.Branch("Jet2_pt",&minTree_Jet2_pt,"Jet2_pt/f");
+         ttbar_res.Branch("Jet2_phi",&minTree_Jet2_phi,"Jet2_phi/f");
+         ttbar_res.Branch("Jet2_eta",&minTree_Jet2_eta,"Jet2_eta/f");
+         ttbar_res.Branch("Jet2_E",&minTree_Jet2_E,"Jet2_E/f");
+         ttbar_res.Branch("Jet2_bTagScore",&minTree_Jet2_bTagScore,"Jet2_bTagScore/f");
+         ttbar_res.Branch("Jet2_unc",&minTree_Jet2_unc,"Jet2_unc/f");
+         ttbar_res.Branch("PFMET_phi",&minTree_PFMET_phi,"PFMET_phi/f");
+         ttbar_res.Branch("PuppiMET_phi",&minTree_PuppiMET_phi,"PuppiMET_phi/f");
+         ttbar_res.Branch("CaloMET",&minTree_CaloMET,"CaloMET/f");
+         ttbar_res.Branch("CaloMET_phi",&minTree_CaloMET_phi,"CaloMET_phi/f");
+         ttbar_res.Branch("NpromptNeutrinos",&minTree_NpromptNeutrinos,"NpromptNeutrinos/i");
+         ttbar_res.Branch("NnonpromptNeutrinos",&minTree_NnonpromptNeutrinos,"NnonpromptNeutrinos/i");
+         ttbar_res.Branch("DNN_regression",&minTree_DNN_regression,"DNN_regression/f");
+         // ~ttbar_res.Branch("bJet_muonFraction",&minTree_v_bJet_muonFraction);
+         // ~ttbar_res.Branch("bJet_electronFraction",&minTree_v_bJet_electronFraction);
+         // ~ttbar_res.Branch("Jet_muonFraction",&minTree_v_Jet_muonFraction);
+         // ~ttbar_res.Branch("Jet_electronFraction",&minTree_v_Jet_electronFraction);
+         // ~ttbar_res.Branch("bJet_muonEnergy",&minTree_v_bJet_muonEnergy);
+         // ~ttbar_res.Branch("bJet_electronEnergy",&minTree_v_bJet_electronEnergy);
+         // ~ttbar_res.Branch("Jet_muonEnergy",&minTree_v_Jet_muonEnergy);
+         // ~ttbar_res.Branch("Jet_electronEnergy",&minTree_v_Jet_electronEnergy);
+      }
+      
+      //Initialize DNN regression
+      TMVA::PyMethodBase::PyInitialize();
+      TMVA::Reader* reader_TMVA_Bin1=new TMVA::Reader("Silent");
+      TMVA::Reader* reader_TMVA_Bin2=new TMVA::Reader("Silent");
+      TMVA::Reader* reader_TMVA_Bin3=new TMVA::Reader("Silent");
+      TMVA::Reader* reader_TMVA_Bin4=new TMVA::Reader("Silent");
+      TMVA::Reader* reader_TMVA_Bin5=new TMVA::Reader("Silent");
+      TMVA::Reader* reader_TMVA_Bin6=new TMVA::Reader("Silent");
+      bool applyDNN=cfg.applyDNN;
+      if(applyDNN){
+         for(TMVA::Reader* tempreader:{reader_TMVA_Bin1, reader_TMVA_Bin2, reader_TMVA_Bin3, reader_TMVA_Bin4, reader_TMVA_Bin5, reader_TMVA_Bin6}){
+            tempreader->AddVariable("PuppiMET", &minTree_PuppiMet);
+            tempreader->AddVariable("METunc_Puppi", &minTree_METunc_Puppi);
+            tempreader->AddVariable("MET", &minTree_MET);
+            tempreader->AddVariable("HT", &minTree_HT);
+            tempreader->AddVariable("nJets", &minTree_nJets);
+            tempreader->AddVariable("n_Interactions", &minTree_n_Interactions);
+            tempreader->AddVariable("Lep1_flavor", &minTree_Lep1_flavor);
+            tempreader->AddVariable("Lep2_flavor", &minTree_Lep2_flavor);
+            tempreader->AddVariable("Lep1_pt", &minTree_Lep1_pt);
+            tempreader->AddVariable("Lep1_phi", &minTree_Lep1_phi);
+            tempreader->AddVariable("Lep1_eta", &minTree_Lep1_eta);
+            tempreader->AddVariable("Lep1_E", &minTree_Lep1_E);
+            tempreader->AddVariable("Lep2_pt", &minTree_Lep2_pt);
+            tempreader->AddVariable("Lep2_phi", &minTree_Lep2_phi);
+            tempreader->AddVariable("Lep2_eta", &minTree_Lep2_eta);
+            tempreader->AddVariable("Lep2_E", &minTree_Lep2_E);
+            tempreader->AddVariable("Jet1_pt", &minTree_Jet1_pt);
+            tempreader->AddVariable("Jet1_phi", &minTree_Jet1_phi);
+            tempreader->AddVariable("Jet1_eta", &minTree_Jet1_eta);
+            tempreader->AddVariable("Jet1_E", &minTree_Jet1_E);
+            tempreader->AddVariable("Jet2_pt", &minTree_Jet2_pt);
+            tempreader->AddVariable("Jet2_phi", &minTree_Jet2_phi);
+            tempreader->AddVariable("Jet2_eta", &minTree_Jet2_eta);
+            tempreader->AddVariable("Jet2_E", &minTree_Jet2_E);
+            tempreader->AddSpectator("PuppiMET", &minTree_PuppiMet);   //Placeholder
+            tempreader->AddSpectator("genMET", &minTree_genMT);    //Placeholder
+         }
+         reader_TMVA_Bin1->BookMVA("PyKerasBin1", "dataset/weights/TMVARegression_PyKerasBin1.weights.xml");
+         reader_TMVA_Bin2->BookMVA("PyKerasBin2", "dataset/weights/TMVARegression_PyKerasBin2.weights.xml");
+         reader_TMVA_Bin3->BookMVA("PyKerasBin3", "dataset/weights/TMVARegression_PyKerasBin3.weights.xml");
+         reader_TMVA_Bin4->BookMVA("PyKerasBin4", "dataset/weights/TMVARegression_PyKerasBin4.weights.xml");
+         reader_TMVA_Bin5->BookMVA("PyKerasBin5", "dataset/weights/TMVARegression_PyKerasBin5.weights.xml");
+         reader_TMVA_Bin6->BookMVA("PyKerasBin6", "dataset/weights/TMVARegression_PyKerasBin6.weights.xml");
+      }
+      
+      //Set Tree Input variables
       TTreeReader reader(cfg.treeName, &file);
       TTreeReaderValue<float> w_pu(reader, "pu_weight");
       TTreeReaderValue<UInt_t> runNo(reader, "runNo");
@@ -1045,6 +1048,9 @@ void run()
          ttbar_res.Reset();
       }
       
+      //For multi save dss name
+      dssName_multi=TString(dss.datasetName);
+      
    } // dataset loop
    
    
@@ -1053,12 +1059,12 @@ void run()
    hs_cutflow.combineFromSubsamples(samplesToCombine);
    hs2d.combineFromSubsamples(samplesToCombine);
    
-   // Save 1d histograms
-   io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),false);
+   // Save histograms
+   TString loc=TString::Format("histograms_%s.root",cfg.treeVersion.Data());
+   if(cfg.multi) loc=TString::Format("multiHists/histograms_%s_%s.root",dssName_multi.Data(),cfg.treeVersion.Data());
+   io::RootFileSaver saver_hist(loc,TString::Format("distributions%.1f",cfg.processFraction*100),false);
    hs.saveHistograms(saver_hist,samplesToCombine);
    hs_cutflow.saveHistograms(saver_hist,samplesToCombine);
-   
-   //Save 2d histograms
    hs2d.saveHistograms(saver_hist,samplesToCombine);
    
 }

@@ -36,6 +36,7 @@ public:
    std::string datasetMC_single;
    std::string datasetDATA_single;
    std::string datasetSIGNAL_single;
+   bool multi=false;
 
    std::vector<std::string> modules;
 
