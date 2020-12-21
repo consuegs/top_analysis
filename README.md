@@ -16,7 +16,6 @@ On lx-cluster:
 
 ## Run ##
 Execute `run.x` (created in the build directory).
-Without any arguments, a test module is run.
 Meaningful modules can be chosen as arguments:
 
     $ run.x --help
@@ -24,8 +23,13 @@ Meaningful modules can be chosen as arguments:
     Allowed options:
       -h [ --help ]              produce help message
       -f [ --fraction ] arg (=1) Fraction of events to process
+      --mc_dataset arg           Single MC dataset to be processed, if empty 
+                                 datasets are taken from config.ini
+      --data_dataset arg         Single data dataset to be processed, if empty 
+                                 datasets are taken from config.ini
+      --signal_dataset arg       Single signal dataset to be processed, if empty 
+                                 datasets are taken from config.ini
       --release                  Release mode (don't draw version labels)
-
 
 ## Output ##
 Plots are stored as canvases in a root file.
@@ -37,7 +41,7 @@ Add `<module>` to the list in `src/modules/CMakeLists.txt`
 
 ## Running on condor ##
 The distributions module can be executed in multiple condor jobs.
-One job corresponds to one sample (defined in config.ini).
+One job corresponds to one sample (defined in `config.ini`).
 The scripts for submitting the jobs can be found in `multiprocess/`.
 Attention: The output hists are saved in an additional folder `output/multiHists/`
 and have to be combined before plotting.  
