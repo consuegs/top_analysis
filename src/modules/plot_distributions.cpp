@@ -44,11 +44,11 @@ TH1F HistTrafo_2D(TH2F* const &hist2D, std::vector<float> binedges_x, std::vecto
 	return *tempHist;
 }
 
-void add_Categories(TString const path, io::RootFileReader const &reader_hist, TH2F &out_hist) {   //Function to add the three different categories
-   TH2F *hist;
+void add_Categories(TString const path, io::RootFileReader const &reader_hist, TH1F &out_hist) {   //Function to add the three different categories
+   TH1F *hist;
    for (TString cat:{"ee","emu","mumu"}){
-      hist = (TH2F*) reader_hist.read<TH2F>("baseline/"+cat+"/"+path);
-      if (cat=="ee") out_hist=(TH2F) *(reader_hist.read<TH2F>("baseline/"+cat+"/"+path));
+      hist = (TH1F*) reader_hist.read<TH1F>("baseline/"+cat+"/"+path);
+      if (cat=="ee") out_hist=(TH1F) *(reader_hist.read<TH1F>("baseline/"+cat+"/"+path));
       else out_hist.Add(hist);
    }
 }
@@ -57,21 +57,21 @@ extern "C"
 void run()
 {
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot_distributions");
-   io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
-   // ~io::RootFileReader histReader(TString::Format("../output_v19/histograms_v19.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format("multiHists/histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
 
    
    // ~std::vector<TString> samplesToPlot={"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW",
    std::vector<TString> samplesToPlot={"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW",
-      "T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron","TTbar_diLepton_CUETP8M2"};
+      "T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
    
    std::map<TString,std::vector<TString>> msPresel_vVars={
       {"baseline/ee/",{"met","met_puppi","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTJet1","pTJet2","pTbJet","dphi_metJet","dphi_metLeadJet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
       {"baseline/emu/",{"met","met_puppi","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTJet1","pTJet2","pTbJet","dphi_metJet","dphi_metLeadJet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
       {"baseline/mumu/",{"met","met_puppi","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTJet1","pTJet2","pTbJet","dphi_metJet","dphi_metLeadJet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      // ~{"baseline_Met200/ee/",{"met","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTJet1","pTJet2","pTbJet","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      // ~{"baseline_Met200/emu/",{"met","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTJet1","pTJet2","pTbJet","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
-      // ~{"baseline_Met200/mumu/",{"met","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTJet1","pTJet2","pTbJet","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline_Met200/ee/",{"met","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTJet1","pTJet2","pTbJet","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline_Met200/emu/",{"met","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTJet1","pTJet2","pTbJet","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
+      {"baseline_Met200/mumu/",{"met","met1000","mll","pTlep1","pTlep2","pTsumlep","sumpTlep","pTJet1","pTJet2","pTbJet","dphi_metJet","dphi_metBJet","dphi_bJetLep1","dR_bJetLep1","dphi_bJetLep2","dphi_bJetnearLep","dphi_b1b2","dR_b1b2","dphi_metLep1","dphi_metLep2","dphi_Lep1Lep2","nBjets","nJets","mt2","dR_Lep1Lep2","ST","HT","sum_STHT","mt_MetLep1","mt_MetLep2","mt_MetNextLep","sum_mlb","conMt_Lep1Lep2","dphi_metNearLep","COSdphi_metNearLep","SINdphi_metNearLep","dphi_metLepsum"}},
       // ~{"genParticles/ee/",{"dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
       // ~{"genParticles/emu/",{"dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
       // ~{"genParticles/mumu/",{"dphi_NeutrinoLep","dR_NeutrinoLep","pTtop1","pTtop2"}},
@@ -90,9 +90,15 @@ void run()
             TString loc;
             loc=sPresel+sVar;
             TH1F* tempHist=histReader.read<TH1F>(loc+"/"+sSample);
-            // ~if (sVar!="nBjets" and sVar!="nJets") tempHist->Rebin(5);
-            // ~if (sVar=="dphi_metNearLep") tempHist->Rebin(4);
+            if (sVar!="nBjets" and sVar!="nJets" and sPresel!="cutflow/") tempHist->Rebin(5);
+            if (sVar=="dphi_metNearLep") tempHist->Rebin(4);
             hs.addFilledHist(loc,sSample,*(tempHist));
+         }
+         if(sPresel.Contains("cutflow")){
+            TH1F* tempHist=histReader.read<TH1F>(sPresel+"ee/"+sSample);
+            tempHist->Add(histReader.read<TH1F>(sPresel+"emu/"+sSample));
+            tempHist->Add(histReader.read<TH1F>(sPresel+"mumu/"+sSample));
+            hs.addFilledHist(sPresel+"all",sSample,*(tempHist));
          }
       }
    }
@@ -125,7 +131,7 @@ void run()
    hs.combineSamples("tt other",{"TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"});
    hs.combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
    hs.combineSamples("MC",{"TTbar_diLepton","tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_NLO","ttZ","ttW"});
-   hs.combineSamples("MC_withCUETP8M2",{"TTbar_diLepton_CUETP8M2","TTbar_hadronic","TTbar_singleLepton","Diboson","SingleTop","WJetsToLNu","DrellYan_NLO","ttZ","ttW"});
+   // ~hs.combineSamples("MC_withCUETP8M2",{"TTbar_diLepton_CUETP8M2","TTbar_hadronic","TTbar_singleLepton","Diboson","SingleTop","WJetsToLNu","DrellYan_NLO","ttZ","ttW"});
    hs.combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_NLO","ttZ","ttW"});
    std::map<const TString,Color_t> colormap = {{"Diboson",kCyan-8},{"ttW/Z",kGreen-7},{"tt other",kRed-9}};
    
@@ -134,8 +140,9 @@ void run()
    can.SetLogy();
    gfx::SplitCan sp_can;
    sp_can.pU_.SetLogy();
-   for (auto const &sPresel_vVars:msPresel_vVars){
+   for (auto &sPresel_vVars:msPresel_vVars){
    TString const &sPresel=sPresel_vVars.first;
+      if(sPresel.Contains("cutflow")) sPresel_vVars.second.push_back("all");
       for (TString sVar:sPresel_vVars.second){
          sp_can.pU_.cd();
          TString loc;
@@ -143,9 +150,10 @@ void run()
          THStack st_mc=hs.getStack(loc,{"ttW/Z","WJetsToLNu","Diboson","DrellYan_NLO","SingleTop","tt other","TTbar_diLepton"},colormap);
          gfx::LegendEntries le=hs.getLegendEntries();
          TString cat;
-         if (sPresel.Contains("ee/")) cat="ee";
-         else if (sPresel.Contains("emu/")) cat="e#mu";
-         else if (sPresel.Contains("mumu/")) cat="#mu#mu";
+         if (loc.Contains("ee")) cat="ee";
+         else if (loc.Contains("emu")) cat="e#mu";
+         else if (loc.Contains("mumu")) cat="#mu#mu";
+         else if (loc.Contains("all")) cat="all";
          if (sPresel.Contains("Met200")) cat+="  p_{T}^{miss}>200 GeV";
          TLatex label=gfx::cornerLabel(cat,1);
          if (sVar.Contains("phi")){
@@ -160,7 +168,7 @@ void run()
          auto hists=hs.getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
          for (auto const &h: hists) {
             h->Draw("same hist");
-            h->SetLineWidth(4);
+            // ~h->SetLineWidth(4);
          }
          le+=hs.getLegendEntries();
          auto BSM_legend=hs.getLegendEntries();
@@ -185,16 +193,16 @@ void run()
             ratio_mc.GetXaxis()->SetBinLabel(8,"triggerSF");
             ratio_mc.GetXaxis()->SetBinLabel(9,"(addLepton veto)");
          }
-         ratio_mc.GetYaxis()->SetTitleOffset(0.3);
+         ratio_mc.GetYaxis()->SetTitleOffset(0.45);
          ratio_mc.SetStats(0);
          ratio.SetLineColor(kBlack);
          ratio_mc.SetMaximum(1.04);
-         ratio_mc.SetMinimum(0.85);
+         ratio_mc.SetMinimum(0.9);
          ratio_mc.SetFillColor(kGray);
          ratio_mc.SetMarkerSize(0);
          ratio_mc.Draw("e2");
-         ratio.SetMarkerSize(4);
-         if(sPresel.Contains("cutflow"))ratio.Draw("pe1 same text");
+         // ~ratio.SetMarkerSize(4);
+         if(sPresel.Contains("cutflow"))ratio.Draw("pe1 same");
          
          saver.save(sp_can,loc);
          // ~saver.save(can,loc);
@@ -205,11 +213,11 @@ void run()
          auto ttbar_hist=hs.getHistogram(loc,"TTbar_diLepton");
          ttbar_hist->Scale(1.0/(ttbar_hist->Integral()));
          ttbar_hist->SetFillColor(ttbar_hist->GetLineColor());
-         ttbar_hist->SetFillStyle(1001);
+         // ~ttbar_hist->SetFillStyle(1001);
          auto SMbkg_hist=hs.getHistogram(loc,"SM bkg.");
          SMbkg_hist->Scale(1.0/(SMbkg_hist->Integral()));
          SMbkg_hist->SetFillColor(kGray);
-         SMbkg_hist->SetFillStyle(1001);
+         // ~SMbkg_hist->SetFillStyle(1001);
          THStack st_norm;
          st_norm.Add(SMbkg_hist);
          st_norm.Add(ttbar_hist);
@@ -218,15 +226,20 @@ void run()
          axis.SetMinimum(1e-3);
          axis.GetYaxis()->SetTitle("normalized distribution");
          axis.Draw("axis");
-         st_norm.Draw("hist same");
+         // ~st_norm.Draw("hist same");
+         ttbar_hist->SetMarkerSize(0);
+         SMbkg_hist->SetMarkerSize(0);
+         ttbar_hist->Draw("hist e same");
+         SMbkg_hist->Draw("hist e same");
          for (auto const &h: hists) {
             h->Scale(1.0/(h->Integral()));
-            h->Draw("same hist");
+            h->SetMarkerSize(0);
+            h->Draw("same hist e");
          }
          axis.Draw("axis same");
          le.clear();
-         le.prepend(*ttbar_hist,"tt ll","f");
-         le.append(*SMbkg_hist,"SM bkg.","f");
+         le.prepend(*ttbar_hist,"tt ll","l");
+         le.append(*SMbkg_hist,"SM bkg.","l");
          le+=BSM_legend;
          TLegend leg2=le.buildLegend(.42,.7,1-(gPad->GetRightMargin()+0.02),-1,2);
          leg2.Draw();
@@ -239,10 +252,10 @@ void run()
    for (TString cat:{"ee","emu","mumu"}){    //Get the number of events per category
       TH1F* mc_total=hs.getHistogram("baseline/"+cat+"/met","MC");
       std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
-      for (TString sample:{"TTbar_diLepton","tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_NLO","ttZ","ttW","data","MC","MC_withCUETP8M2"}){
+      for (TString sample:{"TTbar_diLepton","tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_NLO","ttW/Z","MC","data"}){
          TH1F* temp_hist=hs.getHistogram("baseline/"+cat+"/met",sample);
-         // ~std::cout<<std::fixed<<sample<<"&"<<temp_hist->Integral()<<"&"<<std::setprecision(1)<<temp_hist->Integral()/mc_total->Integral()*100<<"\\\\"<<std::endl;
-         std::cout<<sample<<"   "<<temp_hist->Integral()<<"   "<<temp_hist->Integral()/mc_total->Integral()*100<<std::endl;
+         std::cout<<std::fixed<<sample<<"&"<<temp_hist->Integral()<<"&"<<std::setprecision(1)<<temp_hist->Integral()/mc_total->Integral()*100<<"\\\\"<<std::endl;
+         // ~std::cout<<sample<<"   "<<temp_hist->Integral()<<"   "<<temp_hist->Integral()/mc_total->Integral()*100<<std::endl;
       }
    }
    
@@ -266,7 +279,7 @@ void run()
       
       auto hists=hs.getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
       for (auto const &h: hists) {
-         h->SetLineWidth(4);
+         // ~h->SetLineWidth(4);
          h->Draw("same hist");
       }
       le+=hs.getLegendEntries();
