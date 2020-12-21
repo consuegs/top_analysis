@@ -26,7 +26,8 @@ def getProgressFromLog(logName):
             next(f)
             for line in f:
                 if line.find("Processing")==0:
-                    print line[0:-1]
+                    progress=line.count(".")
+                    print line.split(".")[0]+" "+str(progress*10)+"%"
 
 jobs = getInfos()
 jobs = sorted(jobs, key=lambda l: l["JobStatus"]+l["ClusterId"])
