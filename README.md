@@ -34,4 +34,11 @@ Plots are stored as canvases in a root file.
 To add a new module, create a new `<module>.cpp` file in `src/modules`.
 The entry function has to be `extern "C" void run() {...}`.
 Add `<module>` to the list in `src/modules/CMakeLists.txt`
+
+## Running on condor ##
+The distributions module can be executed in multiple condor jobs.
+One job corresponds to one sample (defined in config.ini).
+The scripts for submitting the jobs can be found in `multiprocess/`.
+Attention: The output hists are saved in an additional folder `output/multiHists/`
+and have to be combined before plotting.  
 ...
