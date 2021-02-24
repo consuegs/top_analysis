@@ -236,8 +236,7 @@ void run()
       // ~std::vector<float> minTree_v_bJet_electronEnergy;
       // ~std::vector<float> minTree_v_Jet_muonEnergy;
       // ~std::vector<float> minTree_v_Jet_electronEnergy;
-      // ~io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/%.1f/%s.root",cfg.year.Data(),cfg.treeVersion.Data(),cfg.processFraction*100,TString((isData)? dss.name: dss.datasetName).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
-      io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/%.1f/test.root",cfg.year.Data(),cfg.treeVersion.Data(),cfg.processFraction*100,TString((isData)? dss.name: dss.datasetName).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
+      io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/%.1f/%s.root",cfg.year.Data(),cfg.treeVersion.Data(),cfg.processFraction*100,TString((isData)? dss.name: dss.datasetName).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
       TTree ttbar_res("ttbar_res","ttbar_res");
       if(minimalTree){
          ttbar_res.Branch("ee",&minTree_ee,"ee/i");
@@ -478,7 +477,6 @@ void run()
       int iEv=0;
       int processEvents=cfg.processFraction*dss.entries;
       while (reader.Next()){
-         if(*evtNo!=128587641) continue;
          iEv++;
          if (iEv>processEvents) break;
          if (iEv%(std::max(processEvents/10,1))==0){
@@ -544,8 +542,6 @@ void run()
                }
             }
          }
-         
-         std::cout<<std::endl<<*mll<<"   "<<(p_l1+p_l2).M()<<std::endl;
          
          if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
                            
