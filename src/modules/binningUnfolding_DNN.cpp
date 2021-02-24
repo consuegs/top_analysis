@@ -105,12 +105,12 @@ void run()
    migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
       
    // ~TString sampleName="";
-   TString sampleName="dilepton";
+   TString sampleName="diLepton";
    // ~TString sampleName="dilepton_CP5";
    // ~TString sampleName="MadGraph";
    // ~TString sampleName="T2tt_650_350";
-   TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/output/DNNapplied/ttbar_res%.1f_new.root",cfg.processFraction*100),"read");
-   TTreeReader reader((sampleName=="") ? TString::Format("ttbar_res%.1f/ttbar_res",cfg.processFraction*100) : TString::Format("ttbar_res%.1f/ttbar_res_",cfg.processFraction*100)+sampleName, &file);
+   TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/TTbar_diLepton_100.0.root",cfg.treeVersion.Data()),"read");
+   TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/TTbar_"+sampleName, &file);
    
    
    // ~TTreeReaderValue<float> MET   (reader, "MET");
@@ -145,7 +145,7 @@ void run()
    TTreeReaderValue<float> dPhiPtnunuMet(reader, "dPhiPtnunuMet");
    TTreeReaderValue<float> leadTop_pT(reader, "leadTop_pT");
    TTreeReaderValue<float> dPhiNuNu(reader, "dPhiNuNu");
-   // ~TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
+   TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
    TTreeReaderValue<float> DNNregression(reader, "DNN_regression");
    
    TTreeReaderValue<float> nJets   (reader, "nJets");
@@ -181,7 +181,6 @@ void run()
    
    
    int migrated=0;
-   /*
    //Setup DNN
    float local_PuppiMET,local_METunc_Puppi,local_Phi_recPuppi,local_PFMET,local_HT,local_nJets,local_Lep1_pt,local_Lep1_phi,local_Lep1_eta,local_Lep1_E,local_Lep1_flavor,local_Lep2_pt,local_Lep2_phi,local_Lep2_eta,local_Lep2_E,local_Lep2_flavor,local_Jet1_pt,local_Jet1_phi,local_Jet1_eta,local_Jet1_E,local_Jet2_pt,local_Jet2_phi,local_Jet2_eta,local_Jet2_E,local_n_Interactions;
    // ~float local_PuppiMET,local_PuppiMET_phi,local_METunc_Puppi,local_PFMET,local_PFMET_phi,local_METunc_PF,local_CaloMET,local_CaloMET_phi,local_HT,local_MHT,local_nJets,local_Lep1_pt,local_Lep1_phi,local_Lep1_eta,local_Lep1_E,local_Lep1_flavor,local_Lep2_pt,local_Lep2_phi,local_Lep2_eta,local_Lep2_E,local_Lep2_flavor,local_Jet1_pt,local_Jet1_phi,local_Jet1_eta,local_Jet1_E,local_Jet1_unc,local_Jet1_bTag,local_Jet2_pt,local_Jet2_phi,local_Jet2_eta,local_Jet2_E,local_Jet2_unc,local_Jet2_bTag,local_n_Interactions;
@@ -244,7 +243,6 @@ void run()
    reader_TMVA_Bin4->BookMVA("PyKerasBin4", "dataset/weights/TMVARegression_PyKerasBin4.weights.xml");
    reader_TMVA_Bin5->BookMVA("PyKerasBin5", "dataset/weights/TMVARegression_PyKerasBin5.weights.xml");
    reader_TMVA_Bin6->BookMVA("PyKerasBin6", "dataset/weights/TMVARegression_PyKerasBin6.weights.xml");
-   */
    
    int totalEntries=reader.GetEntries(true);
    int iEv=0;
@@ -256,98 +254,95 @@ void run()
       }
       
       // ~if (iEv>100000) break;
-      if(*genDecayMode!=3 && *PtNuNu<40) continue;   //Remove SF events if ptNuNu is smaler than 40GeV
-      if (*MET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
-      if(*genDecayMode>3) continue;    //Remove tau events
       
       //Set DNN Inputs
-      // ~local_PuppiMET=*PuppiMET;
-      // ~local_METunc_Puppi=*METunc_Puppi;
-      // ~local_PFMET=*PFMET;
-      // ~local_HT=*HT_tree;
-      // ~local_nJets=*nJets;
-      // ~local_Lep1_pt=*Lep1_pt;
-      // ~local_Lep1_phi=*Lep1_phi;
-      // ~local_Lep1_eta=*Lep1_eta;
-      // ~local_Lep1_E=*Lep1_E;
-      // ~local_Lep1_flavor=*Lep1_flavor;
-      // ~local_Lep2_pt=*Lep2_pt;
-      // ~local_Lep2_phi=*Lep2_phi;
-      // ~local_Lep2_eta=*Lep2_eta;
-      // ~local_Lep2_E=*Lep2_E;
-      // ~local_Lep2_flavor=*Lep2_flavor;
-      // ~local_Jet1_pt=*Jet1_pt;
-      // ~local_Jet1_phi=*Jet1_phi;
-      // ~local_Jet1_eta=*Jet1_eta;
-      // ~local_Jet1_E=*Jet1_E;
-      // ~local_Jet2_pt=*Jet2_pt;
-      // ~local_Jet2_phi=*Jet2_phi;
-      // ~local_Jet2_eta=*Jet2_eta;
-      // ~local_Jet2_E=*Jet2_E;
-      // ~local_n_Interactions=*n_Interactions;
+      local_PuppiMET=*PuppiMET;
+      local_METunc_Puppi=*METunc_Puppi;
+      local_PFMET=*PFMET;
+      local_HT=*HT_tree;
+      local_nJets=*nJets;
+      local_Lep1_pt=*Lep1_pt;
+      local_Lep1_phi=*Lep1_phi;
+      local_Lep1_eta=*Lep1_eta;
+      local_Lep1_E=*Lep1_E;
+      local_Lep1_flavor=*Lep1_flavor;
+      local_Lep2_pt=*Lep2_pt;
+      local_Lep2_phi=*Lep2_phi;
+      local_Lep2_eta=*Lep2_eta;
+      local_Lep2_E=*Lep2_E;
+      local_Lep2_flavor=*Lep2_flavor;
+      local_Jet1_pt=*Jet1_pt;
+      local_Jet1_phi=*Jet1_phi;
+      local_Jet1_eta=*Jet1_eta;
+      local_Jet1_E=*Jet1_E;
+      local_Jet2_pt=*Jet2_pt;
+      local_Jet2_phi=*Jet2_phi;
+      local_Jet2_eta=*Jet2_eta;
+      local_Jet2_E=*Jet2_E;
+      local_n_Interactions=*n_Interactions;
       
       PuppiMet_org=*PuppiMET;
       int metBin_org=1;
-      // ~if(*MET<40) {
-         // ~PuppiMetscaled_org=*MET*1.28588;
-         // ~*MET=reader_TMVA_Bin1->EvaluateRegression("PyKerasBin1")[0];
-         // ~metBin_org=1;
-      // ~}
-      // ~else if(*MET<80){
-         // ~PuppiMetscaled_org=*MET*0.94220;
-         // ~*MET=reader_TMVA_Bin2->EvaluateRegression("PyKerasBin2")[0];
-         // ~metBin_org=2;
-      // ~}
-      // ~else if(*MET<120){
-         // ~PuppiMetscaled_org=*MET*0.88487;
-         // ~*MET=reader_TMVA_Bin3->EvaluateRegression("PyKerasBin3")[0];
-         // ~metBin_org=3;
-      // ~}
-      // ~else if(*MET<160){
-         // ~PuppiMetscaled_org=*MET*0.87049;
-         // ~*MET=reader_TMVA_Bin4->EvaluateRegression("PyKerasBin4")[0];
-         // ~metBin_org=4;
-      // ~}
-      // ~else if(*MET<230){
-         // ~PuppiMetscaled_org=*MET*0.88503;
-         // ~*MET=reader_TMVA_Bin5->EvaluateRegression("PyKerasBin5")[0];
-         // ~metBin_org=5;
-      // ~}
-      // ~else {
-         // ~PuppiMetscaled_org=*MET*0.91246;
-         // ~*MET=reader_TMVA_Bin6->EvaluateRegression("PyKerasBin6")[0];
-         // ~metBin_org=6;
-      // ~}
       if(*MET<40) {
          PuppiMetscaled_org=*MET*1.28588;
-         *MET=*DNNregression;
+         *MET=reader_TMVA_Bin1->EvaluateRegression("PyKerasBin1")[0];
          metBin_org=1;
       }
       else if(*MET<80){
          PuppiMetscaled_org=*MET*0.94220;
-         *MET=*DNNregression;
+         *MET=reader_TMVA_Bin2->EvaluateRegression("PyKerasBin2")[0];
          metBin_org=2;
       }
       else if(*MET<120){
          PuppiMetscaled_org=*MET*0.88487;
-         *MET=*DNNregression;
+         *MET=reader_TMVA_Bin3->EvaluateRegression("PyKerasBin3")[0];
          metBin_org=3;
       }
       else if(*MET<160){
          PuppiMetscaled_org=*MET*0.87049;
-         *MET=*DNNregression;
+         *MET=reader_TMVA_Bin4->EvaluateRegression("PyKerasBin4")[0];
          metBin_org=4;
       }
       else if(*MET<230){
          PuppiMetscaled_org=*MET*0.88503;
-         *MET=*DNNregression;
+         *MET=reader_TMVA_Bin5->EvaluateRegression("PyKerasBin5")[0];
          metBin_org=5;
       }
       else {
          PuppiMetscaled_org=*MET*0.91246;
-         *MET=*DNNregression;
+         *MET=reader_TMVA_Bin6->EvaluateRegression("PyKerasBin6")[0];
          metBin_org=6;
       }
+      // ~if(*MET<40) {
+         // ~PuppiMetscaled_org=*MET*1.28588;
+         // ~*MET=*DNNregression;
+         // ~metBin_org=1;
+      // ~}
+      // ~else if(*MET<80){
+         // ~PuppiMetscaled_org=*MET*0.94220;
+         // ~*MET=*DNNregression;
+         // ~metBin_org=2;
+      // ~}
+      // ~else if(*MET<120){
+         // ~PuppiMetscaled_org=*MET*0.88487;
+         // ~*MET=*DNNregression;
+         // ~metBin_org=3;
+      // ~}
+      // ~else if(*MET<160){
+         // ~PuppiMetscaled_org=*MET*0.87049;
+         // ~*MET=*DNNregression;
+         // ~metBin_org=4;
+      // ~}
+      // ~else if(*MET<230){
+         // ~PuppiMetscaled_org=*MET*0.88503;
+         // ~*MET=*DNNregression;
+         // ~metBin_org=5;
+      // ~}
+      // ~else {
+         // ~PuppiMetscaled_org=*MET*0.91246;
+         // ~*MET=*DNNregression;
+         // ~metBin_org=6;
+      // ~}
       if(*MET<0) *MET=0;
       
       PuppiMetcorr_org=*MET;
@@ -364,6 +359,11 @@ void run()
          eff_gen.Fill(*PtNuNu,*Phi_gen);
          if (*MET>-1 && *Phi_rec>-1) eff_gen_recSom.Fill(*PtNuNu,*Phi_gen);
       }
+      
+      // ~if(*looseLeptonVeto) continue;   //Remove Events with add. looser lepton
+      if(*genDecayMode!=3 && *PtNuNu<40) continue;   //Remove SF events if ptNuNu is smaler than 40GeV
+      if (*MET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
+      if(*genDecayMode>3) continue;    //Remove tau events
          
       bin_gen=N_gen.Fill(*PtNuNu,*Phi_gen);
       bin_rec=N_rec.Fill(*MET,*Phi_rec);

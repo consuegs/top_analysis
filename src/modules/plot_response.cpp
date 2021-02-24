@@ -30,11 +30,11 @@ void run()
    // ~hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_MadGraph/histMCGenRec");
    // ~hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton/histMCGenRec_sameBins");
    // ~hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_MadGraph/histMCGenRec_sameBins");
-   // ~hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_PTreweight/histMCGenRec_sameBins");
-   // ~hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_PTreweight_sanity/histMCGenRec_sameBins");
+   hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_Puppi_PTreweight/histMCGenRec_sameBins");
+   hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_Deep_PTreweight/histMCGenRec_sameBins");
    // ~hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning__/histMCGenRec_sameBins");
-   hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_Puppi/histMCGenRec_sameBins");
-   hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_Puppi/histMCGenRec_sameBins");
+   // ~hist = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_Puppi/histMCGenRec_sameBins");
+   // ~hist_alt = (TH2F*) histReader.read<TH2F>("TUnfold_binning_dilepton_dilepton_Puppi/histMCGenRec_sameBins");
    
    for (TString norm:{"","LineNorm"}){    //Plot nominal response and response normalized in each row
       

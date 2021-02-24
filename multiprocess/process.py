@@ -12,15 +12,15 @@ class Range(object):
     def __eq__(self, other):
         return self.start <= other <= self.end
 
-toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
+#  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
 #  ~toProcess_mc=["TTbar_diLepton"]
-#  ~toProcess_mc=[]
+toProcess_mc=[]
 toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
 #  ~toProcess_data=["DoubleMuon"]
 #  ~toProcess_data=[]
-toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
+#  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
 #  ~toProcess_signal=["T1tttt_1200_800"]
-#  ~toProcess_signal=[]
+toProcess_signal=[]
 
 #############################################
 # Select datasets to process

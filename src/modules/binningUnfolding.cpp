@@ -239,20 +239,21 @@ void run()
          TopPt_profile=hist::ProfilefromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
          // ~TString sampleName="";
-         TString sampleName="dilepton";
+         TString sampleName="diLepton";
          // ~TString sampleName="dilepton_CP5";
          // ~TString sampleName="MadGraph";
          // ~TString sampleName="T2tt_650_350";
          // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0.root","read");
-         TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0_new.root","read");
-         TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/ttbar_res_"+sampleName, &file);
-         // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res1.0_new.root","read");
-         // ~TTreeReader reader((sampleName=="") ? "ttbar_res1.0/ttbar_res" : "ttbar_res1.0/ttbar_res_"+sampleName, &file);
+         TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/TTbar_diLepton_100.0.root",cfg.treeVersion.Data()),"read");
+         // ~TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/TTbar_diLepton_1.0.root",cfg.treeVersion.Data()),"read");
+         TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/TTbar_"+sampleName, &file);
+         // ~TTreeReader reader((sampleName=="") ? "ttbar_res1.0/ttbar_res" : "ttbar_res1.0/TTbar_"+sampleName, &file);
          
          
          // ~TTreeReaderValue<float> MET   (reader, "MET");
          // ~TTreeReaderValue<float> MET   (reader, "DeepMET");
-         TTreeReaderValue<float> MET   (reader, "PuppiMET");
+         // ~TTreeReaderValue<float> MET   (reader, "PuppiMET");
+         TTreeReaderValue<float> MET   (reader, "DNN_regression");
          // ~TTreeReaderValue<float> MET   (reader, "genMET");
          // ~TTreeReaderValue<float> MET   (reader, "XYcorrMET");
          TTreeReaderValue<float> PtNuNu   (reader, "PtNuNu");
@@ -289,7 +290,8 @@ void run()
          TTreeReaderValue<float> Lep1_flavor(reader, "Lep1_flavor");
          TTreeReaderValue<float> Lep2_flavor(reader, "Lep2_flavor");
          TTreeReaderValue<UInt_t> NnonPromptNeutrinos(reader, "NnonpromptNeutrinos");
-         TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
+         // ~TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
+         TTreeReaderValue<unsigned char> looseLeptonVeto(reader, "VetoAnyJetInMETdirection_addLeptonInJet");
          // ~TTreeReaderValue<std::vector<float>> v_bJet_muonFraction(reader, "bJet_muonFraction");
          // ~TTreeReaderValue<std::vector<float>> v_bJet_electronFraction(reader, "bJet_electronFraction");
          // ~TTreeReaderValue<std::vector<float>> v_Jet_muonFraction(reader, "Jet_muonFraction");
@@ -301,9 +303,14 @@ void run()
          
           int migrated=0;
          
-         
-         
+         int totalEntries=reader.GetEntries(true);
+         int iEv=0;
          while (reader.Next()){
+            iEv++;
+            if (iEv%(std::max(totalEntries/10,1))==0){
+               io::log*".";
+               io::log.flush();
+            }
             
             diffMET=*PtNuNu-*MET;//Save difference befor overflow handling
             diffPHI=*Phi_gen-*Phi_rec;
@@ -327,7 +334,7 @@ void run()
             
             if(*genDecayMode!=3 && *PtNuNu<40) continue;   //Remove SF events if ptNuNu is smaler than 40GeV
             // ~if(*NnonPromptNeutrinos>0) continue;
-            // ~if(*looseLeptonVeto==1) continue;
+            if(int(*looseLeptonVeto)==1) continue;
             
             // ~if (*MET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
             if (*PFMET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
@@ -493,7 +500,7 @@ void run()
             }
             
             // ~if (realBin==11 && realBin_gen!=11 && abs(*MET-*PtNuNu_true)>100) {
-            if (realBin==11 && realBin_gen!=11) {
+            if (realBin==16 && realBin_gen!=16) {
                migration.Fill(*PtNuNu,*Phi_gen);
                // ~std::cout<<"-------------------------------"<<std::endl;
                // ~std::cout<<*runNo<<":"<<*lumNo<<":"<<*evtNo<<std::endl;
@@ -516,7 +523,7 @@ void run()
                migrated++;
             }
             
-            else if (realBin==11 && realBin_gen==11) {
+            else if (realBin==16 && realBin_gen==16) {
                dPhiMETnearJet_goodReso.Fill(*dPhiMETnearJet);
                dPhiMETfarJet_goodReso.Fill(*dPhiMETfarJet);
                dPhiMETleadJet_goodReso.Fill(*dPhiMETleadJet);

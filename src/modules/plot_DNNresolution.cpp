@@ -22,11 +22,13 @@ void run()
    
    TCanvas can;
    can.cd();
-   io::RootFileReader histReader(TString::Format("binningUnfolding_dilepton%.1f.root",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton%.1f.root",cfg.processFraction*100));
    // ~io::RootFileReader histReader(TString::Format("binningUnfolding_T2tt_650_350%.1f.root",cfg.processFraction*100));
    
    std::vector<float> axisLimits_low={0,0,0,50,50,50};
    std::vector<float> axisLimits_high={150,150,200,250,300,500};
+   
+   std::vector<TString> metRegions={"p_{T}^{miss}<40GeV","40GeV<p_{T}^{miss}<80GeV","80GeV<p_{T}^{miss}<120GeV","120GeV<p_{T}^{miss}<160GeV","160GeV<p_{T}^{miss}<230GeV","230GeV<p_{T}^{miss}"};
    
    int i=0;
    for (TString bin :{"bin1","bin2","bin3","bin4","bin5","bin6"}){
@@ -70,7 +72,7 @@ void run()
       TLegend leg=le.buildLegend(.6,.7,1-1.5*gPad->GetRightMargin(),-1,1);
       leg.Draw();
       
-      TLatex label=gfx::cornerLabel(bin,1);
+      TLatex label=gfx::cornerLabel(metRegions[i],1);
       label.Draw();
       saver.save(can,"genMETtarget/dist_"+bin,true,true);
       
@@ -109,10 +111,10 @@ void run()
       le2.append(*diffPF_hist,TString::Format("genMET-PFMET(#mu=%.1f #sigma=%.1f)",diffPF_hist->GetMean(),diffPF_hist->GetRMS()),"l");
       le2.append(*diffCorr_hist,TString::Format("genMET-DNN(#mu=%.1f #sigma=%.1f)",diffCorr_hist->GetMean(),diffCorr_hist->GetRMS()),"l");
       // ~le2.append(*diffScaled_hist,TString::Format("genMET-scaled PuppiMET(#mu=%.1f #sigma=%.1f)",diffScaled_hist->GetMean(),diffScaled_hist->GetRMS()),"l");
-      TLegend leg2=le2.buildLegend(.4,.7,1-1.5*gPad->GetRightMargin(),-1,1);
+      TLegend leg2=le2.buildLegend(.45,.75,1-1.5*gPad->GetRightMargin(),-1,1);
       leg2.Draw();
       
-      TLatex label2=gfx::cornerLabel(bin,1);
+      TLatex label2=gfx::cornerLabel(metRegions[i],1);
       label2.Draw();
       saver.save(can,"genMETtarget/diff_"+bin,true,true);
       

@@ -50,7 +50,11 @@ TH2F get_sqrt(TH2F inital) {    //Function to get the square-root of the 2D hist
 extern "C"
 void run()
 {
-   io::RootFileSaver saver(TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100),"plot2D_sensitivity");
+   std::cout<<"---------------------------------------"<<std::endl;
+   std::cout<<"Yields are manually scaled to ful Run2 lumi!!!"<<std::endl;
+   std::cout<<"---------------------------------------"<<std::endl;
+   
+   io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot2D_sensitivity");
    // ~io::RootFileSaver saver(TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100),"plot2D_sensitivity_0.91");
    io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
    // ~io::RootFileReader histReader("histograms_v10.root",TString::Format("distributions%.1f",cfg.processFraction*100));
@@ -75,10 +79,10 @@ void run()
    std::vector<float> phi_bins3={0,0.4,0.8,1.2,3.14};
    
    // ~std::vector<float> met_bins4={0,40,120,230,400};
-   // ~std::vector<float> met_bins4={0,40,80,120,160,230,400};
-   // ~std::vector<float> phi_bins4={0,0.7,1.4,3.141};
-   std::vector<float> met_bins4={0,400};
-   std::vector<float> phi_bins4={0,3.14};
+   std::vector<float> met_bins4={0,40,80,120,160,230,400};
+   std::vector<float> phi_bins4={0,0.7,1.4,3.141};
+   // ~std::vector<float> met_bins4={0,400};
+   // ~std::vector<float> phi_bins4={0,3.14};
    
    //Used for names in the savin process
    int numberBinningSchemeMet=1;
@@ -89,26 +93,30 @@ void run()
    for(std::vector<float> met_bins : {met_bins4}){
       for(std::vector<float> phi_bins : {phi_bins4}){
                
-         for (TString bkgSample :{"SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttZ_SM","ttH_SM"}) {     //Add all SM backgrounds except ttbar
-            add_Categories("2d_MetVSdPhiMetNearLep/"+bkgSample,histReader,temp_hist);
-            if (bkgSample=="SingleTop") add_Categories("2d_MetVSdPhiMetNearLep/"+bkgSample,histReader,SMbkg);
+         for (TString bkgSample :{"SingleTop","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW"}) {     //Add all SM backgrounds except ttbar
+            add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+bkgSample,histReader,temp_hist);
+            if (bkgSample=="SingleTop") add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+bkgSample,histReader,SMbkg);
             else SMbkg.Add(&temp_hist);
          }
          
-         add_Categories("2d_MetVSdPhiMetNearLep/TTbar",histReader,ttbar);
+         // ~add_Categories("2d_MetVSdPhiMetNearLep/TTbar",histReader,ttbar);
          // ~add_Categories("2d_MetVSdPhiMetNearLep/TTbar_diLepton",histReader,ttbar);
-         // ~add_Categories("2d_MetVSdPhiMetNearLep_Puppi/TTbar_diLepton",histReader,ttbar);
+         add_Categories("2d_MetVSdPhiMetNearLep_Puppi/TTbar_diLepton",histReader,ttbar);
          
          std::cout<<"Correlation in ttbar: "<<ttbar.GetCorrelationFactor()<<std::endl;
          
          SMbkg=hist::rebinned(SMbkg,met_bins,phi_bins);
          ttbar=hist::rebinned(ttbar,met_bins,phi_bins);
          
+         SMbkg.Scale(137191.0/35867.05998);
+         ttbar.Scale(137191.0/35867.05998);
+         
          
          for (TString signalSample :{"T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){
             
-            add_Categories("2d_MetVSdPhiMetNearLep/"+signalSample,histReader,signal);
+            add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+signalSample,histReader,signal);
             signal=hist::rebinned(signal,met_bins,phi_bins);
+            signal.Scale(137191.0/35867.05998);
             
             for (TString sensitivity_type : {"SplusB","sqrtB"}){
                temp_hist=ttbar;
@@ -168,21 +176,21 @@ void run()
          Float_t bin_ratios[nTotBins][7];
          int j=0;
          SMbkg.Add(&ttbar);
-         for (TString bkgSample :{"SingleTop","DrellYan","ttZ_SM","ttH_SM","WJetsToLNu","Diboson","TTbar"}) {
+         for (TString bkgSample :{"SingleTop","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","TTbar_diLepton"}) {
             TH2F temp;
             if (bkgSample=="Diboson"){    //If diboson add samples
                TH2F temp2;
                for (TString dibosonSample :{"WW","WZ","ZZ"}) {
                   if (dibosonSample=="WW") {
-                     add_Categories("2d_MetVSdPhiMetNearLep/"+dibosonSample,histReader,temp);
+                     add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+dibosonSample,histReader,temp);
                   }
                   else {
-                     add_Categories("2d_MetVSdPhiMetNearLep/"+dibosonSample,histReader,temp2);
+                     add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+dibosonSample,histReader,temp2);
                      temp.Add(&temp2);
                   }
                }
             }
-            else add_Categories("2d_MetVSdPhiMetNearLep/"+bkgSample,histReader,temp);
+            else add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+bkgSample,histReader,temp);
             
             temp=hist::rebinned(temp,met_bins,phi_bins);    //Rebin following the current binning scheme
             

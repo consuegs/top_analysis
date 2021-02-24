@@ -46,6 +46,7 @@ set(MODULES
   binningUnfolding_DNN_multi
   plot_DNNresolution
   applyDNN
+  check_leptonVeto
   )
 
 foreach(MODULE ${MODULES})
