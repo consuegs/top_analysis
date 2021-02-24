@@ -128,12 +128,12 @@ void run()
 {
    // unfolded sample
    // ~TString sample="MadGraph";
-   TString sample="dilepton";
+   TString sample="TTbar_diLepton";
    // ~TString sample="";
    
    // response sample
    // ~TString sample_response="MadGraph";
-   TString sample_response="dilepton";
+   TString sample_response="TTbar_diLepton";
    // ~TString sample_response="";
    
    // Use pT reweighted
@@ -154,8 +154,8 @@ void run()
    // ~bool withSameBins = true;
    
    // include signal to pseudo data
-   bool withBSM = true;
-   // ~bool withBSM = false;
+   // ~bool withBSM = true;
+   bool withBSM = false;
    
    //Use scale factor
    bool withScaleFactor = false;

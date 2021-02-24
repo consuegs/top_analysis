@@ -1,5 +1,6 @@
 //Script to plot the result of TUnfold_unfolding
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 #include <map>
 #include <TMath.h>
@@ -125,6 +126,8 @@ void plot_response(TH2F* responseHist, TString name, io::RootFileSaver* saver) {
       
       tempHist->GetYaxis()->SetTitle("reco binNumber");
       tempHist->GetXaxis()->SetTitle("gen binNumber");
+      tempHist->GetZaxis()->SetTitleOffset(0.55);
+      tempHist->GetZaxis()->SetLabelOffset(0.0015);
       
       can.RedrawAxis();
       saver->save(can,"response"+norm+"/"+name,true,true);
@@ -155,12 +158,12 @@ void run()
 {
    // unfolded sample
    // ~TString sample="MadGraph";
-   TString sample="dilepton";
+   TString sample="TTbar_diLepton";
    // ~TString sample="";
    
    // response sample
    // ~TString sample_response="MadGraph";
-   TString sample_response="dilepton";
+   TString sample_response="TTbar_diLepton";
    // ~TString sample_response="";
    
    // Use pT reweighted
@@ -181,8 +184,8 @@ void run()
    // ~bool withSameBins = true;
    
    // include signal to pseudo data
-   bool withBSM = true;
-   // ~bool withBSM = false;
+   // ~bool withBSM = true;
+   bool withBSM = false;
    
    //Use scale factor
    bool withScaleFactor = false;
@@ -431,6 +434,15 @@ void run()
    aline->DrawLine(800,ratio.GetMinimum(),800,ratio.GetMaximum());
    aline->DrawLine(400,ratio.GetMinimum(),400,ratio.GetMaximum());
    aline->DrawLine(800,ratio.GetMinimum(),800,ratio.GetMaximum());
+   
+   //Print rel. uncertainties:
+   for (int i=1; i<=ratio_unfolded.GetNbinsX(); i++){
+      std::cout<<roundf(ratio_unfolded.GetBinError(i)*100 * 100) / 100<<std::endl;
+   }
+   std::cout<<"-----------------------"<<std::endl;
+   for (int i=1; i<=ratio_unfolded_reg.GetNbinsX(); i++){
+      std::cout<<roundf(ratio_unfolded_reg.GetBinError(i)*100 * 100) / 100<<std::endl;
+   }
    
    //===========================
    // Step 4: save plot
