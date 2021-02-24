@@ -150,7 +150,7 @@ void run()
       if (file.IsZombie()) {
          return;
       }
-      io::log * ("Processing '"+dss.datasetName+"' ");
+      io::log * ("Processing '"+dss.name+"' ");
 
       bool const isData=dss.isData;
       bool const isSignal=dss.isSignal;
@@ -210,7 +210,7 @@ void run()
       if (dss.datasetName.find("Run2016H")!=std::string::npos) Run2016H=true;
       
       //Set boolean for savin minimalTree
-      bool minimalTree=ttBar_dilepton || ttBar_dilepton_tau || ttBar_singleLepton || ttBar_hadronic || SUSY_T2tt_650_350 || DM_scalar_1_200;
+      bool minimalTree=ttBar_dilepton || ttBar_dilepton_tau || ttBar_singleLepton || ttBar_hadronic || SUSY_T2tt_650_350 || DM_scalar_1_200 || isData;
       
       //Ntuple and file to save minimal ttbar tree used for binning studies
       float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
@@ -223,9 +223,11 @@ void run()
       minTree_Lep2_pt, minTree_Lep2_phi, minTree_Lep2_eta, minTree_Lep2_E, minTree_Lep2_flavor,
       minTree_Jet1_pt, minTree_Jet1_phi, minTree_Jet1_eta, minTree_Jet1_E, minTree_Jet1_bTagScore, minTree_Jet1_unc,
       minTree_Jet2_pt, minTree_Jet2_phi, minTree_Jet2_eta, minTree_Jet2_E, minTree_Jet2_bTagScore, minTree_Jet2_unc,
-      minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_nJets, minTree_n_Interactions, minTree_DNN_regression;
-      UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions_gen, minTree_looseLeptonVeto, minTree_NpromptNeutrinos, minTree_NnonpromptNeutrinos;
+      minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_nJets, minTree_n_Interactions, minTree_DNN_regression,
+      minTree_mLL;
+      UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions_gen, minTree_looseLeptonVeto, minTree_NpromptNeutrinos, minTree_NnonpromptNeutrinos, minTree_ee, minTree_mumu, minTree_emu;
       ULong64_t minTree_evtNo;
+      bool minTree_leptonVeto, minTree_lepVetoPt40, minTree_VetoAllignedBJetMet, minTree_VetoAllignedBJetMet_lepVeto, minTree_VetoAllignedBJetMet_addLeptonInBJet, minTree_lepVetoIfaddLeptonInBJet, minTree_lepVetoIfaddLeptonInAnyBJet, minTree_VetoAnyBJetInMETdirection, minTree_VetoAnyJetInMETdirection, minTree_VetoAnyBJetInMETdirection_addLepton, minTree_VetoAnyJetInMETdirection_addLepton,minTree_VetoAnyBJetInMETdirection_addLeptonInJet, minTree_VetoAnyJetInMETdirection_addLeptonInJet;
       // ~std::vector<float> minTree_v_bJet_muonFraction;
       // ~std::vector<float> minTree_v_bJet_electronFraction;
       // ~std::vector<float> minTree_v_Jet_muonFraction;
@@ -234,9 +236,13 @@ void run()
       // ~std::vector<float> minTree_v_bJet_electronEnergy;
       // ~std::vector<float> minTree_v_Jet_muonEnergy;
       // ~std::vector<float> minTree_v_Jet_electronEnergy;
-      io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/%s_%.1f.root",cfg.year.Data(),cfg.treeVersion.Data(),TString(dss.datasetName).Data(),cfg.processFraction*100),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
+      // ~io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/%.1f/%s.root",cfg.year.Data(),cfg.treeVersion.Data(),cfg.processFraction*100,TString((isData)? dss.name: dss.datasetName).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
+      io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/%.1f/test.root",cfg.year.Data(),cfg.treeVersion.Data(),cfg.processFraction*100,TString((isData)? dss.name: dss.datasetName).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
       TTree ttbar_res("ttbar_res","ttbar_res");
       if(minimalTree){
+         ttbar_res.Branch("ee",&minTree_ee,"ee/i");
+         ttbar_res.Branch("mumu",&minTree_mumu,"mumu/i");
+         ttbar_res.Branch("emu",&minTree_emu,"emu/i");
          ttbar_res.Branch("MET",&minTree_MET,"MET/f");
          ttbar_res.Branch("PtNuNu",&minTree_PtNuNu,"PtNuNu/f");
          ttbar_res.Branch("Phi_rec",&minTree_PhiRec,"Phi_rec/f");
@@ -308,6 +314,7 @@ void run()
          ttbar_res.Branch("Jet2_E",&minTree_Jet2_E,"Jet2_E/f");
          ttbar_res.Branch("Jet2_bTagScore",&minTree_Jet2_bTagScore,"Jet2_bTagScore/f");
          ttbar_res.Branch("Jet2_unc",&minTree_Jet2_unc,"Jet2_unc/f");
+         ttbar_res.Branch("mLL",&minTree_mLL,"mLL/f");
          ttbar_res.Branch("PFMET_phi",&minTree_PFMET_phi,"PFMET_phi/f");
          ttbar_res.Branch("PuppiMET_phi",&minTree_PuppiMET_phi,"PuppiMET_phi/f");
          ttbar_res.Branch("CaloMET",&minTree_CaloMET,"CaloMET/f");
@@ -315,6 +322,19 @@ void run()
          ttbar_res.Branch("NpromptNeutrinos",&minTree_NpromptNeutrinos,"NpromptNeutrinos/i");
          ttbar_res.Branch("NnonpromptNeutrinos",&minTree_NnonpromptNeutrinos,"NnonpromptNeutrinos/i");
          ttbar_res.Branch("DNN_regression",&minTree_DNN_regression,"DNN_regression/f");
+         ttbar_res.Branch("leptonVeto",&minTree_leptonVeto,"leptonVeto/b");
+         ttbar_res.Branch("lepVetoPt40",&minTree_lepVetoPt40,"lepVetoPt40/b");
+         ttbar_res.Branch("VetoAllignedBJetMet",&minTree_VetoAllignedBJetMet,"VetoAllignedBJetMet/b");
+         ttbar_res.Branch("VetoAllignedBJetMet_lepVeto",&minTree_VetoAllignedBJetMet_lepVeto,"VetoAllignedBJetMet_lepVeto/b");
+         ttbar_res.Branch("VetoAllignedBJetMet_addLeptonInBJet",&minTree_VetoAllignedBJetMet_addLeptonInBJet,"VetoAllignedBJetMet_addLeptonInBJet/b");
+         ttbar_res.Branch("lepVetoIfaddLeptonInBJet",&minTree_lepVetoIfaddLeptonInBJet,"lepVetoIfaddLeptonInBJet/b");
+         ttbar_res.Branch("lepVetoIfaddLeptonInAnyBJet",&minTree_lepVetoIfaddLeptonInAnyBJet,"lepVetoIfaddLeptonInAnyBJet/b");
+         ttbar_res.Branch("VetoAnyBJetInMETdirection",&minTree_VetoAnyBJetInMETdirection,"VetoAnyBJetInMETdirection/b");
+         ttbar_res.Branch("VetoAnyJetInMETdirection",&minTree_VetoAnyJetInMETdirection,"VetoAnyJetInMETdirection/b");
+         ttbar_res.Branch("VetoAnyBJetInMETdirection_addLepton",&minTree_VetoAnyBJetInMETdirection_addLepton,"VetoAnyBJetInMETdirection_addLepton/b");
+         ttbar_res.Branch("VetoAnyJetInMETdirection_addLepton",&minTree_VetoAnyJetInMETdirection_addLepton,"VetoAnyJetInMETdirection_addLepton/b");
+         ttbar_res.Branch("VetoAnyBJetInMETdirection_addLeptonInJet",&minTree_VetoAnyBJetInMETdirection_addLeptonInJet,"VetoAnyBJetInMETdirection_addLeptonInJet/b");
+         ttbar_res.Branch("VetoAnyJetInMETdirection_addLeptonInJet",&minTree_VetoAnyJetInMETdirection_addLeptonInJet,"VetoAnyJetInMETdirection_addLeptonInJet/b");
          // ~ttbar_res.Branch("bJet_muonFraction",&minTree_v_bJet_muonFraction);
          // ~ttbar_res.Branch("bJet_electronFraction",&minTree_v_bJet_electronFraction);
          // ~ttbar_res.Branch("Jet_muonFraction",&minTree_v_Jet_muonFraction);
@@ -383,6 +403,8 @@ void run()
       TTreeReaderValue<float> w_bTag(reader, "bTagWeight");
       TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
       TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
+      TTreeReaderValue<std::vector<tree::Electron>> electrons_add(reader, "electrons_add");
+      TTreeReaderValue<std::vector<tree::Muon>>     muons_add    (reader, "muons_add");
       TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
       TTreeReaderValue<std::vector<tree::GenParticle>> genParticles(reader, "genParticles");
       TTreeReaderValue<std::vector<tree::IntermediateGenParticle>> intermediateGenParticles(reader, "intermediateGenParticles");     
@@ -456,6 +478,7 @@ void run()
       int iEv=0;
       int processEvents=cfg.processFraction*dss.entries;
       while (reader.Next()){
+         if(*evtNo!=128587641) continue;
          iEv++;
          if (iEv>processEvents) break;
          if (iEv%(std::max(processEvents/10,1))==0){
@@ -522,6 +545,8 @@ void run()
             }
          }
          
+         std::cout<<std::endl<<*mll<<"   "<<(p_l1+p_l2).M()<<std::endl;
+         
          if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
                            
          // end reco baseline selection
@@ -529,6 +554,9 @@ void run()
          if (*genDecayMode_pseudo==0) pseudo_selection=false; //pseudo baseline selection
          
          if(rec_selection==false && pseudo_selection==false) continue;  // only proceed with events selected by one of the baseline selection (reco or pseudo)
+         
+         // Continue if data events and not selected
+         if(rec_selection==false && isData) continue;
          
          //Set Event weights
          float fEventWeight = 1.;
@@ -713,6 +741,77 @@ void run()
          pT_top1=gen_tops[0].Pt();
          pT_top2=gen_tops[1].Pt();
          
+         //Save different LeptonVetos and BJetVetos
+         minTree_leptonVeto=false;
+         minTree_lepVetoPt40=false;
+         minTree_VetoAllignedBJetMet=false;
+         minTree_VetoAllignedBJetMet_lepVeto=false;
+         minTree_VetoAllignedBJetMet_addLeptonInBJet=false;
+         minTree_lepVetoIfaddLeptonInBJet=false;
+         minTree_lepVetoIfaddLeptonInAnyBJet=false;
+         minTree_VetoAnyBJetInMETdirection=false;
+         minTree_VetoAnyJetInMETdirection=false;
+         minTree_VetoAnyBJetInMETdirection_addLepton=false;
+         minTree_VetoAnyJetInMETdirection_addLepton=false;
+         minTree_VetoAnyBJetInMETdirection_addLeptonInJet=false;
+         minTree_VetoAnyJetInMETdirection_addLeptonInJet=false;
+         if (rec_selection){
+            if(abs(BJets[0].p.DeltaPhi(MET_Puppi->p))<0.4 || (3.14-abs(BJets[0].p.DeltaPhi(MET_Puppi->p)))<0.4) minTree_VetoAllignedBJetMet=true;
+            
+            TLorentzVector leadAddLepton(0,0,0,0);
+            if(electrons_add->size()>0 && muons_add->size()>0){
+               if((*electrons_add)[0].p.Pt()>(*muons_add)[0].p.Pt()) {
+                  leadAddLepton=(*electrons_add)[0].p;
+               }
+               else{
+                  leadAddLepton=(*muons_add)[0].p;
+               }
+            }
+            else if(electrons_add->size()>0) {
+               leadAddLepton=(*electrons_add)[0].p;
+            }
+            else if(muons_add->size()>0){
+               leadAddLepton=(*muons_add)[0].p;
+            }
+            
+            TLorentzVector METalignedBJet(0,0,0,0);
+            for(auto bJet: BJets){
+               // ~if(abs(bJet.p.DeltaPhi(MET_Puppi->p))<0.4){
+               if(abs(bJet.p.DeltaPhi(MET_Puppi->p))<0.8){
+                  METalignedBJet=bJet.p;
+                  minTree_VetoAnyBJetInMETdirection=true;
+                  break;
+               }
+            }
+         
+            TLorentzVector METalignedJet(0,0,0,0);
+            for(auto jet: cjets){
+               // ~if(abs(jet.p.DeltaPhi(MET_Puppi->p))<0.4){
+               if(abs(jet.p.DeltaPhi(MET_Puppi->p))<0.8){
+                  METalignedJet=jet.p;
+                  minTree_VetoAnyJetInMETdirection=true;
+                  break;
+               }
+            }
+            
+            if(electrons_add->size()>0 || muons_add->size()>0){
+               minTree_leptonVeto=true;
+               if(leadAddLepton.DeltaR(BJets[0].p)<0.4){
+                  if(abs(BJets[0].p.DeltaPhi(MET_Puppi->p))<0.4 || (3.14-abs(BJets[0].p.DeltaPhi(MET_Puppi->p)))<0.4) minTree_VetoAllignedBJetMet_addLeptonInBJet=true;
+               }
+               if(leadAddLepton.Pt()>30) minTree_lepVetoPt40=true;
+               for(auto bJet: BJets){
+                  if(leadAddLepton.DeltaR(bJet.p)<0.4) minTree_lepVetoIfaddLeptonInAnyBJet=true;
+               }
+               if(leadAddLepton.DeltaR(BJets[0].p)<0.4) minTree_lepVetoIfaddLeptonInBJet=true;
+               if(minTree_VetoAnyBJetInMETdirection && METalignedBJet.DeltaR(leadAddLepton)<0.4) minTree_VetoAnyBJetInMETdirection_addLeptonInJet=true;
+               if(minTree_VetoAnyJetInMETdirection && METalignedJet.DeltaR(leadAddLepton)<0.4) minTree_VetoAnyJetInMETdirection_addLeptonInJet=true;
+            }
+            minTree_VetoAllignedBJetMet_lepVeto=minTree_leptonVeto || minTree_VetoAllignedBJetMet;
+            minTree_VetoAnyBJetInMETdirection_addLepton=minTree_VetoAnyBJetInMETdirection && minTree_leptonVeto;
+            minTree_VetoAnyJetInMETdirection_addLepton=minTree_VetoAnyJetInMETdirection && minTree_leptonVeto;
+         }
+         
          //Evaluate DNN Regression
          float DNN_regression=-1;
          if (rec_selection){
@@ -736,10 +835,13 @@ void run()
             minTree_Jet1_phi=cjets[0].p.Phi();
             minTree_Jet1_eta=cjets[0].p.Eta();
             minTree_Jet1_E=cjets[0].p.E();
+            minTree_Jet1_bTagScore=cjets[0].bTagDeepCSV;
             minTree_Jet2_pt=cjets[1].p.Pt();
             minTree_Jet2_phi=cjets[1].p.Phi();
             minTree_Jet2_eta=cjets[1].p.Eta();
             minTree_Jet2_E=cjets[1].p.E();
+            minTree_Jet2_bTagScore=cjets[1].bTagDeepCSV;
+            minTree_mLL=(p_l1+p_l2).M();
             if(applyDNN){
                if(met_puppi<40) DNN_regression=reader_TMVA_Bin1->EvaluateRegression("PyKerasBin1")[0];
                else if(met_puppi<80) DNN_regression=reader_TMVA_Bin2->EvaluateRegression("PyKerasBin2")[0];
@@ -753,6 +855,9 @@ void run()
          
          //Fill minimal tree for TTbar resolution used in binning/unfolding studies
          if (minimalTree){
+            minTree_ee=*is_ee;
+            minTree_mumu=*is_mumu;
+            minTree_emu=*is_emu;
             minTree_MET=met;
             minTree_PtNuNu=neutrinoPair.Pt();
             minTree_PhiRec=abs(dPhiMETnearLep);
