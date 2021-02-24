@@ -72,8 +72,8 @@ bool selection::triggerSelection(std::vector<bool> const &diElectronTriggers, st
       //emu
       else if(PD[2] && channel[2]){
          triggerData=diMuonTriggers[4] || diMuonTriggers[5];
-         if (is2016H) triggerData_veto=electronMuonTriggers[2] || electronMuonTriggers[3];
-         else triggerData_veto=electronMuonTriggers[0] || electronMuonTriggers[1] || electronMuonTriggers[2] || electronMuonTriggers[3];
+         if (is2016H) triggerData_veto=electronMuonTriggers[2] || electronMuonTriggers[3] || diElectronTriggers[1];
+         else triggerData_veto=electronMuonTriggers[0] || electronMuonTriggers[1] || electronMuonTriggers[2] || electronMuonTriggers[3] || diElectronTriggers[1];
       }
       else if(PD[0] && channel[2]){
          triggerData=diElectronTriggers[1];
@@ -124,7 +124,7 @@ bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, 
       if(abs(muons[0].p.Eta())>2.4 || abs(muons[1].p.Eta())>2.4) rec_selection=false;
       if(muons[0].p.Pt()*muons[0].rochesterCorrection<muons[1].p.Pt()*muons[1].rochesterCorrection) leadLepton=1,subleadLepton=0;
       p_l1=muons[leadLepton].p*muons[leadLepton].rochesterCorrection;
-      p_l2=muons[1].p*muons[subleadLepton].rochesterCorrection;
+      p_l2=muons[subleadLepton].p*muons[subleadLepton].rochesterCorrection;
       flavor_l1=2;
       flavor_l2=2;
       cat="mumu";
@@ -168,6 +168,40 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    
    //Jet Cut
    cleanJets=phys::getCleanedJets(jets);
+   if(cleanJets.size()<2) return selection_vec;
+   else selection_vec[1]=true;
+   
+   //MET Cut
+   if ((channel[0] || channel[1]) && met<40) return selection_vec;
+   else selection_vec[2]=true;
+   
+   //bJet Cut
+   bool bTag=false;
+   for (tree::Jet const &jet : cleanJets) {
+      if (jet.bTagDeepCSV>0.2217) {      //Loose working point for deepCSV
+         bTag=true;
+         bJets.push_back(jet);
+      }
+   }
+   if(!bTag) return selection_vec;
+   else{
+      selection_vec[3]=true;
+      return selection_vec;
+   }
+}
+
+std::vector<bool> selection::ttbarSelection_looseJetID(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
+                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
+{
+   std::vector<bool> selection_vec={false,false,false,false};
+   
+   //mLL Cut
+   float mll_corr=(p_l1+p_l2).M();
+   if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) return selection_vec;
+   else selection_vec[0]=true;
+   
+   //Jet Cut
+   cleanJets=phys::getCleanedJets_looseID(jets);
    if(cleanJets.size()<2) return selection_vec;
    else selection_vec[1]=true;
    
