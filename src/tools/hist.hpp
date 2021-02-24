@@ -54,6 +54,7 @@ namespace hist
       void fillbinFake(TString const &varName,TString const &binName);
       void count(TString const &varName);
       void scaleLumi(); // scales MC with lumi weight and trigger efficiency. Data is ignored.
+      void normHists(); // normalizes Hists to unity
       void mergeOverflow(bool includeUnderflow=true); // add the overflow to the last bin (and underflow to first)
       void combineFromSubsamples(std::vector<TString> const &samples);
       void combineSamples(TString const &sampleCombined, std::vector<TString> const &samples);

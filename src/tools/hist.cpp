@@ -173,6 +173,15 @@ void hist::Histograms<HIST>::mergeOverflow(bool includeUnderflow)
    }
 }
 
+template <class HIST>
+void hist::Histograms<HIST>::normHists()
+{
+   for (auto &mH:mmH_){
+      mH.second[sCurrentSample_].Scale(1/mH.second[sCurrentSample_].Integral());
+      mH.second[sCurrentSample_].GetYaxis()->SetTitle("Normalized Distributions");
+   }
+}
+
 /*
  * Build histograms for whole processes from the corresponding
  * subsamples (e.g. QCD HT-bins). Counters are also combined.
