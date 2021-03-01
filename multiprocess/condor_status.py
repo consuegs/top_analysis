@@ -3,6 +3,7 @@
 import subprocess
 import time
 import os
+from termcolor import colored
 
 def getInfos():
     out = subprocess.check_output(["condor_q", "-long"])
@@ -27,7 +28,10 @@ def getProgressFromLog(logName):
             for line in f:
                 if line.find("Processing")==0:
                     progress=line.count(".")
-                    print line.split(".")[0]+" "+str(progress*10)+"%"
+                    color="yellow"
+                    if progress==10:
+                        color="green"
+                    print colored("--"+line.split(".")[0]+" "+str(progress*10)+"%",color)
 
 jobs = getInfos()
 jobs = sorted(jobs, key=lambda l: l["JobStatus"]+l["ClusterId"])
@@ -41,15 +45,15 @@ for job in jobs:
     name += " "*max([0,(40-len(name))])
     jStatus = job["JobStatus"]
     if jStatus == "1":
-        print name, job["ClusterId"], "       idle"
+        print colored("\033[1m"+name+job["ClusterId"]+"       idle"+"\033[0m","yellow")
     elif jStatus == "2":
-        print name, job["RemoteHost"], "       running"
+        print colored("\033[1m"+name+job["RemoteHost"]+"       running"+"\033[0m","green")
         getProgressFromLog(job["Out"])
     elif jStatus == "5":
-        print name, job["ClusterId"], "       held"
+        print colored("\033[1m"+name+job["ClusterId"]+"       held"+"\033[0m","red")
     elif jStatus == "7":
         susTime = (time.time()-int(job["LastSuspensionTime"]))/60.
-        print name, job["RemoteHost"], "       suspended since {:.2f} min".format(susTime), "         "+job["RemoteHost"]
+        print colored("\033[1m"+name+job["RemoteHost"]+"       suspended since {:.2f} min".format(susTime)+"         "+job["RemoteHost"]+"\033[0m","red")
         if susTime > 10 :
             susJobs.append(job["ClusterId"])
     else:
