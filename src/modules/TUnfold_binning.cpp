@@ -56,8 +56,8 @@ void run()
    // ~bool withSameBins = true;
    
    // include signal to pseudo data
-   // ~bool withBSM = true;
-   bool withBSM = false;
+   bool withBSM = true;
+   // ~bool withBSM = false;
    
    //Use scale factor
    bool withScaleFactor = false;
@@ -159,7 +159,6 @@ void run()
 
    Float_t phiRec,metRec,phiGen,metGen,mcWeight,recoWeight,genMET,reweight;
    UInt_t genDecayMode;
-   unsigned char leptonVeto;
    // ~Int_t istriggered,issignal;
 
    TH1 *histDataReco=detectorBinning->CreateHistogram("histDataReco");
@@ -167,11 +166,11 @@ void run()
    TH1 *histDataTruth=generatorBinning->CreateHistogram("histDataTruth");
    TH1 *histDataTruth_fakes=generatorBinning->CreateHistogram("histDataTruth_fakes");
    
-   TString minTreePath = TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/",cfg.treeVersion.Data());
+   TString minTreePath = TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/%.1f/",cfg.treeVersion.Data(),cfg.processFraction*100);
    
-   TFile *dataFile=new TFile(TString::Format(minTreePath+sample+"_%.1f.root",cfg.processFraction*100),"read");
+   TFile *dataFile=new TFile(minTreePath+sample+".root","read");
    TTree *dataTree=(TTree *) dataFile->Get("ttbar_res100.0/"+sample);
-   TFile *bsmFile=new TFile(TString::Format(minTreePath+"T2tt_650_350_%.1f.root",cfg.processFraction*100),"read");
+   TFile *bsmFile=new TFile(minTreePath+"T2tt_650_350.root","read");
    TTree *BSMTree=(TTree *) bsmFile->Get("ttbar_res100.0/T2tt_650_350");
 
    if(!dataTree) {
@@ -199,7 +198,6 @@ void run()
    dataTree->SetBranchAddress("genDecayMode",&genDecayMode);
    dataTree->SetBranchAddress("N",&mcWeight);
    dataTree->SetBranchAddress("SF",&recoWeight);
-   dataTree->SetBranchAddress("VetoAnyBJetInMETdirection_addLeptonInJet",&leptonVeto);
    // ~dataTree->SetBranchAddress("issignal",&issignal);
    if(withPTreweight) dataTree->SetBranchAddress("reweight_PTnunu",&reweight);
    else reweight=1.0;
@@ -247,9 +245,6 @@ void run()
 
       // fill histogram with reconstructed quantities
       if (metRec<0) continue;   //events that are not reconstructed
-      
-      //additional leptonVeto (only for testing!!!)
-      if(int(leptonVeto)==1) continue;
       
       Int_t binNumber=detectorDistribution->GetGlobalBinNumber(metRec,phiRec);
       histDataReco->Fill(binNumber,mcWeight);
@@ -316,7 +311,7 @@ void run()
    TH1 *histMCRec_fakes=detectorBinning->CreateHistogram("histMCRec_fakes");
    TH1 *histMCRec_fakes_coarse=generatorBinning->CreateHistogram("histMCRec_fakes_coarse");
    
-   TFile *signalFile=new TFile(TString::Format(minTreePath+sample_response+"_%.1f.root",cfg.processFraction*100),"read");
+   TFile *signalFile=new TFile(minTreePath+sample_response+".root","read");
    TTree *signalTree=(TTree *) dataFile->Get("ttbar_res100.0/"+sample_response);
    
    if(!signalTree) {
@@ -342,7 +337,6 @@ void run()
    signalTree->SetBranchAddress("genDecayMode",&genDecayMode);
    signalTree->SetBranchAddress("N",&mcWeight);
    signalTree->SetBranchAddress("SF",&recoWeight);
-   signalTree->SetBranchAddress("VetoAnyBJetInMETdirection_addLeptonInJet",&leptonVeto);
 
    cout<<"loop over MC signal events\n";
    
@@ -379,12 +373,6 @@ void run()
       Int_t recBin_purity=0;
       recBin=detectorDistribution->GetGlobalBinNumber(metRec,phiRec);
       recBin_purity=signalBinning->GetGlobalBinNumber(metRec,phiRec);
-      
-      //additional leptonVeto (only for testing!!!)
-      if(int(leptonVeto)==1) {
-         recBin=0;
-         recBin_purity=0;
-      }
       
       // ~if (metGen<0 || genDecayMode>3) continue;
       if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40)) {

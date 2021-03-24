@@ -154,8 +154,8 @@ void run()
    // ~bool withSameBins = true;
    
    // include signal to pseudo data
-   // ~bool withBSM = true;
-   bool withBSM = false;
+   bool withBSM = true;
+   // ~bool withBSM = false;
    
    //Use scale factor
    bool withScaleFactor = false;

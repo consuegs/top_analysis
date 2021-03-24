@@ -129,6 +129,16 @@ void plot_response(TH2F* responseHist, TString name, io::RootFileSaver* saver) {
       tempHist->GetZaxis()->SetTitleOffset(0.55);
       tempHist->GetZaxis()->SetLabelOffset(0.0015);
       
+      TLine line;
+      line.SetLineColor(kGreen);
+      line.SetLineWidth(2);
+      line.SetLineStyle(2);
+      line.DrawLine(6.5,0.5,6.5,18.5);
+      line.DrawLine(12.5,0.5,12.5,18.5);
+      
+      line.DrawLine(0.5,6.5,18.5,6.5);
+      line.DrawLine(0.5,12.5,18.5,12.5);
+      
       can.RedrawAxis();
       saver->save(can,"response"+norm+"/"+name,true,true);
    }
@@ -184,8 +194,8 @@ void run()
    // ~bool withSameBins = true;
    
    // include signal to pseudo data
-   // ~bool withBSM = true;
-   bool withBSM = false;
+   bool withBSM = true;
+   // ~bool withBSM = false;
    
    //Use scale factor
    bool withScaleFactor = false;
@@ -336,7 +346,7 @@ void run()
    
    realDis_response->SetLineColor(kBlue);
    realDis_response->SetFillColor(kBlue);
-   realDis_response->Draw("hist same");
+   // ~realDis_response->Draw("hist same");
    
    //Draw vertical lines and binning ranges for deltaPhi
    TLine * aline = new TLine();
@@ -371,7 +381,7 @@ void run()
       atext->DrawLatex(30,3,TString::Format("#chi^{2}/NDF(corr.)=%.1f/%i",Chi2Pair_corr.first,Chi2Pair_corr.second));
    }
    legE.append(*realDis,"MC true ttbar","l");
-   legE.append(*realDis_response,"MC true ttbar (response)","l");
+   // ~legE.append(*realDis_response,"MC true ttbar (response)","l");
    TLegend leg=legE.buildLegend(.10,.45,0.25,.65,1);
    leg.SetTextSize(0.03);
    leg.Draw();
@@ -418,7 +428,7 @@ void run()
    
    ratio_response.SetLineColor(kBlue);
    ratio_response.SetMarkerColor(kBlue);
-   ratio_response.Draw("same");
+   // ~ratio_response.Draw("same");
    
    if (plotComparison) {
       ratio_unfolded.Draw("pe1x0 same");
