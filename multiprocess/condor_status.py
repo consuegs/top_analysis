@@ -55,7 +55,10 @@ for job in jobs:
         susTime = (time.time()-int(job["LastSuspensionTime"]))/60.
         print colored("\033[1m"+name+job["RemoteHost"]+"       suspended since {:.2f} min".format(susTime)+"         "+job["RemoteHost"]+"\033[0m","red")
         if susTime > 10 :
-            susJobs.append(job["ClusterId"])
+            value = input("Job suspended for more than 10 Minutes, please enter 1 to kill job and start again or 0 to continue:\n")
+            if value==1:
+                print "resubmitting job"
+                susJobs.append(job["ClusterId"])
     else:
         print "job status = ", jStatus
 
