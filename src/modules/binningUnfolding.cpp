@@ -244,16 +244,13 @@ void run()
          // ~TString sampleName="MadGraph";
          // ~TString sampleName="T2tt_650_350";
          // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0.root","read");
-         TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/TTbar_diLepton_100.0.root",cfg.treeVersion.Data()),"read");
-         // ~TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/TTbar_diLepton_1.0.root",cfg.treeVersion.Data()),"read");
-         TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/TTbar_"+sampleName, &file);
-         // ~TTreeReader reader((sampleName=="") ? "ttbar_res1.0/ttbar_res" : "ttbar_res1.0/TTbar_"+sampleName, &file);
-         
+         TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/100.0/TTbar_diLepton.root",cfg.treeVersion.Data()),"read");
+         TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/TTbar_"+sampleName, &file);         
          
          // ~TTreeReaderValue<float> MET   (reader, "MET");
          // ~TTreeReaderValue<float> MET   (reader, "DeepMET");
-         // ~TTreeReaderValue<float> MET   (reader, "PuppiMET");
-         TTreeReaderValue<float> MET   (reader, "DNN_regression");
+         TTreeReaderValue<float> MET   (reader, "PuppiMET");
+         // ~TTreeReaderValue<float> MET   (reader, "DNN_regression");
          // ~TTreeReaderValue<float> MET   (reader, "genMET");
          // ~TTreeReaderValue<float> MET   (reader, "XYcorrMET");
          TTreeReaderValue<float> PtNuNu   (reader, "PtNuNu");
@@ -291,7 +288,7 @@ void run()
          TTreeReaderValue<float> Lep2_flavor(reader, "Lep2_flavor");
          TTreeReaderValue<UInt_t> NnonPromptNeutrinos(reader, "NnonpromptNeutrinos");
          // ~TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
-         TTreeReaderValue<unsigned char> looseLeptonVeto(reader, "VetoAnyJetInMETdirection_addLeptonInJet");
+         // ~TTreeReaderValue<unsigned char> looseLeptonVeto(reader, "VetoAnyJetInMETdirection_addLeptonInJet");
          // ~TTreeReaderValue<std::vector<float>> v_bJet_muonFraction(reader, "bJet_muonFraction");
          // ~TTreeReaderValue<std::vector<float>> v_bJet_electronFraction(reader, "bJet_electronFraction");
          // ~TTreeReaderValue<std::vector<float>> v_Jet_muonFraction(reader, "Jet_muonFraction");
@@ -334,7 +331,7 @@ void run()
             
             if(*genDecayMode!=3 && *PtNuNu<40) continue;   //Remove SF events if ptNuNu is smaler than 40GeV
             // ~if(*NnonPromptNeutrinos>0) continue;
-            if(int(*looseLeptonVeto)==1) continue;
+            // ~if(int(*looseLeptonVeto)==1) continue;
             
             // ~if (*MET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection
             if (*PFMET<met_bins[0] || *PtNuNu<met_bins[0] || *Phi_rec<0 || *Phi_gen<0) continue;    //Purity and stability based only on events which fullfill pseudo and reco selection

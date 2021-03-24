@@ -24,7 +24,6 @@ void run()
    can.cd();
    io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()));
    
-   /*
    //Plotting comparison between PF and Puppi for different selections
    for (TString sel : {"baseline_met120","baseline_met120_ee","baseline_met120_emu","baseline_met120_mumu","baseline_genmet120","baseline_met200","baseline_met120_230","baseline_met230","baseline_matchedLep_met120","baseline"}){
          std::vector<TString> var_vec = {"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep"};
@@ -214,7 +213,6 @@ void run()
    ratio.SetMinimum(0.8);
    ratio.Draw("e1");
    saver.save(spcan,"dPhiComparison/fullSelection");
-   */
    
    
    //Plotting different METS and also comparision to SUSY
@@ -304,6 +302,7 @@ void run()
    }
    */
    
+   /*
    //Plotting MET Res Comparison including BJet Regression
    for (TString selection:{"baseline","baseline_genmet120"}){
       can.Clear();
@@ -338,4 +337,5 @@ void run()
       if (selection=="baseline") saver.save(can,"BRegrComparisons/CompareMetRes",true,true);
       else saver.save(can,"BRegrComparisons/CompareMetRes_genMet120",true,true);
    }
+   */
 }

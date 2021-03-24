@@ -137,6 +137,10 @@ void run()
    hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_Puppi", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
    hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_Puppi", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
    
+   hs2d.addHist("baseline/ee/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
+   hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
+   hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
+   
    hs2d.addHist("genParticles/ee/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("genParticles/emu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("genParticles/mumu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
@@ -207,7 +211,7 @@ void run()
       
       //Check if current sample is Run2016H
       bool Run2016H=false;
-      if (dss.datasetName.find("Run2016H")!=std::string::npos) Run2016H=true;
+      if (dss.name.find("Run2016H")!=std::string::npos) Run2016H=true;
       
       //Set boolean for savin minimalTree
       bool minimalTree=ttBar_dilepton || ttBar_dilepton_tau || ttBar_singleLepton || ttBar_hadronic || SUSY_T2tt_650_350 || DM_scalar_1_200 || isData;
@@ -227,7 +231,7 @@ void run()
       minTree_mLL;
       UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions_gen, minTree_looseLeptonVeto, minTree_NpromptNeutrinos, minTree_NnonpromptNeutrinos, minTree_ee, minTree_mumu, minTree_emu;
       ULong64_t minTree_evtNo;
-      bool minTree_leptonVeto, minTree_lepVetoPt40, minTree_VetoAllignedBJetMet, minTree_VetoAllignedBJetMet_lepVeto, minTree_VetoAllignedBJetMet_addLeptonInBJet, minTree_lepVetoIfaddLeptonInBJet, minTree_lepVetoIfaddLeptonInAnyBJet, minTree_VetoAnyBJetInMETdirection, minTree_VetoAnyJetInMETdirection, minTree_VetoAnyBJetInMETdirection_addLepton, minTree_VetoAnyJetInMETdirection_addLepton,minTree_VetoAnyBJetInMETdirection_addLeptonInJet, minTree_VetoAnyJetInMETdirection_addLeptonInJet;
+      // ~bool minTree_leptonVeto, minTree_lepVetoPt40, minTree_VetoAllignedBJetMet, minTree_VetoAllignedBJetMet_lepVeto, minTree_VetoAllignedBJetMet_addLeptonInBJet, minTree_lepVetoIfaddLeptonInBJet, minTree_lepVetoIfaddLeptonInAnyBJet, minTree_VetoAnyBJetInMETdirection, minTree_VetoAnyJetInMETdirection, minTree_VetoAnyBJetInMETdirection_addLepton, minTree_VetoAnyJetInMETdirection_addLepton,minTree_VetoAnyBJetInMETdirection_addLeptonInJet, minTree_VetoAnyJetInMETdirection_addLeptonInJet;
       // ~std::vector<float> minTree_v_bJet_muonFraction;
       // ~std::vector<float> minTree_v_bJet_electronFraction;
       // ~std::vector<float> minTree_v_Jet_muonFraction;
@@ -321,19 +325,19 @@ void run()
          ttbar_res.Branch("NpromptNeutrinos",&minTree_NpromptNeutrinos,"NpromptNeutrinos/i");
          ttbar_res.Branch("NnonpromptNeutrinos",&minTree_NnonpromptNeutrinos,"NnonpromptNeutrinos/i");
          ttbar_res.Branch("DNN_regression",&minTree_DNN_regression,"DNN_regression/f");
-         ttbar_res.Branch("leptonVeto",&minTree_leptonVeto,"leptonVeto/b");
-         ttbar_res.Branch("lepVetoPt40",&minTree_lepVetoPt40,"lepVetoPt40/b");
-         ttbar_res.Branch("VetoAllignedBJetMet",&minTree_VetoAllignedBJetMet,"VetoAllignedBJetMet/b");
-         ttbar_res.Branch("VetoAllignedBJetMet_lepVeto",&minTree_VetoAllignedBJetMet_lepVeto,"VetoAllignedBJetMet_lepVeto/b");
-         ttbar_res.Branch("VetoAllignedBJetMet_addLeptonInBJet",&minTree_VetoAllignedBJetMet_addLeptonInBJet,"VetoAllignedBJetMet_addLeptonInBJet/b");
-         ttbar_res.Branch("lepVetoIfaddLeptonInBJet",&minTree_lepVetoIfaddLeptonInBJet,"lepVetoIfaddLeptonInBJet/b");
-         ttbar_res.Branch("lepVetoIfaddLeptonInAnyBJet",&minTree_lepVetoIfaddLeptonInAnyBJet,"lepVetoIfaddLeptonInAnyBJet/b");
-         ttbar_res.Branch("VetoAnyBJetInMETdirection",&minTree_VetoAnyBJetInMETdirection,"VetoAnyBJetInMETdirection/b");
-         ttbar_res.Branch("VetoAnyJetInMETdirection",&minTree_VetoAnyJetInMETdirection,"VetoAnyJetInMETdirection/b");
-         ttbar_res.Branch("VetoAnyBJetInMETdirection_addLepton",&minTree_VetoAnyBJetInMETdirection_addLepton,"VetoAnyBJetInMETdirection_addLepton/b");
-         ttbar_res.Branch("VetoAnyJetInMETdirection_addLepton",&minTree_VetoAnyJetInMETdirection_addLepton,"VetoAnyJetInMETdirection_addLepton/b");
-         ttbar_res.Branch("VetoAnyBJetInMETdirection_addLeptonInJet",&minTree_VetoAnyBJetInMETdirection_addLeptonInJet,"VetoAnyBJetInMETdirection_addLeptonInJet/b");
-         ttbar_res.Branch("VetoAnyJetInMETdirection_addLeptonInJet",&minTree_VetoAnyJetInMETdirection_addLeptonInJet,"VetoAnyJetInMETdirection_addLeptonInJet/b");
+         // ~ttbar_res.Branch("leptonVeto",&minTree_leptonVeto,"leptonVeto/b");
+         // ~ttbar_res.Branch("lepVetoPt40",&minTree_lepVetoPt40,"lepVetoPt40/b");
+         // ~ttbar_res.Branch("VetoAllignedBJetMet",&minTree_VetoAllignedBJetMet,"VetoAllignedBJetMet/b");
+         // ~ttbar_res.Branch("VetoAllignedBJetMet_lepVeto",&minTree_VetoAllignedBJetMet_lepVeto,"VetoAllignedBJetMet_lepVeto/b");
+         // ~ttbar_res.Branch("VetoAllignedBJetMet_addLeptonInBJet",&minTree_VetoAllignedBJetMet_addLeptonInBJet,"VetoAllignedBJetMet_addLeptonInBJet/b");
+         // ~ttbar_res.Branch("lepVetoIfaddLeptonInBJet",&minTree_lepVetoIfaddLeptonInBJet,"lepVetoIfaddLeptonInBJet/b");
+         // ~ttbar_res.Branch("lepVetoIfaddLeptonInAnyBJet",&minTree_lepVetoIfaddLeptonInAnyBJet,"lepVetoIfaddLeptonInAnyBJet/b");
+         // ~ttbar_res.Branch("VetoAnyBJetInMETdirection",&minTree_VetoAnyBJetInMETdirection,"VetoAnyBJetInMETdirection/b");
+         // ~ttbar_res.Branch("VetoAnyJetInMETdirection",&minTree_VetoAnyJetInMETdirection,"VetoAnyJetInMETdirection/b");
+         // ~ttbar_res.Branch("VetoAnyBJetInMETdirection_addLepton",&minTree_VetoAnyBJetInMETdirection_addLepton,"VetoAnyBJetInMETdirection_addLepton/b");
+         // ~ttbar_res.Branch("VetoAnyJetInMETdirection_addLepton",&minTree_VetoAnyJetInMETdirection_addLepton,"VetoAnyJetInMETdirection_addLepton/b");
+         // ~ttbar_res.Branch("VetoAnyBJetInMETdirection_addLeptonInJet",&minTree_VetoAnyBJetInMETdirection_addLeptonInJet,"VetoAnyBJetInMETdirection_addLeptonInJet/b");
+         // ~ttbar_res.Branch("VetoAnyJetInMETdirection_addLeptonInJet",&minTree_VetoAnyJetInMETdirection_addLeptonInJet,"VetoAnyJetInMETdirection_addLeptonInJet/b");
          // ~ttbar_res.Branch("bJet_muonFraction",&minTree_v_bJet_muonFraction);
          // ~ttbar_res.Branch("bJet_electronFraction",&minTree_v_bJet_electronFraction);
          // ~ttbar_res.Branch("Jet_muonFraction",&minTree_v_Jet_muonFraction);
@@ -402,8 +406,8 @@ void run()
       TTreeReaderValue<float> w_bTag(reader, "bTagWeight");
       TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
       TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
-      TTreeReaderValue<std::vector<tree::Electron>> electrons_add(reader, "electrons_add");
-      TTreeReaderValue<std::vector<tree::Muon>>     muons_add    (reader, "muons_add");
+      // ~TTreeReaderValue<std::vector<tree::Electron>> electrons_add(reader, "electrons_add");
+      // ~TTreeReaderValue<std::vector<tree::Muon>>     muons_add    (reader, "muons_add");
       TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
       TTreeReaderValue<std::vector<tree::GenParticle>> genParticles(reader, "genParticles");
       TTreeReaderValue<std::vector<tree::IntermediateGenParticle>> intermediateGenParticles(reader, "intermediateGenParticles");     
@@ -738,6 +742,7 @@ void run()
          pT_top2=gen_tops[1].Pt();
          
          //Save different LeptonVetos and BJetVetos
+         /*
          minTree_leptonVeto=false;
          minTree_lepVetoPt40=false;
          minTree_VetoAllignedBJetMet=false;
@@ -807,6 +812,7 @@ void run()
             minTree_VetoAnyBJetInMETdirection_addLepton=minTree_VetoAnyBJetInMETdirection && minTree_leptonVeto;
             minTree_VetoAnyJetInMETdirection_addLepton=minTree_VetoAnyJetInMETdirection && minTree_leptonVeto;
          }
+         */
          
          //Evaluate DNN Regression
          float DNN_regression=-1;
@@ -1085,6 +1091,7 @@ void run()
          hs.fill("genParticles/"+path_cat+"/genHT",*HTgen);
          hs2d.fill("baseline/"+path_cat+"/2d_MetVSdPhiMetNearLep",met,abs(dPhiMETnearLep));
          hs2d.fill("baseline/"+path_cat+"/2d_MetVSdPhiMetNearLep_Puppi",met_puppi,abs(dPhiMETnearLepPuppi));
+         hs2d.fill("baseline/"+path_cat+"/2d_MetVSdPhiMetNearLep_DNN",DNN_regression,abs(dPhiMETnearLepPuppi));
          hs2d.fill("genParticles/"+path_cat+"/2d_PtNuNuVSdPhiNuNuNearLep",neutrinoPair.Pt(),abs(dPhiPtNunearLep));
          
          if (met>200){

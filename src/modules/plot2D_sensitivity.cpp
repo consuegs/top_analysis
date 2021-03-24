@@ -56,7 +56,8 @@ void run()
    
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot2D_sensitivity");
    // ~io::RootFileSaver saver(TString::Format("binningUnfolding%.1f.root",cfg.processFraction*100),"plot2D_sensitivity_0.91");
-   io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format("multiHists/histograms_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
    // ~io::RootFileReader histReader("histograms_v10.root",TString::Format("distributions%.1f",cfg.processFraction*100));
    // ~io::RootFileReader histReader(TString::Format("histograms_SF0.910000_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
    TCanvas can;
@@ -88,20 +89,24 @@ void run()
    int numberBinningSchemeMet=1;
    int numberBinningSchemePhi=1;
    
+   //Select base 2D hist
+   TString hist_2d="2d_MetVSdPhiMetNearLep_DNN/";
+   // ~TString hist_2d="2d_MetVSdPhiMetNearLep_Puppi/";
+   
    // ~for(std::vector<float> met_bins : {met_bins1,met_bins2,met_bins3,met_bins4}){
       // ~for(std::vector<float> phi_bins : {phi_bins1,phi_bins2,phi_bins3,phi_bins4}){
    for(std::vector<float> met_bins : {met_bins4}){
       for(std::vector<float> phi_bins : {phi_bins4}){
                
          for (TString bkgSample :{"SingleTop","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW"}) {     //Add all SM backgrounds except ttbar
-            add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+bkgSample,histReader,temp_hist);
-            if (bkgSample=="SingleTop") add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+bkgSample,histReader,SMbkg);
+            add_Categories(hist_2d+bkgSample,histReader,temp_hist);
+            if (bkgSample=="SingleTop") add_Categories(hist_2d+bkgSample,histReader,SMbkg);
             else SMbkg.Add(&temp_hist);
          }
          
          // ~add_Categories("2d_MetVSdPhiMetNearLep/TTbar",histReader,ttbar);
          // ~add_Categories("2d_MetVSdPhiMetNearLep/TTbar_diLepton",histReader,ttbar);
-         add_Categories("2d_MetVSdPhiMetNearLep_Puppi/TTbar_diLepton",histReader,ttbar);
+         add_Categories(hist_2d+"TTbar_diLepton",histReader,ttbar);
          
          std::cout<<"Correlation in ttbar: "<<ttbar.GetCorrelationFactor()<<std::endl;
          
@@ -114,7 +119,7 @@ void run()
          
          for (TString signalSample :{"T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){
             
-            add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+signalSample,histReader,signal);
+            add_Categories(hist_2d+signalSample,histReader,signal);
             signal=hist::rebinned(signal,met_bins,phi_bins);
             signal.Scale(137191.0/35867.05998);
             
@@ -182,15 +187,15 @@ void run()
                TH2F temp2;
                for (TString dibosonSample :{"WW","WZ","ZZ"}) {
                   if (dibosonSample=="WW") {
-                     add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+dibosonSample,histReader,temp);
+                     add_Categories(hist_2d+dibosonSample,histReader,temp);
                   }
                   else {
-                     add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+dibosonSample,histReader,temp2);
+                     add_Categories(hist_2d+dibosonSample,histReader,temp2);
                      temp.Add(&temp2);
                   }
                }
             }
-            else add_Categories("2d_MetVSdPhiMetNearLep_Puppi/"+bkgSample,histReader,temp);
+            else add_Categories(hist_2d+bkgSample,histReader,temp);
             
             temp=hist::rebinned(temp,met_bins,phi_bins);    //Rebin following the current binning scheme
             

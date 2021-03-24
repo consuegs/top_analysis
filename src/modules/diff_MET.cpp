@@ -27,15 +27,15 @@ bool matchLepton(TLorentzVector recoLep, TLorentzVector genLep) {
 extern "C"
 void run()
 {
-   // ~std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"});
-   std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8"});
+   std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"});
+   // ~std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8"});
    // ~std::vector<TString> vsDatasubsets({"ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4","ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4"});
    // ~std::vector<TString> vsDatasubsets({"DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8","DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_merged"});
    // ~std::vector<TString> vsDatasubsets({"WW_TuneCUETP8M1_13TeV-pythia8_merged"});
    // ~std::vector<TString> vsDatasubsets({"SMS-T2tt_mStop-650_mLSP-350_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"});
    
-   // ~std::vector<TString> samplesToCombine={"TTbar_diLepton"};
-   std::vector<TString> samplesToCombine={"TTbar_diLepton_CUETP8M2"};
+   std::vector<TString> samplesToCombine={"TTbar_diLepton"};
+   // ~std::vector<TString> samplesToCombine={"TTbar_diLepton_CUETP8M2"};
    // ~std::vector<TString> samplesToCombine={"SingleTop"};
    // ~std::vector<TString> samplesToCombine={"DrellYan"};
    // ~std::vector<TString> samplesToCombine={"WW"};
@@ -146,8 +146,8 @@ void run()
       TTreeReaderValue<tree::MET> MET_JESu(reader, "met_JESu");
       TTreeReaderValue<tree::MET> MET_JESd(reader, "met_JESd");
       TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
-      TTreeReaderValue<tree::MET> MET_BReg(reader, "metBJetRegression");
-      TTreeReaderValue<tree::MET> MET_BRegLB(reader, "metBJetRegressionLoose");
+      // ~TTreeReaderValue<tree::MET> MET_BReg(reader, "metBJetRegression");
+      // ~TTreeReaderValue<tree::MET> MET_BRegLB(reader, "metBJetRegressionLoose");
       TTreeReaderValue<tree::MET> MET_NoHF(reader, "metNoHF");
       TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
       TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
@@ -291,10 +291,10 @@ void run()
          if(pseudo_selection){
             hs.fill("baseline/METres",met-neutrinoPair.Pt());
             hs.fill("baseline/METresPuppi",MET_Puppi->p.Pt()-neutrinoPair.Pt());
-            hs.fill("baseline/METresBJetRegr",MET_BReg->p.Pt()-neutrinoPair.Pt());
-            hs.fill("baseline/METresBJetLBRegr",MET_BRegLB->p.Pt()-neutrinoPair.Pt());
+            // ~hs.fill("baseline/METresBJetRegr",MET_BReg->p.Pt()-neutrinoPair.Pt());
+            // ~hs.fill("baseline/METresBJetLBRegr",MET_BRegLB->p.Pt()-neutrinoPair.Pt());
             hs.fill("baseline/METresBJetLBRegr_manual",met_manual_BJetRegr.Pt()-neutrinoPair.Pt());
-            hs2D.fill("baseline/diffMET_BJetLBRegr_diffGenMET_PtNuNu",met-MET_BRegLB->p.Pt(),genMet-neutrinoPair.Pt());
+            // ~hs2D.fill("baseline/diffMET_BJetLBRegr_diffGenMET_PtNuNu",met-MET_BRegLB->p.Pt(),genMet-neutrinoPair.Pt());
             hs2D.fill("baseline/diffMET_BJetLBRegrMan_diffGenMET_PtNuNu",met-met_manual_BJetRegr.Pt(),genMet-neutrinoPair.Pt());
          }
          
@@ -310,8 +310,8 @@ void run()
             if(pseudo_selection){
                hs.fill("baseline_genmet120/METres",met-neutrinoPair.Pt());
                hs.fill("baseline_genmet120/METresPuppi",MET_Puppi->p.Pt()-neutrinoPair.Pt());
-               hs.fill("baseline_genmet120/METresBJetRegr",MET_BReg->p.Pt()-neutrinoPair.Pt());
-               hs.fill("baseline_genmet120/METresBJetLBRegr",MET_BRegLB->p.Pt()-neutrinoPair.Pt());
+               // ~hs.fill("baseline_genmet120/METresBJetRegr",MET_BReg->p.Pt()-neutrinoPair.Pt());
+               // ~hs.fill("baseline_genmet120/METresBJetLBRegr",MET_BRegLB->p.Pt()-neutrinoPair.Pt());
             }
          }
          
@@ -339,8 +339,8 @@ void run()
             if(pseudo_selection){
                hs.fill("baseline_met120/METres",met-neutrinoPair.Pt());
                hs.fill("baseline_met120/METresPuppi",MET_Puppi->p.Pt()-neutrinoPair.Pt());
-               hs.fill("baseline_met120/METresBJetRegr",MET_BReg->p.Pt()-neutrinoPair.Pt());
-               hs.fill("baseline_met120/METresBJetLBRegr",MET_BRegLB->p.Pt()-neutrinoPair.Pt());
+               // ~hs.fill("baseline_met120/METresBJetRegr",MET_BReg->p.Pt()-neutrinoPair.Pt());
+               // ~hs.fill("baseline_met120/METresBJetLBRegr",MET_BRegLB->p.Pt()-neutrinoPair.Pt());
             }
          }
          

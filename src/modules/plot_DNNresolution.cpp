@@ -22,8 +22,8 @@ void run()
    
    TCanvas can;
    can.cd();
-   io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton%.1f.root",cfg.processFraction*100));
-   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_T2tt_650_350%.1f.root",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton%.1f.root",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format("binningUnfolding_T2tt_650_350%.1f.root",cfg.processFraction*100));
    
    std::vector<float> axisLimits_low={0,0,0,50,50,50};
    std::vector<float> axisLimits_high={150,150,200,250,300,500};
@@ -82,14 +82,14 @@ void run()
       TH1F* diffCorr_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffcorr_"+bin);
       TH1F* diffScaled_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffscaled_"+bin);
       
-      diff_hist->Rebin(2);
-      diffPF_hist->Rebin(2);
-      diffCorr_hist->Rebin(2);
-      diffScaled_hist->Rebin(2);
-      // ~diff_hist->Rebin(20);
-      // ~diffPF_hist->Rebin(20);
-      // ~diffCorr_hist->Rebin(20);
-      // ~diffScaled_hist->Rebin(20);
+      // ~diff_hist->Rebin(2);
+      // ~diffPF_hist->Rebin(2);
+      // ~diffCorr_hist->Rebin(2);
+      // ~diffScaled_hist->Rebin(2);
+      diff_hist->Rebin(20);
+      diffPF_hist->Rebin(20);
+      diffCorr_hist->Rebin(20);
+      diffScaled_hist->Rebin(20);
       
       diff_hist->SetLineColor(kRed);
       diffPF_hist->SetLineColor(kBlack);
@@ -97,8 +97,8 @@ void run()
       diffScaled_hist->SetLineColor(kGray);
       
       diff_hist->SetStats(0);
-      diff_hist->GetYaxis()->SetRangeUser(0,1.4*diff_hist->GetMaximum());
-      diff_hist->GetXaxis()->SetTitle("Difference (GeV)");
+      diff_hist->GetYaxis()->SetRangeUser(0,1.4*diffCorr_hist->GetMaximum());
+      diff_hist->GetXaxis()->SetTitle("genMET-recoMET (GeV)");
       diff_hist->GetYaxis()->SetTitle("Events/Bin");
       
       diff_hist->Draw("hist");
@@ -107,9 +107,9 @@ void run()
       // ~diffScaled_hist->Draw("hist same");
       
       gfx::LegendEntries le2;
-      le2.append(*diff_hist,TString::Format("genMET-PuppiMET(#mu=%.1f #sigma=%.1f)",diff_hist->GetMean(),diff_hist->GetRMS()),"l");
-      le2.append(*diffPF_hist,TString::Format("genMET-PFMET(#mu=%.1f #sigma=%.1f)",diffPF_hist->GetMean(),diffPF_hist->GetRMS()),"l");
-      le2.append(*diffCorr_hist,TString::Format("genMET-DNN(#mu=%.1f #sigma=%.1f)",diffCorr_hist->GetMean(),diffCorr_hist->GetRMS()),"l");
+      le2.append(*diff_hist,TString::Format("PuppiMET(#mu=%.1f #sigma=%.1f)",diff_hist->GetMean(),diff_hist->GetRMS()),"l");
+      le2.append(*diffPF_hist,TString::Format("PFMET(#mu=%.1f #sigma=%.1f)",diffPF_hist->GetMean(),diffPF_hist->GetRMS()),"l");
+      le2.append(*diffCorr_hist,TString::Format("DNN(#mu=%.1f #sigma=%.1f)",diffCorr_hist->GetMean(),diffCorr_hist->GetRMS()),"l");
       // ~le2.append(*diffScaled_hist,TString::Format("genMET-scaled PuppiMET(#mu=%.1f #sigma=%.1f)",diffScaled_hist->GetMean(),diffScaled_hist->GetRMS()),"l");
       TLegend leg2=le2.buildLegend(.45,.75,1-1.5*gPad->GetRightMargin(),-1,1);
       leg2.Draw();

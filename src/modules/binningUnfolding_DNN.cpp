@@ -105,12 +105,14 @@ void run()
    migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
       
    // ~TString sampleName="";
-   TString sampleName="diLepton";
+   // ~TString sampleName="diLepton";
    // ~TString sampleName="dilepton_CP5";
    // ~TString sampleName="MadGraph";
-   // ~TString sampleName="T2tt_650_350";
-   TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/TTbar_diLepton_100.0.root",cfg.treeVersion.Data()),"read");
-   TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/TTbar_"+sampleName, &file);
+   TString sampleName="T2tt_650_350";
+   TString treeName="TTbar_"+sampleName;
+   if (sampleName=="T2tt_650_350") treeName=sampleName;
+   TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/100.0/"+treeName+".root",cfg.treeVersion.Data()),"read");
+   TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/"+treeName, &file);
    
    
    // ~TTreeReaderValue<float> MET   (reader, "MET");

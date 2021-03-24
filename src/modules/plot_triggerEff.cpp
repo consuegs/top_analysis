@@ -73,7 +73,8 @@ void run()
    }
    
    //Plot 2D scale factors (Data/MC)
-   for(TString selection:{"baseline","Zpeak","Zpeak_noJetRequ"}){
+   // ~for(TString selection:{"baseline","Zpeak","Zpeak_noJetRequ"}){
+   for(TString selection:{"baseline"}){
       for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
          for(TString channel:{"ee","mumu","emu"}){
             TString var=(channel!="emu")? "pTl1_pTl2":"pTlmu_pTle";

@@ -161,6 +161,7 @@ void run()
             st_mc.SetMaximum(1e6);
          }
          st_mc.Draw();
+         if(sPresel.Contains("cutflow")) st_mc.GetXaxis()->SetRangeUser(0.5,7.5);
          
          auto hist_data = hs.getHistogram(loc,{"data"});
          if(sPresel.Contains("cutflow")) hist_data->Draw("same");
@@ -183,15 +184,14 @@ void run()
          TH1F ratio=hist::getRatio(*hist_data,st_mc,"data/MC",hist::ONLY1);
          TH1F ratio_mc=hist::getRatio(st_mc,st_mc,"data/MC",hist::ONLY1);
          if(sPresel.Contains("cutflow")){
-            ratio_mc.GetXaxis()->SetBinLabel(1,"Ntuple");
-            ratio_mc.GetXaxis()->SetBinLabel(2,"Lepton eta,ID,ISO");
-            ratio_mc.GetXaxis()->SetBinLabel(3,"Lepton pT");
-            ratio_mc.GetXaxis()->SetBinLabel(4,"mll");
-            ratio_mc.GetXaxis()->SetBinLabel(5,"jets");
-            ratio_mc.GetXaxis()->SetBinLabel(6,"met");
-            ratio_mc.GetXaxis()->SetBinLabel(7,"btag");
-            ratio_mc.GetXaxis()->SetBinLabel(8,"triggerSF");
-            ratio_mc.GetXaxis()->SetBinLabel(9,"(addLepton veto)");
+            ratio_mc.GetXaxis()->SetBinLabel(1,"DiLepton");
+            ratio_mc.GetXaxis()->SetBinLabel(2,"mll");
+            ratio_mc.GetXaxis()->SetBinLabel(3,"jets");
+            ratio_mc.GetXaxis()->SetBinLabel(4,"met");
+            ratio_mc.GetXaxis()->SetBinLabel(5,"btag");
+            ratio_mc.GetXaxis()->SetBinLabel(6,"ScaleFactors");
+            ratio_mc.GetXaxis()->SetBinLabel(7,"(addLepton veto)");
+            ratio_mc.GetXaxis()->SetRangeUser(0.5,7.5);
          }
          ratio_mc.GetYaxis()->SetTitleOffset(0.45);
          ratio_mc.SetStats(0);
