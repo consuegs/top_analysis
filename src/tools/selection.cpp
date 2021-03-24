@@ -61,27 +61,27 @@ bool selection::triggerSelection(std::vector<bool> const &diElectronTriggers, st
       //mumu
       else if(PD[2] && channel[1]){
          triggerData=diMuonTriggers[4] || diMuonTriggers[5];
-         if (is2016H) triggerData_veto=diMuonTriggers[2] || diMuonTriggers[3];
+         if (is2016H) triggerData_veto=diMuonTriggers[0] || diMuonTriggers[1];
          else triggerData_veto=diMuonTriggers[0] || diMuonTriggers[1] || diMuonTriggers[2] || diMuonTriggers[3];
       }
       else if(PD[3] && channel[1]){
-         if (is2016H) triggerData=diMuonTriggers[2] || diMuonTriggers[3];
+         if (is2016H) triggerData=diMuonTriggers[0] || diMuonTriggers[1];
          else triggerData=diMuonTriggers[0] || diMuonTriggers[1] || diMuonTriggers[2] || diMuonTriggers[3];
          triggerData_veto=false;
       }
       //emu
       else if(PD[2] && channel[2]){
          triggerData=diMuonTriggers[4] || diMuonTriggers[5];
-         if (is2016H) triggerData_veto=electronMuonTriggers[2] || electronMuonTriggers[3] || diElectronTriggers[1];
+         if (is2016H) triggerData_veto=electronMuonTriggers[0] || electronMuonTriggers[1] || diElectronTriggers[1];
          else triggerData_veto=electronMuonTriggers[0] || electronMuonTriggers[1] || electronMuonTriggers[2] || electronMuonTriggers[3] || diElectronTriggers[1];
       }
       else if(PD[0] && channel[2]){
          triggerData=diElectronTriggers[1];
-         if (is2016H) triggerData_veto=electronMuonTriggers[2] || electronMuonTriggers[3];
+         if (is2016H) triggerData_veto=electronMuonTriggers[0] || electronMuonTriggers[1];
          else triggerData_veto=electronMuonTriggers[0] || electronMuonTriggers[1] || electronMuonTriggers[2] || electronMuonTriggers[3];
       }
       else if(PD[4] && channel[2]){
-         if (is2016H) triggerData=electronMuonTriggers[2] || electronMuonTriggers[3];
+         if (is2016H) triggerData=electronMuonTriggers[0] || electronMuonTriggers[1];
          else triggerData=electronMuonTriggers[0] || electronMuonTriggers[1] || electronMuonTriggers[2] || electronMuonTriggers[3];
          triggerData_veto=false;
       }
