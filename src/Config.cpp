@@ -23,7 +23,7 @@ Config::Config()
       cfgFile+="config"+config_year+".ini";
    }
    else{
-      std::cout<<"Analysis year is not defined"<<std::endl;
+      std::cout<<"Analysis year is not defined (to change set ANALYSIS_YEAR_CONFIG variable)"<<std::endl;
       throw;
    }
    boost::property_tree::read_ini(cfgFile,pt);
