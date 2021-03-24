@@ -2,6 +2,8 @@
 
 #include "tools/io.hpp"
 #include "tools/util.hpp"
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <TROOT.h>
 
@@ -15,7 +17,15 @@ Config::Config()
 {
    // ~boost::property_tree::ptree pt;
    std::string cfgFile(CMAKE_SOURCE_DIR);
-   cfgFile+="config.ini";
+   std::string config_year=getenv("ANALYSIS_YEAR_CONFIG");
+   if (config_year!=NULL){
+      std::cout<<"Running on year "+config_year+" (to change set ANALYSIS_YEAR_CONFIG variable)"<<std::endl;
+      cfgFile+="config"+config_year+".ini";
+   }
+   else{
+      std::cout<<"Analysis year is not defined"<<std::endl;
+      throw;
+   }
    boost::property_tree::read_ini(cfgFile,pt);
 
    treeVersion=pt.get<std::string>("input.version");
