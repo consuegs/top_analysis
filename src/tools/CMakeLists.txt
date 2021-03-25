@@ -7,6 +7,8 @@ set(SRCS
   efficiency.cpp
   MT2Functor.cc
   selection.cpp
+  dataTrigger2016.cpp
+  dataTrigger2017.cpp
   )
 
 add_library(tools SHARED ${SRCS})

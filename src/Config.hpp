@@ -21,10 +21,25 @@ public:
    TString trigger_SF_mumu;
    TString trigger_SF_emu;
    
+   TString muonTrigg1;
+   TString muonTrigg2;
+   TString muonTrigg3;
+   TString muonTrigg4;
+   TString singleMuonTrigg1;
+   TString singleMuonTrigg2;
+   TString eleTrigg1;
+   TString eleTrigg2;
+   TString eleMuTrigg1;
+   TString eleMuTrigg2;
+   TString eleMuTrigg3;
+   TString eleMuTrigg4;
+   TString singleEleTrigg;
+   
    bool applyDNN;
 
    TString treeVersion;
    TString year;
+   int year_int;
    TString treeName;
    TString gitHash;
    TString dataBasePath;

@@ -30,6 +30,7 @@ Config::Config()
 
    treeVersion=pt.get<std::string>("input.version");
    year=pt.get<std::string>("input.year");
+   year_int=pt.get<int>("input.year_int");
    treeName=pt.get<std::string>("input.treeName");
    dataBasePath=pt.get<std::string>("input.dataBasePath")+treeVersion+"/";
    gitHash=io::shellOutput("git log -1 --pretty=format:%h");
@@ -39,6 +40,20 @@ Config::Config()
    trigger_SF_ee=pt.get<std::string>("sf.trigger_SF_ee");
    trigger_SF_mumu=pt.get<std::string>("sf.trigger_SF_mumu");
    trigger_SF_emu=pt.get<std::string>("sf.trigger_SF_emu");
+   
+   muonTrigg1=pt.get<std::string>("trigger.muonTrigg1");
+   muonTrigg2=pt.get<std::string>("trigger.muonTrigg2");
+   muonTrigg3=pt.get<std::string>("trigger.muonTrigg3");
+   muonTrigg4=pt.get<std::string>("trigger.muonTrigg4");
+   singleMuonTrigg1=pt.get<std::string>("trigger.singleMuonTrigg1");
+   singleMuonTrigg2=pt.get<std::string>("trigger.singleMuonTrigg2");
+   eleTrigg1=pt.get<std::string>("trigger.eleTrigg1");
+   eleTrigg2=pt.get<std::string>("trigger.eleTrigg2");
+   eleMuTrigg1=pt.get<std::string>("trigger.eleMuTrigg1");
+   eleMuTrigg2=pt.get<std::string>("trigger.eleMuTrigg2");
+   eleMuTrigg3=pt.get<std::string>("trigger.eleMuTrigg3");
+   eleMuTrigg4=pt.get<std::string>("trigger.eleMuTrigg4");
+   singleEleTrigg=pt.get<std::string>("trigger.singleEleTrigg");
    
    applyDNN=pt.get<bool>("others.applyDNN");
 

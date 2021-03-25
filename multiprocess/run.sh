@@ -9,5 +9,6 @@ cd $TEMPVAR
 
 cd ../build
 
-# ~./run.x -f0.01 distributions
+export ANALYSIS_YEAR_CONFIG="$4"
+
 ./run.x "$1" "$2" "$3"

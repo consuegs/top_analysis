@@ -15,8 +15,8 @@ class Range(object):
 #  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
 #  ~toProcess_mc=["TTbar_diLepton"]
 toProcess_mc=[]
-toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
-#  ~toProcess_data=["DoubleMuon"]
+#  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
+toProcess_data=["MuonEG"]
 #  ~toProcess_data=[]
 #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
 #  ~toProcess_signal=["T1tttt_1200_800"]
@@ -30,6 +30,7 @@ toProcess_signal=[]
 parser = argparse.ArgumentParser()
 parser.add_argument('-m', type=str, default="distributions", help="module")
 parser.add_argument('-f', type=float, choices=[Range(0.0, 1.0)], default=1.0, help="process fraction")
+parser.add_argument('-y', type=str, default="2016", help="year to be set as ANALYSIS_YEAR_CONFIG")
 args = parser.parse_args()
 
 print "Running "+args.m
@@ -51,11 +52,11 @@ for sel in [[toProcess_mc,"--mc_dataset="],[toProcess_data,"--data_dataset="],[t
                 f.write("""
 Universe        = vanilla
 Executable      = run.sh
-Arguments       = {0} {1} {2}
+Arguments       = {0} {1} {2} {5}
 Log             = logs/{3}_{0}.log
 Output          = logs/{3}_{0}.out
 Error           = logs/{3}_{0}.error
 Request_Memory  = {4} Mb
 Queue
-""".format("-f"+str(args.f),args.m,sampleStr,x,str(requ_mem)))
+""".format("-f"+str(args.f),args.m,sampleStr,x,str(requ_mem),args.y))
             subprocess.call(["condor_submit", "submitCondor.txt"])

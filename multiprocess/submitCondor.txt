@@ -1,9 +1,9 @@
 
 Universe        = vanilla
 Executable      = run.sh
-Arguments       = -f1.0 distributions --data_dataset=SingleElectron
-Log             = logs/SingleElectron_-f1.0.log
-Output          = logs/SingleElectron_-f1.0.out
-Error           = logs/SingleElectron_-f1.0.error
+Arguments       = -f1.0 distributions --data_dataset=MuonEG 2016
+Log             = logs/MuonEG_-f1.0.log
+Output          = logs/MuonEG_-f1.0.out
+Error           = logs/MuonEG_-f1.0.error
 Request_Memory  = 1500 Mb
 Queue

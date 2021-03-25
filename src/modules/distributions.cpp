@@ -158,6 +158,7 @@ void run()
 
       bool const isData=dss.isData;
       bool const isSignal=dss.isSignal;
+      int year_int=cfg.year_int;
             
       hs.setCurrentSample(dss.name);
       hs_cutflow.setCurrentSample(dss.name);
@@ -212,6 +213,11 @@ void run()
       //Check if current sample is Run2016H
       bool Run2016H=false;
       if (dss.name.find("Run2016H")!=std::string::npos) Run2016H=true;
+      
+      //Check if current sample is Run2017AB
+      bool Run2017AB=false;
+      if (dss.name.find("Run2017A")!=std::string::npos) Run2017AB=true;
+      else if (dss.name.find("Run2017B")!=std::string::npos) Run2017AB=true;
       
       //Set boolean for savin minimalTree
       bool minimalTree=ttBar_dilepton || ttBar_dilepton_tau || ttBar_singleLepton || ttBar_hadronic || SUSY_T2tt_650_350 || DM_scalar_1_200 || isData;
@@ -434,18 +440,19 @@ void run()
       TTreeReaderValue<float> genMT2neutrino   (reader, "genMT2neutrino");
       TTreeReaderValue<float> sf_lep1(reader, "lepton1SF");
       TTreeReaderValue<float> sf_lep2(reader, "lepton2SF");
-      TTreeReaderValue<bool> muonTrigg1(reader, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-      TTreeReaderValue<bool> muonTrigg2(reader, "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
-      TTreeReaderValue<bool> muonTrigg3(reader, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
-      TTreeReaderValue<bool> muonTrigg4(reader, "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
-      TTreeReaderValue<bool> singleMuonTrigg1(reader, "HLT_IsoMu24_v");
-      TTreeReaderValue<bool> singleMuonTrigg2(reader, "HLT_IsoTkMu24_v");
-      TTreeReaderValue<bool> eleTrigg(reader, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-      TTreeReaderValue<bool> eleMuTrigg1(reader, "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-      TTreeReaderValue<bool> eleMuTrigg2(reader, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
-      TTreeReaderValue<bool> eleMuTrigg3(reader, "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v");
-      TTreeReaderValue<bool> eleMuTrigg4(reader, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
-      TTreeReaderValue<bool> singleEleTrigg(reader, "HLT_Ele27_WPTight_Gsf_v");
+      TTreeReaderValue<bool> muonTrigg1(reader, cfg.muonTrigg1);
+      TTreeReaderValue<bool> muonTrigg2(reader, cfg.muonTrigg2);
+      TTreeReaderValue<bool> muonTrigg3(reader, cfg.muonTrigg3);
+      TTreeReaderValue<bool> muonTrigg4(reader, cfg.muonTrigg4);
+      TTreeReaderValue<bool> singleMuonTrigg1(reader, cfg.singleMuonTrigg1);
+      TTreeReaderValue<bool> singleMuonTrigg2(reader, cfg.singleMuonTrigg2);
+      TTreeReaderValue<bool> eleTrigg1(reader, cfg.eleTrigg1);
+      TTreeReaderValue<bool> eleTrigg2(reader, cfg.eleTrigg2);
+      TTreeReaderValue<bool> eleMuTrigg1(reader, cfg.eleMuTrigg1);
+      TTreeReaderValue<bool> eleMuTrigg2(reader, cfg.eleMuTrigg2);
+      TTreeReaderValue<bool> eleMuTrigg3(reader, cfg.eleMuTrigg3);
+      TTreeReaderValue<bool> eleMuTrigg4(reader, cfg.eleMuTrigg4);
+      TTreeReaderValue<bool> singleEleTrigg(reader, cfg.singleEleTrigg);
       TTreeReaderValue<TLorentzVector> genTop(reader, "pseudoTop");
       TTreeReaderValue<TLorentzVector> genAntiTop(reader, "pseudoAntiTop");
       TTreeReaderValue<TLorentzVector> genLepton(reader, "pseudoLepton");
@@ -501,7 +508,7 @@ void run()
          if (ttBar_dilepton && *genDecayMode>3) continue;
          
          //Trigger selection
-         std::vector<bool> diElectronTriggers={*eleTrigg,*singleEleTrigg};
+         std::vector<bool> diElectronTriggers={*eleTrigg1,*eleTrigg2,*singleEleTrigg};
          std::vector<bool> diMuonTriggers={*muonTrigg1,*muonTrigg2,*muonTrigg3,*muonTrigg4,*singleMuonTrigg1,*singleMuonTrigg2};
          std::vector<bool> electronMuonTriggers={*eleMuTrigg1,*eleMuTrigg2,*eleMuTrigg3,*eleMuTrigg4,*singleMuonTrigg1,*singleMuonTrigg2,*singleEleTrigg};
          std::vector<bool> channel={*is_ee,*is_mumu,*is_emu};
@@ -509,10 +516,10 @@ void run()
          bool triggerMC=true;
          
          if (!isData){
-            triggerMC=selection::triggerSelection(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,false);
+            triggerMC=selection::triggerSelection(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,false,year_int);
          }
          else{
-            if(!selection::triggerSelection(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,true,PD,Run2016H)) continue;
+            if(!selection::triggerSelection(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,true,year_int,PD,Run2016H,Run2017AB)) continue;
          }
          
          //Baseline selection (separation into ee, emu, mumu already done at TreeWriter)

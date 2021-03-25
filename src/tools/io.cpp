@@ -55,7 +55,8 @@ io::RootFileSaver::RootFileSaver(TString rootFileName,TString internalPath,bool 
    if (standardOutputDirectory) fPath_=CMAKE_SOURCE_DIR+TString::Format("/%s/",cfg.outputDirectory.Data())+fName_;
    else {
       fPath_=fName_;
-      option="recreate";
+      // ~option="recreate";
+      option="update";
    }
    ensurePathForFile(fPath_);
    file_ = new TFile(fPath_,option);
