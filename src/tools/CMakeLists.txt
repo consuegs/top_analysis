@@ -9,6 +9,7 @@ set(SRCS
   selection.cpp
   dataTrigger2016.cpp
   dataTrigger2017.cpp
+  dataTrigger2018.cpp
   )
 
 add_library(tools SHARED ${SRCS})

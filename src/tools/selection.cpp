@@ -1,6 +1,7 @@
 #include "selection.hpp"
 #include "dataTrigger2016.hpp"
 #include "dataTrigger2017.hpp"
+#include "dataTrigger2018.hpp"
 #include <iostream>
 
 #include <limits>
@@ -26,6 +27,9 @@ bool selection::triggerSelection(std::vector<bool> const &diElectronTriggers, st
             break;
          case 2:
             data=dataTrigger2017::DataTriggerSelection2017(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,PD,is2017AB);
+            break;
+         case 3:
+            data=dataTrigger2018::DataTriggerSelection2018(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,PD);
             break;
       }
       return data;

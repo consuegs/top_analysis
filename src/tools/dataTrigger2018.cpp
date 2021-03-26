@@ -1,63 +1,57 @@
-#include "dataTrigger2017.hpp"
+#include "dataTrigger2018.hpp"
 
 /*
-   Trigger Selection Function for 2017
+   Trigger Selection Function for 2018
    The vectors have the following structure
    diElectronTriggers: 
                         HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
                         HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v
-                        HLT_Ele32_WPTight_Gsf_L1DoubleEG_v
+                        HLT_Ele32_WPTight_Gsf_v
    diMuonTriggers:
-                        HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v
                         HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v   
                         HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v     (placeholder, since other years have more triggers)
                         HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v     (placeholder, since other years have more triggers)
-                        HLT_IsoMu27_v        !!!!!!!!!Has to changed in config for new Trees, currently HLT_IsoMu24_v is used)
-                        HLT_IsoMu27_v                                     (placeholder, since other years have more triggers)
+                        HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v     (placeholder, since other years have more triggers)
+                        HLT_IsoMu24_v
+                        HLT_IsoMu24_v                                     (placeholder, since other years have more triggers)
    electronMuonTriggers:
                         HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v
                         HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v
                         HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v
                         HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v
-                        HLT_IsoMu27_v
-                        HLT_IsoMu27_v                                     (placeholder, since other years have more triggers)
-                        HLT_Ele32_WPTight_Gsf_L1DoubleEG_v
+                        HLT_IsoMu24_v
+                        HLT_IsoMu24_v                                     (placeholder, since other years have more triggers)
+                        HLT_Ele32_WPTight_Gsf_v
    
    channel: ee,mumu,emu
    
    PD:
-         SingleElectron
-         DoubleEG
+         SingleElectron               (Placeholder for 2016/2017)
+         DoubleEG                     (Placeholder for 2016/2017)
          SingleMuon
          DoubleMuon
          MuonEG
-         EGamma               (Placeholder for 2018)
+         EGamma
  */
 
-bool dataTrigger2017::DataTriggerSelection2017(std::vector<bool> const &diElectronTriggers, std::vector<bool> const &diMuonTriggers, std::vector<bool> const &electronMuonTriggers,
-                        std::vector<bool> const &channel, std::vector<bool> const &PD, bool const &is2017AB)
+bool dataTrigger2018::DataTriggerSelection2018(std::vector<bool> const &diElectronTriggers, std::vector<bool> const &diMuonTriggers, std::vector<bool> const &electronMuonTriggers,
+                        std::vector<bool> const &channel, std::vector<bool> const &PD)
 {
    bool triggerData;
    bool triggerData_veto;
    
    //ee
-   if(PD[0] && channel[0]){   //SingleElectron
-      triggerData=diElectronTriggers[2];
-      triggerData_veto=diElectronTriggers[0] || diElectronTriggers[1];
-   }
-   else if(PD[1] && channel[0]){    //DoubleEG
-      triggerData=diElectronTriggers[0] || diElectronTriggers[1];
+   if(PD[5] && channel[0]){   //EGamma
+      triggerData=diElectronTriggers[0] || diElectronTriggers[1] || diElectronTriggers[2];
       triggerData_veto=false;
    }
    //mumu
    else if(PD[2] && channel[1]){    //SingleMuon
       triggerData=diMuonTriggers[4];
-      if (is2017AB) triggerData_veto=diMuonTriggers[0];
-      else triggerData_veto=diMuonTriggers[1];
+      triggerData_veto=diMuonTriggers[0];
    }
    else if(PD[3] && channel[1]){    //DoubleMuon
-      if (is2017AB) triggerData=diMuonTriggers[0];
-      else triggerData=diMuonTriggers[1];
+      triggerData=diMuonTriggers[0];
       triggerData_veto=false;
    }
    //emu
@@ -65,7 +59,7 @@ bool dataTrigger2017::DataTriggerSelection2017(std::vector<bool> const &diElectr
       triggerData=electronMuonTriggers[4];
       triggerData_veto=electronMuonTriggers[0] || electronMuonTriggers[1] || electronMuonTriggers[2] || electronMuonTriggers[3] || diElectronTriggers[2];
    }
-   else if(PD[0] && channel[2]){    //SingleElectron
+   else if(PD[5] && channel[2]){    //EGamma
       triggerData=diElectronTriggers[2];
       triggerData_veto=electronMuonTriggers[0] || electronMuonTriggers[1] || electronMuonTriggers[2] || electronMuonTriggers[3];
    }

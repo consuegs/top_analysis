@@ -105,13 +105,13 @@ void run()
    migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
       
    // ~TString sampleName="";
-   // ~TString sampleName="diLepton";
+   TString sampleName="diLepton";
    // ~TString sampleName="dilepton_CP5";
    // ~TString sampleName="MadGraph";
-   TString sampleName="T2tt_650_350";
+   // ~TString sampleName="T2tt_650_350";
    TString treeName="TTbar_"+sampleName;
    if (sampleName=="T2tt_650_350") treeName=sampleName;
-   TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/100.0/"+treeName+".root",cfg.treeVersion.Data()),"read");
+   TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/100.0/"+treeName+".root",cfg.year.Data(),cfg.treeVersion.Data()),"read");
    TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/"+treeName, &file);
    
    
@@ -232,19 +232,12 @@ void run()
       tempreader->AddSpectator("PuppiMET", &local_Jet2_eta);   //Placeholder
       tempreader->AddSpectator("genMET", &local_Jet2_E);    //Placeholder
    }
-   // ~reader_TMVA.BookMVA("PyKeras", "dataset/weights/TMVARegression_PyKeras.weights.xml");
-   // ~reader_TMVA_Bin1->BookMVA("PyKeras_largeBin1", "dataset/weights/TMVARegression_PyKeras_largeBin1.weights.xml");
-   // ~reader_TMVA_Bin2->BookMVA("PyKeras_largeBin2", "dataset/weights/TMVARegression_PyKeras_largeBin2.weights.xml");
-   // ~reader_TMVA_Bin3->BookMVA("PyKeras_largeBin3", "dataset/weights/TMVARegression_PyKeras_largeBin3.weights.xml");
-   // ~reader_TMVA_Bin4->BookMVA("PyKeras_largeBin4", "dataset/weights/TMVARegression_PyKeras_largeBin4.weights.xml");
-   // ~reader_TMVA_Bin5->BookMVA("PyKeras_largeBin5", "dataset/weights/TMVARegression_PyKeras_largeBin5.weights.xml");
-   // ~reader_TMVA_Bin6->BookMVA("PyKeras_largeBin6", "dataset/weights/TMVARegression_PyKeras_largeBin6.weights.xml");
-   reader_TMVA_Bin1->BookMVA("PyKerasBin1", "dataset/weights/TMVARegression_PyKerasBin1.weights.xml");
-   reader_TMVA_Bin2->BookMVA("PyKerasBin2", "dataset/weights/TMVARegression_PyKerasBin2.weights.xml");
-   reader_TMVA_Bin3->BookMVA("PyKerasBin3", "dataset/weights/TMVARegression_PyKerasBin3.weights.xml");
-   reader_TMVA_Bin4->BookMVA("PyKerasBin4", "dataset/weights/TMVARegression_PyKerasBin4.weights.xml");
-   reader_TMVA_Bin5->BookMVA("PyKerasBin5", "dataset/weights/TMVARegression_PyKerasBin5.weights.xml");
-   reader_TMVA_Bin6->BookMVA("PyKerasBin6", "dataset/weights/TMVARegression_PyKerasBin6.weights.xml");
+   reader_TMVA_Bin1->BookMVA("PyKerasBin1",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin1.weights.xml",cfg.year.Data()));
+   reader_TMVA_Bin2->BookMVA("PyKerasBin2",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin2.weights.xml",cfg.year.Data()));
+   reader_TMVA_Bin3->BookMVA("PyKerasBin3",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin3.weights.xml",cfg.year.Data()));
+   reader_TMVA_Bin4->BookMVA("PyKerasBin4",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin4.weights.xml",cfg.year.Data()));
+   reader_TMVA_Bin5->BookMVA("PyKerasBin5",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin5.weights.xml",cfg.year.Data()));
+   reader_TMVA_Bin6->BookMVA("PyKerasBin6",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin6.weights.xml",cfg.year.Data()));
    
    int totalEntries=reader.GetEntries(true);
    int iEv=0;

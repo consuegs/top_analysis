@@ -31,6 +31,7 @@
          SingleMuon
          DoubleMuon
          MuonEG
+         EGamma               (Placeholder for 2018)
  */
 
 bool dataTrigger2016::DataTriggerSelection2016(std::vector<bool> const &diElectronTriggers, std::vector<bool> const &diMuonTriggers, std::vector<bool> const &electronMuonTriggers,

@@ -204,11 +204,13 @@ void run()
       bool DoubleEG=false;
       bool DoubleMuon=false;
       bool MuonEG=false;
+      bool EGamma=false;
       if (dss.datasetName.find("SingleElectron")!=std::string::npos) SingleElectron=true;
       else if (dss.datasetName.find("SingleMuon")!=std::string::npos) SingleMuon=true;
       else if (dss.datasetName.find("DoubleEG")!=std::string::npos) DoubleEG=true;
       else if (dss.datasetName.find("DoubleMuon")!=std::string::npos) DoubleMuon=true;
       else if (dss.datasetName.find("MuonEG")!=std::string::npos) MuonEG=true;
+      else if (dss.datasetName.find("EGamma")!=std::string::npos) EGamma=true;
       
       //Check if current sample is Run2016H
       bool Run2016H=false;
@@ -512,7 +514,7 @@ void run()
          std::vector<bool> diMuonTriggers={*muonTrigg1,*muonTrigg2,*muonTrigg3,*muonTrigg4,*singleMuonTrigg1,*singleMuonTrigg2};
          std::vector<bool> electronMuonTriggers={*eleMuTrigg1,*eleMuTrigg2,*eleMuTrigg3,*eleMuTrigg4,*singleMuonTrigg1,*singleMuonTrigg2,*singleEleTrigg};
          std::vector<bool> channel={*is_ee,*is_mumu,*is_emu};
-         std::vector<bool> PD={SingleElectron,DoubleEG,SingleMuon,DoubleMuon,MuonEG};
+         std::vector<bool> PD={SingleElectron,DoubleEG,SingleMuon,DoubleMuon,MuonEG,EGamma};
          bool triggerMC=true;
          
          if (!isData){

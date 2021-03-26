@@ -244,7 +244,7 @@ void run()
          // ~TString sampleName="MadGraph";
          // ~TString sampleName="T2tt_650_350";
          // ~TFile file("/net/data_cms1b/user/dmeuser/top_analysis/output/ttbar_res100.0.root","read");
-         TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/100.0/TTbar_diLepton.root",cfg.treeVersion.Data(),cfg.year.Data()),"read");
+         TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/100.0/TTbar_diLepton.root",cfg.year.Data(),cfg.treeVersion.Data()),"read");
          TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/TTbar_"+sampleName, &file);         
          
          // ~TTreeReaderValue<float> MET   (reader, "MET");
