@@ -47,6 +47,7 @@ set(MODULES
   plot_DNNresolution
   applyDNN
   check_leptonVeto
+  plot_leptonVeto
   )
 
 foreach(MODULE ${MODULES})
