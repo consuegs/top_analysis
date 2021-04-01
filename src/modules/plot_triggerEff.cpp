@@ -114,16 +114,16 @@ void run()
             
             eff_MC_hist->GetYaxis()->SetTitleOffset(1.0);
             eff_MC_hist->GetZaxis()->SetLabelOffset(0.02);
-            eff_MC_hist->SetMaximum(1.05);
-            eff_MC_hist->SetMinimum(0.95);
+            eff_MC_hist->SetMaximum(1.0);
+            eff_MC_hist->SetMinimum(0.85);
             eff_MC_hist->SetMarkerSize(1.2);
             eff_MC_hist->Draw("colz text e");
             label.Draw();
             saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+"_MC",true,false);
             
             can.Clear();
-            eff_data_hist->SetMaximum(1.05);
-            eff_data_hist->SetMinimum(0.95);
+            eff_data_hist->SetMaximum(1.0);
+            eff_data_hist->SetMinimum(0.85);
             eff_data_hist->GetYaxis()->SetTitleOffset(1.0);
             eff_data_hist->GetZaxis()->SetLabelOffset(0.02);
             eff_data_hist->SetMarkerSize(1.2);
@@ -133,7 +133,7 @@ void run()
             
             can.Clear();
             eff_data_hist->SetMaximum(1.05);
-            eff_data_hist->SetMinimum(0.95);
+            eff_data_hist->SetMinimum(0.9);
             eff_data_hist->Divide(eff_MC_hist);
             eff_data_hist->GetYaxis()->SetTitleOffset(1.0);
             eff_data_hist->GetZaxis()->SetLabelOffset(0.02);
@@ -143,7 +143,8 @@ void run()
             saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+"_SF",true,false);
             
             if(trigg=="analysisTrigg" && selection=="baseline"){
-               eff_data_hist->SaveAs("../output/data/TriggerSF_"+channel+"_2016.root");
+               // ~eff_data_hist->SaveAs("../output/data/TriggerSF_"+channel+"_2016.root");
+               eff_data_hist->SaveAs("../"+cfg.year+"/data/TriggerSF_"+channel+"_"+cfg.year+".root");
             }
             
          }
