@@ -418,7 +418,7 @@ void run()
       
    hs.scaleLumi();
    hs.mergeOverflow();
-   hs.normHists();
+   // ~hs.normHists();
    hs2D.scaleLumi();
    hs2D.mergeOverflow();
    file.Close();
