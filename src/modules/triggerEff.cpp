@@ -26,7 +26,39 @@ bool matchLepton(TLorentzVector recoLep, TLorentzVector genLep) {
 extern "C"
 void run()
 {
+   std::vector<TString> baselineTriggerNames = {
+         "HLT_PFHT300_PFMET110_v",
+         "HLT_PFMET120_PFMHT120_IDTight_v",
+         "HLT_PFMET170_HBHECleaned_v",
+         "HLT_PFMET300_v",
+         "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
+         "HLT_MET200_v",
+         "HLT_MET200_v",   //Dummies to have same length as 2017_2018
+         "HLT_MET200_v",
+         "HLT_MET200_v",
+         "HLT_MET200_v",
+   };
+   std::vector<TString> baselineTriggerNames2017_2018 = {
+         "HLT_PFMET200_HBHECleaned_v",
+         "HLT_PFMET200_HBHE_BeamHaloCleaned_v",
+         "HLT_PFMETTypeOne200_HBHE_BeamHaloCleaned_v",
+         "HLT_PFMET120_PFMHT120_IDTight_v",
+         "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
+         "HLT_PFMET120_PFMHT120_IDTight_PFHT60_v",
+         "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_PFHT60_v",
+         "HLT_PFHT500_PFMET100_PFMHT100_IDTight_v",
+         "HLT_PFHT700_PFMET85_PFMHT85_IDTight_v",
+         "HLT_PFHT800_PFMET75_PFMHT75_IDTight_v",
+   };
+         
    std::vector<std::string> vsDatasubsets(cfg.datasets.getDatasubsetNames());
+   
+   for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){
+      if (dss.datasetName.find("MET")==std::string::npos && dss.datasetName.find("TTbar_diLepton")==std::string::npos) {
+         std::cout<<dss.datasetName<<" found in running schedule, but module should ony be running with ttbar MC or MET PD"<<std::endl;
+         return;
+      }
+   }
    
    //Define histograms in the following
    hist::Histograms<TH1F> hs(vsDatasubsets);
@@ -55,21 +87,36 @@ void run()
       }
    }
 
-   for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){
+   for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){      
       TFile file(dss.getPath(),"read");
       if (file.IsZombie()) {
          return;
       }
+      
       io::log * ("Processing '"+dss.datasetName+"' ");
       
       hs.setCurrentSample(dss.name);
       hs2d.setCurrentSample(dss.name);
       
       bool const isData=dss.isData;
-      
+            
       //Check if current sample is Run2016H
       bool Run2016H=false;
       if (dss.datasetName.find("Run2016H")!=std::string::npos) Run2016H=true;
+      
+      //Check if current sample is Run2017
+      bool Run2017=(cfg.year=="2017");
+      //Check if current sample is Run2017AB
+      bool Run2017AB=false;
+      if (dss.name.find("Run2017A")!=std::string::npos) Run2017AB=true;
+      else if (dss.name.find("Run2017B")!=std::string::npos) Run2017AB=true;
+      
+      //Check if current sample is Run2018
+      bool Run2018=(cfg.year=="2018");
+      if (dss.name.find("Run2018")!=std::string::npos) Run2018=true;
+      
+      //Set correct baselineTriggers
+      if (Run2018 || Run2017) baselineTriggerNames=baselineTriggerNames2017_2018;
       
       //Check if current sample is DY MC
       bool DY_MC=false;
@@ -94,24 +141,31 @@ void run()
       TTreeReaderValue<float> sf_lep1(reader, "lepton1SF");
       TTreeReaderValue<float> sf_lep2(reader, "lepton2SF");
       TTreeReaderValue<float> btagWeight(reader, "bTagWeight");
-      TTreeReaderValue<bool> muonTrigg1(reader, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-      TTreeReaderValue<bool> muonTrigg2(reader, "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
-      TTreeReaderValue<bool> muonTrigg3(reader, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v");
-      TTreeReaderValue<bool> muonTrigg4(reader, "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v");
-      TTreeReaderValue<bool> singleMuonTrigg1(reader, "HLT_IsoMu24_v");
-      TTreeReaderValue<bool> singleMuonTrigg2(reader, "HLT_IsoTkMu24_v");
-      TTreeReaderValue<bool> eleTrigg(reader, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-      TTreeReaderValue<bool> eleMuTrigg1(reader, "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-      TTreeReaderValue<bool> eleMuTrigg2(reader, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
-      TTreeReaderValue<bool> eleMuTrigg3(reader, "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v");
-      TTreeReaderValue<bool> eleMuTrigg4(reader, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
-      TTreeReaderValue<bool> singleEleTrigg(reader, "HLT_Ele27_WPTight_Gsf_v");
-      TTreeReaderValue<bool> baselineTrigg1(reader, "HLT_PFHT300_PFMET110_v");
-      TTreeReaderValue<bool> baselineTrigg2(reader, "HLT_PFMET120_PFMHT120_IDTight_v");
-      TTreeReaderValue<bool> baselineTrigg3(reader, "HLT_PFMET170_HBHECleaned_v");
-      TTreeReaderValue<bool> baselineTrigg4(reader, "HLT_PFMET300_v");
-      TTreeReaderValue<bool> baselineTrigg5(reader, "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v");
-      TTreeReaderValue<bool> baselineTrigg6(reader, "HLT_MET200_v");
+      
+      TTreeReaderValue<bool> muonTrigg1(reader, cfg.muonTrigg1);
+      TTreeReaderValue<bool> muonTrigg2(reader, cfg.muonTrigg2);
+      TTreeReaderValue<bool> muonTrigg3(reader, cfg.muonTrigg3);
+      TTreeReaderValue<bool> muonTrigg4(reader, cfg.muonTrigg4);
+      TTreeReaderValue<bool> singleMuonTrigg1(reader, cfg.singleMuonTrigg1);
+      TTreeReaderValue<bool> singleMuonTrigg2(reader, cfg.singleMuonTrigg2);
+      TTreeReaderValue<bool> eleTrigg1(reader, cfg.eleTrigg1);
+      TTreeReaderValue<bool> eleTrigg2(reader, cfg.eleTrigg2);
+      TTreeReaderValue<bool> eleMuTrigg1(reader, cfg.eleMuTrigg1);
+      TTreeReaderValue<bool> eleMuTrigg2(reader, cfg.eleMuTrigg2);
+      TTreeReaderValue<bool> eleMuTrigg3(reader, cfg.eleMuTrigg3);
+      TTreeReaderValue<bool> eleMuTrigg4(reader, cfg.eleMuTrigg4);
+      TTreeReaderValue<bool> singleEleTrigg(reader, cfg.singleEleTrigg);
+      
+      TTreeReaderValue<bool> baselineTrigg1(reader, baselineTriggerNames[0]);
+      TTreeReaderValue<bool> baselineTrigg2(reader, baselineTriggerNames[1]);
+      TTreeReaderValue<bool> baselineTrigg3(reader, baselineTriggerNames[2]);
+      TTreeReaderValue<bool> baselineTrigg4(reader, baselineTriggerNames[3]);
+      TTreeReaderValue<bool> baselineTrigg5(reader, baselineTriggerNames[4]);
+      TTreeReaderValue<bool> baselineTrigg6(reader, baselineTriggerNames[5]);
+      TTreeReaderValue<bool> baselineTrigg7(reader, baselineTriggerNames[6]);
+      TTreeReaderValue<bool> baselineTrigg8(reader, baselineTriggerNames[7]);
+      TTreeReaderValue<bool> baselineTrigg9(reader, baselineTriggerNames[8]);
+      TTreeReaderValue<bool> baselineTrigg10(reader, baselineTriggerNames[9]);
    
       int iEv=0;
       int processEvents=cfg.processFraction*dss.entries;
@@ -160,13 +214,18 @@ void run()
          if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
          
          //Define trigger selections
-         bool baselineTriggers=*baselineTrigg1 || *baselineTrigg2 || *baselineTrigg3 || *baselineTrigg4 || *baselineTrigg5 || *baselineTrigg6;
-         bool diElectronTriggers=*eleTrigg || *singleEleTrigg;
+         bool baselineTriggers=*baselineTrigg1 || *baselineTrigg2 || *baselineTrigg3 || *baselineTrigg4 || *baselineTrigg5 || *baselineTrigg6 || *baselineTrigg7 || *baselineTrigg8|| *baselineTrigg9 || *baselineTrigg10;
+         bool diElectronTriggers=*eleTrigg1 || *eleTrigg2 || *singleEleTrigg;
          bool diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *muonTrigg3 || *muonTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2;
          bool electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *eleMuTrigg3 || *eleMuTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg;
+         
+         if(Run2017)diMuonTriggers=*muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2;
          if(Run2016H){
             diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2;
             electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg;
+         }
+         else if(Run2017AB){
+            diMuonTriggers=*muonTrigg1|| *singleMuonTrigg1 || *singleMuonTrigg2;
          }
          
          //Use only events if baseline triggers fired
@@ -175,8 +234,8 @@ void run()
          //Fill hists
          TString path_cat="ee";
          bool trigger=diElectronTriggers;
-         bool doubleTrigger=*eleTrigg;
-         bool doubleTrigger_DZ=*eleTrigg;
+         bool doubleTrigger=*eleTrigg1 || *eleTrigg2;
+         bool doubleTrigger_DZ=*eleTrigg1 || *eleTrigg2;
          bool singleTrigger=*singleEleTrigg;
          if (*is_emu) {
             path_cat="emu";

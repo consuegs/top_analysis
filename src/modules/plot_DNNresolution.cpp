@@ -22,8 +22,9 @@ void run()
    
    TCanvas can;
    can.cd();
-   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton%.1f.root",cfg.processFraction*100));
-   io::RootFileReader histReader(TString::Format("binningUnfolding_T2tt_650_350%.1f.root",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton%.1f.root",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton_test_%.1f.root",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_T2tt_650_350%.1f.root",cfg.processFraction*100));
    
    std::vector<float> axisLimits_low={0,0,0,50,50,50};
    std::vector<float> axisLimits_high={150,150,200,250,300,500};
@@ -82,14 +83,14 @@ void run()
       TH1F* diffCorr_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffcorr_"+bin);
       TH1F* diffScaled_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffscaled_"+bin);
       
-      // ~diff_hist->Rebin(2);
-      // ~diffPF_hist->Rebin(2);
-      // ~diffCorr_hist->Rebin(2);
-      // ~diffScaled_hist->Rebin(2);
-      diff_hist->Rebin(20);
-      diffPF_hist->Rebin(20);
-      diffCorr_hist->Rebin(20);
-      diffScaled_hist->Rebin(20);
+      diff_hist->Rebin(2);
+      diffPF_hist->Rebin(2);
+      diffCorr_hist->Rebin(2);
+      diffScaled_hist->Rebin(2);
+      // ~diff_hist->Rebin(20);
+      // ~diffPF_hist->Rebin(20);
+      // ~diffCorr_hist->Rebin(20);
+      // ~diffScaled_hist->Rebin(20);
       
       diff_hist->SetLineColor(kRed);
       diffPF_hist->SetLineColor(kBlack);

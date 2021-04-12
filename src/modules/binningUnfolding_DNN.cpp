@@ -125,13 +125,13 @@ void run()
    // ~TTreeReaderValue<float> Phi_rec   (reader, "Phi_recXYcorr");
    TTreeReaderValue<float> Phi_gen   (reader, "Phi_NuNu");
    // ~TTreeReaderValue<float> Phi_gen   (reader, "Phi_gen");
-   TTreeReaderValue<float> dPhiMETnearJet   (reader, "dPhiMETnearJet");
-   TTreeReaderValue<float> dPhiMETfarJet   (reader, "dPhiMETfarJet");
-   TTreeReaderValue<float> dPhiMETleadJet   (reader, "dPhiMETleadJet");
-   TTreeReaderValue<float> dPhiMETlead2Jet   (reader, "dPhiMETlead2Jet");
-   TTreeReaderValue<float> dPhiMETbJet   (reader, "dPhiMETbJet");
-   TTreeReaderValue<float> dPhiLep1Lep2   (reader, "dPhiLep1Lep2");
-   TTreeReaderValue<float> METsig   (reader, "METsig");
+   // ~TTreeReaderValue<float> dPhiMETnearJet   (reader, "dPhiMETnearJet");
+   // ~TTreeReaderValue<float> dPhiMETfarJet   (reader, "dPhiMETfarJet");
+   // ~TTreeReaderValue<float> dPhiMETleadJet   (reader, "dPhiMETleadJet");
+   // ~TTreeReaderValue<float> dPhiMETlead2Jet   (reader, "dPhiMETlead2Jet");
+   // ~TTreeReaderValue<float> dPhiMETbJet   (reader, "dPhiMETbJet");
+   // ~TTreeReaderValue<float> dPhiLep1Lep2   (reader, "dPhiLep1Lep2");
+   // ~TTreeReaderValue<float> METsig   (reader, "METsig");
    TTreeReaderValue<float> N   (reader, "N");
    TTreeReaderValue<UInt_t> runNo   (reader, "runNo");
    TTreeReaderValue<UInt_t> lumNo   (reader, "lumNo");
@@ -147,17 +147,17 @@ void run()
    TTreeReaderValue<float> dPhiPtnunuMet(reader, "dPhiPtnunuMet");
    TTreeReaderValue<float> leadTop_pT(reader, "leadTop_pT");
    TTreeReaderValue<float> dPhiNuNu(reader, "dPhiNuNu");
-   TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
+   // ~TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
    TTreeReaderValue<float> DNNregression(reader, "DNN_regression");
    
    TTreeReaderValue<float> nJets   (reader, "nJets");
    TTreeReaderValue<float> METunc_Puppi   (reader, "METunc_Puppi");
    TTreeReaderValue<float> METunc_PF   (reader, "METunc_PF");
-   TTreeReaderValue<float> PuppiMET_phi   (reader, "PuppiMET_phi");
-   TTreeReaderValue<float> PFMET_phi   (reader, "PFMET_phi");
-   TTreeReaderValue<float> CaloMET   (reader, "CaloMET");
-   TTreeReaderValue<float> CaloMET_phi   (reader, "CaloMET_phi");
-   TTreeReaderValue<float> MHT   (reader, "MHT");
+   // ~TTreeReaderValue<float> PuppiMET_phi   (reader, "PuppiMET_phi");
+   // ~TTreeReaderValue<float> PFMET_phi   (reader, "PFMET_phi");
+   // ~TTreeReaderValue<float> CaloMET   (reader, "CaloMET");
+   // ~TTreeReaderValue<float> CaloMET_phi   (reader, "CaloMET_phi");
+   // ~TTreeReaderValue<float> MHT   (reader, "MHT");
    TTreeReaderValue<float> Lep1_pt   (reader, "Lep1_pt");
    TTreeReaderValue<float> Lep1_phi   (reader, "Lep1_phi");
    TTreeReaderValue<float> Lep1_eta   (reader, "Lep1_eta");
@@ -181,10 +181,38 @@ void run()
    TTreeReaderValue<float> Jet2_unc   (reader, "Jet2_unc");
    TTreeReaderValue<float> Jet2_bTagScore   (reader, "Jet2_bTagScore");
    
+   //additional variables
+   TTreeReaderValue<float> dPhiMETnearJet   (reader,"dPhiMETnearJet");
+   TTreeReaderValue<float> dPhiMETfarJet   (reader,"dPhiMETfarJet");
+   TTreeReaderValue<float> dPhiMETleadJet   (reader,"dPhiMETleadJet");
+   TTreeReaderValue<float> dPhiMETlead2Jet   (reader,"dPhiMETlead2Jet");
+   TTreeReaderValue<float> dPhiMETbJet   (reader,"dPhiMETbJet");
+   TTreeReaderValue<float> dPhiLep1Lep2   (reader,"dPhiLep1Lep2");
+   TTreeReaderValue<float> dPhiJet1Jet2   (reader,"dPhiJet1Jet2");
+   TTreeReaderValue<float> METsig   (reader,"METsig");
+   TTreeReaderValue<float> MHT   (reader,"MHT");
+   TTreeReaderValue<float> MT   (reader,"MT");
+   TTreeReaderValue<UInt_t> looseLeptonVeto   (reader,"looseLeptonVeto");
+   TTreeReaderValue<float> dPhiMETnearJet_Puppi   (reader,"dPhiMETnearJet_Puppi");
+   TTreeReaderValue<float> dPhiMETfarJet_Puppi   (reader,"dPhiMETfarJet_Puppi");
+   TTreeReaderValue<float> dPhiMETleadJet_Puppi   (reader,"dPhiMETleadJet_Puppi");
+   TTreeReaderValue<float> dPhiMETlead2Jet_Puppi   (reader,"dPhiMETlead2Jet_Puppi");
+   TTreeReaderValue<float> dPhiMETbJet_Puppi   (reader,"dPhiMETbJet_Puppi");
+   TTreeReaderValue<float> dPhiLep1bJet   (reader,"dPhiLep1bJet");
+   TTreeReaderValue<float> dPhiLep1Jet1   (reader,"dPhiLep1Jet1");
+   TTreeReaderValue<float> mLL   (reader,"mLL");
+   TTreeReaderValue<float> PFMET_phi   (reader,"PFMET_phi");
+   TTreeReaderValue<float> PuppiMET_phi   (reader,"PuppiMET_phi");
+   TTreeReaderValue<float> CaloMET   (reader,"CaloMET");
+   TTreeReaderValue<float> CaloMET_phi   (reader,"CaloMET_phi");
+   
    
    int migrated=0;
    //Setup DNN
    float local_PuppiMET,local_METunc_Puppi,local_Phi_recPuppi,local_PFMET,local_HT,local_nJets,local_Lep1_pt,local_Lep1_phi,local_Lep1_eta,local_Lep1_E,local_Lep1_flavor,local_Lep2_pt,local_Lep2_phi,local_Lep2_eta,local_Lep2_E,local_Lep2_flavor,local_Jet1_pt,local_Jet1_phi,local_Jet1_eta,local_Jet1_E,local_Jet2_pt,local_Jet2_phi,local_Jet2_eta,local_Jet2_E,local_n_Interactions;
+   //additional variables
+   float local_dPhiMETnearJet,local_dPhiMETfarJet,local_dPhiMETleadJet,local_dPhiMETlead2Jet,local_dPhiMETbJet,local_dPhiLep1Lep2,local_dPhiJet1Jet2,local_METsig,local_MHT,local_MT,local_looseLeptonVeto,local_dPhiMETnearJet_Puppi,local_dPhiMETfarJet_Puppi,local_dPhiMETleadJet_Puppi,local_dPhiMETlead2Jet_Puppi,local_dPhiMETbJet_Puppi,local_dPhiLep1bJet,local_dPhiLep1Jet1,local_mLL,local_PFMET_phi,local_PuppiMET_phi,local_CaloMET,local_CaloMET_phi;
+   
    // ~float local_PuppiMET,local_PuppiMET_phi,local_METunc_Puppi,local_PFMET,local_PFMET_phi,local_METunc_PF,local_CaloMET,local_CaloMET_phi,local_HT,local_MHT,local_nJets,local_Lep1_pt,local_Lep1_phi,local_Lep1_eta,local_Lep1_E,local_Lep1_flavor,local_Lep2_pt,local_Lep2_phi,local_Lep2_eta,local_Lep2_E,local_Lep2_flavor,local_Jet1_pt,local_Jet1_phi,local_Jet1_eta,local_Jet1_E,local_Jet1_unc,local_Jet1_bTag,local_Jet2_pt,local_Jet2_phi,local_Jet2_eta,local_Jet2_E,local_Jet2_unc,local_Jet2_bTag,local_n_Interactions;
    TMVA::PyMethodBase::PyInitialize();
    TMVA::Reader* reader_TMVA_Bin1=new TMVA::Reader("Color:!Silent");
@@ -194,6 +222,7 @@ void run()
    TMVA::Reader* reader_TMVA_Bin5=new TMVA::Reader("Color:!Silent");
    TMVA::Reader* reader_TMVA_Bin6=new TMVA::Reader("Color:!Silent");
    for(TMVA::Reader* tempreader:{reader_TMVA_Bin1, reader_TMVA_Bin2, reader_TMVA_Bin3, reader_TMVA_Bin4, reader_TMVA_Bin5, reader_TMVA_Bin6}){
+   // ~for(TMVA::Reader* tempreader:{reader_TMVA_Bin4}){
       tempreader->AddVariable("PuppiMET", &local_PuppiMET);
       // ~tempreader->AddVariable("PuppiMET_phi", &local_PuppiMET_phi);
       tempreader->AddVariable("METunc_Puppi", &local_METunc_Puppi);
@@ -229,15 +258,48 @@ void run()
       tempreader->AddVariable("Jet2_E", &local_Jet2_E);
       // ~tempreader->AddVariable("Jet2_bTagScore>0.2217", &local_Jet2_bTag);
       // ~tempreader->AddVariable("Jet2_unc", &local_Jet2_unc);
+      
+      //additional variables
+      tempreader->AddVariable("dPhiMETnearJet",&local_dPhiMETnearJet);
+      tempreader->AddVariable("dPhiMETfarJet",&local_dPhiMETfarJet);
+      tempreader->AddVariable("dPhiMETleadJet",&local_dPhiMETleadJet);
+      tempreader->AddVariable("dPhiMETlead2Jet",&local_dPhiMETlead2Jet);
+      tempreader->AddVariable("dPhiMETbJet",&local_dPhiMETbJet);
+      tempreader->AddVariable("dPhiLep1Lep2",&local_dPhiLep1Lep2);
+      tempreader->AddVariable("dPhiJet1Jet2",&local_dPhiJet1Jet2);
+      tempreader->AddVariable("METsig",&local_METsig);
+      tempreader->AddVariable("MHT",&local_MHT);
+      tempreader->AddVariable("MT",&local_MT);
+      tempreader->AddVariable("looseLeptonVeto",&local_looseLeptonVeto);
+      tempreader->AddVariable("dPhiMETnearJet_Puppi",&local_dPhiMETnearJet_Puppi);
+      tempreader->AddVariable("dPhiMETfarJet_Puppi",&local_dPhiMETfarJet_Puppi);
+      tempreader->AddVariable("dPhiMETleadJet_Puppi",&local_dPhiMETleadJet_Puppi);
+      tempreader->AddVariable("dPhiMETlead2Jet_Puppi",&local_dPhiMETlead2Jet_Puppi);
+      tempreader->AddVariable("dPhiMETbJet_Puppi",&local_dPhiMETbJet_Puppi);
+      tempreader->AddVariable("dPhiLep1bJet",&local_dPhiLep1bJet);
+      tempreader->AddVariable("dPhiLep1Jet1",&local_dPhiLep1Jet1);
+      tempreader->AddVariable("mLL",&local_mLL);
+      tempreader->AddVariable("PFMET_phi",&local_PFMET_phi);
+      tempreader->AddVariable("PuppiMET_phi",&local_PuppiMET_phi);
+      tempreader->AddVariable("CaloMET",&local_CaloMET);
+      tempreader->AddVariable("CaloMET_phi",&local_CaloMET_phi);
+      
       tempreader->AddSpectator("PuppiMET", &local_Jet2_eta);   //Placeholder
       tempreader->AddSpectator("genMET", &local_Jet2_E);    //Placeholder
    }
-   reader_TMVA_Bin1->BookMVA("PyKerasBin1",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin1.weights.xml",cfg.year.Data()));
-   reader_TMVA_Bin2->BookMVA("PyKerasBin2",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin2.weights.xml",cfg.year.Data()));
-   reader_TMVA_Bin3->BookMVA("PyKerasBin3",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin3.weights.xml",cfg.year.Data()));
-   reader_TMVA_Bin4->BookMVA("PyKerasBin4",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin4.weights.xml",cfg.year.Data()));
-   reader_TMVA_Bin5->BookMVA("PyKerasBin5",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin5.weights.xml",cfg.year.Data()));
-   reader_TMVA_Bin6->BookMVA("PyKerasBin6",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin6.weights.xml",cfg.year.Data()));
+   // ~reader_TMVA_Bin1->BookMVA("PyKerasBin1",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin1.weights.xml",cfg.year.Data()));
+   // ~reader_TMVA_Bin2->BookMVA("PyKerasBin2",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin2.weights.xml",cfg.year.Data()));
+   // ~reader_TMVA_Bin3->BookMVA("PyKerasBin3",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin3.weights.xml",cfg.year.Data()));
+   // ~reader_TMVA_Bin4->BookMVA("PyKerasBin4",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin4.weights.xml",cfg.year.Data()));
+   // ~reader_TMVA_Bin5->BookMVA("PyKerasBin5",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin5.weights.xml",cfg.year.Data()));
+   // ~reader_TMVA_Bin6->BookMVA("PyKerasBin6",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_Bin6.weights.xml",cfg.year.Data()));
+   
+   reader_TMVA_Bin1->BookMVA("PyKerasBin1",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_bJet_Bin1.weights.xml",cfg.year.Data()));
+   reader_TMVA_Bin2->BookMVA("PyKerasBin2",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_bJet_Bin2.weights.xml",cfg.year.Data()));
+   reader_TMVA_Bin3->BookMVA("PyKerasBin3",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_bJet_Bin3.weights.xml",cfg.year.Data()));
+   reader_TMVA_Bin4->BookMVA("PyKerasBin4",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_bJet_Bin4.weights.xml",cfg.year.Data()));
+   reader_TMVA_Bin5->BookMVA("PyKerasBin5",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_bJet_Bin5.weights.xml",cfg.year.Data()));
+   reader_TMVA_Bin6->BookMVA("PyKerasBin6",  TString::Format("dataset/weights/TMVARegression_PyKeras_%s_bJet_Bin6.weights.xml",cfg.year.Data()));
    
    int totalEntries=reader.GetEntries(true);
    int iEv=0;
@@ -249,6 +311,7 @@ void run()
       }
       
       // ~if (iEv>100000) break;
+      // ~if (*MET<120 || *MET>160) continue;
       
       //Set DNN Inputs
       local_PuppiMET=*PuppiMET;
@@ -275,69 +338,97 @@ void run()
       local_Jet2_eta=*Jet2_eta;
       local_Jet2_E=*Jet2_E;
       local_n_Interactions=*n_Interactions;
+      //additional variables
+      local_dPhiMETnearJet=*dPhiMETnearJet;
+      local_dPhiMETfarJet=*dPhiMETfarJet;
+      local_dPhiMETleadJet=*dPhiMETleadJet;
+      local_dPhiMETlead2Jet=*dPhiMETlead2Jet;
+      local_dPhiMETbJet=*dPhiMETbJet;
+      local_dPhiLep1Lep2=*dPhiLep1Lep2;
+      local_dPhiJet1Jet2=*dPhiJet1Jet2;
+      local_METsig=*METsig;
+      local_MHT=*MHT;
+      local_MT=*MT;
+      local_looseLeptonVeto=*looseLeptonVeto;
+      local_dPhiMETnearJet_Puppi=*dPhiMETnearJet_Puppi;
+      local_dPhiMETfarJet_Puppi=*dPhiMETfarJet_Puppi;
+      local_dPhiMETleadJet_Puppi=*dPhiMETleadJet_Puppi;
+      local_dPhiMETlead2Jet_Puppi=*dPhiMETlead2Jet_Puppi;
+      local_dPhiMETbJet_Puppi=*dPhiMETbJet_Puppi;
+      local_dPhiLep1bJet=*dPhiLep1bJet;
+      local_dPhiLep1Jet1=*dPhiLep1Jet1;
+      local_mLL=*mLL;
+      local_PFMET_phi=*PFMET_phi;
+      local_PuppiMET_phi=*PuppiMET_phi;
+      local_CaloMET=*CaloMET;
+      local_CaloMET_phi=*CaloMET_phi;
       
       PuppiMet_org=*PuppiMET;
       int metBin_org=1;
-      if(*MET<40) {
-         PuppiMetscaled_org=*MET*1.28588;
-         *MET=reader_TMVA_Bin1->EvaluateRegression("PyKerasBin1")[0];
-         metBin_org=1;
-      }
-      else if(*MET<80){
-         PuppiMetscaled_org=*MET*0.94220;
-         *MET=reader_TMVA_Bin2->EvaluateRegression("PyKerasBin2")[0];
-         metBin_org=2;
-      }
-      else if(*MET<120){
-         PuppiMetscaled_org=*MET*0.88487;
-         *MET=reader_TMVA_Bin3->EvaluateRegression("PyKerasBin3")[0];
-         metBin_org=3;
-      }
-      else if(*MET<160){
-         PuppiMetscaled_org=*MET*0.87049;
-         *MET=reader_TMVA_Bin4->EvaluateRegression("PyKerasBin4")[0];
-         metBin_org=4;
-      }
-      else if(*MET<230){
-         PuppiMetscaled_org=*MET*0.88503;
-         *MET=reader_TMVA_Bin5->EvaluateRegression("PyKerasBin5")[0];
-         metBin_org=5;
-      }
-      else {
-         PuppiMetscaled_org=*MET*0.91246;
-         *MET=reader_TMVA_Bin6->EvaluateRegression("PyKerasBin6")[0];
-         metBin_org=6;
-      }
+      
+      // ~*MET=reader_TMVA_Bin4->EvaluateRegression("PyKerasBin4")[0]*(*MET);
+      // ~metBin_org=4;
       // ~if(*MET<40) {
          // ~PuppiMetscaled_org=*MET*1.28588;
-         // ~*MET=*DNNregression;
+         // ~*MET=reader_TMVA_Bin1->EvaluateRegression("PyKerasBin1")[0];
          // ~metBin_org=1;
       // ~}
       // ~else if(*MET<80){
          // ~PuppiMetscaled_org=*MET*0.94220;
-         // ~*MET=*DNNregression;
+         // ~*MET=reader_TMVA_Bin2->EvaluateRegression("PyKerasBin2")[0];
          // ~metBin_org=2;
       // ~}
       // ~else if(*MET<120){
          // ~PuppiMetscaled_org=*MET*0.88487;
-         // ~*MET=*DNNregression;
+         // ~*MET=reader_TMVA_Bin3->EvaluateRegression("PyKerasBin3")[0];
          // ~metBin_org=3;
       // ~}
       // ~else if(*MET<160){
          // ~PuppiMetscaled_org=*MET*0.87049;
-         // ~*MET=*DNNregression;
+         // ~*MET=reader_TMVA_Bin4->EvaluateRegression("PyKerasBin4")[0];
          // ~metBin_org=4;
       // ~}
       // ~else if(*MET<230){
          // ~PuppiMetscaled_org=*MET*0.88503;
-         // ~*MET=*DNNregression;
+         // ~*MET=reader_TMVA_Bin5->EvaluateRegression("PyKerasBin5")[0];
          // ~metBin_org=5;
       // ~}
       // ~else {
          // ~PuppiMetscaled_org=*MET*0.91246;
-         // ~*MET=*DNNregression;
+         // ~*MET=reader_TMVA_Bin6->EvaluateRegression("PyKerasBin6")[0];
          // ~metBin_org=6;
       // ~}
+      if(*MET<40) {
+         PuppiMetscaled_org=*MET*1.28588;
+         *MET=reader_TMVA_Bin1->EvaluateRegression("PyKerasBin1")[0]*(*MET);
+         metBin_org=1;
+      }
+      else if(*MET<80){
+         PuppiMetscaled_org=*MET*0.94220;
+         *MET=reader_TMVA_Bin2->EvaluateRegression("PyKerasBin2")[0]*(*MET);
+         metBin_org=2;
+      }
+      else if(*MET<120){
+         PuppiMetscaled_org=*MET*0.88487;
+         *MET=reader_TMVA_Bin3->EvaluateRegression("PyKerasBin3")[0]*(*MET);
+         metBin_org=3;
+      }
+      else if(*MET<160){
+         PuppiMetscaled_org=*MET*0.87049;
+         *MET=reader_TMVA_Bin4->EvaluateRegression("PyKerasBin4")[0]*(*MET);
+         metBin_org=4;
+      }
+      else if(*MET<230){
+         PuppiMetscaled_org=*MET*0.88503;
+         *MET=reader_TMVA_Bin5->EvaluateRegression("PyKerasBin5")[0]*(*MET);
+         metBin_org=5;
+      }
+      else {
+         PuppiMetscaled_org=*MET*0.91246;
+         *MET=reader_TMVA_Bin6->EvaluateRegression("PyKerasBin6")[0]*(*MET);
+         metBin_org=6;
+      }
+      
       if(*MET<0) *MET=0;
       
       PuppiMetcorr_org=*MET;
@@ -391,7 +482,8 @@ void run()
    file.Close();
    std::cout<<migrated<<std::endl;
    
-   io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
+   // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
+   io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
    
    TH2F stability=Evt_genrec;
    TH2F purity=Evt_genrec;

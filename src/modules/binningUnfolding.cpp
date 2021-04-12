@@ -183,6 +183,10 @@ void run()
    
    TH2F METsig_dPhiMETLep_met120("METsig_dPhiMETLep_met120",";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",50,0,3.14,6000,0,1000);
    
+   // 2D Resolution Plots
+   TH2F METvsGenMET("METvsGenMET",";p_{T}^{miss} (GeV);GenMET (GeV)",100,0,400,100,0,400);
+   TH2F GenMETvsPTnunu("GenMETvsPTnunu",";GenMET (GeV);p_{T}^{#nu#nu} (GeV)",100,0,400,100,0,400);
+   
    // Plots for last bin
    // ~TH2F GenMETvsPTnunu_lastBin("GenMETvsPTnunu_lastBin",";p_{T}^{#nu#nu} (GeV);genMET (GeV);Events/Bin",100,0,400,100,230,400);
    TH2F GenMETvsPTnunu_lastBin("GenMETvsPTnunu_lastBin",";p_{T}^{#nu#nu} (GeV);genMET (GeV);Events/Bin",100,0,400,100,0,400);
@@ -413,6 +417,9 @@ void run()
             PtNuNuDiffMETRel_dPhiMETLep.Fill(*Phi_rec,(truePtNuNu-MET_reco)/(*genMET),*N);
            
             TopPt_dPhi.Fill(*Phi_gen,*leadTop_pT,*N);
+            
+            METvsGenMET.Fill(*MET,*genMET,*N);
+            GenMETvsPTnunu.Fill(*genMET,*PtNuNu,*N);
             
             //Save normalized METdiff for high MET as function of deltaPhi
             // ~if (MET_reco>120) {
@@ -791,6 +798,9 @@ void run()
          saveProfileFrom2D(&GenMetDiffPuppiMETRel_dPhiMETLep_met120,"GenMetDiffPuppiMETRel_dPhiMETLep_met120",&saver);
          
          saveProfileFrom2D(&METsig_dPhiMETLep_met120,"METsig_dPhiMETLep_met120",&saver);
+         
+         saveProfileFrom2D(&METvsGenMET,"METvsGenMET",&saver);
+         saveProfileFrom2D(&GenMETvsPTnunu,"GenMETvsPTnunu",&saver);
          
          saver.save(TopPt_profile,"TopPt_profile");
          

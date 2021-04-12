@@ -48,6 +48,7 @@ set(MODULES
   applyDNN
   check_leptonVeto
   test_tensorflow
+  plot_leptonVeto
   )
 
 foreach(MODULE ${MODULES})
