@@ -17,6 +17,19 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 find_package(ROOT REQUIRED TreePlayer PyROOT Unfold XMLParser TMVA PyMVA)
 include(RootUseFile)
 
+### add cppflow
+# ~find_library(TENSORFLOW_LIB tensorflow HINT /cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/tensorflow/2.1.0-ghbfee/lib/)
+find_library(TENSORFLOW_LIB tensorflow HINT /cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/tensorflow/2.3.1/lib/)
+find_library(Protobuf_LIB protobuf HINT /cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/protobuf/3.11.3/lib)
+find_library(Giflib_LIB gif HINT /cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/giflib/5.2.0/lib)
+include_directories("/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/tensorflow/2.1.0-ghbfee/include/")
+include_directories("/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/tensorflow/2.3.1/include/")
+include_directories("/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/eigen/d812f411c3f9-ghbfee/include/eigen3")
+link_directories("${TENSORFLOW_LIB}")
+link_directories("${Protobuf_LIB}")
+link_directories("${Giflib_LIB}")
+include_directories("/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/protobuf/3.11.3/include")
+
 # change version: cmake --help-module FindPythonLibs
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
