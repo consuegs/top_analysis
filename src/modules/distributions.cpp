@@ -174,7 +174,7 @@ void run()
       bool ttBar_dilepton=false;
       if (dss.datasetName=="TTbar_diLepton") ttBar_dilepton=true;
       
-      //Check if current sample is TTbar powheg dilepton
+      //Check if current sample is TTbar powheg dilepton tau
       bool ttBar_dilepton_tau=false;
       if (dss.datasetName=="TTbar_diLepton_tau") ttBar_dilepton_tau=true;
       
@@ -185,6 +185,10 @@ void run()
       //Check if current sample is TTbar powheg hadronic
       bool ttBar_hadronic=false;
       if (dss.datasetName=="TTbar_hadronic") ttBar_hadronic=true;
+      
+      //Check if current sample is TTbar amc@NLO
+      bool ttBar_amc=false;
+      if (dss.datasetName=="TTbar_amcatnlo") ttBar_amc=true;
       
       //Check if current sample is selectedSusy scenario 
       bool SUSY_T2tt_650_350=false;
@@ -222,7 +226,7 @@ void run()
       else if (dss.name.find("Run2017B")!=std::string::npos) Run2017AB=true;
       
       //Set boolean for savin minimalTree
-      bool minimalTree=ttBar_dilepton || ttBar_dilepton_tau || ttBar_singleLepton || ttBar_hadronic || SUSY_T2tt_650_350 || DM_scalar_1_200 || isData;
+      bool minimalTree=ttBar_dilepton || ttBar_dilepton_tau || ttBar_singleLepton || ttBar_hadronic || ttBar_amc || SUSY_T2tt_650_350 || DM_scalar_1_200 || isData;
       
       //Ntuple and file to save minimal ttbar tree used for binning studies
       float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
@@ -236,7 +240,7 @@ void run()
       minTree_Jet1_pt, minTree_Jet1_phi, minTree_Jet1_eta, minTree_Jet1_E, minTree_Jet1_bTagScore, minTree_Jet1_unc,
       minTree_Jet2_pt, minTree_Jet2_phi, minTree_Jet2_eta, minTree_Jet2_E, minTree_Jet2_bTagScore, minTree_Jet2_unc,
       minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_nJets, minTree_n_Interactions, minTree_DNN_regression,
-      minTree_mLL;
+      minTree_mLL, minTree_MT2, minTree_vecsum_pT_allJet, minTree_vecsum_pT_l1l2_allJet, minTree_mass_l1l2_allJet, minTree_ratio_vecsumpTlep_vecsumpTjet, minTree_mjj;
       UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions_gen, minTree_looseLeptonVeto, minTree_NpromptNeutrinos, minTree_NnonpromptNeutrinos, minTree_ee, minTree_mumu, minTree_emu;
       ULong64_t minTree_evtNo;
       // ~bool minTree_leptonVeto, minTree_lepVetoPt40, minTree_VetoAllignedBJetMet, minTree_VetoAllignedBJetMet_lepVeto, minTree_VetoAllignedBJetMet_addLeptonInBJet, minTree_lepVetoIfaddLeptonInBJet, minTree_lepVetoIfaddLeptonInAnyBJet, minTree_VetoAnyBJetInMETdirection, minTree_VetoAnyJetInMETdirection, minTree_VetoAnyBJetInMETdirection_addLepton, minTree_VetoAnyJetInMETdirection_addLepton,minTree_VetoAnyBJetInMETdirection_addLeptonInJet, minTree_VetoAnyJetInMETdirection_addLeptonInJet;
@@ -333,6 +337,12 @@ void run()
          ttbar_res.Branch("NpromptNeutrinos",&minTree_NpromptNeutrinos,"NpromptNeutrinos/i");
          ttbar_res.Branch("NnonpromptNeutrinos",&minTree_NnonpromptNeutrinos,"NnonpromptNeutrinos/i");
          ttbar_res.Branch("DNN_regression",&minTree_DNN_regression,"DNN_regression/f");
+         ttbar_res.Branch("MT2",&minTree_MT2,"MT2/f");
+         ttbar_res.Branch("vecsum_pT_allJet",&minTree_vecsum_pT_allJet,"vecsum_pT_allJet/f");
+         ttbar_res.Branch("vecsum_pT_l1l2_allJet",&minTree_vecsum_pT_l1l2_allJet,"vecsum_pT_l1l2_allJet/f");
+         ttbar_res.Branch("mass_l1l2_allJet",&minTree_mass_l1l2_allJet,"mass_l1l2_allJet/f");
+         ttbar_res.Branch("ratio_vecsumpTlep_vecsumpTjet",&minTree_ratio_vecsumpTlep_vecsumpTjet,"ratio_vecsumpTlep_vecsumpTjet/f");
+         ttbar_res.Branch("mjj",&minTree_mjj,"mjj/f");
          // ~ttbar_res.Branch("leptonVeto",&minTree_leptonVeto,"leptonVeto/b");
          // ~ttbar_res.Branch("lepVetoPt40",&minTree_lepVetoPt40,"lepVetoPt40/b");
          // ~ttbar_res.Branch("VetoAllignedBJetMet",&minTree_VetoAllignedBJetMet,"VetoAllignedBJetMet/b");
@@ -508,6 +518,9 @@ void run()
          
          //Do not use tau events in signal sample
          if (ttBar_dilepton && *genDecayMode>3) continue;
+         
+         //Do only use ee,emu,mumu in in amc ttbar
+         if (ttBar_amc && (*genDecayMode>3 || *genDecayMode==0)) continue;
          
          //Trigger selection
          std::vector<bool> diElectronTriggers={*eleTrigg1,*eleTrigg2,*singleEleTrigg};
@@ -853,6 +866,7 @@ void run()
             minTree_Jet2_E=cjets[1].p.E();
             minTree_Jet2_bTagScore=cjets[1].bTagDeepCSV;
             minTree_mLL=(p_l1+p_l2).M();
+            minTree_mjj=(cjets[0].p+cjets[1].p).M();
             if(applyDNN){
                if(met_puppi<40) DNN_regression=reader_TMVA_Bin1->EvaluateRegression("PyKerasBin1")[0];
                else if(met_puppi<80) DNN_regression=reader_TMVA_Bin2->EvaluateRegression("PyKerasBin2")[0];
@@ -924,6 +938,11 @@ void run()
             minTree_NpromptNeutrinos=NpromptNeutrinos;
             minTree_NnonpromptNeutrinos=NnonpromptNeutrinos;
             minTree_DNN_regression=DNN_regression;
+            minTree_MT2=*mt2;
+            minTree_vecsum_pT_allJet=MHT.Pt();
+            minTree_vecsum_pT_l1l2_allJet=(MHT+p_l1+p_l2).Pt();
+            minTree_mass_l1l2_allJet=(MHT+p_l1+p_l2).M();
+            minTree_ratio_vecsumpTlep_vecsumpTjet=(p_l1+p_l2).Pt()/MHT.Pt();
             if (rec_selection==false) {
                minTree_MET=-1.;
                minTree_PhiRec=-1.;
@@ -977,6 +996,13 @@ void run()
                minTree_CaloMET_phi=-1;
                minTree_PuppiMET_phi=-1;
                minTree_PFMET_phi=-1;
+               minTree_MT2=-1;
+               minTree_vecsum_pT_allJet=-1;
+               minTree_vecsum_pT_l1l2_allJet=-1;
+               minTree_mass_l1l2_allJet=-1;
+               minTree_ratio_vecsumpTlep_vecsumpTjet=-1;
+               minTree_mjj=-1;
+
             }
             else if (pseudo_selection==false) {
                minTree_PtNuNu=-1.;
