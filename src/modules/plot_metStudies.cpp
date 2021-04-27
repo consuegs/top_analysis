@@ -214,6 +214,24 @@ void run()
    ratio.Draw("e1");
    saver.save(spcan,"dPhiComparison/fullSelection");
    
+   //Plotting MET resolution as a function of nInteractions
+   can.Clear();
+   TTbar_2D = histReader.read<TH2F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+"baseline/nVertex_vs_MetRes/TTbar_diLepton");
+   TTbar_profile=*(TTbar_2D->ProfileX("Profile"));
+   TProfile TTbar_profile_RMS=*(TTbar_2D->ProfileX("ProfileRMS",1,-1,"s"));
+   TH1D RMS("","",100,0,100);
+   for (int i=1; i<=TTbar_profile_RMS.GetNbinsX(); i++){
+      RMS.SetBinContent(i,TTbar_profile_RMS.GetBinError(i));
+      RMS.SetBinError(i,0);
+   }
+   gPad->SetLeftMargin(0.13);
+   TTbar_profile.SetStats(0);
+   TTbar_profile.GetYaxis()->SetTitleOffset(1.1);
+   TTbar_profile.GetYaxis()->SetTitle("mean(genMET-p_{T}^{miss}) (GeV)");
+   TTbar_profile.Draw("e1");
+   RMS.Draw("same");
+   saver.save(can,"nVertex_vs_MetRes",true,true);  
+   
    
    //Plotting different METS and also comparision to SUSY
    /* 
