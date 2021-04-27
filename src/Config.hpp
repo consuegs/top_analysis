@@ -61,6 +61,9 @@ public:
    TString lumiText ;
    TString sqrtsText;
    TString extraText;
+   
+   //manipulate
+   void setOutput(const std::string);
 private:
    Config();
 };

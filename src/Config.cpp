@@ -13,6 +13,10 @@ Config& Config::get(){
    return instance;
 }
 
+void Config::setOutput(const std::string output){
+   outputDirectory=output;
+}
+
 Config::Config()
 {
    // ~boost::property_tree::ptree pt;
