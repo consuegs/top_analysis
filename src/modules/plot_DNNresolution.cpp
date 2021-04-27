@@ -21,24 +21,49 @@ void run()
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot_DNNresolution");
    
    TCanvas can;
+   TCanvas canCombined;
+   gfx::LegendEntries leCombined;
    can.cd();
-   io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton%.1f.root",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton%.1f.root",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton_addVariables%.1f.root",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton_test_cppflow_new%.1f.root",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton_amcatnlo%.1f.root",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton_InclusiveDNN_noWeights%.1f.root",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton_InclusiveDNN_Patched%.1f.root",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton_InclusiveDNN_Patched_LR_EP%.1f.root",cfg.processFraction*100));
    // ~io::RootFileReader histReader(TString::Format("binningUnfolding_diLepton_test_%.1f.root",cfg.processFraction*100));
    // ~io::RootFileReader histReader(TString::Format("binningUnfolding_T2tt_650_350%.1f.root",cfg.processFraction*100));
    
    std::vector<float> axisLimits_low={0,0,0,50,50,50};
    std::vector<float> axisLimits_high={150,150,200,250,300,500};
    
-   std::vector<TString> metRegions={"p_{T}^{miss}<40GeV","40GeV<p_{T}^{miss}<80GeV","80GeV<p_{T}^{miss}<120GeV","120GeV<p_{T}^{miss}<160GeV","160GeV<p_{T}^{miss}<230GeV","230GeV<p_{T}^{miss}"};
+   std::vector<TString> metRegions={"p_{T}^{miss}<40GeV","40GeV<p_{T}^{miss}<80GeV","80GeV<p_{T}^{miss}<120GeV","120GeV<p_{T}^{miss}<160GeV","160GeV<p_{T}^{miss}<230GeV","230GeV<p_{T}^{miss}",""};
+   
+   TH1F genMET_histCombined("","",250,0,500);
+   TH1F PuppiMET_histCombined("","",250,0,500);
+   TH1F PuppiMETcorr_histCombined("","",250,0,500);
+   TH1F PFMET_histCombined("","",250,0,500);
+   
+   TH1F PuppiMET_diffCombined("","",100,-100,100);
+   TH1F PuppiMETcorr_diffCombined("","",100,-100,100);
+   TH1F PFMET_diffCombined("","",100,-100,100);
    
    int i=0;
-   for (TString bin :{"bin1","bin2","bin3","bin4","bin5","bin6"}){
-      
+   for (TString bin :{"bin1","bin2","bin3","bin4","bin5","bin6","combined"}){
+         
       //Distribution
-      TH1F* genMET_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/GenMET_"+bin);
-      TH1F* PuppiMET_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/PuppiMET_"+bin);
-      TH1F* PuppiMETcorr_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/PuppiMETcorr_"+bin);
-      TH1F* PFMET_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/PFMET_"+bin);
+      can.cd();
+      TH1F* genMET_hist;
+      TH1F* PuppiMET_hist;
+      TH1F* PuppiMETcorr_hist;
+      TH1F* PFMET_hist;
+      
+      if(bin!="combined") {
+         genMET_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/GenMET_"+bin);
+         PuppiMET_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/PuppiMET_"+bin);
+         PuppiMETcorr_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/PuppiMETcorr_"+bin);
+         PFMET_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/PFMET_"+bin);
+      }
       
       genMET_hist->Rebin(2);
       PuppiMET_hist->Rebin(2);
@@ -48,6 +73,19 @@ void run()
       // ~PuppiMET_hist->Rebin(20);
       // ~PuppiMETcorr_hist->Rebin(20);
       // ~PFMET_hist->Rebin(20);
+      
+      if(bin!="combined") {
+         genMET_histCombined.Add(genMET_hist);     //add for combined plot
+         PuppiMET_histCombined.Add(PuppiMET_hist);
+         PuppiMETcorr_histCombined.Add(PuppiMETcorr_hist);
+         PFMET_histCombined.Add(PFMET_hist);
+      }
+      else{
+         genMET_hist=&genMET_histCombined;
+         PuppiMET_hist=&PuppiMET_histCombined;
+         PuppiMETcorr_hist=&PuppiMETcorr_histCombined;
+         PFMET_hist=&PFMET_histCombined;
+      }
       
       genMET_hist->SetLineColor(kGreen);
       PuppiMET_hist->SetLineColor(kRed);
@@ -75,13 +113,22 @@ void run()
       
       TLatex label=gfx::cornerLabel(metRegions[i],1);
       label.Draw();
-      saver.save(can,"genMETtarget/dist_"+bin,true,true);
+      // ~saver.save(can,"RatioTarget/dist_"+bin,true,true);
+      saver.save(can,"DiffTarget/dist_"+bin,true,true);
+      
       
       //Resolution
-      TH1F* diff_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diff_"+bin);
-      TH1F* diffPF_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffPF_"+bin);
-      TH1F* diffCorr_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffcorr_"+bin);
-      TH1F* diffScaled_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffscaled_"+bin);
+      TH1F* diff_hist;
+      TH1F* diffPF_hist;
+      TH1F* diffCorr_hist;
+      TH1F* diffScaled_hist;
+      
+      if(bin!="combined") {
+         diff_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diff_"+bin);
+         diffPF_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffPF_"+bin);
+         diffCorr_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffcorr_"+bin);
+         diffScaled_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffscaled_"+bin);
+      }
       
       diff_hist->Rebin(2);
       diffPF_hist->Rebin(2);
@@ -91,6 +138,17 @@ void run()
       // ~diffPF_hist->Rebin(20);
       // ~diffCorr_hist->Rebin(20);
       // ~diffScaled_hist->Rebin(20);
+      
+      if(bin!="combined") {
+         PuppiMET_diffCombined.Add(diff_hist);     //add for combined plot
+         PuppiMETcorr_diffCombined.Add(diffPF_hist);
+         PFMET_diffCombined.Add(diffCorr_hist);
+      }
+      else{
+         diff_hist=&PuppiMET_diffCombined;
+         diffPF_hist=&PuppiMETcorr_diffCombined;
+         diffCorr_hist=&PFMET_diffCombined;
+      }
       
       diff_hist->SetLineColor(kRed);
       diffPF_hist->SetLineColor(kBlack);
@@ -117,8 +175,36 @@ void run()
       
       TLatex label2=gfx::cornerLabel(metRegions[i],1);
       label2.Draw();
-      saver.save(can,"genMETtarget/diff_"+bin,true,true);
+      // ~saver.save(can,"RatioTarget/diff_"+bin,true,true);
+      saver.save(can,"DiffTarget/diff_"+bin,true,true);
+      
+      //DNN Output
+      if(bin!="combined") {
+         canCombined.cd();
+         gPad->SetLogy();
+         TH1F* DNN_ouput = histReader.read<TH1F>("binningUnfolding_DNN/DNN/DNNoutput_"+bin);
+         
+         DNN_ouput->Scale(1./DNN_ouput->Integral());
+         
+         DNN_ouput->SetLineColor(Color::next());
+         DNN_ouput->SetStats(0);
+         DNN_ouput->GetYaxis()->SetRangeUser(0.001,0.3);
+         DNN_ouput->GetXaxis()->SetTitle("DNN Output");
+         DNN_ouput->GetYaxis()->SetTitle("normalized distributions");
+         
+         if (i==0) DNN_ouput->Draw("hist");
+         else DNN_ouput->Draw("same hist");
+         
+         leCombined.append(*DNN_ouput,bin,"l");
+      }
       
       i++;
    }
+   
+   canCombined.cd();
+   TLegend leg=leCombined.buildLegend(.45,.75,1-1.5*gPad->GetRightMargin(),-1,2);
+   leg.Draw();
+   // ~saver.save(canCombined,"RatioTarget/DNN_Output",true,true);
+   saver.save(canCombined,"DiffTarget/DNN_Output",true,true);
+   
 }
