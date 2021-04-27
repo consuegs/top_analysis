@@ -398,7 +398,8 @@ void run()
          // ~*MET=reader_TMVA_Bin6->EvaluateRegression("PyKerasBin6")[0];
          // ~metBin_org=6;
       // ~}
-      if(*MET<40) {
+      if(*MET<0) *MET=0;
+      else if(*MET<40) {
          PuppiMetscaled_org=*MET*1.28588;
          *MET=reader_TMVA_Bin1->EvaluateRegression("PyKerasBin1")[0]*(*MET);
          metBin_org=1;
@@ -428,8 +429,6 @@ void run()
          *MET=reader_TMVA_Bin6->EvaluateRegression("PyKerasBin6")[0]*(*MET);
          metBin_org=6;
       }
-      
-      if(*MET<0) *MET=0;
       
       PuppiMetcorr_org=*MET;
       
@@ -483,7 +482,8 @@ void run()
    std::cout<<migrated<<std::endl;
    
    // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
-   io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
+   // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
+   io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_new_%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
    
    TH2F stability=Evt_genrec;
    TH2F purity=Evt_genrec;
