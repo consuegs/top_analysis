@@ -27,12 +27,13 @@ bool matchLepton(TLorentzVector recoLep, TLorentzVector genLep) {
 extern "C"
 void run()
 {
-   std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"});
+   // ~std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8"});
    // ~std::vector<TString> vsDatasubsets({"TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8"});
    // ~std::vector<TString> vsDatasubsets({"ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4","ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4"});
    // ~std::vector<TString> vsDatasubsets({"DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8","DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_merged"});
    // ~std::vector<TString> vsDatasubsets({"WW_TuneCUETP8M1_13TeV-pythia8_merged"});
-   // ~std::vector<TString> vsDatasubsets({"SMS-T2tt_mStop-650_mLSP-350_TuneCUETP8M1_13TeV-madgraphMLM-pythia8"});
+   // ~std::vector<TString> vsDatasubsets({"SMS-T2tt_mStop-650_mLSP-350_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+   std::vector<std::string> vsDatasubsets(cfg.datasets.getDatasubsetNames());
    
    std::vector<TString> samplesToCombine={"TTbar_diLepton"};
    // ~std::vector<TString> samplesToCombine={"TTbar_diLepton_CUETP8M2"};
@@ -90,6 +91,21 @@ void run()
    hs2D.addHist("baseline_met120_mumu/MetSig_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);metSig",20,0,3.14,6000,0,1000);
    
    hs2D.addHist("baseline_met120/nVertex"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);nVertices",20,0,3.14,6000,0,60);
+   hs2D.addHist("baseline/nVertex_vs_MetRes"   ,";nVertices;GenMet-p_{T}^{miss} (GeV)",100,0,100,6000,-500,500);
+   hs2D.addHist("baseline/Gen_nVertex_vs_MetRes"   ,";nVertices(Gen);GenMet-p_{T}^{miss} (GeV)",100,0,100,6000,-500,500);
+   hs2D.addHist("baseline/nVertex_vs_MetResPF"   ,";nVertices;GenMet-p_{T}^{miss} (GeV)",100,0,100,6000,-500,500);
+   hs2D.addHist("baseline/Gen_nVertex_vs_MetResPF"   ,";nVertices(Gen);GenMet-p_{T}^{miss} (GeV)",100,0,100,6000,-500,500);
+   hs2D.addHist("baseline/genMET_vs_MetRes"   ,";GenMet;GenMet-p_{T}^{miss} (GeV)",100,0,400,6000,-500,500);
+   hs2D.addHist("baseline/genMET_vs_MetResPF"   ,";GenMet;GenMet-p_{T}^{miss} (GeV)",100,0,400,6000,-500,500);
+   
+   for(TString cat : {"ee","emu","mumu"}){
+      hs2D.addHist("baseline/"+cat+"/nVertex_vs_MetRes"   ,";nVertices;GenMet-p_{T}^{miss} (GeV)",100,0,100,6000,-500,500);
+      hs2D.addHist("baseline/"+cat+"/Gen_nVertex_vs_MetRes"   ,";nVertices(Gen);GenMet-p_{T}^{miss} (GeV)",100,0,100,6000,-500,500);
+      hs2D.addHist("baseline/"+cat+"/nVertex_vs_MetResPF"   ,";nVertices;GenMet-p_{T}^{miss} (GeV)",100,0,100,6000,-500,500);
+      hs2D.addHist("baseline/"+cat+"/Gen_nVertex_vs_MetResPF"   ,";nVertices(Gen);GenMet-p_{T}^{miss} (GeV)",100,0,100,6000,-500,500);
+      hs2D.addHist("baseline/"+cat+"/genMET_vs_MetRes"   ,";GenMet;GenMet-p_{T}^{miss} (GeV)",100,0,400,6000,-500,500);
+      hs2D.addHist("baseline/"+cat+"/genMET_vs_MetResPF"   ,";GenMet;GenMet-p_{T}^{miss} (GeV)",100,0,400,6000,-500,500);
+   }
    
    hs2D.addHist("baseline/diffMET_BJetLBRegr_diffGenMET_PtNuNu"   ,";MET-MET(BJetRegrLB);GenMET-p_{T}^{#nu#nu}",1000,-100,100,1000,-100,100);
    hs2D.addHist("baseline/diffMET_BJetLBRegrMan_diffGenMET_PtNuNu"   ,";MET-MET(BJetRegrLBman);GenMET-p_{T}^{#nu#nu}",1000,-100,100,1000,-100,100);
@@ -113,14 +129,13 @@ void run()
    hs.addHist("baseline_met120/METresPuppi"   ,";MET(Puppi)-p_{T}^{#nu#nu};EventsBIN",1000,-150,150);
    hs.addHist("baseline_met120/METresBJetRegr"   ,";MET(BJetRegr)-p_{T}^{#nu#nu};EventsBIN",1000,-150,150);
    hs.addHist("baseline_met120/METresBJetLBRegr"   ,";MET(BJetRegrLB)-p_{T}^{#nu#nu};EventsBIN",1000,-150,150);
-   
-   for(auto const set : vsDatasubsets) {
-      auto const dss = cfg.datasets.getDatasubset(set);
+
+   for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){
       TFile file(dss.getPath(),"read");
       if (file.IsZombie()) {
          return;
       }
-      io::log * ("Processing '"+dss.datasetName+"' ");
+      io::log * ("Processing '"+dss.name+"' ");
       
       hs2D.setCurrentSample(dss.name);
       hs.setCurrentSample(dss.name);
@@ -151,7 +166,8 @@ void run()
       TTreeReaderValue<tree::MET> MET_NoHF(reader, "metNoHF");
       TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
       TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
-      TTreeReaderValue<int> n_Interactions(reader, "true_nPV");
+      TTreeReaderValue<int> n_Interactions(reader, "nPV");
+      TTreeReaderValue<int> n_Interactions_gen(reader, "true_nPV");
       TTreeReaderValue<float> HTgen(reader, "genHt");
       TTreeReaderValue<bool> is_ee   (reader, "ee");
       TTreeReaderValue<bool> is_emu   (reader, "emu");
@@ -225,13 +241,13 @@ void run()
          TString cat="";
          
          rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead);
-               
+                           
          std::vector<tree::Jet> cjets;
          std::vector<tree::Jet> BJets;
-         // ~std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
-         std::vector<bool> ttbarSelection=selection::ttbarSelection_looseJetID(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
-         if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
+         std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
          
+         if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
+                           
          // end reco baseline selection
          
          if (*genDecayMode_pseudo==0) pseudo_selection=false; //pseudo baseline selection
@@ -287,6 +303,19 @@ void run()
          
          hs.fill("baseline/dPhiMETLep",abs(dPhiMETnearLep));
          hs.fill("baseline/dPhiMETLep_gen",abs(dPhiMETnearLep_gen));
+         hs2D.fill("baseline/nVertex_vs_MetRes",*n_Interactions,MET_Puppi->p.Pt()-genMet);
+         hs2D.fill("baseline/Gen_nVertex_vs_MetRes",*n_Interactions_gen,MET_Puppi->p.Pt()-genMet);
+         hs2D.fill("baseline/nVertex_vs_MetResPF",*n_Interactions,MET->p.Pt()-genMet);
+         hs2D.fill("baseline/Gen_nVertex_vs_MetResPF",*n_Interactions_gen,MET->p.Pt()-genMet);
+         hs2D.fill("baseline/genMET_vs_MetRes",genMet,MET_Puppi->p.Pt()-genMet);
+         hs2D.fill("baseline/genMET_vs_MetResPF",genMet,MET->p.Pt()-genMet);
+         
+         hs2D.fill("baseline/"+cat+"/nVertex_vs_MetRes",*n_Interactions,MET_Puppi->p.Pt()-genMet);
+         hs2D.fill("baseline/"+cat+"/Gen_nVertex_vs_MetRes",*n_Interactions_gen,MET_Puppi->p.Pt()-genMet);
+         hs2D.fill("baseline/"+cat+"/nVertex_vs_MetResPF",*n_Interactions,MET->p.Pt()-genMet);
+         hs2D.fill("baseline/"+cat+"/Gen_nVertex_vs_MetResPF",*n_Interactions_gen,MET->p.Pt()-genMet);
+         hs2D.fill("baseline/"+cat+"/genMET_vs_MetRes",genMet,MET_Puppi->p.Pt()-genMet);
+         hs2D.fill("baseline/"+cat+"/genMET_vs_MetResPF",genMet,MET->p.Pt()-genMet);
          
          if(pseudo_selection){
             hs.fill("baseline/METres",met-neutrinoPair.Pt());
