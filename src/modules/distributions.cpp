@@ -46,27 +46,27 @@ void run()
    
    for(TString selection:{"baseline","baseline_Met200"}){ //Reco 1D Histograms
       for(TString channel:{"/ee","/mumu","/emu"}){
-         hs.addHist(selection+channel+"/met"   ,";%MET;EventsBIN"           ,100,0,500);
-         hs.addHist(selection+channel+"/met_puppi"   ,";%MET;EventsBIN"           ,100,0,500);
+         hs.addHist(selection+channel+"/MET"   ,";%MET;EventsBIN"           ,100,0,500);
+         hs.addHist(selection+channel+"/PuppiMET"   ,";%MET;EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/DNN_regression"   ,";DNN_regression;EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/met1000"   ,";%MET;EventsBIN"           ,100,0,1000);
-         hs.addHist(selection+channel+"/mll"   ,";mll(GeV);EventsBIN"           ,100,0,1000);
-         hs.addHist(selection+channel+"/pTlep1"   ,";%pTl1;EventsBIN"           ,100,0,1000);
-         hs.addHist(selection+channel+"/pTlep2"   ,";%pTl2;EventsBIN"           ,100,0,1000);
+         hs.addHist(selection+channel+"/mLL"   ,";mll(GeV);EventsBIN"           ,100,0,1000);
+         hs.addHist(selection+channel+"/Lep1_pt"   ,";%pTl1;EventsBIN"           ,100,0,600);
+         hs.addHist(selection+channel+"/Lep2_pt"   ,";%pTl2;EventsBIN"           ,100,0,600);
          hs.addHist(selection+channel+"/pTsumlep"   ,";p_{T}^{ll};EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/sumpTlep"   ,";%pTl1+%pTl2;EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/pTbJet"   ,";p_{T}^{b};EventsBIN"           ,100,0,1000);
-         hs.addHist(selection+channel+"/pTJet1"   ,";p_{T}^{Jet1};EventsBIN"           ,100,0,1000);
-         hs.addHist(selection+channel+"/pTJet2"   ,";p_{T}^{Jet2};EventsBIN"           ,100,0,1000);
-         hs.addHist(selection+channel+"/dphi_metJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet);EventsBIN"           ,100,0,3.2);
-         hs.addHist(selection+channel+"/dphi_metLeadJet"   ,";|#Delta#phi|(p_{T}^{miss},leading jet);EventsBIN"           ,100,0,3.2);
-         hs.addHist(selection+channel+"/dphi_metLead2Jet"   ,";|#Delta#phi|(p_{T}^{miss},2nd leading jet);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/Jet1_pt"   ,";p_{T}^{Jet1};EventsBIN"           ,100,0,1000);
+         hs.addHist(selection+channel+"/Jet2_pt"   ,";p_{T}^{Jet2};EventsBIN"           ,100,0,1000);
+         hs.addHist(selection+channel+"/dPhiMETnearJet"   ,";|#Delta#phi|(p_{T}^{miss},nearest jet);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiMETleadJet"   ,";|#Delta#phi|(p_{T}^{miss},leading jet);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiMETlead2Jet"   ,";|#Delta#phi|(p_{T}^{miss},2nd leading jet);EventsBIN"           ,100,0,3.2);
          hs.addHist(selection+channel+"/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,320,0,3.2);
          hs.addHist(selection+channel+"/dphi_metNearLep_puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,320,0,3.2);
          hs.addHist(selection+channel+"/COSdphi_metNearLep"   ,";cos(|#Delta#phi|(p_{T}^{miss},nearest l));EventsBIN"           ,100,-1.,1);
          hs.addHist(selection+channel+"/SINdphi_metNearLep"   ,";sin(|#Delta#phi|(p_{T}^{miss},nearest l));EventsBIN"           ,100,0.,1);
-         hs.addHist(selection+channel+"/dphi_metBJet"   ,";|#Delta#phi|(p_{T}^{miss},bjet);EventsBIN"           ,100,0,3.2);
-         hs.addHist(selection+channel+"/dphi_bJetLep1"   ,";|#Delta#phi|(b Jet,l_{1});EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiMETbJet"   ,";|#Delta#phi|(p_{T}^{miss},bjet);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiLep1bJet"   ,";|#Delta#phi|(b Jet,l_{1});EventsBIN"           ,100,0,3.2);
          hs.addHist(selection+channel+"/dR_bJetLep1"   ,";|#Delta R|(b Jet,l_{1});EventsBIN"           ,100,0,5);
          hs.addHist(selection+channel+"/dphi_bJetLep2"   ,";|#Delta#phi|(b Jet,l_{2});EventsBIN"           ,100,0,3.2);
          hs.addHist(selection+channel+"/dphi_bJetnearLep"   ,";|#Delta#phi|(b Jet,next l);EventsBIN"           ,100,0,3.2);
@@ -75,12 +75,12 @@ void run()
          hs.addHist(selection+channel+"/dphi_metLep1"   ,";|#Delta#phi|(p_{T}^{miss},l_{1});EventsBIN"           ,100,0,3.2);
          hs.addHist(selection+channel+"/dphi_metLep2"   ,";|#Delta#phi|(p_{T}^{miss},l_{2});EventsBIN"           ,100,0,3.2);
          hs.addHist(selection+channel+"/dphi_metLepsum"   ,";|#Delta#phi|(p_{T}^{miss},l_{1}+l_{2});EventsBIN"           ,100,0,3.2);
-         hs.addHist(selection+channel+"/dphi_Lep1Lep2"   ,";|#Delta#phi|(l_{1},l_{2});EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiLep1Lep2"   ,";|#Delta#phi|(l_{1},l_{2});EventsBIN"           ,100,0,3.2);
          hs.addHist(selection+channel+"/dR_Lep1Lep2"   ,";|#Delta R|(l_{1},l_{2});EventsBIN"           ,100,0,5);
          hs.addHist(selection+channel+"/nJets"   ,";N_{Jets};EventsBIN"           ,11,-0.5,10.5);
          hs.addHist(selection+channel+"/nBjets"   ,";N_{bJets};EventsBIN"           ,5,-0.5,4.5);
-         hs.addHist(selection+channel+"/mt2"   ,";MT2 (GeV);EventsBIN"           ,100,0,600);
-         hs.addHist(selection+channel+"/mt_MetLep1"   ,";M_{T}(p_{T}^{miss},l_{1}) (GeV);EventsBIN"           ,100,0,1000);
+         hs.addHist(selection+channel+"/MT2"   ,";MT2 (GeV);EventsBIN"           ,100,0,200);
+         hs.addHist(selection+channel+"/MT"   ,";M_{T}(p_{T}^{miss},l_{1}) (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/mt_MetLep2"   ,";M_{T}(p_{T}^{miss},l_{2}) (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/mt_MetNextLep"   ,";M_{T}(p_{T}^{miss},nearest l) (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/conMt_Lep1Lep2"   ,";conM_{T}(l_{1},l_{2}) (GeV);EventsBIN"           ,100,0,1000);
@@ -88,6 +88,42 @@ void run()
          hs.addHist(selection+channel+"/HT"   ,";H_{T} (GeV);EventsBIN"           ,100,0,2500);
          hs.addHist(selection+channel+"/sum_STHT"   ,";S_{T}+H_{T} (GeV);EventsBIN"           ,100,0,4000);
          hs.addHist(selection+channel+"/sum_mlb"   ,";sum m_{lb} (GeV);EventsBIN"           ,100,0,3000);
+         hs.addHist(selection+channel+"/METunc_Puppi"   ,";METunc_PUPPI (GeV);EventsBIN"           ,100,0,50);
+         hs.addHist(selection+channel+"/n_Interactions"   ,";n_Interactions;EventsBIN"           ,100,0,100);
+         hs.addHist(selection+channel+"/Lep1_flavor"   ,";Lep1_flavor;EventsBIN"           ,2,0.5,2.5);
+         hs.addHist(selection+channel+"/Lep2_flavor"   ,";Lep2_flavor;EventsBIN"           ,2,0.5,2.5);
+         hs.addHist(selection+channel+"/Lep1_phi"   ,";Lep1_phi;EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/Lep2_phi"   ,";Lep2_phi;EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/Lep1_eta"   ,";Lep1_eta;EventsBIN"           ,100,-2.5,2.5);
+         hs.addHist(selection+channel+"/Lep2_eta"   ,";Lep2_eta;EventsBIN"           ,100,-2.5,2.5);
+         hs.addHist(selection+channel+"/Lep1_E"   ,";Lep1_E (GeV);EventsBIN"           ,100,0,600);
+         hs.addHist(selection+channel+"/Lep2_E"   ,";Lep2_E (GeV);EventsBIN"           ,100,0,600);
+         hs.addHist(selection+channel+"/Jet1_phi"   ,";Jet1_phi;EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/Jet2_phi"   ,";Jet2_phi;EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/Jet1_eta"   ,";Jet1_eta;EventsBIN"           ,100,-2.5,2.5);
+         hs.addHist(selection+channel+"/Jet2_eta"   ,";Jet2_eta;EventsBIN"           ,100,-2.5,2.5);
+         hs.addHist(selection+channel+"/Jet1_E"   ,";Jet1_E (GeV);EventsBIN"           ,100,0,2000);
+         hs.addHist(selection+channel+"/Jet2_E"   ,";Jet2_E (GeV);EventsBIN"           ,100,0,2000);
+         hs.addHist(selection+channel+"/dPhiMETfarJet"   ,";|#Delta#phi|(p_{T}^{miss},farest jet);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiJet1Jet2"   ,";|#Delta#phi|(Jet1,Jet2);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/METsig"   ,";MET significance;EventsBIN"           ,100,0,200);
+         hs.addHist(selection+channel+"/MHT"   ,";MHT (GeV);EventsBIN"           ,100,0,2000);
+         hs.addHist(selection+channel+"/looseLeptonVeto"   ,";looseLeptonVeto;EventsBIN"           ,2,-0.5,1.5);
+         hs.addHist(selection+channel+"/dPhiMETnearJet_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest Jet);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiMETfarJet_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},farest Jet);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiMETleadJet_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},Jet1);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiMETlead2Jet_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},Jet2);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiMETbJet_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},b Jet);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/dPhiLep1Jet1"   ,";|#Delta#phi|(Lep1,Jet1);EventsBIN"           ,100,0,3.2);
+         hs.addHist(selection+channel+"/PFMET_phi"   ,";#phi (PFMET);EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/PuppiMET_phi"   ,";#phi (PuppiMET);EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/CaloMET"   ,";CaloMET (GeV);EventsBIN"           ,100,0,500);
+         hs.addHist(selection+channel+"/CaloMET_phi"   ,";#phi (CaloMET);EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/vecsum_pT_allJet"   ,";vecsum_pT_allJet (GeV);EventsBIN"           ,100,0,500);
+         hs.addHist(selection+channel+"/vecsum_pT_l1l2_allJet"   ,";vecsum_pT_l1l2_allJet (GeV);EventsBIN"           ,100,0,500);
+         hs.addHist(selection+channel+"/mass_l1l2_allJet"   ,";mass_l1l2_allJet (GeV);EventsBIN"           ,100,0,3000);
+         hs.addHist(selection+channel+"/ratio_vecsumpTlep_vecsumpTjet"   ,";ratio_vecsumpTlep_vecsumpTjet;EventsBIN"           ,100,0,20);
+         hs.addHist(selection+channel+"/mjj"   ,";mjj (GeV);EventsBIN"           ,100,0,2000);
       }
    }//End 1D reco histograms
    
@@ -97,9 +133,9 @@ void run()
       hs.addHist(selection+"/emu/pT_nunu"   ,";p_{T}^{#nu#nu(+BSM)}(GeV);EventsBIN"           ,100,0,1000);
       hs.addHist(selection+"/mumu/pT_nunu"   ,";p_{T}^{#nu#nu(+BSM)}(GeV);EventsBIN"           ,100,0,1000);
       
-      hs.addHist(selection+"/ee/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,1000);
-      hs.addHist(selection+"/emu/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,1000);
-      hs.addHist(selection+"/mumu/genMet"   ,";genMET(GeV);EventsBIN"           ,100,0,1000);
+      hs.addHist(selection+"/ee/genMET"   ,";genMET(GeV);EventsBIN"           ,100,0,1000);
+      hs.addHist(selection+"/emu/genMET"   ,";genMET(GeV);EventsBIN"           ,100,0,1000);
+      hs.addHist(selection+"/mumu/genMET"   ,";genMET(GeV);EventsBIN"           ,100,0,1000);
       
       hs.addHist(selection+"/ee/DMgenMet"   ,";DMgenMET(GeV);EventsBIN"           ,100,0,1000);
       hs.addHist(selection+"/emu/DMgenMet"   ,";DMgenMET(GeV);EventsBIN"           ,100,0,1000);
@@ -573,7 +609,11 @@ void run()
                            
          // end reco baseline selection
          
-         if (*genDecayMode_pseudo==0) pseudo_selection=false; //pseudo baseline selection
+         // Get pT of Neutrino Pair, which is further changed in case of BSM scenarios!!
+         TLorentzVector neutrinoPair(0,0,0,0);
+         neutrinoPair=(*genNeutrino)+(*genAntiNeutrino);
+         
+         if (*genDecayMode_pseudo==0 || (*genDecayMode_pseudo!=3 && neutrinoPair.Pt()<40)) pseudo_selection=false; //pseudo baseline selection
          
          if(rec_selection==false && pseudo_selection==false) continue;  // only proceed with events selected by one of the baseline selection (reco or pseudo)
          
@@ -641,10 +681,6 @@ void run()
             // ~minTree_v_Jet_muonEnergy.push_back(jet.muonf*jet.p.Pt());
             // ~minTree_v_Jet_electronEnergy.push_back(jet.electronf*jet.p.Pt());
          // ~}
-         
-         // Get pT of Neutrino Pair, which is further changed in case of BSM scenarios!!
-         TLorentzVector neutrinoPair(0,0,0,0);
-         neutrinoPair=(*genNeutrino)+(*genAntiNeutrino);
          
          //Calculate MET before parton shower and hadronization for DM scenario and SUSY scenarios
          //And get number of (non)prompt neutrinos in event
@@ -901,7 +937,7 @@ void run()
             minTree_runNo=*runNo;
             minTree_lumNo=*lumNo;
             minTree_evtNo=*evtNo;
-            minTree_genDecayMode=*genDecayMode;
+            minTree_genDecayMode=*genDecayMode_pseudo;
             minTree_genMet=genMet;
             minTree_PuppiMet=met_puppi;
             minTree_XYcorrMet=MET_XYcorr->p.Pt();
@@ -1072,27 +1108,27 @@ void run()
          if (*is_emu) path_cat="emu";
          else if (*is_mumu) path_cat="mumu";
          
-         hs.fill("baseline/"+path_cat+"/met",met);
-         hs.fill("baseline/"+path_cat+"/met_puppi",met_puppi);
+         hs.fill("baseline/"+path_cat+"/MET",met);
+         hs.fill("baseline/"+path_cat+"/PuppiMET",met_puppi);
          hs.fill("baseline/"+path_cat+"/met1000",met);
          hs.fill("baseline/"+path_cat+"/DNN_regression",DNN_regression);
-         hs.fill("baseline/"+path_cat+"/mll",*mll);
-         hs.fill("baseline/"+path_cat+"/pTlep1",p_l1.Pt());
-         hs.fill("baseline/"+path_cat+"/pTlep2",p_l2.Pt());
+         hs.fill("baseline/"+path_cat+"/mLL",*mll);
+         hs.fill("baseline/"+path_cat+"/Lep1_pt",p_l1.Pt());
+         hs.fill("baseline/"+path_cat+"/Lep2_pt",p_l2.Pt());
          hs.fill("baseline/"+path_cat+"/pTsumlep",(p_l1+p_l2).Pt());
          hs.fill("baseline/"+path_cat+"/sumpTlep",p_l1.Pt()+p_l2.Pt());
          hs.fill("baseline/"+path_cat+"/pTbJet",BJets[0].p.Pt());
-         hs.fill("baseline/"+path_cat+"/pTJet1",cjets[0].p.Pt());
-         hs.fill("baseline/"+path_cat+"/pTJet2",cjets[1].p.Pt());
-         hs.fill("baseline/"+path_cat+"/dphi_metJet",abs(dPhiMETnearJet));
-         hs.fill("baseline/"+path_cat+"/dphi_metLeadJet",abs(dPhiMETleadJet));
-         hs.fill("baseline/"+path_cat+"/dphi_metLead2Jet",abs(dPhiMETlead2Jet));
+         hs.fill("baseline/"+path_cat+"/Jet1_pt",cjets[0].p.Pt());
+         hs.fill("baseline/"+path_cat+"/Jet2_pt",cjets[1].p.Pt());
+         hs.fill("baseline/"+path_cat+"/dPhiMETnearJet",abs(dPhiMETnearJet));
+         hs.fill("baseline/"+path_cat+"/dPhiMETleadJet",abs(dPhiMETleadJet));
+         hs.fill("baseline/"+path_cat+"/dPhiMETlead2Jet",abs(dPhiMETlead2Jet));
          hs.fill("baseline/"+path_cat+"/dphi_metNearLep",abs(dPhiMETnearLep));
          hs.fill("baseline/"+path_cat+"/dphi_metNearLep_puppi",abs(dPhiMETnearLepPuppi));
          hs.fill("baseline/"+path_cat+"/COSdphi_metNearLep",TMath::Cos(abs(dPhiMETnearLep)));
          hs.fill("baseline/"+path_cat+"/SINdphi_metNearLep",TMath::Sin(abs(dPhiMETnearLep)));
-         hs.fill("baseline/"+path_cat+"/dphi_metBJet",abs(dPhiMetBJet));
-         hs.fill("baseline/"+path_cat+"/dphi_bJetLep1",abs(dPhiLep1BJet));
+         hs.fill("baseline/"+path_cat+"/dPhiMETbJet",abs(dPhiMetBJet));
+         hs.fill("baseline/"+path_cat+"/dPhiLep1bJet",abs(dPhiLep1BJet));
          hs.fill("baseline/"+path_cat+"/dR_bJetLep1",abs(dRLep1BJet));
          hs.fill("baseline/"+path_cat+"/dphi_bJetLep2",abs(dPhiLep2BJet));
          hs.fill("baseline/"+path_cat+"/dphi_bJetnearLep",dphi_bJetnearLep);
@@ -1101,12 +1137,12 @@ void run()
          hs.fill("baseline/"+path_cat+"/dphi_metLep1",abs(dPhiLep1MET));
          hs.fill("baseline/"+path_cat+"/dphi_metLep2",abs(dPhiLep2MET));
          hs.fill("baseline/"+path_cat+"/dphi_metLepsum",abs(dPhiMetLepSum));
-         hs.fill("baseline/"+path_cat+"/dphi_Lep1Lep2",abs(dPhiLep1Lep2));
+         hs.fill("baseline/"+path_cat+"/dPhiLep1Lep2",abs(dPhiLep1Lep2));
          hs.fill("baseline/"+path_cat+"/dR_Lep1Lep2",abs(dR_Lep1Lep2));
          hs.fill("baseline/"+path_cat+"/nJets",cjets.size());
          hs.fill("baseline/"+path_cat+"/nBjets",nBjets);
-         hs.fill("baseline/"+path_cat+"/mt2",*mt2);
-         hs.fill("baseline/"+path_cat+"/mt_MetLep1",mt_MetLep1);
+         hs.fill("baseline/"+path_cat+"/MT2",*mt2);
+         hs.fill("baseline/"+path_cat+"/MT",mt_MetLep1);
          hs.fill("baseline/"+path_cat+"/mt_MetLep2",mt_MetLep2);
          hs.fill("baseline/"+path_cat+"/mt_MetNextLep",mt_MetNextLep);
          hs.fill("baseline/"+path_cat+"/conMt_Lep1Lep2",conMt_Lep1Lep2);
@@ -1114,8 +1150,46 @@ void run()
          hs.fill("baseline/"+path_cat+"/HT",HT);
          hs.fill("baseline/"+path_cat+"/sum_STHT",ST+HT);
          hs.fill("baseline/"+path_cat+"/sum_mlb",sum_mlb);
+         
+         hs.fill("baseline/"+path_cat+"/METunc_Puppi",MET_Puppi->uncertainty);
+         hs.fill("baseline/"+path_cat+"/n_Interactions",*n_Interactions);
+         hs.fill("baseline/"+path_cat+"/Lep1_flavor",flavor_l1);
+         hs.fill("baseline/"+path_cat+"/Lep2_flavor",flavor_l2);
+         hs.fill("baseline/"+path_cat+"/Lep1_phi",p_l1.Phi());
+         hs.fill("baseline/"+path_cat+"/Lep2_phi",p_l2.Phi());
+         hs.fill("baseline/"+path_cat+"/Lep1_eta",p_l1.Eta());
+         hs.fill("baseline/"+path_cat+"/Lep2_eta",p_l2.Eta());
+         hs.fill("baseline/"+path_cat+"/Lep1_E",p_l1.E());
+         hs.fill("baseline/"+path_cat+"/Lep2_E",p_l2.E());
+         hs.fill("baseline/"+path_cat+"/Jet1_phi",cjets[0].p.Phi());
+         hs.fill("baseline/"+path_cat+"/Jet2_phi",cjets[1].p.Phi());
+         hs.fill("baseline/"+path_cat+"/Jet1_eta",cjets[0].p.Eta());
+         hs.fill("baseline/"+path_cat+"/Jet2_eta",cjets[1].p.Eta());
+         hs.fill("baseline/"+path_cat+"/Jet1_E",cjets[0].p.E());
+         hs.fill("baseline/"+path_cat+"/Jet2_E",cjets[1].p.E());
+         hs.fill("baseline/"+path_cat+"/dPhiMETfarJet",abs(dPhiMETfarJet));
+         hs.fill("baseline/"+path_cat+"/dPhiJet1Jet2",abs(dPhiJet1Jet2));
+         hs.fill("baseline/"+path_cat+"/METsig",MET->sig);
+         hs.fill("baseline/"+path_cat+"/MHT",MHT.M());
+         hs.fill("baseline/"+path_cat+"/looseLeptonVeto", *addLepton? 1: 0);
+         hs.fill("baseline/"+path_cat+"/dPhiMETnearJet_Puppi",abs(dPhiMETnearJet_Puppi));
+         hs.fill("baseline/"+path_cat+"/dPhiMETfarJet_Puppi",abs(dPhiMETfarJet_Puppi));
+         hs.fill("baseline/"+path_cat+"/dPhiMETleadJet_Puppi",abs(dPhiMETleadJet_Puppi));
+         hs.fill("baseline/"+path_cat+"/dPhiMETlead2Jet_Puppi",abs(dPhiMETlead2Jet_Puppi));
+         hs.fill("baseline/"+path_cat+"/dPhiMETbJet_Puppi",abs(dPhiMetBJet_Puppi));
+         hs.fill("baseline/"+path_cat+"/dPhiLep1Jet1",abs(dPhiLep1Jet1));
+         hs.fill("baseline/"+path_cat+"/PFMET_phi",MET->p.Phi());
+         hs.fill("baseline/"+path_cat+"/PuppiMET_phi",MET_Puppi->p.Phi());
+         hs.fill("baseline/"+path_cat+"/CaloMET",MET_Calo->p.Pt());
+         hs.fill("baseline/"+path_cat+"/CaloMET_phi",MET_Calo->p.Phi());
+         hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet",MHT.Pt());
+         hs.fill("baseline/"+path_cat+"/vecsum_pT_l1l2_allJet",(MHT+p_l1+p_l2).Pt());
+         hs.fill("baseline/"+path_cat+"/mass_l1l2_allJet",(MHT+p_l1+p_l2).M());
+         hs.fill("baseline/"+path_cat+"/ratio_vecsumpTlep_vecsumpTjet",(p_l1+p_l2).Pt()/MHT.Pt());
+         hs.fill("baseline/"+path_cat+"/mjj",(cjets[0].p+cjets[1].p).M());
+         
          hs.fill("genParticles/"+path_cat+"/pT_nunu",neutrinoPair.Pt());
-         hs.fill("genParticles/"+path_cat+"/genMet",genMet);
+         hs.fill("genParticles/"+path_cat+"/genMET",genMet);
          hs.fill("genParticles/"+path_cat+"/DMgenMet",DMgenMET.Pt());
          hs.fill("genParticles/"+path_cat+"/dphi_NeutrinoLep",abs(dPhiNeutrinoLep1));
          hs.fill("genParticles/"+path_cat+"/dphi_NeutrinoLep",abs(dPhiNeutrinoLep2));
@@ -1130,27 +1204,27 @@ void run()
          hs2d.fill("genParticles/"+path_cat+"/2d_PtNuNuVSdPhiNuNuNearLep",neutrinoPair.Pt(),abs(dPhiPtNunearLep));
          
          if (met>200){
-            hs.fill("baseline_Met200/"+path_cat+"/met",met);
-            hs.fill("baseline_Met200/"+path_cat+"/met_puppi",met_puppi);
+            hs.fill("baseline_Met200/"+path_cat+"/MET",met);
+            hs.fill("baseline_Met200/"+path_cat+"/PuppiMET",met_puppi);
             hs.fill("baseline_Met200/"+path_cat+"/met1000",met);
             hs.fill("baseline_Met200/"+path_cat+"/DNN_regression",DNN_regression);
-            hs.fill("baseline_Met200/"+path_cat+"/mll",*mll);
-            hs.fill("baseline_Met200/"+path_cat+"/pTlep1",p_l1.Pt());
-            hs.fill("baseline_Met200/"+path_cat+"/pTlep2",p_l2.Pt());
+            hs.fill("baseline_Met200/"+path_cat+"/mLL",*mll);
+            hs.fill("baseline_Met200/"+path_cat+"/Lep1_pt",p_l1.Pt());
+            hs.fill("baseline_Met200/"+path_cat+"/Lep2_pt",p_l2.Pt());
             hs.fill("baseline_Met200/"+path_cat+"/pTsumlep",(p_l1+p_l2).Pt());
             hs.fill("baseline_Met200/"+path_cat+"/sumpTlep",p_l1.Pt()+p_l2.Pt());
             hs.fill("baseline_Met200/"+path_cat+"/pTbJet",BJets[0].p.Pt());
-            hs.fill("baseline_Met200/"+path_cat+"/pTJet1",cjets[0].p.Pt());
-            hs.fill("baseline_Met200/"+path_cat+"/pTJet2",cjets[1].p.Pt());
-            hs.fill("baseline_Met200/"+path_cat+"/dphi_metJet",abs(dPhiMETnearJet));
+            hs.fill("baseline_Met200/"+path_cat+"/Jet1_pt",cjets[0].p.Pt());
+            hs.fill("baseline_Met200/"+path_cat+"/Jet2_pt",cjets[1].p.Pt());
+            hs.fill("baseline_Met200/"+path_cat+"/dPhiMETnearJet",abs(dPhiMETnearJet));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metNearLep",abs(dPhiMETnearLep));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metNearLep_puppi",abs(dPhiMETnearLepPuppi));
-            hs.fill("baseline_Met200/"+path_cat+"/dphi_metLeadJet",abs(dPhiMETleadJet));
-            hs.fill("baseline_Met200/"+path_cat+"/dphi_metLead2Jet",abs(dPhiMETlead2Jet));
+            hs.fill("baseline_Met200/"+path_cat+"/dPhiMETleadJet",abs(dPhiMETleadJet));
+            hs.fill("baseline_Met200/"+path_cat+"/dPhiMETlead2Jet",abs(dPhiMETlead2Jet));
             hs.fill("baseline_Met200/"+path_cat+"/COSdphi_metNearLep",TMath::Cos(abs(dPhiMETnearLep)));
             hs.fill("baseline_Met200/"+path_cat+"/SINdphi_metNearLep",TMath::Sin(abs(dPhiMETnearLep)));
-            hs.fill("baseline_Met200/"+path_cat+"/dphi_metBJet",abs(dPhiMetBJet));
-            hs.fill("baseline_Met200/"+path_cat+"/dphi_bJetLep1",abs(dPhiLep1BJet));
+            hs.fill("baseline_Met200/"+path_cat+"/dPhiMETbJet",abs(dPhiMetBJet));
+            hs.fill("baseline_Met200/"+path_cat+"/dPhiLep1bJet",abs(dPhiLep1BJet));
             hs.fill("baseline_Met200/"+path_cat+"/dR_bJetLep1",abs(dRLep1BJet));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_bJetLep2",abs(dPhiLep2BJet));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_bJetnearLep",dphi_bJetnearLep);
@@ -1159,12 +1233,12 @@ void run()
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metLep1",abs(dPhiLep1MET));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metLep2",abs(dPhiLep2MET));
             hs.fill("baseline_Met200/"+path_cat+"/dphi_metLepsum",abs(dPhiMetLepSum));
-            hs.fill("baseline_Met200/"+path_cat+"/dphi_Lep1Lep2",abs(dPhiLep1Lep2));
+            hs.fill("baseline_Met200/"+path_cat+"/dPhiLep1Lep2",abs(dPhiLep1Lep2));
             hs.fill("baseline_Met200/"+path_cat+"/dR_Lep1Lep2",abs(dR_Lep1Lep2));
             hs.fill("baseline_Met200/"+path_cat+"/nJets",cjets.size());
             hs.fill("baseline_Met200/"+path_cat+"/nBjets",nBjets);
-            hs.fill("baseline_Met200/"+path_cat+"/mt2",*mt2);
-            hs.fill("baseline_Met200/"+path_cat+"/mt_MetLep1",mt_MetLep1);
+            hs.fill("baseline_Met200/"+path_cat+"/MT2",*mt2);
+            hs.fill("baseline_Met200/"+path_cat+"/MT",mt_MetLep1);
             hs.fill("baseline_Met200/"+path_cat+"/mt_MetLep2",mt_MetLep2);
             hs.fill("baseline_Met200/"+path_cat+"/mt_MetNextLep",mt_MetNextLep);
             hs.fill("baseline_Met200/"+path_cat+"/conMt_Lep1Lep2",conMt_Lep1Lep2);
