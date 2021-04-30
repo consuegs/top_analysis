@@ -237,7 +237,7 @@ void run()
       //reweight
       mcWeight*=reweight;
       
-      if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40)) {
+      if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40)) {     //currently not working since tau events not in single sample!!
          histDataTruth_fakes->Fill(genbinNumber,mcWeight);
       }
       else histDataTruth->Fill(genbinNumber,mcWeight);

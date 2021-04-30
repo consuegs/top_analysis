@@ -51,6 +51,8 @@ set(MODULES
   # ~test_tensorflow
   # ~plot_leptonVeto
   plot_yearComparisons
+  compare_powheg_amcatnlo
+  binningUnfolding1D_Fabian
   )
 
 foreach(MODULE ${MODULES})

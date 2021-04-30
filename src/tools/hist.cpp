@@ -167,7 +167,7 @@ void hist::Histograms<HIST>::scaleLumi()
 template <class HIST>
 void hist::Histograms<HIST>::mergeOverflow(bool includeUnderflow)
 {
-   Datasubset curS=datasets.getDatasubset(sCurrentSample_);
+   // ~Datasubset curS=datasets.getDatasubset(sCurrentSample_);
    for (auto &mH:mmH_){
       hist::mergeOverflow(mH.second[sCurrentSample_],includeUnderflow);
    }
