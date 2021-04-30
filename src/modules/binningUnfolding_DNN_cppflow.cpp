@@ -69,6 +69,7 @@ void run()
    std::vector<TH1F> genmet_hists;    //Hist to evaluate DNN performance
    std::vector<TH1F> puppimet_hists;
    std::vector<TH1F> pfmet_hists;
+   std::vector<TH1F> ptnunu_hists;
    std::vector<TH1F> puppimetCorr_hists;
    std::vector<TH1F> puppimetScaled_hists;
    std::vector<TH1F> DNNoutput_hists;
@@ -76,11 +77,17 @@ void run()
    std::vector<TH1F> diffPF_hists;
    std::vector<TH1F> diffPuppiCorr_hists;
    std::vector<TH1F> diffPuppiScaled_hists;
+   std::vector<TH1F> diffPuppi_ptnunu_hists;
+   std::vector<TH1F> diffPF_ptnunu_hists;
+   std::vector<TH1F> diffPuppiCorr_ptnunu_hists;
+   std::vector<TH1F> diffPuppiScaled_ptnunu_hists;
    for(int i=0;i<nBins;i++){
       TH1F temp_met("","",500,0,500);
-      TH1F temp_dnn("","",100,0,5);
+      // ~TH1F temp_dnn("","",100,0,5);
+      TH1F temp_dnn("","",500,-100,200);
       TH1F temp_res("","",200,-100,100);
       genmet_hists.push_back(temp_met);
+      ptnunu_hists.push_back(temp_met);
       puppimet_hists.push_back(temp_met);
       pfmet_hists.push_back(temp_met);
       puppimetCorr_hists.push_back(temp_met);
@@ -90,6 +97,10 @@ void run()
       diffPF_hists.push_back(temp_res);
       diffPuppiCorr_hists.push_back(temp_res);
       diffPuppiScaled_hists.push_back(temp_res);
+      diffPuppi_ptnunu_hists.push_back(temp_res);
+      diffPF_ptnunu_hists.push_back(temp_res);
+      diffPuppiCorr_ptnunu_hists.push_back(temp_res);
+      diffPuppiScaled_ptnunu_hists.push_back(temp_res);
    }
    
    N_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
@@ -216,18 +227,12 @@ void run()
    TTreeReaderValue<float> mjj   (reader,"mjj");
    
    //DNN configuration
-   // ~cppflow::model model_Bin1("/home/home4/institut_1b/dmeuser/top_analysis/pyKeras_ttbar/TMVA_pyKeras_reg/h5_to_pb/modelBin1");
-   // ~cppflow::model model_Bin2("/home/home4/institut_1b/dmeuser/top_analysis/pyKeras_ttbar/TMVA_pyKeras_reg/h5_to_pb/modelBin2");
-   // ~cppflow::model model_Bin3("/home/home4/institut_1b/dmeuser/top_analysis/pyKeras_ttbar/TMVA_pyKeras_reg/h5_to_pb/modelBin3");
-   // ~cppflow::model model_Bin4("/home/home4/institut_1b/dmeuser/top_analysis/pyKeras_ttbar/TMVA_pyKeras_reg/h5_to_pb/modelBin4");
-   // ~cppflow::model model_Bin5("/home/home4/institut_1b/dmeuser/top_analysis/pyKeras_ttbar/TMVA_pyKeras_reg/h5_to_pb/modelBin5");
-   // ~cppflow::model model_Bin6("/home/home4/institut_1b/dmeuser/top_analysis/pyKeras_ttbar/TMVA_pyKeras_reg/h5_to_pb/modelBin6");
-   // ~cppflow::model model_Inclusive("/home/home4/institut_1b/dmeuser/top_analysis/pyKeras_ttbar/TMVA_pyKeras_reg/h5_to_pb/modelInclusive");
-   // ~cppflow::model model_Inclusive("/home/home4/institut_1b/dmeuser/top_analysis/pyKeras_ttbar/TMVA_pyKeras_reg/h5_to_pb/modelInclusiveWeighted");
-   // ~cppflow::model model_Inclusive("/home/home4/institut_1b/dmeuser/top_analysis/pyKeras_ttbar/TMVA_pyKeras_reg/trainedModel_Keras/InclusiveWeighted_2018_20210421-1359");
-   // ~cppflow::model model_Inclusive("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/InlusivePatched_2018_20210422-1411");
-   // ~cppflow::model model_Inclusive("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/InlusivePatched_amcatnlo_2018_20210426-1734");
-   cppflow::model model_Inclusive("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/InlusivePatched_amcatnlo__PuppiMET-genMET_2018_20210427-1222normDistr");
+   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo__PuppiMET-genMET_%s_20210428-1103normDistr",cfg.year.Data());
+   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo__genMET_%s_20210429-1119normDistr",cfg.year.Data());
+   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo_MSE__PuppiMET-genMET_%s_20210429-1529normDistr",cfg.year.Data());
+   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo_EP100__PuppiMET-genMET_%s_20210429-1718normDistr",cfg.year.Data());
+   std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo__PtNuNu_%s_20210429-1832normDistr",cfg.year.Data());
+   cppflow::model model_Inclusive(modelName);
    std::vector<float> input_vec(53);
    std::vector<int64_t> shape (2);
    shape[0]=1;
@@ -307,6 +312,7 @@ void run()
       int metBin_org=1;
       float DNN_out=1;
       
+      //Target ratio
       // ~if(*MET<0) *MET=0;
       // ~else if(*MET<40) {
          // ~PuppiMetscaled_org=*MET*1.28588;
@@ -351,51 +357,96 @@ void run()
          // ~metBin_org=6;
       // ~}
       
-      //target diff
+      // ~//target diff
+      // ~if(*MET<0) *MET=0;
+      // ~else if(*MET<40) {
+         // ~PuppiMetscaled_org=*MET*1.28588;
+         // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         // ~DNN_out = output[0].get_data<float>()[0];
+         // ~*MET = (*MET)-DNN_out;
+         // ~metBin_org=1;
+      // ~}
+      // ~else if(*MET<80){
+         // ~PuppiMetscaled_org=*MET*0.94220;
+         // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         // ~DNN_out = output[0].get_data<float>()[0];
+         // ~*MET = (*MET)-DNN_out;
+         // ~metBin_org=2;
+      // ~}
+      // ~else if(*MET<120){
+         // ~PuppiMetscaled_org=*MET*0.88487;
+         // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         // ~DNN_out = output[0].get_data<float>()[0];
+         // ~*MET = (*MET)-DNN_out;
+         // ~metBin_org=3;
+      // ~}
+      // ~else if(*MET<160){
+         // ~PuppiMetscaled_org=*MET*0.87049;
+         // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         // ~DNN_out = output[0].get_data<float>()[0];
+         // ~*MET = (*MET)-DNN_out;
+         // ~metBin_org=4;
+      // ~}
+      // ~else if(*MET<230){
+         // ~PuppiMetscaled_org=*MET*0.88503;
+         // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         // ~DNN_out = output[0].get_data<float>()[0];
+         // ~*MET = (*MET)-DNN_out;
+         // ~metBin_org=5;
+      // ~}
+      // ~else {
+         // ~PuppiMetscaled_org=*MET*0.91246;
+         // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         // ~DNN_out = output[0].get_data<float>()[0];
+         // ~*MET = (*MET)-DNN_out;
+         // ~metBin_org=6;
+      // ~}
+      // ~if(*MET<0) *MET=0.0001;
+      
+      //Target genMET
       if(*MET<0) *MET=0;
       else if(*MET<40) {
          PuppiMetscaled_org=*MET*1.28588;
          auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          DNN_out = output[0].get_data<float>()[0];
-         *MET = (*MET)-DNN_out;
+         *MET = DNN_out;
          metBin_org=1;
       }
       else if(*MET<80){
          PuppiMetscaled_org=*MET*0.94220;
          auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          DNN_out = output[0].get_data<float>()[0];
-         *MET = (*MET)-DNN_out;
+         *MET = DNN_out;
          metBin_org=2;
       }
       else if(*MET<120){
          PuppiMetscaled_org=*MET*0.88487;
          auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          DNN_out = output[0].get_data<float>()[0];
-         *MET = (*MET)-DNN_out;
+         *MET = DNN_out;
          metBin_org=3;
       }
       else if(*MET<160){
          PuppiMetscaled_org=*MET*0.87049;
          auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          DNN_out = output[0].get_data<float>()[0];
-         *MET = (*MET)-DNN_out;
+         *MET = DNN_out;
          metBin_org=4;
       }
       else if(*MET<230){
          PuppiMetscaled_org=*MET*0.88503;
          auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          DNN_out = output[0].get_data<float>()[0];
-         *MET = (*MET)-DNN_out;
+         *MET = DNN_out;
          metBin_org=5;
       }
       else {
          PuppiMetscaled_org=*MET*0.91246;
          auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          DNN_out = output[0].get_data<float>()[0];
-         *MET = (*MET)-DNN_out;
+         *MET = DNN_out;
          metBin_org=6;
       }
-      if(*MET<0) *MET=0.0001;
       
       PuppiMetcorr_org=*MET;
       
@@ -413,18 +464,18 @@ void run()
       }
       
       //Fill hists for DNN performance evaluation with reco events
-      // ~if(PuppiMet_org>0){
-         // ~genmet_hists[metBin_org-1].Fill(*genMET);
-         // ~puppimet_hists[metBin_org-1].Fill(PuppiMet_org);
-         // ~pfmet_hists[metBin_org-1].Fill(*PFMET);
-         // ~puppimetCorr_hists[metBin_org-1].Fill(PuppiMetcorr_org);
-         // ~puppimetScaled_hists[metBin_org-1].Fill(PuppiMetscaled_org);
-         // ~DNNoutput_hists[metBin_org-1].Fill(DNN_out);
-         // ~diffPuppi_hists[metBin_org-1].Fill(*genMET-PuppiMet_org);
-         // ~diffPF_hists[metBin_org-1].Fill(*genMET-*PFMET);
-         // ~diffPuppiCorr_hists[metBin_org-1].Fill(*genMET-PuppiMetcorr_org);
-         // ~diffPuppiScaled_hists[metBin_org-1].Fill(*genMET-PuppiMetscaled_org);
-      // ~}
+      if(PuppiMet_org>0){
+         genmet_hists[metBin_org-1].Fill(*genMET);
+         puppimet_hists[metBin_org-1].Fill(PuppiMet_org);
+         pfmet_hists[metBin_org-1].Fill(*PFMET);
+         puppimetCorr_hists[metBin_org-1].Fill(PuppiMetcorr_org);
+         puppimetScaled_hists[metBin_org-1].Fill(PuppiMetscaled_org);
+         DNNoutput_hists[metBin_org-1].Fill(DNN_out);
+         diffPuppi_hists[metBin_org-1].Fill(*genMET-PuppiMet_org);
+         diffPF_hists[metBin_org-1].Fill(*genMET-*PFMET);
+         diffPuppiCorr_hists[metBin_org-1].Fill(*genMET-PuppiMetcorr_org);
+         diffPuppiScaled_hists[metBin_org-1].Fill(*genMET-PuppiMetscaled_org);
+      }
       
       // ~if(*looseLeptonVeto) continue;   //Remove Events with add. looser lepton
       if(*genDecayMode!=3 && *PtNuNu<40) continue;   //Remove SF events if ptNuNu is smaler than 40GeV
@@ -449,23 +500,28 @@ void run()
       phi_res[realBin].Fill(diffPHI);
       
       //Fill hists for DNN performance evaluation with reco_gen events
-      genmet_hists[metBin_org-1].Fill(*genMET);
-      puppimet_hists[metBin_org-1].Fill(PuppiMet_org);
-      pfmet_hists[metBin_org-1].Fill(*PFMET);
-      puppimetCorr_hists[metBin_org-1].Fill(PuppiMetcorr_org);
-      puppimetScaled_hists[metBin_org-1].Fill(PuppiMetscaled_org);
-      DNNoutput_hists[metBin_org-1].Fill(DNN_out);
-      diffPuppi_hists[metBin_org-1].Fill(*genMET-PuppiMet_org);
-      diffPF_hists[metBin_org-1].Fill(*genMET-*PFMET);
-      diffPuppiCorr_hists[metBin_org-1].Fill(*genMET-PuppiMetcorr_org);
-      diffPuppiScaled_hists[metBin_org-1].Fill(*genMET-PuppiMetscaled_org);
+      // ~genmet_hists[metBin_org-1].Fill(*genMET);
+      // ~puppimet_hists[metBin_org-1].Fill(PuppiMet_org);
+      // ~pfmet_hists[metBin_org-1].Fill(*PFMET);
+      // ~puppimetCorr_hists[metBin_org-1].Fill(PuppiMetcorr_org);
+      // ~puppimetScaled_hists[metBin_org-1].Fill(PuppiMetscaled_org);
+      // ~DNNoutput_hists[metBin_org-1].Fill(DNN_out);
+      // ~diffPuppi_hists[metBin_org-1].Fill(*genMET-PuppiMet_org);
+      // ~diffPF_hists[metBin_org-1].Fill(*genMET-*PFMET);
+      // ~diffPuppiCorr_hists[metBin_org-1].Fill(*genMET-PuppiMetcorr_org);
+      // ~diffPuppiScaled_hists[metBin_org-1].Fill(*genMET-PuppiMetscaled_org);
+      ptnunu_hists[metBin_org-1].Fill(*PtNuNu);
+      diffPuppi_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-PuppiMet_org);
+      diffPF_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-*PFMET);
+      diffPuppiCorr_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-PuppiMetcorr_org);
+      diffPuppiScaled_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-PuppiMetscaled_org);
    }
    file.Close();
    std::cout<<migrated<<std::endl;
    
    // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
    // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
-   io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_cppflow_new%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
+   io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_cppflow_new2%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
    
    TH2F stability=Evt_genrec;
    TH2F purity=Evt_genrec;
@@ -512,6 +568,7 @@ void run()
    //Save hists for DNN performance evaluation
    for(int i=0;i<nBinsMet;i++){
       saver.save(genmet_hists[i],"/DNN/GenMET_bin"+std::to_string(i+1));
+      saver.save(ptnunu_hists[i],"/DNN/Ptnunu_bin"+std::to_string(i+1));
       saver.save(puppimet_hists[i],"/DNN/PuppiMET_bin"+std::to_string(i+1));
       saver.save(pfmet_hists[i],"/DNN/PFMET_bin"+std::to_string(i+1));
       saver.save(puppimetCorr_hists[i],"/DNN/PuppiMETcorr_bin"+std::to_string(i+1));
@@ -521,6 +578,10 @@ void run()
       saver.save(diffPF_hists[i],"/DNN/diffPF_bin"+std::to_string(i+1));
       saver.save(diffPuppiCorr_hists[i],"/DNN/diffcorr_bin"+std::to_string(i+1));
       saver.save(diffPuppiScaled_hists[i],"/DNN/diffscaled_bin"+std::to_string(i+1));
+      saver.save(diffPuppi_ptnunu_hists[i],"/DNN/diff_ptnunu_bin"+std::to_string(i+1));
+      saver.save(diffPF_ptnunu_hists[i],"/DNN/diffPF_ptnunu_bin"+std::to_string(i+1));
+      saver.save(diffPuppiCorr_ptnunu_hists[i],"/DNN/diffcorr_ptnunu_bin"+std::to_string(i+1));
+      saver.save(diffPuppiScaled_ptnunu_hists[i],"/DNN/diffscaled_ptnunu_bin"+std::to_string(i+1));
    }
    
    std::vector<TString> z_axis={"stability","purity","efficiency","efficiency_RG","N_gen","N_rec","N_gen_rec","Evt_gen","Evt_rec","res_phi","res_met","migration"};
