@@ -110,6 +110,9 @@ void run()
    hs2D.addHist("baseline/diffMET_BJetLBRegr_diffGenMET_PtNuNu"   ,";MET-MET(BJetRegrLB);GenMET-p_{T}^{#nu#nu}",1000,-100,100,1000,-100,100);
    hs2D.addHist("baseline/diffMET_BJetLBRegrMan_diffGenMET_PtNuNu"   ,";MET-MET(BJetRegrLBman);GenMET-p_{T}^{#nu#nu}",1000,-100,100,1000,-100,100);
    
+   hs2D.addHist("baseline/dPhi_genMET_Puppi_vs_Puppi"   ,";PuppiMET (GeV); |#Delta#phi(genMET,Puppi)|",500,0,500,1000,0,3.2);
+   hs2D.addHist("baseline/dPhi_genMET_Puppi_vs_GenMET"   ,";GenMET (GeV); |#Delta#phi(genMET,Puppi)|",500,0,500,1000,0,3.2);
+   
    hist::Histograms<TH1F> hs(vsDatasubsets);
    hs.addHist("baseline/dPhiMETLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN",200,0,3.14);
    hs.addHist("baseline/dPhiMETLep_gen"   ,";|#Delta#phi|(genMET,nearest gen l);EventsBIN",200,0,3.14);
@@ -309,6 +312,8 @@ void run()
          hs2D.fill("baseline/Gen_nVertex_vs_MetResPF",*n_Interactions_gen,MET->p.Pt()-genMet);
          hs2D.fill("baseline/genMET_vs_MetRes",genMet,MET_Puppi->p.Pt()-genMet);
          hs2D.fill("baseline/genMET_vs_MetResPF",genMet,MET->p.Pt()-genMet);
+         hs2D.fill("baseline/dPhi_genMET_Puppi_vs_Puppi",MET_Puppi->p.Pt(),abs(GENMET->p.DeltaPhi(MET_Puppi->p)));
+         hs2D.fill("baseline/dPhi_genMET_Puppi_vs_GenMET",genMet,abs(GENMET->p.DeltaPhi(MET_Puppi->p)));
          
          hs2D.fill("baseline/"+cat+"/nVertex_vs_MetRes",*n_Interactions,MET_Puppi->p.Pt()-genMet);
          hs2D.fill("baseline/"+cat+"/Gen_nVertex_vs_MetRes",*n_Interactions_gen,MET_Puppi->p.Pt()-genMet);
