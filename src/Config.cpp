@@ -59,6 +59,9 @@ Config::Config()
    eleMuTrigg4=pt.get<std::string>("trigger.eleMuTrigg4");
    singleEleTrigg=pt.get<std::string>("trigger.singleEleTrigg");
    
+   DeepCSV_loose=pt.get<float>("bTag_WP.DeepCSV_loose");
+   DeepJet_loose=pt.get<float>("bTag_WP.DeepJet_loose");
+   
    applyDNN=pt.get<bool>("others.applyDNN");
 
    lumiText=TString::Format("%.1f fb^{-1}",lumi*1e-3);

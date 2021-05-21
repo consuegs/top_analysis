@@ -45,6 +45,7 @@ set(MODULES
   # ~binningUnfolding_DNN
   # ~binningUnfolding_DNN_multi
   binningUnfolding_DNN_cppflow
+  binningUnfolding_DNN_cppflow_2D
   plot_DNNresolution
   # ~applyDNN
   # ~check_leptonVeto
@@ -53,6 +54,8 @@ set(MODULES
   plot_yearComparisons
   compare_powheg_amcatnlo
   binningUnfolding1D_Fabian
+  bTagEff
+  plot_bTagEff
   )
 
 foreach(MODULE ${MODULES})

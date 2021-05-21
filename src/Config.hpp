@@ -35,6 +35,9 @@ public:
    TString eleMuTrigg4;
    TString singleEleTrigg;
    
+   float DeepCSV_loose;
+   float DeepJet_loose;
+   
    bool applyDNN;
 
    TString treeVersion;
