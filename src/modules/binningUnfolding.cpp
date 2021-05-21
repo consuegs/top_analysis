@@ -321,10 +321,14 @@ void run()
             trueDPhi_reco=*Phi_rec;
             MET_reco=*MET;
             
-            if(*MET>=met_bins.back()) *MET=met_bins.back()-0.01;     //Handel overflow correctly
-            if(*PtNuNu>=met_bins.back()) *PtNuNu=met_bins.back()-0.01;
-            if(*Phi_rec>=phi_bins.back()) *Phi_rec=phi_bins.back()-0.01;
-            if(*Phi_gen>=phi_bins.back()) *Phi_gen=phi_bins.back()-0.01;
+            // ~if(*MET>=met_bins.back()) *MET=met_bins.back()-0.01;     //Handel overflow correctly
+            // ~if(*PtNuNu>=met_bins.back()) *PtNuNu=met_bins.back()-0.01;
+            // ~if(*Phi_rec>=phi_bins.back()) *Phi_rec=phi_bins.back()-0.01;
+            // ~if(*Phi_gen>=phi_bins.back()) *Phi_gen=phi_bins.back()-0.01;
+            if(*MET>=met_bins.back()) continue;     //Handel overflow correctly
+            if(*PtNuNu>=met_bins.back()) continue;
+            if(*Phi_rec>=phi_bins.back()) continue;
+            if(*Phi_gen>=phi_bins.back()) continue;
             
             if (*PtNuNu>-1 && *Phi_gen>-1){
                eff_gen.Fill(*PtNuNu,*Phi_gen);
