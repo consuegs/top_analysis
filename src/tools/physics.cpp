@@ -156,3 +156,10 @@ float phys::sumMlb(TLorentzVector &lepton1, TLorentzVector &lepton2, const std::
   
 }
 
+float phys::dPhi(float &a, float &b){
+   float x=a-b;
+   if (x >= M_PI) x -= 2*M_PI;
+   else if (x < -M_PI) x += 2*M_PI;
+   return x;
+}
+

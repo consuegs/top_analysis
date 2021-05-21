@@ -27,6 +27,9 @@ namespace phys
    
    // sum mlb
    float sumMlb(TLorentzVector &lepton1, TLorentzVector &lepton2, const std::vector<tree::Jet> &jets, const std::vector<tree::Jet> &bjets);
+  
+   // sum dPhi
+   float dPhi(float &a, float &b);
 } // namespace phys
 
 #endif /* PHYSICS_HPP__ */
