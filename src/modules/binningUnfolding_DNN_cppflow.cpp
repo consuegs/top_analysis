@@ -163,6 +163,7 @@ void run()
    TTreeReaderValue<float> dPhiNuNu(reader, "dPhiNuNu");
    // ~TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
    TTreeReaderValue<float> DNNregression(reader, "DNN_regression");
+   TTreeReaderValue<UInt_t> emu(reader, "emu");
    
    TTreeReaderValue<float> nJets   (reader, "nJets");
    TTreeReaderValue<float> METunc_Puppi   (reader, "METunc_Puppi");
@@ -227,13 +228,19 @@ void run()
    TTreeReaderValue<float> mjj   (reader,"mjj");
    
    //DNN configuration
-   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo__PuppiMET-genMET_%s_20210428-1103normDistr",cfg.year.Data());
+   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo__PuppiMET-genMET_%s_20210428-1103normDistr",cfg.year.Data());     //2016
+   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo__PuppiMET-genMET_%s_20210427-1222normDistr",cfg.year.Data());
    // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo__genMET_%s_20210429-1119normDistr",cfg.year.Data());
    // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo_MSE__PuppiMET-genMET_%s_20210429-1529normDistr",cfg.year.Data());
    // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo_EP100__PuppiMET-genMET_%s_20210429-1718normDistr",cfg.year.Data());
-   std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo__PtNuNu_%s_20210429-1832normDistr",cfg.year.Data());
+   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo__PtNuNu_%s_20210429-1832normDistr",cfg.year.Data());
+   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo_emu__PuppiMET-genMET_%s_20210503-1224normDistr",cfg.year.Data());
+   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/InlusivePatched_amcatnlo_30EP_sqrt_20Bins__PuppiMET-genMET_%s_20210506-1603genMETweighted",cfg.year.Data());
+   std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/InlusivePatched_amcatnlo_30EP_sqrt_305Bins__PuppiMET-genMET_%s_20210506-1546genMETweighted",cfg.year.Data());
+   // ~std::cout<<"------------------------------only using emu events---------------------------------"<<std::endl;
    cppflow::model model_Inclusive(modelName);
-   std::vector<float> input_vec(53);
+   // ~std::vector<float> input_vec(53);
+   std::vector<double> input_vec(53);
    std::vector<int64_t> shape (2);
    shape[0]=1;
    shape[1]=53;
@@ -250,6 +257,7 @@ void run()
       }
       
       // ~if (iEv>100000) break;
+      // ~if(*emu!=1) continue;      //only selected emu events
       // ~if (*MET<120 || *MET>160) continue;
       
       //Set DNN input
@@ -357,106 +365,113 @@ void run()
          // ~metBin_org=6;
       // ~}
       
-      // ~//target diff
+      //target diff
+      if(*MET<0) *MET=0;
+      else if(*MET<40) {
+         PuppiMetscaled_org=*MET*1.28588;
+         auto output = model_Inclusive({{"serving_default_batch_normalization_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         DNN_out = output[0].get_data<float>()[0];
+         *MET = (*MET)-DNN_out;
+         metBin_org=1;
+      }
+      else if(*MET<80){
+         PuppiMetscaled_org=*MET*0.94220;
+         auto output = model_Inclusive({{"serving_default_batch_normalization_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         DNN_out = output[0].get_data<float>()[0];
+         *MET = (*MET)-DNN_out;
+         metBin_org=2;
+      }
+      else if(*MET<120){
+         PuppiMetscaled_org=*MET*0.88487;
+         auto output = model_Inclusive({{"serving_default_batch_normalization_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         DNN_out = output[0].get_data<float>()[0];
+         *MET = (*MET)-DNN_out;
+         metBin_org=3;
+      }
+      else if(*MET<160){
+         PuppiMetscaled_org=*MET*0.87049;
+         auto output = model_Inclusive({{"serving_default_batch_normalization_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         DNN_out = output[0].get_data<float>()[0];
+         *MET = (*MET)-DNN_out;
+         metBin_org=4;
+      }
+      else if(*MET<230){
+         PuppiMetscaled_org=*MET*0.88503;
+         auto output = model_Inclusive({{"serving_default_batch_normalization_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         DNN_out = output[0].get_data<float>()[0];
+         *MET = (*MET)-DNN_out;
+         metBin_org=5;
+      }
+      else {
+         PuppiMetscaled_org=*MET*0.91246;
+         auto output = model_Inclusive({{"serving_default_batch_normalization_input:0", tensor}},{"StatefulPartitionedCall:0"});
+         DNN_out = output[0].get_data<float>()[0];
+         *MET = (*MET)-DNN_out;
+         metBin_org=6;
+      }
+      if(*MET<0) {
+         std::cout<<"in"<<std::endl;
+         *MET=0.0001;
+      }
+      
+      //Target genMET
       // ~if(*MET<0) *MET=0;
       // ~else if(*MET<40) {
          // ~PuppiMetscaled_org=*MET*1.28588;
          // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          // ~DNN_out = output[0].get_data<float>()[0];
-         // ~*MET = (*MET)-DNN_out;
+         // ~*MET = DNN_out;
          // ~metBin_org=1;
       // ~}
       // ~else if(*MET<80){
          // ~PuppiMetscaled_org=*MET*0.94220;
          // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          // ~DNN_out = output[0].get_data<float>()[0];
-         // ~*MET = (*MET)-DNN_out;
+         // ~*MET = DNN_out;
          // ~metBin_org=2;
       // ~}
       // ~else if(*MET<120){
          // ~PuppiMetscaled_org=*MET*0.88487;
          // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          // ~DNN_out = output[0].get_data<float>()[0];
-         // ~*MET = (*MET)-DNN_out;
+         // ~*MET = DNN_out;
          // ~metBin_org=3;
       // ~}
       // ~else if(*MET<160){
          // ~PuppiMetscaled_org=*MET*0.87049;
          // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          // ~DNN_out = output[0].get_data<float>()[0];
-         // ~*MET = (*MET)-DNN_out;
+         // ~*MET = DNN_out;
          // ~metBin_org=4;
       // ~}
       // ~else if(*MET<230){
          // ~PuppiMetscaled_org=*MET*0.88503;
          // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          // ~DNN_out = output[0].get_data<float>()[0];
-         // ~*MET = (*MET)-DNN_out;
+         // ~*MET = DNN_out;
          // ~metBin_org=5;
       // ~}
       // ~else {
          // ~PuppiMetscaled_org=*MET*0.91246;
          // ~auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
          // ~DNN_out = output[0].get_data<float>()[0];
-         // ~*MET = (*MET)-DNN_out;
+         // ~*MET = DNN_out;
          // ~metBin_org=6;
       // ~}
-      // ~if(*MET<0) *MET=0.0001;
-      
-      //Target genMET
-      if(*MET<0) *MET=0;
-      else if(*MET<40) {
-         PuppiMetscaled_org=*MET*1.28588;
-         auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
-         DNN_out = output[0].get_data<float>()[0];
-         *MET = DNN_out;
-         metBin_org=1;
-      }
-      else if(*MET<80){
-         PuppiMetscaled_org=*MET*0.94220;
-         auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
-         DNN_out = output[0].get_data<float>()[0];
-         *MET = DNN_out;
-         metBin_org=2;
-      }
-      else if(*MET<120){
-         PuppiMetscaled_org=*MET*0.88487;
-         auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
-         DNN_out = output[0].get_data<float>()[0];
-         *MET = DNN_out;
-         metBin_org=3;
-      }
-      else if(*MET<160){
-         PuppiMetscaled_org=*MET*0.87049;
-         auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
-         DNN_out = output[0].get_data<float>()[0];
-         *MET = DNN_out;
-         metBin_org=4;
-      }
-      else if(*MET<230){
-         PuppiMetscaled_org=*MET*0.88503;
-         auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
-         DNN_out = output[0].get_data<float>()[0];
-         *MET = DNN_out;
-         metBin_org=5;
-      }
-      else {
-         PuppiMetscaled_org=*MET*0.91246;
-         auto output = model_Inclusive({{"serving_default_dense_input:0", tensor}},{"StatefulPartitionedCall:0"});
-         DNN_out = output[0].get_data<float>()[0];
-         *MET = DNN_out;
-         metBin_org=6;
-      }
       
       PuppiMetcorr_org=*MET;
       
       diffMET=*PtNuNu-*MET;//Save difference before overflow handling
       diffPHI=*Phi_gen-*Phi_rec;
       
-      if(*MET>=met_bins.back()) *MET=met_bins.back()-0.01;     //Handel overflow correctly
-      if(*PtNuNu>=met_bins.back()) *PtNuNu=met_bins.back()-0.01;
-      if(*Phi_rec>=phi_bins.back()) *Phi_rec=phi_bins.back()-0.01;
-      if(*Phi_gen>=phi_bins.back()) *Phi_gen=phi_bins.back()-0.01;
+      // ~if(*MET>=met_bins.back()) *MET=met_bins.back()-0.01;     //Handel overflow correctly
+      // ~if(*PtNuNu>=met_bins.back()) *PtNuNu=met_bins.back()-0.01;
+      // ~if(*Phi_rec>=phi_bins.back()) *Phi_rec=phi_bins.back()-0.01;
+      // ~if(*Phi_gen>=phi_bins.back()) *Phi_gen=phi_bins.back()-0.01;
+      if(*MET>=met_bins.back()) continue;     //Handel overflow correctly
+      if(*PtNuNu>=met_bins.back()) continue;
+      if(*Phi_rec>=phi_bins.back()) continue;
+      if(*Phi_gen>=phi_bins.back()) continue;
       
       if (*PtNuNu>-1 && *Phi_gen>-1){
          eff_gen.Fill(*PtNuNu,*Phi_gen);
@@ -521,7 +536,7 @@ void run()
    
    // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
    // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
-   io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_cppflow_new2%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
+   io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_cppflow_new%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
    
    TH2F stability=Evt_genrec;
    TH2F purity=Evt_genrec;
