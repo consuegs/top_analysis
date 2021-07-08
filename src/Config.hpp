@@ -39,6 +39,7 @@ public:
    float DeepJet_loose;
    
    bool applyDNN;
+   TString DNN_Path;
 
    TString treeVersion;
    TString year;

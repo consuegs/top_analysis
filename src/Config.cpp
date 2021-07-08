@@ -62,7 +62,8 @@ Config::Config()
    DeepCSV_loose=pt.get<float>("bTag_WP.DeepCSV_loose");
    DeepJet_loose=pt.get<float>("bTag_WP.DeepJet_loose");
    
-   applyDNN=pt.get<bool>("others.applyDNN");
+   applyDNN=pt.get<bool>("DNN.applyDNN");
+   DNN_Path=pt.get<std::string>("DNN.DNN_Path");
 
    lumiText=TString::Format("%.1f fb^{-1}",lumi*1e-3);
    sqrtsText=pt.get<std::string>("general.sqrtsText");
