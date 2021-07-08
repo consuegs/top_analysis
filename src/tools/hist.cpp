@@ -330,7 +330,10 @@ void hist::Histograms<HIST>::saveHistograms(io::RootFileSaver const &saver_hist,
 {   
    for (auto const &mv:mmH_){
       for (TString sSample: Samples){
-         saver_hist.save(*getHistogram(mv.first,sSample),mv.first+"/"+sSample);
+         auto temp=getHistogram(mv.first,sSample);
+         temp->SetName(sSample);
+         // ~saver_hist.save(*getHistogram(mv.first,sSample),mv.first+"/"+sSample);
+         saver_hist.save(*temp,mv.first+"/"+sSample);
       }
    }
 }
