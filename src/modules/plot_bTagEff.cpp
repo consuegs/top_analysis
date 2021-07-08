@@ -20,7 +20,8 @@ extern "C"
 void run()
 {
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot_bTagEff");
-   io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("bTagEff%.1f",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("bTagEff%.1f",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format("multiHists/histograms_TTbar_diLepton_%s.root",cfg.treeVersion.Data()),TString::Format("bTagEff%.1f",cfg.processFraction*100));
    io::RootFileSaver histSaver(TString::Format("bTagEff_%s.root",cfg.year.Data()),"");
    
    //Plot 2D bTag Eff.
@@ -36,14 +37,6 @@ void run()
             std::vector<float> Edges_pT={30,50,70,100,150,200,300,1000};
             *all=hist::rebinned(*all,Edges_pT,Edges_eta);
             *tagged=hist::rebinned(*tagged,Edges_pT,Edges_eta);
-            
-            for(int i=0; i<=all->GetNbinsX(); i++){
-               for(int j=0; j<=all->GetNbinsY(); j++){
-                  std::cout<<i<<"   "<<j<<std::endl;
-                  std::cout<<all->GetBinContent(i,j)<<std::endl;
-                  std::cout<<tagged->GetBinContent(i,j)<<std::endl;
-               }
-            }
 
             TEfficiency eff(*tagged,*all);
             TH2* eff_hist = eff.CreateHistogram();

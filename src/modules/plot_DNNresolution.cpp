@@ -13,6 +13,24 @@
 #include <TCanvas.h>
 #include <TColor.h>
 
+std::pair<float,int> getChi2NDF(TH1F* hist_res, TH1F* hist_true) {
+   if (hist_res->GetNbinsX()!=hist_true->GetNbinsX()){
+      std::cout<<"Histograms in Chi2 function have different number of bins"<<std::endl;
+      throw;
+   }
+   else {
+      float chi2 = 0;
+      for (int i=1; i<=hist_res->GetNbinsX(); i++) {
+         float diff = hist_res->GetBinContent(i)-hist_true->GetBinContent(i);
+         float err = hist_res->GetBinError(i)*1.;
+         if(err==0) continue;
+         chi2+= diff*diff/(err*err);
+      }
+      std::pair<float,int>result(chi2,hist_res->GetNbinsX());
+      return result;
+   }
+}
+
 Config const &cfg=Config::get();
 
 extern "C"
@@ -24,25 +42,20 @@ void run()
    TCanvas canCombined;
    gfx::LegendEntries leCombined;
    can.cd();
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_addVariables%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_diffTarget_normDistr%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_diffTarget_normDistr_recoEvents%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_diffTarget%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_InclusiveDNN_Patched_LR_EP%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_genMetTarget_normDistr%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_test_cppflow_new%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_diffTarget_normDistr_emu_recoEvents%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_diffTarget_normDistr_100EP_%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_pTnunuTarget_normDistr%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_diffTarget_genMETweighted%.1f.root",cfg.processFraction*100);
    
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_test_cppflow_new_2D%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_xyTarget_2D_%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_xyTarget_2D_bothCorr_%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_xyTarget_30EP_2D_bothCorr_%.1f.root",cfg.processFraction*100);
-   TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_xyTarget_30EP_2D_bothCorr_noOverflow_%.1f.root",cfg.processFraction*100);
-   // ~TString inputFile=TString::Format("binningUnfolding_diLepton_amcatnlo_xyTarget_JetLepXY_50EP_2D_bothCorr_noOverflow_%.1f.root",cfg.processFraction*100);
+   //2016
+   // ~TString inputFile=TString::Format("binningUnfolding/diLepton_amcatnlo_xyTarget_JetLepXY_50EP_2D_bothCorr_noOverflow_%.1f.root",cfg.processFraction*100);
+   // ~TString inputFile=TString::Format("binningUnfolding/T2tt_650_350_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP__diff_xy_2016_20210521-1448normDistr_%.1f.root",cfg.processFraction*100);
+   // ~TString inputFile=TString::Format("binningUnfolding/T1tttt_1500_100_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP__diff_xy_2016_20210521-1448normDistr_%.1f.root",cfg.processFraction*100);
+   // ~TString inputFile=TString::Format("binningUnfolding/T2tt_650_350_Inlusive_amcatnlo__PuppiMET-genMET_2016_20210609-1056normDistr_%.1f.root",cfg.processFraction*100);
+   
+   TString inputFile=TString::Format("binningUnfolding/diLepton_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP_withoutMETinputs__diff_xy_2016_20210615-1210normDistr_%.1f.root",cfg.processFraction*100);
+   // ~TString inputFile=TString::Format("binningUnfolding/T2tt_650_350_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP_withoutMETinputs__diff_xy_2016_20210615-1210normDistr_%.1f.root",cfg.processFraction*100);
+   
+   //2018
+   // ~TString inputFile=TString::Format("binningUnfolding/diLepton_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP__diff_xy_2018_20210519-1014normDistr_%.1f.root",cfg.processFraction*100);
+   
+   bool isBSM=inputFile.Contains("T2tt") || inputFile.Contains("T1tttt");
    
    io::RootFileReader histReader(inputFile);
    
@@ -58,19 +71,26 @@ void run()
       
       double axis_limit=500;
       double axis_limit_low=0;
-      double axis_limit_diff=100;
+      double axis_limit_diff=150;
+      // ~double axis_limit_diff=100;
       int numBins_diff=100;
+      int numBins=250;
       if(target=="_phi") {
          axis_limit=3.2;
          axis_limit_low=-3.2;
          axis_limit_diff=1.6;
-         numBins_diff=400;
+         numBins_diff=200;
+      }
+      if(isBSM){
+         numBins=20;
+         numBins_diff=20;
+         if(target=="_phi") numBins_diff=40;
       }
       
-      TH1F genMET_histCombined("","",250,axis_limit_low,axis_limit);
-      TH1F PuppiMET_histCombined("","",250,axis_limit_low,axis_limit);
-      TH1F PuppiMETcorr_histCombined("","",250,axis_limit_low,axis_limit);
-      TH1F PFMET_histCombined("","",250,axis_limit_low,axis_limit);
+      TH1F genMET_histCombined("","",numBins,axis_limit_low,axis_limit);
+      TH1F PuppiMET_histCombined("","",numBins,axis_limit_low,axis_limit);
+      TH1F PuppiMETcorr_histCombined("","",numBins,axis_limit_low,axis_limit);
+      TH1F PFMET_histCombined("","",numBins,axis_limit_low,axis_limit);
       
       TH1F PuppiMET_diffCombined("","",numBins_diff,-1.*axis_limit_diff,axis_limit_diff);
       TH1F PuppiMETcorr_diffCombined("","",numBins_diff,-1.*axis_limit_diff,axis_limit_diff);
@@ -92,14 +112,18 @@ void run()
             PFMET_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/PFMET"+target+"_"+bin);
          }
          
-         genMET_hist->Rebin(2);
-         PuppiMET_hist->Rebin(2);
-         PuppiMETcorr_hist->Rebin(2);
-         PFMET_hist->Rebin(2);
-         // ~genMET_hist->Rebin(20);
-         // ~PuppiMET_hist->Rebin(20);
-         // ~PuppiMETcorr_hist->Rebin(20);
-         // ~PFMET_hist->Rebin(20);
+         if(isBSM && bin!="combined"){
+            genMET_hist->Rebin(25);
+            PuppiMET_hist->Rebin(25);
+            PuppiMETcorr_hist->Rebin(25);
+            PFMET_hist->Rebin(25);
+         }
+         else{
+            genMET_hist->Rebin(2);
+            PuppiMET_hist->Rebin(2);
+            PuppiMETcorr_hist->Rebin(2);
+            PFMET_hist->Rebin(2);
+         }
          
          hist::mergeOverflow(*genMET_hist,true);
          hist::mergeOverflow(*PuppiMET_hist,true);
@@ -129,20 +153,25 @@ void run()
          else genMET_hist->GetXaxis()->SetTitle("#phi(MET)");
          genMET_hist->GetYaxis()->SetTitle("Events/Bin");
          genMET_hist->GetYaxis()->SetRangeUser(0,1.5*PuppiMET_hist->GetMaximum());
-         genMET_hist->GetXaxis()->SetRangeUser(axisLimits_low[i],axisLimits_high[i]);
+         if(target!="_phi") genMET_hist->GetXaxis()->SetRangeUser(axisLimits_low[i],axisLimits_high[i]);
          
          genMET_hist->Draw("hist");
          PuppiMET_hist->Draw("hist same");
          PuppiMETcorr_hist->Draw("hist same");
          PFMET_hist->Draw("hist same");
          
+         
+         auto chi2_Puppi=getChi2NDF(genMET_hist,PuppiMET_hist);
+         auto chi2_DNN=getChi2NDF(genMET_hist,PuppiMETcorr_hist);
+         auto chi2_PF=getChi2NDF(genMET_hist,PFMET_hist);
+         
          gfx::LegendEntries le;
-         le.append(*PuppiMET_hist,"PuppiMET","l");
-         le.append(*PFMET_hist,"PFMET","l");
-         le.append(*PuppiMETcorr_hist,"DNN","l");
+         le.append(*PuppiMET_hist,TString::Format("PuppiMET(#chi^{2}/ndf=%.0f/%i)",chi2_Puppi.first,chi2_Puppi.second),"l");
+         le.append(*PFMET_hist,TString::Format("PFMET(#chi^{2}/ndf=%.0f/%i)",chi2_PF.first,chi2_PF.second),"l");
+         le.append(*PuppiMETcorr_hist,TString::Format("DNN(#chi^{2}/ndf=%.0f/%i)",chi2_DNN.first,chi2_DNN.second),"l");
          if(target=="" || target=="_phi") le.append(*genMET_hist,"genMET","l");
          else le.append(*genMET_hist,"pTnunu","l");
-         TLegend leg=le.buildLegend(.6,.7,1-1.5*gPad->GetRightMargin(),-1,1);
+         TLegend leg=le.buildLegend(.4,.7,1-1.5*gPad->GetRightMargin(),-1,1);
          leg.Draw();
          
          TLatex label=gfx::cornerLabel(metRegions[i],1);
@@ -160,13 +189,15 @@ void run()
             diffCorr_hist = histReader.read<TH1F>("binningUnfolding_DNN/DNN/diffcorr"+target+"_"+bin);
          }
          
-         if(target==""){
+         if(isBSM && bin!="combined"){
+            diff_hist->Rebin(10);
+            diffPF_hist->Rebin(10);
+            diffCorr_hist->Rebin(10);
+         }
+         else{
             diff_hist->Rebin(2);
             diffPF_hist->Rebin(2);
             diffCorr_hist->Rebin(2);
-            // ~diff_hist->Rebin(20);
-            // ~diffPF_hist->Rebin(20);
-            // ~diffCorr_hist->Rebin(20);
          }
          
          if(bin!="combined") {

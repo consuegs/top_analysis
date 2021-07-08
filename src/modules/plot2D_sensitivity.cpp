@@ -51,7 +51,7 @@ extern "C"
 void run()
 {
    std::cout<<"---------------------------------------"<<std::endl;
-   std::cout<<"Yields are manually scaled to ful Run2 lumi!!!"<<std::endl;
+   std::cout<<"Yields are manually scaled to ful Run2 lumi (check code!!!)"<<std::endl;
    std::cout<<"---------------------------------------"<<std::endl;
    
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot2D_sensitivity");
@@ -79,9 +79,10 @@ void run()
    std::vector<float> met_bins3={0,70,140,250,400};
    std::vector<float> phi_bins3={0,0.4,0.8,1.2,3.14};
    
-   // ~std::vector<float> met_bins4={0,40,120,230,400};
-   std::vector<float> met_bins4={0,40,80,120,160,230,400};
-   std::vector<float> phi_bins4={0,0.7,1.4,3.141};
+   // ~std::vector<float> met_bins4={0,40,80,120,160,230,400};
+   // ~std::vector<float> phi_bins4={0,0.7,1.4,3.141};
+   std::vector<float> met_bins4={0,50,70,100,130,160,200,400,410};
+   std::vector<float> phi_bins4={0,0.64,1.2,3.2};
    // ~std::vector<float> met_bins4={0,400};
    // ~std::vector<float> phi_bins4={0,3.14};
    
@@ -98,7 +99,8 @@ void run()
    for(std::vector<float> met_bins : {met_bins4}){
       for(std::vector<float> phi_bins : {phi_bins4}){
                
-         for (TString bkgSample :{"SingleTop","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW"}) {     //Add all SM backgrounds except ttbar
+         // ~for (TString bkgSample :{"SingleTop","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW"}) {     //Add all SM backgrounds except ttbar
+         for (TString bkgSample :{"SingleTop","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"}) {     //Add all SM backgrounds except ttbar
             add_Categories(hist_2d+bkgSample,histReader,temp_hist);
             if (bkgSample=="SingleTop") add_Categories(hist_2d+bkgSample,histReader,SMbkg);
             else SMbkg.Add(&temp_hist);
@@ -110,18 +112,20 @@ void run()
          
          std::cout<<"Correlation in ttbar: "<<ttbar.GetCorrelationFactor()<<std::endl;
          
-         SMbkg=hist::rebinned(SMbkg,met_bins,phi_bins);
-         ttbar=hist::rebinned(ttbar,met_bins,phi_bins);
+         // ~SMbkg=hist::rebinned(SMbkg,met_bins,phi_bins);
+         // ~ttbar=hist::rebinned(ttbar,met_bins,phi_bins);
+         SMbkg=hist::rebinned(SMbkg,met_bins,phi_bins,false);
+         ttbar=hist::rebinned(ttbar,met_bins,phi_bins,false);
          
-         SMbkg.Scale(137191.0/35867.05998);
-         ttbar.Scale(137191.0/35867.05998);
+         // ~SMbkg.Scale(137191.0/35867.05998);
+         // ~ttbar.Scale(137191.0/35867.05998);
          
          
          for (TString signalSample :{"T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"}){
             
             add_Categories(hist_2d+signalSample,histReader,signal);
             signal=hist::rebinned(signal,met_bins,phi_bins);
-            signal.Scale(137191.0/35867.05998);
+            // ~signal.Scale(137191.0/35867.05998);
             
             for (TString sensitivity_type : {"SplusB","sqrtB"}){
                temp_hist=ttbar;

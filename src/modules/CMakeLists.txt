@@ -5,11 +5,11 @@ set(MODULES
   # ~plot2D_diffMET
   # ~plot_diffMET
   # ~check_DM
-  # ~plot_distributions
+  plot_distributions
   # ~templateFit
   # ~compare_ttMC
   # ~test_MT2
-  # ~plot2D_sensitivity
+  plot2D_sensitivity
   # ~plot2D_sensitivity_MT
   binningUnfolding
   # ~binningUnfolding_MT
@@ -30,19 +30,19 @@ set(MODULES
   # ~TUnfold_plotting_fakeBin
   # ~diff_fakes
   # ~plot_diff_fakes
-  diff_MET
-  plot_metStudies
+  # ~diff_MET
+  # ~plot_metStudies
   # ~reweightingSF
   # ~test_TMVA
   # ~distributions_Philipp
   # ~plot_distributions_Philipp
   # ~Routin
   # ~test_BJetRegression
-  # ~triggerEff
-  # ~plot_triggerEff
+  triggerEff
+  plot_triggerEff
   # ~dnn_Classification
   # ~dnn_Classification_fourVec
-  # ~binningUnfolding_DNN
+  binningUnfolding_DNN
   # ~binningUnfolding_DNN_multi
   binningUnfolding_DNN_cppflow
   binningUnfolding_DNN_cppflow_2D
@@ -52,8 +52,8 @@ set(MODULES
   # ~test_tensorflow
   # ~plot_leptonVeto
   plot_yearComparisons
-  compare_powheg_amcatnlo
-  binningUnfolding1D_Fabian
+  # ~compare_powheg_amcatnlo
+  # ~binningUnfolding1D_Fabian
   bTagEff
   plot_bTagEff
   )
