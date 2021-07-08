@@ -85,7 +85,7 @@ void run()
       TH1F temp_met("","",500,0,500);
       // ~TH1F temp_dnn("","",100,0,5);
       TH1F temp_dnn("","",500,-100,200);
-      TH1F temp_res("","",200,-100,100);
+      TH1F temp_res("","",200,-150,150);
       genmet_hists.push_back(temp_met);
       ptnunu_hists.push_back(temp_met);
       puppimet_hists.push_back(temp_met);
@@ -117,10 +117,10 @@ void run()
    migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
       
    // ~TString sampleName="";
-   TString sampleName="diLepton";
+   // ~TString sampleName="diLepton";
    // ~TString sampleName="dilepton_CP5";
    // ~TString sampleName="MadGraph";
-   // ~TString sampleName="T2tt_650_350";
+   TString sampleName="T2tt_650_350";
    TString treeName="TTbar_"+sampleName;
    if (sampleName=="T2tt_650_350") treeName=sampleName;
    TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/100.0/"+treeName+".root",cfg.year.Data(),cfg.treeVersion.Data()),"read");
@@ -162,7 +162,7 @@ void run()
    TTreeReaderValue<float> leadTop_pT(reader, "leadTop_pT");
    TTreeReaderValue<float> dPhiNuNu(reader, "dPhiNuNu");
    // ~TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
-   TTreeReaderValue<float> DNNregression(reader, "DNN_regression");
+   // ~TTreeReaderValue<float> DNNregression(reader, "DNN_regression");
    TTreeReaderValue<UInt_t> emu(reader, "emu");
    
    TTreeReaderValue<float> nJets   (reader, "nJets");
@@ -236,7 +236,8 @@ void run()
    // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo__PtNuNu_%s_20210429-1832normDistr",cfg.year.Data());
    // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/Inlusive_amcatnlo_emu__PuppiMET-genMET_%s_20210503-1224normDistr",cfg.year.Data());
    // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/InlusivePatched_amcatnlo_30EP_sqrt_20Bins__PuppiMET-genMET_%s_20210506-1603genMETweighted",cfg.year.Data());
-   std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/InlusivePatched_amcatnlo_30EP_sqrt_305Bins__PuppiMET-genMET_%s_20210506-1546genMETweighted",cfg.year.Data());
+   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/InlusivePatched_amcatnlo_30EP_sqrt_305Bins__PuppiMET-genMET_%s_20210506-1546genMETweighted",cfg.year.Data());
+   std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/2016/Inlusive_amcatnlo__PuppiMET-genMET_2016_20210609-1056normDistr",cfg.year.Data());
    // ~std::cout<<"------------------------------only using emu events---------------------------------"<<std::endl;
    cppflow::model model_Inclusive(modelName);
    // ~std::vector<float> input_vec(53);
@@ -534,9 +535,12 @@ void run()
    file.Close();
    std::cout<<migrated<<std::endl;
    
-   // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
-   // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
-   io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_cppflow_new%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
+   //get DNN name for proper saving
+   std::string DNNpath = std::string(modelName);
+   std::size_t botDirPos = DNNpath.find_last_of("/");
+   std::string DNNname = DNNpath.substr(botDirPos+1, DNNpath.length());
+   
+   io::RootFileSaver saver(TString::Format("binningUnfolding/"+sampleName+"_"+DNNname+"_%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
    
    TH2F stability=Evt_genrec;
    TH2F purity=Evt_genrec;

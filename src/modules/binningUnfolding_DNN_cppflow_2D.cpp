@@ -93,7 +93,7 @@ void run()
       TH1F temp_phi("","",500,-3.2,3.2);
       // ~TH1F temp_dnn("","",100,0,5);
       TH1F temp_dnn("","",500,-100,200);
-      TH1F temp_res("","",200,-100,100);
+      TH1F temp_res("","",200,-150,150);
       TH1F temp_res_phi("","",400,-1.6,1.6);
       genmet_hists.push_back(temp_met);
       ptnunu_hists.push_back(temp_met);
@@ -134,12 +134,13 @@ void run()
    migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
       
    // ~TString sampleName="";
-   TString sampleName="diLepton";
+   // ~TString sampleName="diLepton";
    // ~TString sampleName="dilepton_CP5";
    // ~TString sampleName="MadGraph";
-   // ~TString sampleName="T2tt_650_350";
+   TString sampleName="T2tt_650_350";
+   // ~TString sampleName="T1tttt_1500_100";
    TString treeName="TTbar_"+sampleName;
-   if (sampleName=="T2tt_650_350") treeName=sampleName;
+   if (sampleName=="T2tt_650_350" || sampleName=="T1tttt_1500_100") treeName=sampleName;
    TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/100.0/"+treeName+".root",cfg.year.Data(),cfg.treeVersion.Data()),"read");
    // ~TFile file(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/1.0/"+treeName+".root",cfg.year.Data(),cfg.treeVersion.Data()),"read");
    TTreeReader reader((sampleName=="") ? "ttbar_res100.0/ttbar_res" : "ttbar_res100.0/"+treeName, &file);
@@ -164,6 +165,7 @@ void run()
    // ~TTreeReaderValue<float> dPhiLep1Lep2   (reader, "dPhiLep1Lep2");
    // ~TTreeReaderValue<float> METsig   (reader, "METsig");
    TTreeReaderValue<float> N   (reader, "N");
+   TTreeReaderValue<float> SF   (reader, "SF");
    TTreeReaderValue<UInt_t> runNo   (reader, "runNo");
    TTreeReaderValue<UInt_t> lumNo   (reader, "lumNo");
    TTreeReaderValue<ULong64_t> evtNo   (reader, "evtNo");
@@ -182,7 +184,7 @@ void run()
    TTreeReaderValue<float> leadTop_pT(reader, "leadTop_pT");
    TTreeReaderValue<float> dPhiNuNu(reader, "dPhiNuNu");
    // ~TTreeReaderValue<UInt_t> looseLeptonVeto(reader, "looseLeptonVeto");
-   TTreeReaderValue<float> DNNregression(reader, "DNN_regression");
+   // ~TTreeReaderValue<float> DNNregression(reader, "DNN_regression");
    TTreeReaderValue<UInt_t> emu(reader, "emu");
    
    TTreeReaderValue<float> nJets   (reader, "nJets");
@@ -248,11 +250,7 @@ void run()
    TTreeReaderValue<float> mjj   (reader,"mjj");
    
    //DNN configuration
-   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/2D/Inlusive_amcatnlo_xyComponent__diff_xy_%s_20210511-1655normDistr",cfg.year.Data());
-   // ~std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/2D/Inlusive_amcatnlo_xyComponent_30EP__diff_xy_%s_20210511-1254normDistr",cfg.year.Data());
-   std::string modelName= (std::string) TString::Format("/home/home4/institut_1b/dmeuser/top_analysis/DNN_ttbar/trainedModel_Keras/2D/Inlusive_amcatnlo_xyComponent_JetLepXY_50EP__diff_xy_%s_20210519-1014normDistr",cfg.year.Data());
-   // ~std::cout<<"------------------------------only using emu events---------------------------------"<<std::endl;
-   cppflow::model model_Inclusive(modelName);
+   cppflow::model model_Inclusive(cfg.DNN_Path.Data());
    // ~std::vector<float> input_vec(53);
    std::vector<double> input_vec(54);
    std::vector<int64_t> shape (2);
@@ -262,9 +260,11 @@ void run()
    
    int migrated=0;
    int totalEntries=reader.GetEntries(true);
+   int processEvents=cfg.processFraction*totalEntries;
    int iEv=0;
    while (reader.Next()){
       iEv++;
+      if (iEv>processEvents) break;
       if (iEv%(std::max(totalEntries/10,1))==0){
          io::log*".";
          io::log.flush();
@@ -442,24 +442,24 @@ void run()
       
       //Fill hists for DNN performance evaluation with reco events
       if(PuppiMet_org>0){
-         genmet_hists[metBin_org-1].Fill(*genMET);
-         puppimet_hists[metBin_org-1].Fill(PuppiMet_org);
-         pfmet_hists[metBin_org-1].Fill(*PFMET);
-         puppimetCorr_hists[metBin_org-1].Fill(PuppiMetcorr_org);
-         puppimetScaled_hists[metBin_org-1].Fill(PuppiMetscaled_org);
-         DNNoutput_hists[metBin_org-1].Fill(DNN_out_x);
-         diffPuppi_hists[metBin_org-1].Fill(*genMET-PuppiMet_org);
-         diffPF_hists[metBin_org-1].Fill(*genMET-*PFMET);
-         diffPuppiCorr_hists[metBin_org-1].Fill(*genMET-PuppiMetcorr_org);
-         diffPuppiScaled_hists[metBin_org-1].Fill(*genMET-PuppiMetscaled_org);
+         genmet_hists[metBin_org-1].Fill(*genMET,*N**SF);
+         puppimet_hists[metBin_org-1].Fill(PuppiMet_org,*N**SF);
+         pfmet_hists[metBin_org-1].Fill(*PFMET,*N**SF);
+         puppimetCorr_hists[metBin_org-1].Fill(PuppiMetcorr_org,*N**SF);
+         puppimetScaled_hists[metBin_org-1].Fill(PuppiMetscaled_org,*N**SF);
+         DNNoutput_hists[metBin_org-1].Fill(DNN_out_x,*N**SF);
+         diffPuppi_hists[metBin_org-1].Fill(*genMET-PuppiMet_org,*N**SF);
+         diffPF_hists[metBin_org-1].Fill(*genMET-*PFMET,*N**SF);
+         diffPuppiCorr_hists[metBin_org-1].Fill(*genMET-PuppiMetcorr_org,*N**SF);
+         diffPuppiScaled_hists[metBin_org-1].Fill(*genMET-PuppiMetscaled_org,*N**SF);
          
-         genmet_phi_hists[metBin_org-1].Fill(*genMET_phi);
-         puppimet_phi_hists[metBin_org-1].Fill(*PuppiMET_phi);
-         pfmet_phi_hists[metBin_org-1].Fill(*PFMET_phi);
-         puppimetCorr_phi_hists[metBin_org-1].Fill(DNN_MET_phi);
-         diffPuppi_phi_hists[metBin_org-1].Fill(phys::dPhi(*PuppiMET_phi,*genMET_phi));
-         diffPF_phi_hists[metBin_org-1].Fill(phys::dPhi(*PFMET_phi,*genMET_phi));
-         diffPuppiCorr_phi_hists[metBin_org-1].Fill(phys::dPhi(DNN_MET_phi,*genMET_phi));
+         genmet_phi_hists[metBin_org-1].Fill(*genMET_phi,*N**SF);
+         puppimet_phi_hists[metBin_org-1].Fill(*PuppiMET_phi,*N**SF);
+         pfmet_phi_hists[metBin_org-1].Fill(*PFMET_phi,*N**SF);
+         puppimetCorr_phi_hists[metBin_org-1].Fill(DNN_MET_phi,*N**SF);
+         diffPuppi_phi_hists[metBin_org-1].Fill(phys::dPhi(*PuppiMET_phi,*genMET_phi),*N**SF);
+         diffPF_phi_hists[metBin_org-1].Fill(phys::dPhi(*PFMET_phi,*genMET_phi),*N**SF);
+         diffPuppiCorr_phi_hists[metBin_org-1].Fill(phys::dPhi(DNN_MET_phi,*genMET_phi),*N**SF);
       }
       
       // ~if(*looseLeptonVeto) continue;   //Remove Events with add. looser lepton
@@ -472,11 +472,11 @@ void run()
       
       if(bin_gen==bin_rec){
          N_genrec.Fill(*PtNuNu,*Phi_gen);
-         Evt_genrec.Fill(*PtNuNu,*Phi_gen,*N);
+         Evt_genrec.Fill(*PtNuNu,*Phi_gen,*N**SF);
       }
       
-      Evt_gen.Fill(*PtNuNu,*Phi_gen,*N);
-      Evt_rec.Fill(*MET,*Phi_rec,*N);
+      Evt_gen.Fill(*PtNuNu,*Phi_gen,*N**SF);
+      Evt_rec.Fill(*MET,*Phi_rec,*N**SF);
       
       int realBin=bin_rec-((bin_rec/(nBinsMet+2)-1)*2+nBinsMet+3);   //Take into account over and underflow bin counting
       int realBin_gen=bin_gen-((bin_gen/(nBinsMet+2)-1)*2+nBinsMet+3);
@@ -495,18 +495,24 @@ void run()
       // ~diffPF_hists[metBin_org-1].Fill(*genMET-*PFMET);
       // ~diffPuppiCorr_hists[metBin_org-1].Fill(*genMET-PuppiMetcorr_org);
       // ~diffPuppiScaled_hists[metBin_org-1].Fill(*genMET-PuppiMetscaled_org);
-      ptnunu_hists[metBin_org-1].Fill(*PtNuNu);
-      diffPuppi_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-PuppiMet_org);
-      diffPF_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-*PFMET);
-      diffPuppiCorr_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-PuppiMetcorr_org);
-      diffPuppiScaled_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-PuppiMetscaled_org);
+      ptnunu_hists[metBin_org-1].Fill(*PtNuNu,*N**SF);
+      diffPuppi_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-PuppiMet_org,*N**SF);
+      diffPF_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-*PFMET,*N**SF);
+      diffPuppiCorr_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-PuppiMetcorr_org,*N**SF);
+      diffPuppiScaled_ptnunu_hists[metBin_org-1].Fill(*PtNuNu-PuppiMetscaled_org,*N**SF);
    }
    file.Close();
    std::cout<<migrated<<std::endl;
    
+   //get DNN name for proper saving
+   std::string DNNpath = std::string(cfg.DNN_Path.Data());
+   std::size_t botDirPos = DNNpath.find_last_of("/");
+   std::string DNNname = DNNpath.substr(botDirPos+1, DNNpath.length());
+   
    // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
    // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
-   io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_cppflow_new_2D%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
+   // ~io::RootFileSaver saver((sampleName=="") ? TString::Format("binningUnfolding_DNN%.1f.root",cfg.processFraction*100) : TString::Format("binningUnfolding_"+sampleName+"_test_cppflow_new_2D%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
+   io::RootFileSaver saver(TString::Format("binningUnfolding/"+sampleName+"_"+DNNname+"_%.1f.root",cfg.processFraction*100),"binningUnfolding_DNN");
    
    TH2F stability=Evt_genrec;
    TH2F purity=Evt_genrec;
