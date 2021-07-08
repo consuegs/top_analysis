@@ -1,10 +1,13 @@
 #include "selection.hpp"
+#include "Config.hpp"
 #include "dataTrigger2016.hpp"
 #include "dataTrigger2017.hpp"
 #include "dataTrigger2018.hpp"
 #include <iostream>
 
 #include <limits>
+
+Config const &cfg=Config::get();
 
 bool selection::triggerSelection(std::vector<bool> const &diElectronTriggers, std::vector<bool> const &diMuonTriggers, std::vector<bool> const &electronMuonTriggers,
                                  std::vector<bool> const &channel, bool const &isData, int const year, std::vector<bool> const &PD, bool const &is2016H, bool const &is2017AB)
@@ -55,8 +58,6 @@ bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, 
       if(electrons[0].p.Pt()*electrons[0].corr<electrons[1].p.Pt()*electrons[1].corr) leadLepton=1,subleadLepton=0;
       p_l1=electrons[leadLepton].p*electrons[leadLepton].corr;
       p_l2=electrons[subleadLepton].p*electrons[subleadLepton].corr;
-      p_l1=electrons[leadLepton].p*electrons[leadLepton].corr;
-      p_l2=electrons[subleadLepton].p*electrons[subleadLepton].corr;
       flavor_l1=1;
       flavor_l2=1;
       cat="ee";
@@ -104,7 +105,7 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
                                     std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
 {
    std::vector<bool> selection_vec={false,false,false,false};
-   
+      
    //mLL Cut
    float mll_corr=(p_l1+p_l2).M();
    if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) return selection_vec;
@@ -121,10 +122,20 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    
    //bJet Cut
    bool bTag=false;
-   for (tree::Jet const &jet : cleanJets) {
-      if (jet.bTagDeepCSV>0.2217) {      //Loose working point for deepCSV
-         bTag=true;
-         bJets.push_back(jet);
+   if(cfg.year_int==1){
+      for (tree::Jet const &jet : cleanJets) {
+         if (jet.bTagDeepCSV>cfg.DeepCSV_loose) {      //Loose working point for deepCSV
+            bTag=true;
+            bJets.push_back(jet);
+         }
+      }
+   }
+   else{
+      for (tree::Jet const &jet : cleanJets) {
+         if (jet.bTagDeepJet>cfg.DeepJet_loose) {      //Loose working point for deepCSV
+            bTag=true;
+            bJets.push_back(jet);
+         }
       }
    }
    if(!bTag) return selection_vec;
