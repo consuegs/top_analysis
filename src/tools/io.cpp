@@ -15,6 +15,7 @@ io::Logger io::log;
 
 static Config const&cfg=Config::get();
 
+
 std::string io::shellOutput(const char* cmd) {
     FILE* pipe = popen(cmd, "r");
     if (!pipe) return "ERROR";
@@ -68,7 +69,7 @@ io::RootFileSaver::~RootFileSaver()
    delete file_;
 }
 
-void io::RootFileSaver::save(TObject const &obj, TString name,bool decorate,bool simulation) const
+void io::RootFileSaver::save(TObject const &obj, TString name,bool decorate,bool simulation,bool addPDF) const
 {  
    if (intPath_!="") name=intPath_+"/"+name;
    if (obj.InheritsFrom(TCanvas::Class())){
@@ -83,6 +84,13 @@ void io::RootFileSaver::save(TObject const &obj, TString name,bool decorate,bool
       //~ can.SaveAs("test.pdf");
       //~ can.SaveAs("test.root");
       //~ can.SaveAs("test.png");
+      
+      if (addPDF) {
+         TString loc = std::string(fPath_).substr(0, std::string(fPath_).find_last_of("\\/"));
+         loc = loc+"/pdf_out/"+name+".pdf";
+         ensurePathForFile(loc);
+         can.SaveAs(loc);
+      }
    }
    file_->cd();
 
@@ -98,14 +106,14 @@ void io::RootFileSaver::save(TObject const &obj, TString name,bool decorate,bool
    io::log*"Saved '"*name*"' to '"*fName_<<"'";
 }
 
-void io::RootFileSaver::save(gfx::SplitCan &obj, TString name,bool simulation) const
+void io::RootFileSaver::save(gfx::SplitCan &obj, TString name,bool simulation,bool addPDF) const
 {
    gfx::setupDrawnAxes(obj);
    obj.cdUp();
    gfx::decorate(obj.pU_,simulation);
    obj.Update();
    // don't let "normal" save-function decorate (no axes in canvas)
-   save(obj.can_,name,false);
+   save(obj.can_,name,false,simulation,addPDF);
 }
 
 /*******************************************************************************
