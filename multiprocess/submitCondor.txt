@@ -1,9 +1,9 @@
 
 Universe        = vanilla
 Executable      = run.sh
-Arguments       = -f1.0 distributions --data_dataset=MuonEG 2016
-Log             = logs/MuonEG_-f1.0.log
-Output          = logs/MuonEG_-f1.0.out
-Error           = logs/MuonEG_-f1.0.error
-Request_Memory  = 1500 Mb
+Arguments       = -f1.0 distributions --mc_dataset=TTbar_diLepton 2018
+Log             = logs/2018/distributions_TTbar_diLepton_-f1.0.log
+Output          = logs/2018/distributions_TTbar_diLepton_-f1.0.out
+Error           = logs/2018/distributions_TTbar_diLepton_-f1.0.error
+Request_Memory  = 6000 Mb
 Queue

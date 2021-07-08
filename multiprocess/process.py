@@ -13,12 +13,18 @@ class Range(object):
         return self.start <= other <= self.end
 
 #  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
-#  ~toProcess_mc=["TTbar_diLepton"]
-toProcess_mc=[]
+#  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","WW","WZ","ZZ","ttZ","ttW"]
+toProcess_mc=["TTbar_diLepton"]
+#  ~toProcess_mc=["TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
+#  ~toProcess_mc=["WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
+#  ~toProcess_mc=["SingleTop","DrellYan_NLO","DrellYan"]
+#  ~toProcess_mc=[]
 #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
-toProcess_data=["MuonEG"]
-#  ~toProcess_data=[]
+#  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
+#  ~toProcess_data=["EGamma"]
+toProcess_data=[]
 #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
+#  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10"]
 #  ~toProcess_signal=["T1tttt_1200_800"]
 toProcess_signal=[]
 
@@ -47,16 +53,18 @@ sampleStr = ""
 for sel in [[toProcess_mc,"--mc_dataset="],[toProcess_data,"--data_dataset="],[toProcess_signal,"--signal_dataset="]]:
     for x in sel[0]:
             sampleStr=sel[1]+x
-            if x=="TTbar_diLepton": requ_mem=6000
+            if x=="TTbar_diLepton" or x=="DrellYan": requ_mem=6000
             with open("submitCondor.txt","w") as f:
                 f.write("""
 Universe        = vanilla
 Executable      = run.sh
 Arguments       = {0} {1} {2} {5}
-Log             = logs/{3}_{0}.log
-Output          = logs/{3}_{0}.out
-Error           = logs/{3}_{0}.error
+Log             = logs/{5}/{1}_{3}_{0}.log
+Output          = logs/{5}/{1}_{3}_{0}.out
+Error           = logs/{5}/{1}_{3}_{0}.error
 Request_Memory  = {4} Mb
 Queue
 """.format("-f"+str(args.f),args.m,sampleStr,x,str(requ_mem),args.y))
             subprocess.call(["condor_submit", "submitCondor.txt"])
+
+print "Use rootcp to combine output histograms in multiHists"
