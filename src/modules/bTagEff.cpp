@@ -35,17 +35,17 @@ void run()
    hist::Histograms<TH2F> hs2d(vsDatasubsets);
    
    for(TString channel:{"ee","emu","mumu"}){
-      hs2d.addHist("baseline/"+channel+"/B_all", ";|#eta^{b-jet}|;p_{T}^{b-jet} (GeV);Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/B_DeepJet_loose", ";|#eta^{b-jet}|;p_{T}^{b-jet} (GeV);Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/B_DeepCSV_loose", ";|#eta^{b-jet}|;p_{T}^{b-jet} (GeV);Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/B_all", ";p_{T}^{b-jet} (GeV);|#eta^{b-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/B_DeepJet_loose", ";p_{T}^{b-jet} (GeV);|#eta^{b-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/B_DeepCSV_loose", ";p_{T}^{b-jet} (GeV);|#eta^{b-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
       
-      hs2d.addHist("baseline/"+channel+"/C_all", ";|#eta^{c-jet}|;p_{T}^{c-jet} (GeV);Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/C_DeepJet_loose", ";|#eta^{c-jet}|;p_{T}^{c-jet} (GeV);Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/C_DeepCSV_loose", ";|#eta^{c-jet}|;p_{T}^{c-jet} (GeV);Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/C_all", ";p_{T}^{c-jet} (GeV);|#eta^{c-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/C_DeepJet_loose", ";p_{T}^{c-jet} (GeV);|#eta^{c-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/C_DeepCSV_loose", ";p_{T}^{c-jet} (GeV);|#eta^{c-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
       
-      hs2d.addHist("baseline/"+channel+"/Light_all", ";|#eta^{b-jet}|;p_{T}^{light-jet} (GeV);Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/Light_DeepJet_loose", ";|#eta^{light-jet}|;p_{T}^{light-jet} (GeV);Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/Light_DeepCSV_loose", ";|#eta^{light-jet}|;p_{T}^{light-jet} (GeV);Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/Light_all", ";p_{T}^{light-jet} (GeV);|#eta^{light-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/Light_DeepJet_loose", ";p_{T}^{light-jet} (GeV);|#eta^{light-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/Light_DeepCSV_loose", ";p_{T}^{light-jet} (GeV);|#eta^{light-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
    }
    
    for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){
@@ -216,6 +216,9 @@ void run()
       
       hs2d.mergeOverflow();
       file.Close();
+      
+      //For multi save dss name
+      dssName_multi=TString(dss.datasetName);
       
    } // dataset loop
    
