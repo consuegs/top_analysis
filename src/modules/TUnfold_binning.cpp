@@ -44,8 +44,8 @@ void run()
    TString scale="0.001";
    
    // Use DNN instead of pfMET
-   bool withDNN = false;
-   // ~bool withDNN = true;
+   // ~bool withDNN = false;
+   bool withDNN = true;
    
    // Use puppi instead of pfMET
    bool withPuppi = !withDNN;
@@ -165,7 +165,7 @@ void run()
    TH1 *histDataTruth=generatorBinning->CreateHistogram("histDataTruth");
    TH1 *histDataTruth_fakes=generatorBinning->CreateHistogram("histDataTruth_fakes");
    
-   TString minTreePath = TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2016/%s/minTrees/%.1f/",cfg.treeVersion.Data(),cfg.processFraction*100);
+   TString minTreePath = TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/%.1f/",cfg.year.Data(),cfg.treeVersion.Data(),cfg.processFraction*100);
    
    TFile *dataFile=new TFile(minTreePath+sample+".root","read");
    TTree *dataTree=(TTree *) dataFile->Get("ttbar_res100.0/"+sample);
@@ -189,8 +189,8 @@ void run()
       dataTree->SetBranchAddress("PuppiMET",&metRec);
    }
    if(withDNN) {
-      dataTree->SetBranchAddress("Phi_recPuppi",&phiRec);
-      dataTree->SetBranchAddress("DNN_regression",&metRec);
+      dataTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec);
+      dataTree->SetBranchAddress("DNN_MET_pT",&metRec);
    }
    dataTree->SetBranchAddress("Phi_NuNu",&phiGen);
    dataTree->SetBranchAddress("PtNuNu",&metGen);
@@ -262,8 +262,8 @@ void run()
          BSMTree->SetBranchAddress("PuppiMET",&metRec);
       }
       if(withDNN) {
-         BSMTree->SetBranchAddress("Phi_recPuppi",&phiRec);
-         BSMTree->SetBranchAddress("DNN_regression",&metRec);
+         BSMTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec);
+         BSMTree->SetBranchAddress("DNN_MET_pT",&metRec);
       }
       BSMTree->SetBranchAddress("Phi_NuNu",&phiGen);
       BSMTree->SetBranchAddress("PtNuNu",&metGen);
@@ -327,8 +327,8 @@ void run()
       signalTree->SetBranchAddress("PuppiMET",&metRec);
    }
    if(withDNN) {
-      signalTree->SetBranchAddress("Phi_recPuppi",&phiRec);
-      signalTree->SetBranchAddress("DNN_regression",&metRec);
+      signalTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec);
+      signalTree->SetBranchAddress("DNN_MET_pT",&metRec);
    }
    // ~signalTree->SetBranchAddress("istriggered",&istriggered);
    signalTree->SetBranchAddress("Phi_NuNu",&phiGen);

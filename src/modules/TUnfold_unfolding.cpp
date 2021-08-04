@@ -142,8 +142,8 @@ void run()
    TString scale="0.001";
    
    // Use DNN instead of pfMET
-   bool withDNN = false;
-   // ~bool withDNN = true;
+   // ~bool withDNN = false;
+   bool withDNN = true;
    
    // Use puppi instead of pfMET
    bool withPuppi = !withDNN;
