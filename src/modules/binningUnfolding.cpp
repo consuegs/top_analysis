@@ -64,6 +64,7 @@ void run()
    TH2F migration;   //Histogram to study the migration
    
    TProfile2D TopPt_profile;   //Profile to save mean lead top pT per bin
+   TProfile2D nInteractions_profile;   //Profile to save mean lead top pT per bin
    
    int bin_gen;
    int bin_rec;
@@ -241,6 +242,7 @@ void run()
          migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
          TopPt_profile=hist::ProfilefromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
+         nInteractions_profile=hist::ProfilefromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
          
          // ~TString sampleName="";
          TString sampleName="diLepton";
@@ -550,8 +552,9 @@ void run()
             response.Fill(realBin_rec_unfold,realBin_gen,*N);
             response_sameBins.Fill(realBin,realBin_gen);
             
-            //Fill profile2d for lead top pt
+            //Fill profile2d for lead top pt and nInteractions
             TopPt_profile.Fill(*PtNuNu,*Phi_gen,*leadTop_pT,*N);
+            nInteractions_profile.Fill(*PtNuNu,*Phi_gen,*n_Interactions,*N);
             
             //Fill hist for last bin
             // ~if(realBin==17){
@@ -807,6 +810,7 @@ void run()
          saveProfileFrom2D(&GenMETvsPTnunu,"GenMETvsPTnunu",&saver);
          
          saver.save(TopPt_profile,"TopPt_profile");
+         saver.save(nInteractions_profile,"nInteractions_profile");
          
          //Save histograms for unfolding
          for (int i=0; i<trueDistributions.GetNbinsX(); i++){
