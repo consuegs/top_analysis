@@ -31,6 +31,29 @@ std::pair<float,int> getChi2NDF(TH1F* hist_res, TH1F* hist_true) {
    }
 }
 
+TH1F getRMS(const TH2F* hist2D){
+   TProfile::SetDefaultSumw2();
+   TProfile TTbar_profile_RMS=*(hist2D->ProfileX("ProfileRMS",1,-1,"s"));
+   // ~TH1F RMS("","",100,0,100);
+   TH1F RMS("","",hist2D->GetNbinsX(),0,hist2D->GetXaxis()->GetXmax());
+   for (int i=1; i<=TTbar_profile_RMS.GetNbinsX(); i++){
+      RMS.SetBinContent(i,TTbar_profile_RMS.GetBinError(i));
+      RMS.SetBinError(i,0.0001);
+   }
+   return RMS;
+}
+
+TH1F getAbsoluteValues(const TProfile* hist){
+   TH1F hist_abs("","",hist->GetNbinsX(),0,hist->GetXaxis()->GetXmax());
+   hist_abs.GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
+   for (int i=1; i<=hist_abs.GetNbinsX(); i++){
+      // ~hist_abs.SetBinContent(i,abs(hist->GetBinContent(i)));
+      hist_abs.SetBinContent(i,hist->GetBinContent(i));
+      hist_abs.SetBinError(i,hist->GetBinError(i));
+   }
+   return hist_abs;
+}
+
 Config const &cfg=Config::get();
 
 extern "C"
@@ -49,11 +72,11 @@ void run()
    // ~TString inputFile=TString::Format("binningUnfolding/T1tttt_1500_100_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP__diff_xy_2016_20210521-1448normDistr_%.1f.root",cfg.processFraction*100);
    // ~TString inputFile=TString::Format("binningUnfolding/T2tt_650_350_Inlusive_amcatnlo__PuppiMET-genMET_2016_20210609-1056normDistr_%.1f.root",cfg.processFraction*100);
    
-   TString inputFile=TString::Format("binningUnfolding/diLepton_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP_withoutMETinputs__diff_xy_2016_20210615-1210normDistr_%.1f.root",cfg.processFraction*100);
+   // ~TString inputFile=TString::Format("binningUnfolding/diLepton_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP_withoutMETinputs__diff_xy_2016_20210615-1210normDistr_%.1f.root",cfg.processFraction*100);
    // ~TString inputFile=TString::Format("binningUnfolding/T2tt_650_350_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP_withoutMETinputs__diff_xy_2016_20210615-1210normDistr_%.1f.root",cfg.processFraction*100);
    
    //2018
-   // ~TString inputFile=TString::Format("binningUnfolding/diLepton_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP__diff_xy_2018_20210519-1014normDistr_%.1f.root",cfg.processFraction*100);
+   TString inputFile=TString::Format("binningUnfolding/diLepton_Inlusive_amcatnlo_xyComponent_JetLepXY_50EP__diff_xy_2018_20210519-1014normDistr_%.1f.root",cfg.processFraction*100);
    
    bool isBSM=inputFile.Contains("T2tt") || inputFile.Contains("T1tttt");
    
@@ -174,6 +197,9 @@ void run()
          TLegend leg=le.buildLegend(.4,.7,1-1.5*gPad->GetRightMargin(),-1,1);
          leg.Draw();
          
+         TLatex label_BSM=gfx::cornerLabel("T2tt_650_350",3);
+         if(inputFile.Contains("T2tt")) label_BSM.Draw();
+         
          TLatex label=gfx::cornerLabel(metRegions[i],1);
          label.Draw();
          saver.save(can,inputFile+"/dist"+target+"_"+bin,true,true);
@@ -232,6 +258,8 @@ void run()
          TLegend leg2=le2.buildLegend(.45,.75,1-1.5*gPad->GetRightMargin(),-1,1);
          leg2.Draw();
          
+         if(inputFile.Contains("T2tt")) label_BSM.Draw();
+         
          TLatex label2=gfx::cornerLabel(metRegions[i],1);
          label2.Draw();
          saver.save(can,inputFile+"/diff"+target+"_"+bin,true,true);
@@ -268,5 +296,130 @@ void run()
    TLegend leg=leCombined.buildLegend(.45,.75,1-1.5*gPad->GetRightMargin(),-1,2);
    leg.Draw();
    saver.save(canCombined,inputFile+"/DNN_Output",true,true);
+   
+   //Profile Plots
+   if(cfg.year_int==3){
+      for(TString xAxis: {"","_vsPuppi","_vsDNN"}){
+         can.cd();
+         TH2F* Puppi_2D=histReader.read<TH2F>("binningUnfolding_DNN/DNN/diffPuppi_2D"+xAxis);
+         TH2F* PF_2D=histReader.read<TH2F>("binningUnfolding_DNN/DNN/diffPF_2D"+xAxis);
+         TH2F* DNN_2D=histReader.read<TH2F>("binningUnfolding_DNN/DNN/diffcorr_2D"+xAxis);
+         
+         Puppi_2D->RebinX(10);
+         PF_2D->RebinX(10);
+         DNN_2D->RebinX(10);
+         
+         TH1F Puppi_mean=getAbsoluteValues(Puppi_2D->ProfileX());
+         TH1F Puppi_rms=getRMS(Puppi_2D);
+         TH1F PF_mean=getAbsoluteValues(PF_2D->ProfileX());
+         TH1F PF_rms=getRMS(PF_2D);
+         TH1F DNN_mean=getAbsoluteValues(DNN_2D->ProfileX());
+         TH1F DNN_rms=getRMS(DNN_2D);
+         
+         Puppi_mean.SetLineColor(kRed);
+         Puppi_rms.SetLineColor(kRed);
+         DNN_mean.SetLineColor(kBlue);
+         DNN_rms.SetLineColor(kBlue);
+         PF_mean.SetLineColor(kBlack);
+         PF_rms.SetLineColor(kBlack);
+         
+         Puppi_rms.SetLineStyle(2);
+         DNN_rms.SetLineStyle(2);
+         PF_rms.SetLineStyle(2);
+         
+         Puppi_mean.GetXaxis()->SetTitle("genMET (GeV)");
+         if (xAxis.Contains("DNN")) Puppi_mean.GetXaxis()->SetTitle("DNN MET (GeV)");
+         else if (xAxis.Contains("Puppi")) Puppi_mean.GetXaxis()->SetTitle("Puppi MET (GeV)");         
+         Puppi_mean.GetYaxis()->SetTitle("genMET-recoMET (GeV)");
+         Puppi_mean.GetXaxis()->SetRangeUser(0,400);
+         Puppi_mean.GetYaxis()->SetRangeUser(-75,75);
+         Puppi_mean.SetStats(0);
+         
+         Puppi_mean.Draw("hist");
+         Puppi_rms.Draw("hist same");
+         PF_mean.Draw("hist same");
+         PF_rms.Draw("hist same");
+         DNN_mean.Draw("hist same");
+         DNN_rms.Draw("hist same");
+         
+         gfx::LegendEntries le;
+         le.append(Puppi_mean,"PuppiMET mean","l");
+         le.append(Puppi_rms,"PuppiMET rms","l");
+         le.append(PF_mean,"PFMET mean","l");
+         le.append(PF_rms,"PFMET rms","l");
+         le.append(DNN_mean,"DNN mean","l");
+         le.append(DNN_rms,"DNN rms","l");
+         TLegend leg2=le.buildLegend(.4,.7,1-1.5*gPad->GetRightMargin(),-1,2);
+         leg2.Draw();
+         TLine * aline = new TLine();
+         aline->DrawLine(0,0,400,0);
+         
+         saver.save(can,inputFile+"/Profile_Comparison"+xAxis,true,true);
+      }
+   }
+   
+   //Profile Plots (emu only)
+   if(cfg.year_int==3){
+      can.cd();
+      io::RootFileReader histReader1("/net/data_cms1b/user/dmeuser/top_analysis/2018/v03/minTrees/100.0/temp/MET.root","",false);
+      io::RootFileReader histReader2("/net/data_cms1b/user/dmeuser/top_analysis/2018/v03/minTrees/100.0/temp/DNN.root","",false);
+      io::RootFileReader histReader3("/net/data_cms1b/user/dmeuser/top_analysis/2018/v03/minTrees/100.0/temp/Puppi.root","",false);
+      
+      TH2F* Puppi_2D=histReader3.read<TH2F>("htemp");
+      TH2F* PF_2D=histReader1.read<TH2F>("htemp");
+      TH2F* DNN_2D=histReader2.read<TH2F>("htemp");
+      
+      Puppi_2D->RebinX(10);
+      PF_2D->RebinX(10);
+      DNN_2D->RebinX(10);
+      
+      TH1F Puppi_mean=getAbsoluteValues(Puppi_2D->ProfileX());
+      TH1F Puppi_rms=getRMS(Puppi_2D);
+      TH1F PF_mean=getAbsoluteValues(PF_2D->ProfileX());
+      TH1F PF_rms=getRMS(PF_2D);
+      TH1F DNN_mean=getAbsoluteValues(DNN_2D->ProfileX());
+      TH1F DNN_rms=getRMS(DNN_2D);
+      
+      Puppi_mean.SetLineColor(kRed);
+      Puppi_rms.SetLineColor(kRed);
+      DNN_mean.SetLineColor(kBlue);
+      DNN_rms.SetLineColor(kBlue);
+      PF_mean.SetLineColor(kBlack);
+      PF_rms.SetLineColor(kBlack);
+      
+      Puppi_rms.SetLineStyle(2);
+      DNN_rms.SetLineStyle(2);
+      PF_rms.SetLineStyle(2);
+      
+      Puppi_mean.GetXaxis()->SetTitle("genMET (GeV)");     
+      Puppi_mean.GetYaxis()->SetTitle("genMET-recoMET (GeV)");
+      Puppi_mean.GetXaxis()->SetRangeUser(0,400);
+      Puppi_mean.GetYaxis()->SetRangeUser(-75,75);
+      Puppi_mean.SetStats(0);
+      
+      Puppi_mean.Draw("hist");
+      Puppi_rms.Draw("hist same");
+      PF_mean.Draw("hist same");
+      PF_rms.Draw("hist same");
+      DNN_mean.Draw("hist same");
+      DNN_rms.Draw("hist same");
+      
+      gfx::LegendEntries le;
+      le.append(Puppi_mean,"PuppiMET mean","l");
+      le.append(Puppi_rms,"PuppiMET rms","l");
+      le.append(PF_mean,"PFMET mean","l");
+      le.append(PF_rms,"PFMET rms","l");
+      le.append(DNN_mean,"DNN mean","l");
+      le.append(DNN_rms,"DNN rms","l");
+      TLegend leg2=le.buildLegend(.4,.7,1-1.5*gPad->GetRightMargin(),-1,2);
+      leg2.Draw();
+      TLine * aline = new TLine();
+      aline->DrawLine(0,0,400,0);
+      
+      TLatex label=gfx::cornerLabel("emu",1);
+      label.Draw();
+      
+      saver.save(can,inputFile+"/emu/Profile_Comparison",true,true);
+   }
    
 }
