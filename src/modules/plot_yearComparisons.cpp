@@ -15,11 +15,16 @@
 
 Config &cfg=Config::get();
 
-TH1F getRMS(const TH2F* hist2D){
+TH1F getRMS(const TH2F* hist2D,bool diff50){
    TProfile::SetDefaultSumw2();
-   // ~TProfile TTbar_profile_RMS=*(hist2D->ProfileX("ProfileRMS",1,-1,"s"));
-   TProfile TTbar_profile_RMS=*(hist2D->ProfileX("ProfileRMS",2700,3300,"s"));
-   std::cout<<"RMS only taken for diff<50!!!!!!!!!!!!!!"<<std::endl;
+   int range_low=1;
+   int range_up=-1;
+   if(diff50){
+      std::cout<<"RMS only taken for diff<50!!!!!!!!!!!!!!"<<std::endl;
+      range_low=2700;
+      range_up=3300;
+   }
+   TProfile TTbar_profile_RMS=*(hist2D->ProfileX("ProfileRMS",range_low,range_up,"s"));
    // ~TH1F RMS("","",100,0,100);
    TH1F RMS("","",hist2D->GetNbinsX(),0,hist2D->GetXaxis()->GetXmax());
    for (int i=1; i<=TTbar_profile_RMS.GetNbinsX(); i++){
@@ -47,15 +52,18 @@ void run()
    TCanvas can;
    TCanvas can_comp;
    can.cd();
-   io::RootFileReader histReader18("../2018/histograms_v01.root");
-   io::RootFileReader histReader18_oldTune("../2018/histograms_vXX.root");
-   io::RootFileReader histReader17("../2017/histograms_v01.root");
-   io::RootFileReader histReader17_oldTune("../2017/histograms_vXX.root");
+   io::RootFileReader histReader18("../2018_v01/histograms_v01.root");
+   io::RootFileReader histReader18_oldTune("../2018_v01/histograms_vXX.root");
+   io::RootFileReader histReader17("../2017_v01/histograms_v01.root");
+   io::RootFileReader histReader17_oldTune("../2017_v01/histograms_vXX.root");
    io::RootFileReader histReader16("../2016/histograms_v24.root");
    
    
    std::vector<TString> comb_names;
    std::vector<TH1F> hist_comb;
+   
+   // ~bool diff50=false;      //Use only diff<50 for mean and rms plots
+   bool diff50=true;      //Use only diff<50 for mean and rms plots
    
    //Plotting MET resolution as a function of nInteractions and genMET
    for (std::string plot : {"nVertex_vs_MetRes","Gen_nVertex_vs_MetRes","nVertex_vs_MetResPF","Gen_nVertex_vs_MetResPF","genMET_vs_MetRes","genMET_vs_MetResPF"}){
@@ -80,21 +88,27 @@ void run()
          TTbar_2D_16->Rebin2D(4,1);
       }
       
-      std::cout<<"MEAN only taken for diff<50!!!!!!!!!!!!!!"<<std::endl;
-      TH1F Mean_18=getAbsoluteValues((TTbar_2D_18->ProfileX("Profile",2700,3300)));
-      TH1F Res_18=getRMS(TTbar_2D_18);
+      int range_low=1;
+      int range_up=-1;
+      if(diff50){
+         std::cout<<"MEAN only taken for diff<50!!!!!!!!!!!!!!"<<std::endl;
+         range_low=2700;
+         range_up=3300;
+      }
+      TH1F Mean_18=getAbsoluteValues((TTbar_2D_18->ProfileX("Profile",range_low,range_up)));
+      TH1F Res_18=getRMS(TTbar_2D_18,diff50);
       
-      TH1F Mean_17=getAbsoluteValues(TTbar_2D_17->ProfileX("Profile",2700,3300));
-      TH1F Res_17=getRMS(TTbar_2D_17);
+      TH1F Mean_17=getAbsoluteValues(TTbar_2D_17->ProfileX("Profile",range_low,range_up));
+      TH1F Res_17=getRMS(TTbar_2D_17,diff50);
       
-      TH1F Mean_18_oldTune=getAbsoluteValues(TTbar_2D_18_oldTune->ProfileX("Profile",2700,3300));
-      TH1F Res_18_oldTune=getRMS(TTbar_2D_18_oldTune);
+      TH1F Mean_18_oldTune=getAbsoluteValues(TTbar_2D_18_oldTune->ProfileX("Profile",range_low,range_up));
+      TH1F Res_18_oldTune=getRMS(TTbar_2D_18_oldTune,diff50);
       
-      TH1F Mean_17_oldTune=getAbsoluteValues(TTbar_2D_17_oldTune->ProfileX("Profile",2700,3300));
-      TH1F Res_17_oldTune=getRMS(TTbar_2D_17_oldTune);
+      TH1F Mean_17_oldTune=getAbsoluteValues(TTbar_2D_17_oldTune->ProfileX("Profile",range_low,range_up));
+      TH1F Res_17_oldTune=getRMS(TTbar_2D_17_oldTune,diff50);
       
-      TH1F Mean_16=getAbsoluteValues(TTbar_2D_16->ProfileX("Profile",2700,3300));
-      TH1F Res_16=getRMS(TTbar_2D_16);
+      TH1F Mean_16=getAbsoluteValues(TTbar_2D_16->ProfileX("Profile",range_low,range_up));
+      TH1F Res_16=getRMS(TTbar_2D_16,diff50);
 
       gPad->SetLeftMargin(0.13);
       Mean_18.SetStats(0);
@@ -220,7 +234,7 @@ void run()
    leg_comb.Draw();
    TString label_string="|recoMET-genMET|<50 GeV";
    TLatex label=gfx::cornerLabel(label_string,1);
-   label.Draw();
+   if(diff50) label.Draw();
    saver.save(can_comp,"Compare_PF_Puppi_vsGenMET",true,true);
    
    //Plot PF Puppi Comparison (v11)
@@ -234,7 +248,7 @@ void run()
    }
    TLegend leg_comb2=le_comb2.buildLegend(.4,.6,1-1.5*gPad->GetRightMargin(),0.9,2);
    leg_comb2.Draw();
-   label.Draw();
+   if(diff50) label.Draw();
    saver.save(can_comp,"Compare_PF_PuppiV11_vsGenMET",true,true);
    
    
@@ -288,12 +302,17 @@ void run()
          Hist_16.Draw("same e0");
          
          gfx::LegendEntries le;
-         le.append(Hist_18,TString::Format("18UL(v15) (#mu=%.1f #sigma=%.1f)",Hist_18.GetMean(),Hist_18.GetRMS()),"lep");
-         le.append(Hist_17,TString::Format("17UL(v15) (#mu=%.1f #sigma=%.1f)",Hist_17.GetMean(),Hist_17.GetRMS()),"lep");
-         le.append(Hist_16,TString::Format("16ReReco(v11) (#mu=%.1f #sigma=%.1f)",Hist_16.GetMean(),Hist_16.GetRMS()),"lep");
          if(!PF){
+            le.append(Hist_18,TString::Format("18UL(v15) (#mu=%.1f #sigma=%.1f)",Hist_18.GetMean(),Hist_18.GetRMS()),"lep");
+            le.append(Hist_17,TString::Format("17UL(v15) (#mu=%.1f #sigma=%.1f)",Hist_17.GetMean(),Hist_17.GetRMS()),"lep");
+            le.append(Hist_16,TString::Format("16ReReco(v11) (#mu=%.1f #sigma=%.1f)",Hist_16.GetMean(),Hist_16.GetRMS()),"lep"); 
             le.append(Hist_18_oldTune,TString::Format("18UL(v11) (#mu=%.1f #sigma=%.1f)",Hist_18_oldTune.GetMean(),Hist_18_oldTune.GetRMS()),"lep");
             le.append(Hist_17_oldTune,TString::Format("17UL(v11) (#mu=%.1f #sigma=%.1f)",Hist_17_oldTune.GetMean(),Hist_17_oldTune.GetRMS()),"lep");
+         }
+         else{
+            le.append(Hist_18,TString::Format("18UL (#mu=%.1f #sigma=%.1f)",Hist_18.GetMean(),Hist_18.GetRMS()),"lep");
+            le.append(Hist_17,TString::Format("17UL (#mu=%.1f #sigma=%.1f)",Hist_17.GetMean(),Hist_17.GetRMS()),"lep");
+            le.append(Hist_16,TString::Format("16ReReco (#mu=%.1f #sigma=%.1f)",Hist_16.GetMean(),Hist_16.GetRMS()),"lep");
          }
          TLegend leg=le.buildLegend(.4,.7,1-1.5*gPad->GetRightMargin(),-1,1);
          leg.Draw();
