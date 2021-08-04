@@ -120,6 +120,16 @@ void run()
       diffPuppiCorr_phi_hists.push_back(temp_res_phi);
    }
    
+   TH2F diffPuppi_2D("","",500,0,500,200,-150,150);
+   TH2F diffPF_2D("","",500,0,500,200,-150,150);
+   TH2F diffPuppiCorr_2D("","",500,0,500,200,-150,150);
+   TH2F diffPuppi_2D_vsPuppi("","",500,0,500,200,-150,150);
+   TH2F diffPF_2D_vsPuppi("","",500,0,500,200,-150,150);
+   TH2F diffPuppiCorr_2D_vsPuppi("","",500,0,500,200,-150,150);
+   TH2F diffPuppi_2D_vsDNN("","",500,0,500,200,-150,150);
+   TH2F diffPF_2D_vsDNN("","",500,0,500,200,-150,150);
+   TH2F diffPuppiCorr_2D_vsDNN("","",500,0,500,200,-150,150);
+   
    N_gen=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
    N_rec=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
    N_genrec=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
@@ -134,10 +144,10 @@ void run()
    migration=hist::fromWidths_2d("",";p_{T}^{#nu#nu}(GeV);|#Delta#phi|(p_{T}^{#nu#nu},nearest l);",met_bins,hist::getWidths(met_bins),phi_bins,hist::getWidths(phi_bins));
       
    // ~TString sampleName="";
-   // ~TString sampleName="diLepton";
+   TString sampleName="diLepton";
    // ~TString sampleName="dilepton_CP5";
    // ~TString sampleName="MadGraph";
-   TString sampleName="T2tt_650_350";
+   // ~TString sampleName="T2tt_650_350";
    // ~TString sampleName="T1tttt_1500_100";
    TString treeName="TTbar_"+sampleName;
    if (sampleName=="T2tt_650_350" || sampleName=="T1tttt_1500_100") treeName=sampleName;
@@ -261,11 +271,12 @@ void run()
    int migrated=0;
    int totalEntries=reader.GetEntries(true);
    int processEvents=cfg.processFraction*totalEntries;
+   // ~std::cout<<processEvents<<std::endl;
    int iEv=0;
    while (reader.Next()){
       iEv++;
       if (iEv>processEvents) break;
-      if (iEv%(std::max(totalEntries/10,1))==0){
+      if (iEv%(std::max(processEvents/10,1))==0){
          io::log*".";
          io::log.flush();
       }
@@ -426,20 +437,6 @@ void run()
       diffMET=*PtNuNu-*MET;//Save difference before overflow handling
       diffPHI=*Phi_gen-*Phi_rec;
       
-      // ~if(*MET>=met_bins.back()) *MET=met_bins.back()-0.01;     //Handel overflow correctly
-      // ~if(*PtNuNu>=met_bins.back()) *PtNuNu=met_bins.back()-0.01;
-      // ~if(*Phi_rec>=phi_bins.back()) *Phi_rec=phi_bins.back()-0.01;
-      // ~if(*Phi_gen>=phi_bins.back()) *Phi_gen=phi_bins.back()-0.01;
-      if(*MET>=met_bins.back()) continue;     //Handel overflow correctly
-      if(*PtNuNu>=met_bins.back()) continue;
-      if(*Phi_rec>=phi_bins.back()) continue;
-      if(*Phi_gen>=phi_bins.back()) continue;
-      
-      if (*PtNuNu>-1 && *Phi_gen>-1){
-         eff_gen.Fill(*PtNuNu,*Phi_gen);
-         if (*MET>-1 && *Phi_rec>-1) eff_gen_recSom.Fill(*PtNuNu,*Phi_gen);
-      }
-      
       //Fill hists for DNN performance evaluation with reco events
       if(PuppiMet_org>0){
          genmet_hists[metBin_org-1].Fill(*genMET,*N**SF);
@@ -460,6 +457,32 @@ void run()
          diffPuppi_phi_hists[metBin_org-1].Fill(phys::dPhi(*PuppiMET_phi,*genMET_phi),*N**SF);
          diffPF_phi_hists[metBin_org-1].Fill(phys::dPhi(*PFMET_phi,*genMET_phi),*N**SF);
          diffPuppiCorr_phi_hists[metBin_org-1].Fill(phys::dPhi(DNN_MET_phi,*genMET_phi),*N**SF);
+         
+         diffPuppi_2D.Fill(*genMET,*genMET-PuppiMet_org,*N**SF);
+         diffPF_2D.Fill(*genMET,*genMET-*PFMET,*N**SF);
+         diffPuppiCorr_2D.Fill(*genMET,*genMET-PuppiMetcorr_org,*N**SF);
+         
+         diffPuppi_2D_vsPuppi.Fill(PuppiMet_org,*genMET-PuppiMet_org,*N**SF);
+         diffPF_2D_vsPuppi.Fill(PuppiMet_org,*genMET-*PFMET,*N**SF);
+         diffPuppiCorr_2D_vsPuppi.Fill(PuppiMet_org,*genMET-PuppiMetcorr_org,*N**SF);
+         
+         diffPuppi_2D_vsDNN.Fill(PuppiMetcorr_org,*genMET-PuppiMet_org,*N**SF);
+         diffPF_2D_vsDNN.Fill(PuppiMetcorr_org,*genMET-*PFMET,*N**SF);
+         diffPuppiCorr_2D_vsDNN.Fill(PuppiMetcorr_org,*genMET-PuppiMetcorr_org,*N**SF);
+      }
+      
+      // ~if(*MET>=met_bins.back()) *MET=met_bins.back()-0.01;     //Handel overflow correctly
+      // ~if(*PtNuNu>=met_bins.back()) *PtNuNu=met_bins.back()-0.01;
+      // ~if(*Phi_rec>=phi_bins.back()) *Phi_rec=phi_bins.back()-0.01;
+      // ~if(*Phi_gen>=phi_bins.back()) *Phi_gen=phi_bins.back()-0.01;
+      if(*MET>=met_bins.back()) continue;     //Handel overflow correctly
+      if(*PtNuNu>=met_bins.back()) continue;
+      if(*Phi_rec>=phi_bins.back()) continue;
+      if(*Phi_gen>=phi_bins.back()) continue;
+      
+      if (*PtNuNu>-1 && *Phi_gen>-1){
+         eff_gen.Fill(*PtNuNu,*Phi_gen);
+         if (*MET>-1 && *Phi_rec>-1) eff_gen_recSom.Fill(*PtNuNu,*Phi_gen);
       }
       
       // ~if(*looseLeptonVeto) continue;   //Remove Events with add. looser lepton
@@ -582,6 +605,15 @@ void run()
       saver.save(diffPF_phi_hists[i],"/DNN/diffPF_phi_bin"+std::to_string(i+1));
       saver.save(diffPuppiCorr_phi_hists[i],"/DNN/diffcorr_phi_bin"+std::to_string(i+1));
    }
+   saver.save(diffPuppi_2D,"/DNN/diffPuppi_2D");
+   saver.save(diffPF_2D,"/DNN/diffPF_2D");
+   saver.save(diffPuppiCorr_2D,"/DNN/diffcorr_2D");
+   saver.save(diffPuppi_2D_vsPuppi,"/DNN/diffPuppi_2D_vsPuppi");
+   saver.save(diffPF_2D_vsPuppi,"/DNN/diffPF_2D_vsPuppi");
+   saver.save(diffPuppiCorr_2D_vsPuppi,"/DNN/diffcorr_2D_vsPuppi");
+   saver.save(diffPuppi_2D_vsDNN,"/DNN/diffPuppi_2D_vsDNN");
+   saver.save(diffPF_2D_vsDNN,"/DNN/diffPF_2D_vsDNN");
+   saver.save(diffPuppiCorr_2D_vsDNN,"/DNN/diffcorr_2D_vsDNN");
    
    std::vector<TString> z_axis={"stability","purity","efficiency","efficiency_RG","N_gen","N_rec","N_gen_rec","Evt_gen","Evt_rec","res_phi","res_met","migration"};
    int i=0;
