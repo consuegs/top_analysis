@@ -21,7 +21,9 @@ void run()
 {
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot_bTagEff");
    // ~io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("bTagEff%.1f",cfg.processFraction*100));
-   io::RootFileReader histReader(TString::Format("multiHists/histograms_TTbar_diLepton_%s.root",cfg.treeVersion.Data()),TString::Format("bTagEff%.1f",cfg.processFraction*100));
+   // ~io::RootFileReader histReader(TString::Format("multiHists/histograms_TTbar_diLepton_%s.root",cfg.treeVersion.Data()),TString::Format("bTagEff%.1f",cfg.processFraction*100));
+   std::cout<<"----------------Using v01--------------"<<std::endl;
+   io::RootFileReader histReader(TString::Format("../%s_v01/multiHists/histograms_TTbar_diLepton_v01.root",cfg.year.Data()),TString::Format("bTagEff%.1f",cfg.processFraction*100));
    io::RootFileSaver histSaver(TString::Format("bTagEff_%s.root",cfg.year.Data()),"");
    
    //Plot 2D bTag Eff.
@@ -72,7 +74,7 @@ void run()
             eff_hist->SetMarkerSize(1.2);
             eff_hist->Draw("colz text e");
             label.Draw();
-            saver.save(can,"baseline/"+channel+"/"+flavor+"_"+tagger,true,false);
+            saver.save(can,"baseline/"+channel+"/"+flavor+"_"+tagger,true,true,true);
             histSaver.save(*eff_hist,channel+"/"+flavor+"_"+tagger,false,false);
          }
       }

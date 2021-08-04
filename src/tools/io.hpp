@@ -37,7 +37,7 @@ namespace io
    class RootFileReader
    {
    public:
-      RootFileReader(TString rootFileName,TString internalPath="");
+      RootFileReader(TString rootFileName,TString internalPath="",bool standardOutputDirectory=true);
       ~RootFileReader();
       template <class T> T* read(TString name) const;
    private:

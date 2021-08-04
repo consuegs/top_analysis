@@ -44,5 +44,7 @@
 
    gStyle->SetHatchesSpacing(1);
    gStyle->SetHatchesLineWidth(2);
+   
+   gStyle->SetPaintTextFormat(".2f");
 
 }
