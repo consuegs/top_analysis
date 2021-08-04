@@ -63,13 +63,22 @@ void run()
    
    // ~std::vector<TString> samplesToPlot={"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttZ","ttW","T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
    
-   std::vector<TString> samplesToPlot={"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttZ","ttW","DoubleMuon","EGamma","MuonEG","SingleMuon"};    //2018
+   std::vector<TString> samplesToPlot={};
+   switch(cfg.year_int){
+      case(3): //2018
+      samplesToPlot={"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttZ","ttW","DoubleMuon","EGamma","MuonEG","SingleMuon"};
+      break;
+      case(2): //2017
+      samplesToPlot={"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttW","ttZ","DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
+      break;
+   }    
    
    std::map<TString,std::vector<TString>> msPresel_vVars={
    {"cutflow/",{"ee","emu","mumu"}}
    };
    
-   for(TString selection:{"baseline","baseline_Met200"}){ //Reco 1D Histograms
+   // ~for(TString selection:{"baseline","baseline_Met200"}){ //Reco 1D Histograms
+   for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          msPresel_vVars.insert(std::pair<TString,std::vector<TString>>(selection+channel,
          {"MET"
@@ -178,7 +187,7 @@ void run()
          }
       }
    }
-   
+      
    //Import 2D hist (trafo to 1D)
    std::vector<float> binedges_x = {0, 20, 40, 60, 80, 100, 120, 140, 160, 195, 230, 400};
    std::vector<float> binedges_y = {0, 0.35, 0.7, 1.05, 1.4, 2.27, 3.14};
@@ -206,7 +215,14 @@ void run()
    hs.combineSamples("ttW/Z",{"ttW","ttZ"});
    hs.combineSamples("tt other",{"TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"});
    // ~hs.combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
-   hs.combineSamples("data",{"DoubleMuon","EGamma","MuonEG","SingleMuon"});      //2018
+   switch(cfg.year_int){
+      case(3): //2018
+      hs.combineSamples("data",{"DoubleMuon","EGamma","MuonEG","SingleMuon"});
+      break;
+      case(2): //2017
+      hs.combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
+      break;
+   }
    hs.combineSamples("MC",{"TTbar_diLepton","tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttZ","ttW"});
    // ~hs.combineSamples("MC_withCUETP8M2",{"TTbar_diLepton_CUETP8M2","TTbar_hadronic","TTbar_singleLepton","Diboson","SingleTop","WJetsToLNu","DrellYan","ttZ","ttW"});
    hs.combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttZ","ttW"});
@@ -237,13 +253,18 @@ void run()
             st_mc.SetMinimum(1);
             st_mc.SetMaximum(1e6);
          }
+         st_mc.SetMinimum(1);
+         st_mc.SetMaximum(1e3*st_mc.GetMaximum());
          st_mc.Draw();
-         if(sPresel.Contains("cutflow")) st_mc.GetXaxis()->SetRangeUser(0.5,7.5);
+         if(sPresel.Contains("cutflow")) st_mc.GetXaxis()->SetRangeUser(0.5,6.5);
          
          auto hist_data = hs.getHistogram(loc,{"data"});
          hist_data->SetLineColor(kBlack);
          hist_data->SetMarkerSize(0.5);
-         if(!(sVar.Contains("MET") || sVar.Contains("met1000")|| sVar.Contains("dphi_metNearLep"))) hist_data->Draw("same");
+         if(!(sVar.Contains("MET") || sVar.Contains("met1000")|| sVar.Contains("dphi_metNearLep"))) {
+            hist_data->Draw("same");
+            le.append(*hist_data,"data","lep");
+         }
          
          /*
          auto hists=hs.getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
@@ -272,8 +293,8 @@ void run()
             ratio_mc.GetXaxis()->SetBinLabel(4,"met");
             ratio_mc.GetXaxis()->SetBinLabel(5,"btag");
             ratio_mc.GetXaxis()->SetBinLabel(6,"ScaleFactors");
-            ratio_mc.GetXaxis()->SetBinLabel(7,"(addLepton veto)");
-            ratio_mc.GetXaxis()->SetRangeUser(0.5,7.5);
+            // ~ratio_mc.GetXaxis()->SetBinLabel(7,"(addLepton veto)");
+            ratio_mc.GetXaxis()->SetRangeUser(0.5,6.5);
          }
          ratio_mc.GetYaxis()->SetTitleOffset(0.45);
          ratio_mc.SetStats(0);
@@ -287,6 +308,11 @@ void run()
          ratio_mc.Draw("e2");
          // ~ratio.SetMarkerSize(4);
          if(!(sVar.Contains("MET") || sVar.Contains("met1000")|| sVar.Contains("dphi_metNearLep")))ratio.Draw("pe1 same");
+         
+         gfx::LegendEntries le_low;
+         le_low.append(ratio_mc,"stat.","f");
+         TLegend leg_low=le_low.buildLegend(.2,.8,0.5,0.95,2);
+         leg_low.Draw();
          
          saver.save(sp_can,loc,false,true);
          // ~saver.save(can,loc);
