@@ -12,12 +12,12 @@ class Range(object):
     def __eq__(self, other):
         return self.start <= other <= self.end
 
-#  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
-#  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","WW","WZ","ZZ","ttZ","ttW"]
-toProcess_mc=["TTbar_diLepton"]
+toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","WW","WZ","ZZ","ttZ","ttW"]
+#  ~toProcess_mc=["TTbar_diLepton"]
 #  ~toProcess_mc=["TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
 #  ~toProcess_mc=["WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
 #  ~toProcess_mc=["SingleTop","DrellYan_NLO","DrellYan"]
+#  ~toProcess_mc=["DrellYan"]
 #  ~toProcess_mc=[]
 #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
 #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
@@ -37,6 +37,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-m', type=str, default="distributions", help="module")
 parser.add_argument('-f', type=float, choices=[Range(0.0, 1.0)], default=1.0, help="process fraction")
 parser.add_argument('-y', type=str, default="2016", help="year to be set as ANALYSIS_YEAR_CONFIG")
+parser.add_argument('-s', type=str, default="Nominal", help="systematic shift")
+
 args = parser.parse_args()
 
 print "Running "+args.m
@@ -46,6 +48,20 @@ print "Process "+str(args.f*100)+"% of events"
 print toProcess_mc
 print toProcess_data
 print toProcess_signal
+
+# not data processing if systematic shift is choosen
+if (toProcess_data and args.s!="Nominal"):
+   toProcess_data=[]
+   print "!!!!!!!!!!!!!!!!Data is not processed with systematic shift!!!!!!!!!!!!!!!!!!!!"
+
+# create logpath if not existing
+logpath="logs/"+args.y+"/"+args.s
+if not os.path.exists(logpath):
+   try:
+      os.makedirs(logpath)
+   except OSError as exc: # Guard against race condition
+      if exc.errno != errno.EEXIST:
+         raise
 
 requ_mem=1500   #standard value, allocated if not defined
 
@@ -58,13 +74,13 @@ for sel in [[toProcess_mc,"--mc_dataset="],[toProcess_data,"--data_dataset="],[t
                 f.write("""
 Universe        = vanilla
 Executable      = run.sh
-Arguments       = {0} {1} {2} {5}
-Log             = logs/{5}/{1}_{3}_{0}.log
-Output          = logs/{5}/{1}_{3}_{0}.out
-Error           = logs/{5}/{1}_{3}_{0}.error
+Arguments       = {0} {1} {2} {5} -s{6}
+Log             = logs/{5}/{6}/{1}_{3}_{0}.log
+Output          = logs/{5}/{6}/{1}_{3}_{0}.out
+Error           = logs/{5}/{6}/{1}_{3}_{0}.error
 Request_Memory  = {4} Mb
 Queue
-""".format("-f"+str(args.f),args.m,sampleStr,x,str(requ_mem),args.y))
+""".format("-f"+str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s))
             subprocess.call(["condor_submit", "submitCondor.txt"])
 
 print "Use rootcp to combine output histograms in multiHists"

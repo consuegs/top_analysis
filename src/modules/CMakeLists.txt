@@ -56,6 +56,7 @@ set(MODULES
   # ~binningUnfolding1D_Fabian
   bTagEff
   plot_bTagEff
+  distributions_KITsync
   )
 
 foreach(MODULE ${MODULES})

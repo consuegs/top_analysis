@@ -43,6 +43,7 @@ static int parseCLIopt(int argc, char* argv[])
       ("mc_dataset", po::value<std::string>(&cfg.datasetMC_single)->default_value(""), "Single MC dataset to be processed, if empty datasets are taken from config.ini")
       ("data_dataset", po::value<std::string>(&cfg.datasetDATA_single)->default_value(""), "Single data dataset to be processed, if empty datasets are taken from config.ini")
       ("signal_dataset", po::value<std::string>(&cfg.datasetSIGNAL_single)->default_value(""), "Single signal dataset to be processed, if empty datasets are taken from config.ini")
+      ("systematic,s", po::value<std::string>(&cfg.systematic)->default_value("Nominal"), "Systematic uncertainty to be applied (only for distributions)")
       ("release",  po::bool_switch(&cfg.releaseMode)->default_value(false), "Release mode (don't draw version labels)")
       ;
    hid_desc.add_options()

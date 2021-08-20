@@ -11,4 +11,4 @@ cd ../build
 
 export ANALYSIS_YEAR_CONFIG="$4"
 
-./run.x "$1" "$2" "$3"
+./run.x "$1" "$2" "$3" "$5"

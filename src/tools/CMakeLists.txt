@@ -10,6 +10,8 @@ set(SRCS
   dataTrigger2016.cpp
   dataTrigger2017.cpp
   dataTrigger2018.cpp
+  jetCorrections.cpp
+  systematics.cpp
   )
 
 add_library(tools SHARED ${SRCS})

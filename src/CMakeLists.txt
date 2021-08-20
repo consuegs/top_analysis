@@ -12,6 +12,7 @@ set(MYLIBS
   style
   RooUnfold
   cppflow
+  ext
   )
 set(EXTLIBS
   ${ROOT_LIBRARIES}
@@ -29,3 +30,4 @@ add_subdirectory(tree)
 add_subdirectory(style)
 add_subdirectory(RooUnfold)
 add_subdirectory(cppflow)
+add_subdirectory(ext)

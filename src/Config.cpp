@@ -36,7 +36,7 @@ Config::Config()
    year=pt.get<std::string>("input.year");
    year_int=pt.get<int>("input.year_int");
    treeName=pt.get<std::string>("input.treeName");
-   dataBasePath=pt.get<std::string>("input.dataBasePath")+treeVersion+"/";
+   dataBasePath=pt.get<std::string>("input.dataBasePath")+treeVersion+"/nTuple/";
    gitHash=io::shellOutput("git log -1 --pretty=format:%h");
    if (TString(io::shellOutput("git status")).Contains("modified")) gitHash+="*";
    lumi=pt.get<float>("general.lumi");
@@ -44,6 +44,17 @@ Config::Config()
    trigger_SF_ee=pt.get<std::string>("sf.trigger_SF_ee");
    trigger_SF_mumu=pt.get<std::string>("sf.trigger_SF_mumu");
    trigger_SF_emu=pt.get<std::string>("sf.trigger_SF_emu");
+   
+   jer_SF_mc=pt.get<std::string>("jetCorrections.jer_SF_mc");
+   jer_RES_mc=pt.get<std::string>("jetCorrections.jer_RES_mc");
+   jer_SF_data=pt.get<std::string>("jetCorrections.jer_SF_data");
+   jer_RES_data=pt.get<std::string>("jetCorrections.jer_RES_data");
+   
+   jes_Folder=pt.get<std::string>("jetCorrections.jes_Folder");
+   jes_UNC_mc=pt.get<std::string>("jetCorrections.jes_UNC_mc");
+   jes_UNC_mc_puppi=pt.get<std::string>("jetCorrections.jes_UNC_mc");
+   jes_UNC_data=util::to_vector<std::string>(pt.get<std::string>("jetCorrections.jes_UNC_data"));
+   jes_UNC_data_puppi=util::to_vector<std::string>(pt.get<std::string>("jetCorrections.jes_UNC_data_puppi"));
    
    muonTrigg1=pt.get<std::string>("trigger.muonTrigg1");
    muonTrigg2=pt.get<std::string>("trigger.muonTrigg2");
@@ -69,8 +80,23 @@ Config::Config()
    sqrtsText=pt.get<std::string>("general.sqrtsText");
    extraText=pt.get<std::string>("general.extraText");
 
-   outputDirectory=pt.get<std::string>("output.directory");
+   outputDirectory=pt.get<std::string>("output.directory")+treeVersion+"/output_framework";
    datasets=DatasetCollection(pt,dataBasePath);
+}
+
+TString Config::getJESPath(const int run_era, const bool isPuppi=false) const{
+   if (run_era==0) {
+      if(!isPuppi) return jes_Folder+jes_UNC_mc;
+      else return jes_Folder+jes_UNC_mc_puppi;
+   }
+   else if (run_era<=jes_UNC_data.size()){
+      if(!isPuppi) return jes_Folder+jes_UNC_data[run_era-1];
+      else return jes_Folder+jes_UNC_data_puppi[run_era-1];
+   }
+   else {
+      std::cerr<<"ERROR in selection for JES file, run_era does not match! "<<std::endl;
+      exit(98);
+   }
 }
 
 // static

@@ -4,6 +4,7 @@
 #include "tools/io.hpp"
 #include "tools/weighters.hpp"
 #include "tools/selection.hpp"
+#include "tools/jetCorrections.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -39,6 +40,10 @@ void run()
    TH2F* triggerSF_mumu_hist = (TH2F*)(triggerSF_mumu.read<TH2F>("eff_histo"));
    io::RootFileReader triggerSF_emu(cfg.trigger_SF_emu,"");
    TH2F* triggerSF_emu_hist = (TH2F*)(triggerSF_emu.read<TH2F>("eff_histo"));
+   
+   //Read systematic from command line
+   Systematic::Systematic currentSystematic(cfg.systematic);
+   bool isNominal = (currentSystematic.type()==Systematic::nominal);
    
    hist::Histograms<TH1F> hs(vsDatasubsets);    //Define histograms in the following
    hist::Histograms<TH1F> hs_cutflow(vsDatasubsets);
@@ -84,6 +89,8 @@ void run()
          hs.addHist(selection+channel+"/nJets"   ,";N_{Jets};EventsBIN"           ,11,-0.5,10.5);
          hs.addHist(selection+channel+"/nBjets"   ,";N_{bJets};EventsBIN"           ,5,-0.5,4.5);
          hs.addHist(selection+channel+"/MT2"   ,";MT2 (GeV);EventsBIN"           ,100,0,200);
+         hs.addHist(selection+channel+"/C_em_W_p"   ,";C_{em,W,+} (GeV);EventsBIN"           ,100,0,200);
+         hs.addHist(selection+channel+"/C_em_W_m"   ,";C_{em,W,-} (GeV);EventsBIN"           ,100,0,200);
          hs.addHist(selection+channel+"/MT"   ,";M_{T}(p_{T}^{miss},l_{1}) (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/mt_MetLep2"   ,";M_{T}(p_{T}^{miss},l_{2}) (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/mt_MetNextLep"   ,";M_{T}(p_{T}^{miss},nearest l) (GeV);EventsBIN"           ,100,0,1000);
@@ -196,26 +203,39 @@ void run()
    for (TString ds_name: cfg.datasets.getDatasetNames()){
       auto ds=cfg.datasets.getDataset(ds_name);
       
-      io::RootFileSaver ttbar_res_saver(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/%s/%s/minTrees/%.1f/%s.root",cfg.year.Data(),cfg.treeVersion.Data(),cfg.processFraction*100,TString(ds_name).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false);
+      bool const isData=ds.isData;
+      //Break if systematic shift is selected for data
+      if(!isNominal && isData){
+         std::cerr<<"Systematic shift should not be applied to data!"<<std::endl;
+         exit(98);
+      }
+      
+      io::RootFileSaver ttbar_res_saver(TString::Format("../minTrees/%.1f/%s%s.root",cfg.processFraction*100,(isNominal)? "":("/"+currentSystematic.name()+"/").Data(),TString(ds_name).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true);
       TTree ttbar_res("ttbar_res","ttbar_res");
       
       int runEra=0;     //int to store run Era in minimal Trees
-      
+            
       for (auto dss: cfg.datasets.getDatasubsets({ds.name})){   
       // ~for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){
          TFile file(dss.getPath(),"read");
          if (file.IsZombie()) {
             return;
          }
-         io::log * ("Processing '"+dss.name+"' ");
 
-         bool const isData=dss.isData;
          bool const isSignal=dss.isSignal;
          int year_int=cfg.year_int;
          
          runEra++;
          if(!isData) runEra=0;
-               
+         
+         // Configure JES/JER Corrections
+         jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(runEra,false).Data(),currentSystematic);
+         jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(runEra,true).Data(),currentSystematic);
+         jerCorrections jerCorrector = jerCorrections(isData? cfg.jer_SF_data.Data() : cfg.jer_SF_mc.Data(),isData? cfg.jer_RES_data.Data() : cfg.jer_RES_mc.Data(),currentSystematic);
+         
+         // Log current sample
+         io::log * ("Processing '"+dss.name+"' ");
+         
          hs.setCurrentSample(dss.name);
          hs_cutflow.setCurrentSample(dss.name);
          hs2d.setCurrentSample(dss.name);
@@ -473,6 +493,7 @@ void run()
             // ~reader_TMVA_Bin6->BookMVA("PyKerasBin6", "dataset/weights/TMVARegression_PyKerasBin6.weights.xml");
          // ~}
          
+         putenv(strdup("TF_CPP_MIN_LOG_LEVEL=3"));   //Avoid tensorflow output
          cppflow::model model_Inclusive(cfg.DNN_Path.Data());
          std::vector<double> input_vec(54);
          std::vector<int64_t> shape (2);
@@ -488,7 +509,8 @@ void run()
          TTreeReaderValue<Char_t> w_mc(reader, "mc_weight");
          TTreeReaderValue<std::vector<float>> w_pdf(reader, "pdf_weights");
          TTreeReaderValue<float> w_topPT(reader, "topPTweight");
-         TTreeReaderValue<float> w_bTag(reader, (year_int==1)? "bTagWeight_DeepCSV" : "bTagWeight");     //Use DeepCSV for 2016 at the moment
+         // ~TTreeReaderValue<float> w_bTag(reader, (year_int==1)? "bTagWeight_DeepCSV" : "bTagWeight");     //Use DeepCSV for 2016 at the moment
+         TTreeReaderValue<float> w_bTag(reader, "bTagWeight");
          TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
          TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
          // ~TTreeReaderValue<std::vector<tree::Electron>> electrons_add(reader, "electrons_add");
@@ -509,6 +531,7 @@ void run()
          TTreeReaderValue<int> n_Interactions(reader, "nPV");
          TTreeReaderValue<int> n_Interactions_gen(reader, "true_nPV");
          TTreeReaderValue<float> HTgen(reader, "genHt");
+         TTreeReaderValue<float> rho(reader, "rho");
          TTreeReaderValue<bool> is_ee   (reader, "ee");
          TTreeReaderValue<bool> is_emu   (reader, "emu");
          TTreeReaderValue<bool> is_mumu   (reader, "mumu");
@@ -574,10 +597,6 @@ void run()
                io::log.flush();
             }
             
-            float met=MET->p.Pt();
-            float const met_puppi=MET_Puppi->p.Pt();
-            float const genMet=GENMET->p.Pt();
-            
             //Booleans for reco and pseudo selection
             // ~bool rec_selection=false;
             bool rec_selection=false;
@@ -617,6 +636,17 @@ void run()
             rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead);
             
             if (triggerMC==false) rec_selection=false;
+            
+            //Apply JES and JER systematics
+            if(!isData){
+               jesCorrector.applySystematics(*jets,MET->p);
+               jerCorrector.smearCollection_Hybrid(*jets,*rho);
+            }
+            
+            //Set some met variables
+            float met=MET->p.Pt();
+            float const met_puppi=MET_Puppi->p.Pt();
+            float const genMet=GENMET->p.Pt();
             
             if(rec_selection) hs_cutflow.fillweight("cutflow/"+cat,1,cutFlow_weight);
             
@@ -1164,6 +1194,7 @@ void run()
             
             if(rec_selection==false) continue;  //fill the following histograms only with events selected by the reco baseline selection
             
+            
             // Bjet and angular variables
             int nBjets=BJets.size();
             float dPhiLep1BJet=p_l1.DeltaPhi(BJets[0].p);
@@ -1249,6 +1280,8 @@ void run()
             hs.fill("baseline/"+path_cat+"/nJets",cjets.size());
             hs.fill("baseline/"+path_cat+"/nBjets",nBjets);
             hs.fill("baseline/"+path_cat+"/MT2",*mt2);
+            hs.fill("baseline/"+path_cat+"/C_em_W_p",*mt2+0.2*(200-met_puppi));
+            hs.fill("baseline/"+path_cat+"/C_em_W_m",*mt2-0.2*(200-met_puppi));
             hs.fill("baseline/"+path_cat+"/MT",mt_MetLep1);
             hs.fill("baseline/"+path_cat+"/mt_MetLep2",mt_MetLep2);
             hs.fill("baseline/"+path_cat+"/mt_MetNextLep",mt_MetNextLep);
@@ -1347,6 +1380,8 @@ void run()
                hs.fill("baseline_Met200/"+path_cat+"/nJets",cjets.size());
                hs.fill("baseline_Met200/"+path_cat+"/nBjets",nBjets);
                hs.fill("baseline_Met200/"+path_cat+"/MT2",*mt2);
+               hs.fill("baseline_Met200/"+path_cat+"/C_em_W_p",*mt2+0.2*(200-met_puppi));
+               hs.fill("baseline_Met200/"+path_cat+"/C_em_W_m",*mt2-0.2*(200-met_puppi));
                hs.fill("baseline_Met200/"+path_cat+"/MT",mt_MetLep1);
                hs.fill("baseline_Met200/"+path_cat+"/mt_MetLep2",mt_MetLep2);
                hs.fill("baseline_Met200/"+path_cat+"/mt_MetNextLep",mt_MetNextLep);
@@ -1388,8 +1423,8 @@ void run()
    hs2d.combineFromSubsamples(samplesToCombine);
    
    // Save histograms
-   TString loc=TString::Format("histograms_%s.root",cfg.treeVersion.Data());
-   if(cfg.multi) loc=TString::Format("multiHists/histograms_%s_%s.root",dssName_multi.Data(),cfg.treeVersion.Data());
+   TString loc=TString::Format("hists/histograms_%s%s.root",cfg.treeVersion.Data(),(isNominal)? "": ("_"+currentSystematic.name()).Data());
+   if(cfg.multi) loc=TString::Format("multiHists/%shistograms_%s_%s.root",(isNominal)? "": (currentSystematic.name()+"/").Data(),dssName_multi.Data(),cfg.treeVersion.Data());
    io::RootFileSaver saver_hist(loc,TString::Format("distributions%.1f",cfg.processFraction*100),false);
    hs.saveHistograms(saver_hist,samplesToCombine);
    hs_cutflow.saveHistograms(saver_hist,samplesToCombine);

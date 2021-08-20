@@ -53,7 +53,7 @@ io::RootFileSaver::RootFileSaver(TString rootFileName,TString internalPath,bool 
    , bLumiText_(lumiText)
 {
    TString option="update";
-   if (standardOutputDirectory) fPath_=CMAKE_SOURCE_DIR+TString::Format("/%s/",cfg.outputDirectory.Data())+fName_;
+   if (standardOutputDirectory) fPath_=TString::Format("%s/",cfg.outputDirectory.Data())+fName_;
    else {
       fPath_=fName_;
       // ~option="recreate";
@@ -125,7 +125,7 @@ io::RootFileReader::RootFileReader(TString rootFileName,TString internalPath,boo
    // ~, fPath_(CMAKE_SOURCE_DIR+TString::Format("/%s/",cfg.outputDirectory.Data())+fName_)
    , intPath_(internalPath)
 {
-   if (standardOutputDirectory) fPath_=CMAKE_SOURCE_DIR+TString::Format("/%s/",cfg.outputDirectory.Data())+fName_;
+   if (standardOutputDirectory) fPath_=TString::Format("%s/",cfg.outputDirectory.Data())+fName_;
    else fPath_=fName_;
    ensurePathForFile(fPath_);
    file_ = new TFile(fPath_,"read");

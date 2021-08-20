@@ -145,36 +145,71 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    }
 }
 
-std::vector<bool> selection::ttbarSelection_looseJetID(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
+// ~std::vector<bool> selection::ttbarSelection_looseJetID(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
+                                    // ~std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
+// ~{
+   // ~std::vector<bool> selection_vec={false,false,false,false};
+   
+   // ~//mLL Cut
+   // ~float mll_corr=(p_l1+p_l2).M();
+   // ~if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) return selection_vec;
+   // ~else selection_vec[0]=true;
+   
+   // ~//Jet Cut
+   // ~cleanJets=phys::getCleanedJets_looseID(jets);
+   // ~if(cleanJets.size()<2) return selection_vec;
+   // ~else selection_vec[1]=true;
+   
+   // ~//MET Cut
+   // ~if ((channel[0] || channel[1]) && met<40) return selection_vec;
+   // ~else selection_vec[2]=true;
+   
+   // ~//bJet Cut
+   // ~bool bTag=false;
+   // ~for (tree::Jet const &jet : cleanJets) {
+      // ~if (jet.bTagDeepCSV>0.2217) {      //Loose working point for deepCSV
+         // ~bTag=true;
+         // ~bJets.push_back(jet);
+      // ~}
+   // ~}
+   // ~if(!bTag) return selection_vec;
+   // ~else{
+      // ~selection_vec[3]=true;
+      // ~return selection_vec;
+   // ~}
+// ~}
+
+std::vector<bool> selection::kitSyncSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
                                     std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
 {
-   std::vector<bool> selection_vec={false,false,false,false};
+   std::vector<bool> selection_vec={false};
+   
+   //Still check jets
+   cleanJets=phys::getCleanedJets(jets);
+   
+   bool bTag=false;
+   if(cfg.year_int==1){
+      for (tree::Jet const &jet : cleanJets) {
+         if (jet.bTagDeepCSV>cfg.DeepCSV_loose) {      //Loose working point for deepCSV
+            bTag=true;
+            bJets.push_back(jet);
+         }
+      }
+   }
+   else{
+      for (tree::Jet const &jet : cleanJets) {
+         if (jet.bTagDeepJet>cfg.DeepJet_loose) {      //Loose working point for deepCSV
+            bTag=true;
+            bJets.push_back(jet);
+         }
+      }
+   }
    
    //mLL Cut
    float mll_corr=(p_l1+p_l2).M();
-   if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) return selection_vec;
-   else selection_vec[0]=true;
-   
-   //Jet Cut
-   cleanJets=phys::getCleanedJets_looseID(jets);
-   if(cleanJets.size()<2) return selection_vec;
-   else selection_vec[1]=true;
-   
-   //MET Cut
-   if ((channel[0] || channel[1]) && met<40) return selection_vec;
-   else selection_vec[2]=true;
-   
-   //bJet Cut
-   bool bTag=false;
-   for (tree::Jet const &jet : cleanJets) {
-      if (jet.bTagDeepCSV>0.2217) {      //Loose working point for deepCSV
-         bTag=true;
-         bJets.push_back(jet);
-      }
-   }
-   if(!bTag) return selection_vec;
-   else{
-      selection_vec[3]=true;
+   if(mll_corr>106 || mll_corr<76) return selection_vec;
+   else {
+      selection_vec[0]=true;
       return selection_vec;
    }
 }

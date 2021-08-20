@@ -21,6 +21,18 @@ public:
    TString trigger_SF_mumu;
    TString trigger_SF_emu;
    
+   TString jer_SF_mc;
+   TString jer_RES_mc;
+   TString jer_SF_data;
+   TString jer_RES_data;
+   
+   TString jes_Folder;
+   TString jes_UNC_mc;
+   TString jes_UNC_mc_puppi;
+   std::vector<std::string> jes_UNC_data;
+   std::vector<std::string> jes_UNC_data_puppi;
+   TString getJESPath(const int,const bool) const;
+   
    TString muonTrigg1;
    TString muonTrigg2;
    TString muonTrigg3;
@@ -56,6 +68,7 @@ public:
    std::string datasetDATA_single;
    std::string datasetSIGNAL_single;
    bool multi=false;
+   std::string systematic;
 
    std::vector<std::string> modules;
 
