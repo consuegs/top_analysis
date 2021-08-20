@@ -71,6 +71,9 @@ void run()
       case(2): //2017
       samplesToPlot={"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttW","ttZ","DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       break;
+      case(1): //2016
+      samplesToPlot={"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
+      break;
    }    
    
    std::map<TString,std::vector<TString>> msPresel_vVars={
@@ -159,7 +162,10 @@ void run()
          ,"vecsum_pT_l1l2_allJet"
          ,"mass_l1l2_allJet"
          ,"ratio_vecsumpTlep_vecsumpTjet"
-         ,"mjj"}));
+         ,"mjj"
+         // ~,"C_em_W_p"
+         // ~,"C_em_W_m"
+         }));
       }
    }
    
@@ -176,7 +182,7 @@ void run()
             loc=sPresel+sVar;
             TH1F* tempHist=histReader.read<TH1F>(loc+"/"+sSample);
             if (tempHist->GetNbinsX()>25) tempHist->Rebin(2);
-            if (sVar=="dphi_metNearLep") tempHist->Rebin(4);
+            if (sVar=="dphi_metNearLep" or sVar=="dphi_metNearLep_puppi") tempHist->Rebin(4);
             hs.addFilledHist(loc,sSample,*(tempHist));
          }
          if(sPresel.Contains("cutflow")){
@@ -215,17 +221,28 @@ void run()
    hs.combineSamples("ttW/Z",{"ttW","ttZ"});
    hs.combineSamples("tt other",{"TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"});
    // ~hs.combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
+   std::vector<TString> MCsamples={};
    switch(cfg.year_int){
       case(3): //2018
+      MCsamples = {"ttW/Z","WJetsToLNu","Diboson","DrellYan","SingleTop","tt other","TTbar_diLepton"};
       hs.combineSamples("data",{"DoubleMuon","EGamma","MuonEG","SingleMuon"});
+      hs.combineSamples("MC",MCsamples);
+      hs.combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttZ","ttW"});
       break;
       case(2): //2017
+      MCsamples = {"ttW/Z","WJetsToLNu","Diboson","DrellYan","SingleTop","tt other","TTbar_diLepton"};
       hs.combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
+      hs.combineSamples("MC",MCsamples);
+      hs.combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttZ","ttW"});
+      break;
+      case(1): //2016
+      MCsamples = {"ttW/Z","WJetsToLNu","Diboson","DrellYan_NLO","SingleTop","tt other","TTbar_diLepton"};
+      hs.combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
+      hs.combineSamples("MC",MCsamples);
+      hs.combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_NLO","ttZ","ttW"});
       break;
    }
-   hs.combineSamples("MC",{"TTbar_diLepton","tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttZ","ttW"});
    // ~hs.combineSamples("MC_withCUETP8M2",{"TTbar_diLepton_CUETP8M2","TTbar_hadronic","TTbar_singleLepton","Diboson","SingleTop","WJetsToLNu","DrellYan","ttZ","ttW"});
-   hs.combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttZ","ttW"});
    std::map<const TString,Color_t> colormap = {{"Diboson",kCyan-8},{"ttW/Z",kGreen-7},{"tt other",kRed-9}};
    
    
@@ -240,7 +257,8 @@ void run()
          sp_can.pU_.cd();
          TString loc;
          loc=sPresel+sVar;
-         THStack st_mc=hs.getStack(loc,{"ttW/Z","WJetsToLNu","Diboson","DrellYan","SingleTop","tt other","TTbar_diLepton"},colormap);
+         // ~THStack st_mc=hs.getStack(loc,{"ttW/Z","WJetsToLNu","Diboson","DrellYan","SingleTop","tt other","TTbar_diLepton"},colormap);
+         THStack st_mc=hs.getStack(loc,MCsamples,colormap);
          gfx::LegendEntries le=hs.getLegendEntries();
          TString cat;
          if (loc.Contains("ee")) cat="ee";
@@ -265,16 +283,17 @@ void run()
             hist_data->Draw("same");
             le.append(*hist_data,"data","lep");
          }
-         
-         /*
-         auto hists=hs.getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
-         for (auto const &h: hists) {
-            h->Draw("same hist");
-            // ~h->SetLineWidth(4);
+         auto hists_BSM=hs.getHistograms(loc,{"TTbar_diLepton"});     //placeholder
+         auto BSM_legend=hs.getLegendEntries();    //placeholder
+         if (cfg.year_int==1){    //Plot BSM in 2016
+            hists_BSM=hs.getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
+            for (auto const &h: hists_BSM) {
+               h->Draw("same hist");
+               // ~h->SetLineWidth(4);
+            }
+            le+=hs.getLegendEntries();
+            BSM_legend=hs.getLegendEntries();
          }
-         le+=hs.getLegendEntries();
-         auto BSM_legend=hs.getLegendEntries();
-         */
          auto hists_SM=hs.getHistograms(loc,{"TTbar_diLepton"});
          TH1F axis=*(hists_SM[0]);
          axis.SetStats(0);
@@ -341,18 +360,18 @@ void run()
          SMbkg_hist->SetMarkerSize(0);
          ttbar_hist->Draw("hist e same");
          SMbkg_hist->Draw("hist e same");
-         /*
-         for (auto const &h: hists) {
-            h->Scale(1.0/(h->Integral()));
-            h->SetMarkerSize(0);
-            h->Draw("same hist e");
+         if (cfg.year_int==1){    //Plot BSM in 2016
+            for (auto const &h: hists_BSM) {
+               h->Scale(1.0/(h->Integral()));
+               h->SetMarkerSize(0);
+               h->Draw("same hist e");
+            }
          }
-         */
          axis.Draw("axis same");
          le.clear();
          le.prepend(*ttbar_hist,"tt ll","l");
          le.append(*SMbkg_hist,"SM bkg.","l");
-         // ~le+=BSM_legend;
+         if (cfg.year_int==1) le+=BSM_legend;
          TLegend leg2=le.buildLegend(.42,.7,1-(gPad->GetRightMargin()+0.02),-1,2);
          leg2.Draw();
          label.Draw();
@@ -361,10 +380,15 @@ void run()
       }
    }
    
+   std::vector<TString> outputSamples(MCsamples);
+   std::reverse(outputSamples.begin(),outputSamples.end());
+   outputSamples.push_back("MC");
+   outputSamples.push_back("data");
    for (TString cat:{"ee","emu","mumu"}){    //Get the number of events per category
       TH1F* mc_total=hs.getHistogram("baseline/"+cat+"/MET","MC");
       std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
-      for (TString sample:{"TTbar_diLepton","tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttW/Z","MC","data"}){
+      // ~for (TString sample:{"TTbar_diLepton","tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttW/Z","MC","data"}){
+      for (TString sample:outputSamples){
          TH1F* temp_hist=hs.getHistogram("baseline/"+cat+"/MET",sample);
          std::cout<<std::fixed<<sample<<"&"<<temp_hist->Integral()<<"&"<<std::setprecision(1)<<temp_hist->Integral()/mc_total->Integral()*100<<"\\\\"<<std::endl;
          // ~std::cout<<sample<<"   "<<temp_hist->Integral()<<"   "<<temp_hist->Integral()/mc_total->Integral()*100<<std::endl;
@@ -374,7 +398,7 @@ void run()
    //Plot 2D SignalRegion Plot (reco level)
    for (TString channel:{"ee","mumu","emu","all"}){
       TString loc="baseline/"+channel+"/2d_MetVSdPhiMetNearLep_Puppi/";
-      THStack st_mc=hs.getStack(loc,{"ttW/Z","WJetsToLNu","Diboson","DrellYan","SingleTop","tt other","TTbar_diLepton"},colormap);
+      THStack st_mc=hs.getStack(loc,MCsamples,colormap);
       st_mc.SetMaximum(st_mc.GetMaximum()*3);
       st_mc.SetTitle(";p_{#scale[.8]{T}}^{#scale[.8]{miss}}(GeV);Events/Bin");
       st_mc.Draw();
