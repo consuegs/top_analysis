@@ -23,7 +23,7 @@ namespace io
    class RootFileSaver
    {
    public:
-      RootFileSaver(TString rootFileName,TString internalPath,bool lumiText=true,bool standardOutputDirectory=true);
+      RootFileSaver(TString rootFileName,TString internalPath,bool lumiText=true,bool standardOutputDirectory=true,bool recreate=false);
       ~RootFileSaver();
       void save(TObject const &obj, TString name, bool decorate=true,bool simulation=true,bool addPDF=false) const;
       void save(gfx::SplitCan &obj, TString name,bool simulation=true,bool addPDF=false) const;
