@@ -89,8 +89,8 @@ void run()
          hs.addHist(selection+channel+"/nJets"   ,";N_{Jets};EventsBIN"           ,11,-0.5,10.5);
          hs.addHist(selection+channel+"/nBjets"   ,";N_{bJets};EventsBIN"           ,5,-0.5,4.5);
          hs.addHist(selection+channel+"/MT2"   ,";MT2 (GeV);EventsBIN"           ,100,0,200);
-         hs.addHist(selection+channel+"/C_em_W_p"   ,";C_{em,W,+} (GeV);EventsBIN"           ,100,0,200);
-         hs.addHist(selection+channel+"/C_em_W_m"   ,";C_{em,W,-} (GeV);EventsBIN"           ,100,0,200);
+         hs.addHist(selection+channel+"/C_em_W_p"   ,";C_{em,W,+} (GeV);EventsBIN"           ,100,0,300);
+         hs.addHist(selection+channel+"/C_em_W_m"   ,";C_{em,W,-} (GeV);EventsBIN"           ,100,0,300);
          hs.addHist(selection+channel+"/MT"   ,";M_{T}(p_{T}^{miss},l_{1}) (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/mt_MetLep2"   ,";M_{T}(p_{T}^{miss},l_{2}) (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/mt_MetNextLep"   ,";M_{T}(p_{T}^{miss},nearest l) (GeV);EventsBIN"           ,100,0,1000);
@@ -195,6 +195,14 @@ void run()
    hs2d.addHist("genParticles/ee/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("genParticles/emu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("genParticles/mumu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
+   
+   hs2d.addHist("baseline/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
+   hs2d.addHist("baseline/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
+   hs2d.addHist("baseline/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
+   
+   hs2d.addHist("baseline_Met200/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
+   hs2d.addHist("baseline_Met200/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
+   hs2d.addHist("baseline_Met200/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
 
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
@@ -210,10 +218,10 @@ void run()
          exit(98);
       }
       
-      io::RootFileSaver ttbar_res_saver(TString::Format("../minTrees/%.1f/%s%s.root",cfg.processFraction*100,(isNominal)? "":("/"+currentSystematic.name()+"/").Data(),TString(ds_name).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true);
+      io::RootFileSaver ttbar_res_saver(TString::Format("../minTrees/%.1f/%s%s.root",cfg.processFraction*100,(isNominal)? "":("/"+currentSystematic.name()+"/").Data(),TString(ds_name+((cfg.fileNR==0)?"":"_"+std::to_string(cfg.fileNR))).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,true,true);
       TTree ttbar_res("ttbar_res","ttbar_res");
       
-      int runEra=0;     //int to store run Era in minimal Trees
+      int runEra=cfg.fileNR;     //int to store run Era in minimal Trees
             
       for (auto dss: cfg.datasets.getDatasubsets({ds.name})){   
       // ~for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){
@@ -225,9 +233,9 @@ void run()
          bool const isSignal=dss.isSignal;
          int year_int=cfg.year_int;
          
-         runEra++;
+         if(cfg.fileNR==0)runEra++;
          if(!isData) runEra=0;
-         
+                  
          // Configure JES/JER Corrections
          jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(runEra,false).Data(),currentSystematic);
          jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(runEra,true).Data(),currentSystematic);
@@ -1343,6 +1351,7 @@ void run()
             hs2d.fill("baseline/"+path_cat+"/2d_MetVSdPhiMetNearLep_Puppi",met_puppi,abs(dPhiMETnearLepPuppi));
             hs2d.fill("baseline/"+path_cat+"/2d_MetVSdPhiMetNearLep_DNN",DNN_MET_pT,abs(DNN_MET_dPhi_nextLep));
             hs2d.fill("genParticles/"+path_cat+"/2d_PtNuNuVSdPhiNuNuNearLep",neutrinoPair.Pt(),abs(dPhiPtNunearLep));
+            hs2d.fill("baseline/"+path_cat+"/2d_CemVSdPhiMetNearLep",*mt2-0.2*(200-met_puppi),abs(dPhiMETnearLepPuppi));
             
             if (met>200){
                hs.fill("baseline_Met200/"+path_cat+"/MET",met);
@@ -1390,6 +1399,7 @@ void run()
                hs.fill("baseline_Met200/"+path_cat+"/HT",HT);
                hs.fill("baseline_Met200/"+path_cat+"/sum_STHT",ST+HT);
                hs.fill("baseline_Met200/"+path_cat+"/sum_mlb",sum_mlb);
+               hs2d.fill("baseline_Met200/"+path_cat+"/2d_CemVSdPhiMetNearLep",*mt2-0.2*(200-met_puppi),abs(dPhiMETnearLepPuppi));
             }
                   
          }// evt loop
@@ -1424,7 +1434,7 @@ void run()
    
    // Save histograms
    TString loc=TString::Format("hists/histograms_%s%s.root",cfg.treeVersion.Data(),(isNominal)? "": ("_"+currentSystematic.name()).Data());
-   if(cfg.multi) loc=TString::Format("multiHists/%shistograms_%s_%s.root",(isNominal)? "": (currentSystematic.name()+"/").Data(),dssName_multi.Data(),cfg.treeVersion.Data());
+   if(cfg.multi) loc=TString::Format("multiHists/%shistograms_%s%s_%s.root",(isNominal)? "": (currentSystematic.name()+"/").Data(),dssName_multi.Data(),(cfg.fileNR==0)?TString("").Data():TString("_"+std::to_string(cfg.fileNR)).Data(),cfg.treeVersion.Data());
    io::RootFileSaver saver_hist(loc,TString::Format("distributions%.1f",cfg.processFraction*100),false);
    hs.saveHistograms(saver_hist,samplesToCombine);
    hs_cutflow.saveHistograms(saver_hist,samplesToCombine);

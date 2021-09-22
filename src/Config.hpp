@@ -67,6 +67,7 @@ public:
    std::string datasetMC_single;
    std::string datasetDATA_single;
    std::string datasetSIGNAL_single;
+   int fileNR;
    bool multi=false;
    std::string systematic;
 

@@ -1,9 +1,9 @@
 
 Universe        = vanilla
 Executable      = run.sh
-Arguments       = -f1.0 distributions --mc_dataset=ttW 2018 -sJESTotal_UP
-Log             = logs/2018/JESTotal_UP/distributions_ttW_-f1.0.log
-Output          = logs/2018/JESTotal_UP/distributions_ttW_-f1.0.out
-Error           = logs/2018/JESTotal_UP/distributions_ttW_-f1.0.error
-Request_Memory  = 6000 Mb
+Arguments       = -f1.0 distributions --data_dataset=EGamma 2018 -sNominal --fileNR=4
+Log             = logs/2018/Nominal/distributions_EGamma_4_-f1.0.log
+Output          = logs/2018/Nominal/distributions_EGamma_4_-f1.0.out
+Error           = logs/2018/Nominal/distributions_EGamma_4_-f1.0.error
+Request_Memory  = 1500 Mb
 Queue

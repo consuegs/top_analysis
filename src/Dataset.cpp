@@ -80,7 +80,7 @@ TString Datasubset::getPath() const{
 }
 
 
-DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TString dataBasePath,bool single,std::string const &datasetMC_single,std::string const &datasetDATA_single,std::string const &datasetSIGNAL_single)
+DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TString dataBasePath,bool single,std::string const &datasetMC_single,std::string const &datasetDATA_single,std::string const &datasetSIGNAL_single,int const fileNR)
 {
    // MC
    std::vector<std::string> filenames;
@@ -90,7 +90,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    std::string label;
    float syst_unc;
    std::vector<std::string> mcDataset = util::to_vector<std::string>(pt.get<std::string>("input.mc_datasets"));
-   if(single) mcDataset = util::to_vector<std::string>(datasetMC_single);
+   if(single) mcDataset = util::to_vector<std::string>(datasetMC_single);  // Use only one dataset if single option is choosen
    for (std::string sDs: mcDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
@@ -108,6 +108,18 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
          assert(feffs.size()==xsecs.size());
          for (unsigned i=0; i<feffs.size();i++) xsecs[i]*=feffs[i];
       }
+      
+      if (fileNR!=0 && single){ // use only selected file if single file option is choosen
+         if(fileNR<=filenames.size()){
+            filenames = {filenames[fileNR-1]};
+            xsecs = {xsecs[fileNR-1]};
+         }
+         else{
+            std::cerr<<"ERROR, fileNR too large for selected dataset"<<"\n...break\n"<<std::endl;
+            exit(98);
+         }
+      }
+      
       label=pt.get<std::string>(sDs+".label", sDs); // use Dataset name if no explicit label given
       syst_unc=pt.get<float>(sDs+".syst_unc", 1e6); // default is something huge, so set it if you want to use it!
       mc_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath));
@@ -134,7 +146,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    }
    // Signals
    std::vector<std::string> signalDataset = util::to_vector<std::string>(pt.get<std::string>("input.signals"));
-   if(single) signalDataset = util::to_vector<std::string>(datasetSIGNAL_single);
+   if(single) signalDataset = util::to_vector<std::string>(datasetSIGNAL_single);  // Use only one dataset if single option is choosen
    for (std::string sDs: signalDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
@@ -151,17 +163,41 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
          assert(feffs.size()==xsecs.size());
          for (unsigned i=0; i<feffs.size();i++) xsecs[i]*=feffs[i];
       }
+      
+      if (fileNR!=0 && single){ // use only selected file if single file option is choosen
+         if(fileNR<=filenames.size()){
+            filenames = {filenames[fileNR-1]};
+            xsecs = {xsecs[fileNR-1]};
+         }
+         else{
+            std::cerr<<"ERROR, fileNR too large for selected dataset"<<"\n...break\n"<<std::endl;
+            exit(98);
+         }      
+      }
+      
       label=pt.get<std::string>(sDs+".label", sDs); // use Dataset name if no explicit label given
       syst_unc=pt.get<float>(sDs+".syst_unc", 1e6); // default is something huge, so set it if you want to use it!
       signal_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,true));
    }
    // Data
    std::vector<std::string> dataDataset = util::to_vector<std::string>(pt.get<std::string>("input.data_streams"));
-   if(single) dataDataset = util::to_vector<std::string>(datasetDATA_single);
+   if(single) dataDataset = util::to_vector<std::string>(datasetDATA_single);  // Use only one dataset if single option is choosen
    for (std::string sDs: dataDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs=std::vector<float>(filenames.size(),-1);
       assert(filenames.size()==xsecs.size());
+      
+      if (fileNR!=0 && single){ // use only selected file if single file option is choosen
+         if(fileNR<=filenames.size()){
+            filenames = {filenames[fileNR-1]};
+            xsecs = {xsecs[fileNR-1]};
+         }
+         else{
+            std::cerr<<"ERROR, fileNR too large for selected dataset"<<"\n...break\n"<<std::endl;
+            exit(98);
+         }      
+      }
+      
       label=pt.get<std::string>(sDs+".label", sDs); // use Dataset name if no explicit label given
       data_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,0,dataBasePath,true));
    }

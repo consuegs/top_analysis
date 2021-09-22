@@ -19,7 +19,7 @@ def getSummary():
     return out.split("\n")[-3]
 
 def getNameFromFile(fname):
-    return fname.split("=")[-1]
+    return fname.split("dataset=")[-1]
 
 def getProgressFromLog(logName):
     if len(open(logName).readlines(  )) !=0:
@@ -54,6 +54,7 @@ for job in jobs:
     elif jStatus == "7":
         susTime = (time.time()-int(job["LastSuspensionTime"]))/60.
         print colored("\033[1m"+name+job["RemoteHost"]+"       suspended since {:.2f} min".format(susTime)+"         "+job["RemoteHost"]+"\033[0m","red")
+        getProgressFromLog(job["Out"])
         if susTime > 10 :
             value = input("Job suspended for more than 10 Minutes, please enter 1 to kill job and start again or 0 to continue:\n")
             if value==1:

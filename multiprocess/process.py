@@ -4,6 +4,8 @@ import os
 import multiprocessing
 import glob
 import subprocess
+import sys
+import configparser
 
 class Range(object):
     def __init__(self, start, end):
@@ -12,17 +14,22 @@ class Range(object):
     def __eq__(self, other):
         return self.start <= other <= self.end
 
-toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","WW","WZ","ZZ","ttZ","ttW"]
+def get_fileNR(dataset,year):    #checks config for number of files for given dataset
+   config = configparser.ConfigParser()
+   config.read("../config"+year+".ini")
+   return len(config[dataset]["files"].split(","))
+
+#  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","WW","WZ","ZZ","ttZ","ttW"]
 #  ~toProcess_mc=["TTbar_diLepton"]
 #  ~toProcess_mc=["TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
 #  ~toProcess_mc=["WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
 #  ~toProcess_mc=["SingleTop","DrellYan_NLO","DrellYan"]
-#  ~toProcess_mc=["DrellYan"]
-#  ~toProcess_mc=[]
+#  ~toProcess_mc=["TTbar_diLepton"]
+toProcess_mc=[]
 #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
-#  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
+toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
 #  ~toProcess_data=["EGamma"]
-toProcess_data=[]
+#  ~toProcess_data=[]
 #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
 #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10"]
 #  ~toProcess_signal=["T1tttt_1200_800"]
@@ -36,7 +43,7 @@ toProcess_signal=[]
 parser = argparse.ArgumentParser()
 parser.add_argument('-m', type=str, default="distributions", help="module")
 parser.add_argument('-f', type=float, choices=[Range(0.0, 1.0)], default=1.0, help="process fraction")
-parser.add_argument('-y', type=str, default="2016", help="year to be set as ANALYSIS_YEAR_CONFIG")
+parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",required=True)
 parser.add_argument('-s', type=str, default="Nominal", help="systematic shift")
 
 args = parser.parse_args()
@@ -70,17 +77,21 @@ for sel in [[toProcess_mc,"--mc_dataset="],[toProcess_data,"--data_dataset="],[t
     for x in sel[0]:
             sampleStr=sel[1]+x
             if x=="TTbar_diLepton" or x=="DrellYan": requ_mem=6000
-            with open("submitCondor.txt","w") as f:
-                f.write("""
+            totalFiles=get_fileNR(x,args.y)
+            for fileNR in range(0,totalFiles):
+               with open("submitCondor.txt","w") as f:
+                  f.write("""
 Universe        = vanilla
 Executable      = run.sh
-Arguments       = {0} {1} {2} {5} -s{6}
-Log             = logs/{5}/{6}/{1}_{3}_{0}.log
-Output          = logs/{5}/{6}/{1}_{3}_{0}.out
-Error           = logs/{5}/{6}/{1}_{3}_{0}.error
+Arguments       = {0} {1} {2} {5} -s{6} --fileNR={7}
+Log             = logs/{5}/{6}/{1}_{3}_{7}_{0}.log
+Output          = logs/{5}/{6}/{1}_{3}_{7}_{0}.out
+Error           = logs/{5}/{6}/{1}_{3}_{7}_{0}.error
 Request_Memory  = {4} Mb
 Queue
-""".format("-f"+str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s))
-            subprocess.call(["condor_submit", "submitCondor.txt"])
+""".format("-f"+str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1)))
+               subprocess.call(["condor_submit", "submitCondor.txt"])
 
-print "Use rootcp to combine output histograms in multiHists"
+
+print "Use hadd to combine output histograms from different files for one dataset in multiHists"
+print "Use rootcp to combine output histograms for all datasets in multiHists"

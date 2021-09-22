@@ -43,6 +43,7 @@ static int parseCLIopt(int argc, char* argv[])
       ("mc_dataset", po::value<std::string>(&cfg.datasetMC_single)->default_value(""), "Single MC dataset to be processed, if empty datasets are taken from config.ini")
       ("data_dataset", po::value<std::string>(&cfg.datasetDATA_single)->default_value(""), "Single data dataset to be processed, if empty datasets are taken from config.ini")
       ("signal_dataset", po::value<std::string>(&cfg.datasetSIGNAL_single)->default_value(""), "Single signal dataset to be processed, if empty datasets are taken from config.ini")
+      ("fileNR", po::value<int>(&cfg.fileNR)->default_value(0), "FileNR to be processed, if zero all files are processed (filelist defined in .ini)")
       ("systematic,s", po::value<std::string>(&cfg.systematic)->default_value("Nominal"), "Systematic uncertainty to be applied (only for distributions)")
       ("release",  po::bool_switch(&cfg.releaseMode)->default_value(false), "Release mode (don't draw version labels)")
       ;
@@ -78,8 +79,12 @@ static int parseCLIopt(int argc, char* argv[])
    }
    
    if(!cfg.datasetMC_single.empty() || !cfg.datasetDATA_single.empty() || !cfg.datasetSIGNAL_single.empty()){
-      cfg.datasets=DatasetCollection(cfg.pt,cfg.dataBasePath,true,cfg.datasetMC_single,cfg.datasetDATA_single,cfg.datasetSIGNAL_single);
+      cfg.datasets=DatasetCollection(cfg.pt,cfg.dataBasePath,true,cfg.datasetMC_single,cfg.datasetDATA_single,cfg.datasetSIGNAL_single,cfg.fileNR);
       cfg.multi=true;
+   }
+   else if(cfg.fileNR!=0){
+      std::cerr<<"ERROR, fileNR can only be used when running on a single dataset"<<"\n...break\n"<<std::endl;
+      exit(98);
    }
    
 
