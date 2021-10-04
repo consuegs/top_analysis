@@ -163,3 +163,14 @@ float phys::dPhi(float &a, float &b){
    return x;
 }
 
+TH1F phys::getSystShift(TH1F const &nominal,TH1F const &syst){
+   
+   TH1F shift = *(TH1F*)syst.Clone();   
+   shift.Add(&nominal,-1.);
+   
+   return shift;
+}
+
+   
+   
+

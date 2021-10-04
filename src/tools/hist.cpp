@@ -307,6 +307,18 @@ THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TStr
 }
 
 template <class HIST>
+HIST* hist::Histograms<HIST>::getSummedHist(TString const &varName,bool divideByBinWidth)
+{
+   HIST *h=(HIST*)mmH_[varName][vsSamples_[0]].Clone();
+   h->Reset();
+   for (TString const &s: vsSamples_){
+      h->Add(&mmH_[varName][s]);
+      if (divideByBinWidth) hist::divideByBinWidth(*h);
+   }
+   return h;
+}
+
+template <class HIST>
 float hist::Histograms<HIST>::getCount(TString const &varName, TString const &sample)
 {
    return mCount_[varName][sample];
@@ -561,6 +573,22 @@ void hist::setMinimum(TH1& h,std::vector<TH1F> hists,float multiplier, bool allo
       }
    }
    h.SetMinimum(min*multiplier);
+}
+
+void hist::sqrtHist(TH1& h)
+{
+   for (int bin=0; bin<=h.GetNcells(); ++bin) {
+      float content = h.GetBinContent(bin);
+      if (content >= 0){
+         h.SetBinContent(bin, sqrt(content));
+         if (content != 0){
+            h.SetBinError(bin, 1./sqrt(content)*h.GetBinError(bin));
+         }
+      }
+      else {
+         std::cout<<"Error in sqrtHist: Bin "<<bin<<" has a negative content"<<std::endl;
+      }
+   }
 }
 
 TH1F hist::getRatio(TH1F const &h1,TH1F const &h2,TString title,ErrorType et)

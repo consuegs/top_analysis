@@ -25,6 +25,17 @@ namespace util
       }
       return result;
    }
+   
+   /* add two vectors of T to a vector of T */
+   template<typename T>
+   std::vector<T> addVectors(const std::vector<T> vec1, const std::vector<T> vec2)
+   {
+      std::vector<T> result;
+      result.reserve( vec1.size() + vec2.size() ); // preallocate memory
+      result.insert( result.end(), vec1.begin(), vec1.end() );
+      result.insert( result.end(), vec2.begin(), vec2.end() );
+      return result;
+   }
 
    std::string rm_duplicate_spaces(std::string s);
 

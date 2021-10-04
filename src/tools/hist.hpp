@@ -62,6 +62,7 @@ namespace hist
       std::vector<HIST*> getHistograms(TString const &varName,std::vector<TString> const &samples,bool divideByBinWidth=false);
       HIST* getHistogram(TString const &varName,TString const &sample,bool divideByBinWidth=false);
       THStack getStack(TString const &varName,std::vector<TString> const& samples,std::map<const TString,Color_t> const& colormap={},bool divideByBinWidth=false, bool includeData=false);
+      HIST* getSummedHist(TString const &varName,bool divideByBinWidth=false);
       float getCount(TString const &varName, TString const &sample);
       float getCountError(TString const &varName, TString const &sample);
       void saveHistograms(io::RootFileSaver const &saver_hist, std::vector<TString> const &Samples);
@@ -122,6 +123,7 @@ namespace hist
    void divideByBinWidth(TH1& h,bool divideLastBin=true);
    void mergeOverflow(TH1& h, bool includeUnderflow=true);
    void mergeOverflow(TH2& h, bool includeUnderflow=true);
+   void sqrtHist(TH1& h);
 
    void setMaximum(TH1& h,std::vector<TH1F> hists,float multiplier=1.1);
    void setMinimum(TH1& h,std::vector<TH1F> hists,float multiplier=0.9,bool allowNegative=true);

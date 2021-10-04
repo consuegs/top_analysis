@@ -2,6 +2,7 @@
 #define PHYSICS_HPP__
 
 #include "tree/TreeParticles.hpp"
+#include <TH1F.h>
 
 namespace phys
 {
@@ -30,6 +31,10 @@ namespace phys
   
    // sum dPhi
    float dPhi(float &a, float &b);
+   
+   // systematics
+   TH1F getSystShift(TH1F const &nominal, TH1F const &syst);
+   
 } // namespace phys
 
 #endif /* PHYSICS_HPP__ */
