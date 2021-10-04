@@ -196,13 +196,13 @@ void run()
    hs2d.addHist("genParticles/emu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("genParticles/mumu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    
-   hs2d.addHist("baseline/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
-   hs2d.addHist("baseline/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
-   hs2d.addHist("baseline/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
+   hs2d.addHist("baseline/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
+   hs2d.addHist("baseline/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
+   hs2d.addHist("baseline/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
    
-   hs2d.addHist("baseline_Met200/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
-   hs2d.addHist("baseline_Met200/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
-   hs2d.addHist("baseline_Met200/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,10,0,300,10,0,3.2);
+   hs2d.addHist("baseline_Met200/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
+   hs2d.addHist("baseline_Met200/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
+   hs2d.addHist("baseline_Met200/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
 
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
@@ -218,7 +218,7 @@ void run()
          exit(98);
       }
       
-      io::RootFileSaver ttbar_res_saver(TString::Format("../minTrees/%.1f/%s%s.root",cfg.processFraction*100,(isNominal)? "":("/"+currentSystematic.name()+"/").Data(),TString(ds_name+((cfg.fileNR==0)?"":"_"+std::to_string(cfg.fileNR))).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,true,true);
+      io::RootFileSaver ttbar_res_saver(TString::Format("../minTrees/%.1f/%s%s.root",cfg.processFraction*100,("/"+currentSystematic.name()+"/").Data(),TString(ds_name+((cfg.fileNR==0)?"":"_"+std::to_string(cfg.fileNR))).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,true,true);
       TTree ttbar_res("ttbar_res","ttbar_res");
       
       int runEra=cfg.fileNR;     //int to store run Era in minimal Trees
@@ -1433,8 +1433,8 @@ void run()
    hs2d.combineFromSubsamples(samplesToCombine);
    
    // Save histograms
-   TString loc=TString::Format("hists/histograms_%s%s.root",cfg.treeVersion.Data(),(isNominal)? "": ("_"+currentSystematic.name()).Data());
-   if(cfg.multi) loc=TString::Format("multiHists/%shistograms_%s%s_%s.root",(isNominal)? "": (currentSystematic.name()+"/").Data(),dssName_multi.Data(),(cfg.fileNR==0)?TString("").Data():TString("_"+std::to_string(cfg.fileNR)).Data(),cfg.treeVersion.Data());
+   TString loc=TString::Format("hists/histograms_%s%s.root",cfg.treeVersion.Data(),("_"+currentSystematic.name()).Data());
+   if(cfg.multi) loc=TString::Format("multiHists/%shistograms_%s%s_%s.root",(currentSystematic.name()+"/").Data(),dssName_multi.Data(),(cfg.fileNR==0)?TString("").Data():TString("_"+std::to_string(cfg.fileNR)).Data(),cfg.treeVersion.Data());
    io::RootFileSaver saver_hist(loc,TString::Format("distributions%.1f",cfg.processFraction*100),false);
    hs.saveHistograms(saver_hist,samplesToCombine);
    hs_cutflow.saveHistograms(saver_hist,samplesToCombine);

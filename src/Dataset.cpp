@@ -94,6 +94,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    for (std::string sDs: mcDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
+      if(xsecs.size()==1) xsecs.resize(filenames.size(),xsecs[0]);   // Use same xsec for all files if only one is given
       assert(filenames.size()==xsecs.size());
       kfacts = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
       boost::optional<std::string> s_kfacts = pt.get_optional<std::string>(sDs+".kfact");
@@ -127,6 +128,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    for (std::string sDs: util::to_vector<std::string>(pt.get<std::string>("input.mc_alternative_datasets"))){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
+      if(xsecs.size()==1) xsecs.resize(filenames.size(),xsecs[0]);   // Use same xsec for all files if only one is given
       assert(filenames.size()==xsecs.size());
       boost::optional<std::string> s_kfacts = pt.get_optional<std::string>(sDs+".kfact");
       if (s_kfacts) { // apply k factors
@@ -150,6 +152,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    for (std::string sDs: signalDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
+      if(xsecs.size()==1) xsecs.resize(filenames.size(),xsecs[0]);   // Use same xsec for all files if only one is given
       assert(filenames.size()==xsecs.size());
       boost::optional<std::string> s_kfacts = pt.get_optional<std::string>(sDs+".kfact");
       if (s_kfacts) { // apply k factors
