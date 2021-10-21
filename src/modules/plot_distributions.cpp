@@ -23,15 +23,34 @@ Config const &cfg=Config::get();
 class systHists
 {
    public:
-      systHists(TString const systematicName, TString const filePath, TString const histPath, std::vector<TString> const datasets):
+      systHists(TString const systematicName, TString filePath, TString const histPath, std::vector<TString> const datasets):
       systematic_(Systematic::Systematic(systematicName)),
-      hists_(hist::Histograms<TH1F>(datasets)){
-         histReader_ = new io::RootFileReader(filePath,histPath);
+      hists_(hist::Histograms<TH1F>(datasets)),
+      datasets_(datasets){
+         const std::vector<Systematic::Type> typeVec = Systematic::fileIndependentTypes;
+         if (std::find(typeVec.begin(), typeVec.end(), systematic_.type()) == typeVec.end()){
+            histReader_ = new io::RootFileReader(filePath,histPath);
+         }
+         else {
+            hasRootFile_ = false;
+            filePath.ReplaceAll(systematic_.name(),"Nominal");
+            histReader_ = new io::RootFileReader(filePath,histPath);
+            if(cfg.systUncFactor.find(systematic_.type_str()) != cfg.systUncFactor.end()){
+               float unc = cfg.systUncFactor.at(systematic_.type_str());
+               sf_ = (systematic_.variation() == Systematic::up)? 1.0+unc : 1.0-unc;
+            }
+            else{
+               std::cout<<"Error: Factor for "<<systematic_.type_str()<<" not found in config"<<std::endl;
+            }
+         }
       }
       
       Systematic::Systematic systematic_;
       io::RootFileReader* histReader_;
       hist::Histograms<TH1F> hists_;
+      std::vector<TString> datasets_;
+      float sf_ = 1.0;
+      bool hasRootFile_ = true;
 };
 
 // transform 2D hist to 1D hist
@@ -67,9 +86,7 @@ TH1F HistTrafo_2D(TH2F* const &hist2D, std::vector<float> binedges_x, std::vecto
 void importHists1D(std::vector<systHists> &systHists_vec, std::vector<TString> const samplesToPlot, std::vector<TString> const mcSamples,
                      std::map<TString,std::vector<TString>> const msPresel_vVars) {
    for (systHists& current : systHists_vec){
-      std::vector<TString> inputSamples;
-      if (current.systematic_.type() == Systematic::nominal) inputSamples = samplesToPlot;
-      else inputSamples = mcSamples;
+      std::vector<TString> inputSamples = current.datasets_;
       
       for (TString sSample : inputSamples){
          current.hists_.setCurrentSample(sSample);
@@ -81,12 +98,14 @@ void importHists1D(std::vector<systHists> &systHists_vec, std::vector<TString> c
                TH1F* tempHist=current.histReader_->read<TH1F>(loc+"/"+sSample);
                if (tempHist->GetNbinsX()>25) tempHist->Rebin(2);
                if (sVar=="dphi_metNearLep" or sVar=="dphi_metNearLep_puppi") tempHist->Rebin(4);
+               if (!current.hasRootFile_) tempHist->Scale(current.sf_);
                current.hists_.addFilledHist(loc,sSample,*(tempHist));
             }
             if(sPresel.Contains("cutflow")){
                TH1F* tempHist=current.histReader_->read<TH1F>(sPresel+"ee/"+sSample);
                tempHist->Add(current.histReader_->read<TH1F>(sPresel+"emu/"+sSample));
                tempHist->Add(current.histReader_->read<TH1F>(sPresel+"mumu/"+sSample));
+               if (!current.hasRootFile_) tempHist->Scale(current.sf_);
                current.hists_.addFilledHist(sPresel+"all",sSample,*(tempHist));
             }
          }
@@ -198,7 +217,8 @@ void run()
    }
    std::vector<TString> samplesToPlot = util::addVectors(mcSamples,dataSamples);
    
-   std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN"};
+   std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN"};
    
    // 1D plots
    std::map<TString,std::vector<TString>> msPresel_vVars={
@@ -208,89 +228,89 @@ void run()
    for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          msPresel_vVars.insert(std::pair<TString,std::vector<TString>>(selection+channel,
-         // ~{"MET"
-         // ~,"PuppiMET"
-         // ~,"DNN_MET_pT"
-         // ~,"DNN_MET_dPhi_nextLep"
-         // ~,"met1000"
-         // ~,"mLL"
-         // ~,"Lep1_pt"
-         // ~,"Lep2_pt"
-         // ~,"pTsumlep"
-         // ~,"sumpTlep"
-         // ~,"pTbJet"
-         // ~,"Jet1_pt"
-         // ~,"Jet2_pt"
-         // ~,"dPhiMETnearJet"
-         // ~,"dPhiMETleadJet"
-         // ~,"dPhiMETlead2Jet"
-         // ~,"dphi_metNearLep"
-         // ~,"dphi_metNearLep_puppi"
-         // ~,"COSdphi_metNearLep"
-         // ~,"SINdphi_metNearLep"
-         // ~,"dPhiMETbJet"
-         // ~,"dPhiLep1bJet"
-         // ~,"dR_bJetLep1"
-         // ~,"dphi_bJetLep2"
-         // ~,"dphi_bJetnearLep"
-         // ~,"dphi_b1b2"
-         // ~,"dR_b1b2"
-         // ~,"dphi_metLep1"
-         // ~,"dphi_metLep2"
-         // ~,"dphi_metLepsum"
-         // ~,"dPhiLep1Lep2"
-         // ~,"dR_Lep1Lep2"
-         // ~,"nJets"
-         // ~,"nBjets"
-         // ~,"MT2"
-         // ~,"MT"
-         // ~,"mt_MetLep2"
-         // ~,"mt_MetNextLep"
-         // ~,"conMt_Lep1Lep2"
-         // ~,"ST"
-         // ~,"HT"
-         // ~,"sum_STHT"
-         // ~,"sum_mlb"
-         // ~,"METunc_Puppi"
-         // ~,"n_Interactions"
-         // ~,"Lep1_flavor"
-         // ~,"Lep2_flavor"
-         // ~,"Lep1_phi"
-         // ~,"Lep2_phi"
-         // ~,"Lep1_eta"
-         // ~,"Lep2_eta"
-         // ~,"Lep1_E"
-         // ~,"Lep2_E"
-         // ~,"Jet1_phi"
-         // ~,"Jet2_phi"
-         // ~,"Jet1_eta"
-         // ~,"Jet2_eta"
-         // ~,"Jet1_E"
-         // ~,"Jet2_E"
-         // ~,"dPhiMETfarJet"
-         // ~,"dPhiJet1Jet2"
-         // ~,"METsig"
-         // ~,"MHT"
-         // ~,"looseLeptonVeto"
-         // ~,"dPhiMETnearJet_Puppi"
-         // ~,"dPhiMETfarJet_Puppi"
-         // ~,"dPhiMETleadJet_Puppi"
-         // ~,"dPhiMETlead2Jet_Puppi"
-         // ~,"dPhiMETbJet_Puppi"
-         // ~,"dPhiLep1Jet1"
-         // ~,"PFMET_phi"
-         // ~,"PuppiMET_phi"
-         // ~,"CaloMET"
-         // ~,"CaloMET_phi"
-         // ~,"vecsum_pT_allJet"
-         // ~,"vecsum_pT_l1l2_allJet"
-         // ~,"mass_l1l2_allJet"
-         // ~,"ratio_vecsumpTlep_vecsumpTjet"
-         // ~,"mjj"
-         // ~,"C_em_W_p"
-         // ~,"C_em_W_m"
-         // ~}));
-         {"Jet1_pt","MET","looseLeptonVeto","DNN_MET_pT"}));
+         {"MET"
+         ,"PuppiMET"
+         ,"DNN_MET_pT"
+         ,"DNN_MET_dPhi_nextLep"
+         ,"met1000"
+         ,"mLL"
+         ,"Lep1_pt"
+         ,"Lep2_pt"
+         ,"pTsumlep"
+         ,"sumpTlep"
+         ,"pTbJet"
+         ,"Jet1_pt"
+         ,"Jet2_pt"
+         ,"dPhiMETnearJet"
+         ,"dPhiMETleadJet"
+         ,"dPhiMETlead2Jet"
+         ,"dphi_metNearLep"
+         ,"dphi_metNearLep_puppi"
+         ,"COSdphi_metNearLep"
+         ,"SINdphi_metNearLep"
+         ,"dPhiMETbJet"
+         ,"dPhiLep1bJet"
+         ,"dR_bJetLep1"
+         ,"dphi_bJetLep2"
+         ,"dphi_bJetnearLep"
+         ,"dphi_b1b2"
+         ,"dR_b1b2"
+         ,"dphi_metLep1"
+         ,"dphi_metLep2"
+         ,"dphi_metLepsum"
+         ,"dPhiLep1Lep2"
+         ,"dR_Lep1Lep2"
+         ,"nJets"
+         ,"nBjets"
+         ,"MT2"
+         ,"MT"
+         ,"mt_MetLep2"
+         ,"mt_MetNextLep"
+         ,"conMt_Lep1Lep2"
+         ,"ST"
+         ,"HT"
+         ,"sum_STHT"
+         ,"sum_mlb"
+         ,"METunc_Puppi"
+         ,"n_Interactions"
+         ,"Lep1_flavor"
+         ,"Lep2_flavor"
+         ,"Lep1_phi"
+         ,"Lep2_phi"
+         ,"Lep1_eta"
+         ,"Lep2_eta"
+         ,"Lep1_E"
+         ,"Lep2_E"
+         ,"Jet1_phi"
+         ,"Jet2_phi"
+         ,"Jet1_eta"
+         ,"Jet2_eta"
+         ,"Jet1_E"
+         ,"Jet2_E"
+         ,"dPhiMETfarJet"
+         ,"dPhiJet1Jet2"
+         ,"METsig"
+         ,"MHT"
+         ,"looseLeptonVeto"
+         ,"dPhiMETnearJet_Puppi"
+         ,"dPhiMETfarJet_Puppi"
+         ,"dPhiMETleadJet_Puppi"
+         ,"dPhiMETlead2Jet_Puppi"
+         ,"dPhiMETbJet_Puppi"
+         ,"dPhiLep1Jet1"
+         ,"PFMET_phi"
+         ,"PuppiMET_phi"
+         ,"CaloMET"
+         ,"CaloMET_phi"
+         ,"vecsum_pT_allJet"
+         ,"vecsum_pT_l1l2_allJet"
+         ,"mass_l1l2_allJet"
+         ,"ratio_vecsumpTlep_vecsumpTjet"
+         ,"mjj"
+         ,"C_em_W_p"
+         ,"C_em_W_m"
+         }));
+         // ~{"Jet1_pt","looseLeptonVeto"}));
       }
    }
    
@@ -578,7 +598,8 @@ void run()
          TH1F* temp_hist=hs->getHistogram("baseline/"+cat+"/looseLeptonVeto",sample);
          std::cout<<std::fixed<<sample<<"&"<<temp_hist->Integral()<<"&"<<std::setprecision(1)<<temp_hist->Integral()/mc_total->Integral()*100<<"\\\\"<<std::endl;
          // ~std::cout<<sample<<"   "<<temp_hist->Integral()<<"   "<<temp_hist->Integral()/mc_total->Integral()*100<<std::endl;
-         if (sample=="MC") std::cout<<0.5*(syst.first->Integral()+syst.second->Integral())<<std::endl;
+         if (sample=="MC") std::cout<<syst.first->Integral()<<"   "<<syst.second->Integral()<<std::endl;
+         if (sample=="MC") std::cout<<syst.first->Integral()/temp_hist->Integral()*100<<"   "<<syst.second->Integral()/temp_hist->Integral()*100<<std::endl;
       }
    }
    

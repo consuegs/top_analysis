@@ -70,6 +70,8 @@ public:
    int fileNR;
    bool multi=false;
    std::string systematic;
+   
+   std::map<TString,float> systUncFactor;
 
    std::vector<std::string> modules;
 

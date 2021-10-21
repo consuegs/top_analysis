@@ -79,6 +79,8 @@ Config::Config()
    lumiText=TString::Format("%.1f fb^{-1}",lumi*1e-3);
    sqrtsText=pt.get<std::string>("general.sqrtsText");
    extraText=pt.get<std::string>("general.extraText");
+   
+   systUncFactor["LUMI"] = pt.get<float>("SystUnc.lumiUnc");
 
    outputDirectory=pt.get<std::string>("output.directory")+treeVersion+"/output_framework";
    datasets=DatasetCollection(pt,dataBasePath);
