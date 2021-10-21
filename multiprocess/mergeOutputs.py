@@ -20,6 +20,7 @@ def getInfoFromLogPath(logPath):
     info["year"] = logPath.split("/")[1].replace("/","")
     info["syst"] = logPath.split("/")[2].replace("/","")
     info["fraction"] = logPath.split("/")[3].replace("/","")
+    info["module"] = logPath.split("/")[4].replace("/","")
     return info
 
 def isComplete(logPath,dataset):    # checks if files in finished.txt match expected files defined in config[].ini
@@ -56,9 +57,10 @@ def mergeTree(dataset,logPath,treePath):    # merges minTrees of given dataset
 def mergeHist(dataset,logPath,histPath):    # merges histograms of given dataset
     nTupleVersion = getNTupleVersion(getInfoFromLogPath(logPath)["year"])
     splitSamples = []
-    outfile = "histograms_"+dataset+"_merged_"+nTupleVersion+".root"
+    fileStart = "histograms_" if getInfoFromLogPath(logPath)["module"] == "distributions" else ""
+    outfile = fileStart+dataset+"_merged_"+nTupleVersion+".root"
     for splitSample in getSplitSamples(dataset,logPath):
-        splitSamples.append("histograms_"+splitSample+"_"+nTupleVersion+".root")
+        splitSamples.append(fileStart+splitSample+"_"+nTupleVersion+".root")
     runDir = os.getcwd()
     os.chdir(histPath)
     if os.path.exists(outfile):
@@ -94,6 +96,7 @@ def getDatasetList(logPath):    # get list of dataset, where jobs have been subm
         datasetName = fileName.replace("_"+fileName.split("_")[-1],"")
         if datasetName not in datasets:
             datasets.append(datasetName)
+    print datasets
     return datasets
     
 def getTreePath(logPath):       # get correct treePath from logPath
@@ -104,6 +107,11 @@ def getTreePath(logPath):       # get correct treePath from logPath
 def getHistPath(logPath):       # get correct histPath from logPath
     info = getInfoFromLogPath(args.logPath)
     treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/output_framework/multiHists/{}/".format(info["year"],getNTupleVersion(info["year"]),info["syst"])
+    return treePath
+    
+def getHistPath_module(logPath):       # get correct histPath from logPath for modules other than distributions
+    info = getInfoFromLogPath(args.logPath)
+    treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/output_framework/{}/{}/".format(info["year"],getNTupleVersion(info["year"]),info["module"],info["syst"])
     return treePath
 
 if __name__ == "__main__":
@@ -116,8 +124,18 @@ if __name__ == "__main__":
     parser.add_argument("--mergeAllHists", action='store_true', help="Merge all hist of different datasets to one file")
     args = parser.parse_args()
     
+    isDistributions = (args.logPath.find("distributions") > 0)
+        
+    if (isDistributions == False and (args.onlyHists == False)):
+        print "Error: For other modules than distributions Trees can not be merged!"
+        print "Continuing with --onlyHists option"
+        args.onlyHists = True
+    
     treePath = getTreePath(args.logPath)
     histPath = getHistPath(args.logPath)
+    
+    if(isDistributions == False):
+        histPath = getHistPath_module(args.logPath)
     
     if args.singleDataset == "":
         datasetList = getDatasetList(args.logPath)

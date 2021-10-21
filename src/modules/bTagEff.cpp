@@ -5,6 +5,7 @@
 #include "tools/io.hpp"
 #include "tools/weighters.hpp"
 #include "tools/selection.hpp"
+#include "tools/jetCorrections.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -28,6 +29,15 @@ extern "C"
 void run()
 {
    std::vector<std::string> vsDatasubsets(cfg.datasets.getDatasubsetNames());
+   
+   //Read systematic from command line
+   Systematic::Systematic currentSystematic(cfg.systematic);
+   bool isNominal = (currentSystematic.type()==Systematic::nominal);
+   
+   // Configure JES/JER Corrections
+   jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(0,false).Data(),currentSystematic);
+   jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(0,true).Data(),currentSystematic);
+   jerCorrections jerCorrector = jerCorrections(cfg.jer_SF_mc.Data(),cfg.jer_RES_mc.Data(),currentSystematic);
    
    TString dssName_multi="";
    
@@ -99,6 +109,7 @@ void run()
       TTreeReaderValue<int> n_Interactions(reader, "nPV");
       TTreeReaderValue<int> n_Interactions_gen(reader, "true_nPV");
       TTreeReaderValue<float> HTgen(reader, "genHt");
+      TTreeReaderValue<float> rho(reader, "rho");
       TTreeReaderValue<bool> is_ee   (reader, "ee");
       TTreeReaderValue<bool> is_emu   (reader, "emu");
       TTreeReaderValue<bool> is_mumu   (reader, "mumu");
@@ -150,10 +161,6 @@ void run()
             io::log.flush();
          }
          
-         float met=MET->p.Pt();
-         float const met_puppi=MET_Puppi->p.Pt();
-         float const genMet=GENMET->p.Pt();
-         
          //Do not use tau events in signal sample
          if (ttBar_dilepton && *genDecayMode>3) continue;
          
@@ -178,7 +185,15 @@ void run()
          if(!selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead)) continue;
          
          if (triggerMC==false) continue;
-                  
+         
+         //Apply JES and JER systematics
+         jesCorrector.applySystematics(*jets,MET->p);
+         jerCorrector.smearCollection_Hybrid(*jets,*rho);
+         
+         float met=MET->p.Pt();
+         float const met_puppi=MET_Puppi->p.Pt();
+         float const genMet=GENMET->p.Pt();
+         
          std::vector<tree::Jet> cjets;
          std::vector<tree::Jet> BJets;
          std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
@@ -227,8 +242,8 @@ void run()
    hs2d.combineFromSubsamples(samplesToCombine);
    
    // Save histograms
-   TString loc=TString::Format("histograms_%s.root",cfg.treeVersion.Data());
-   if(cfg.multi) loc=TString::Format("multiHists/histograms_%s_%s.root",dssName_multi.Data(),cfg.treeVersion.Data());
+   TString loc=TString::Format("bTagEff/%s_%s_%s.root",currentSystematic.name().Data(),dssName_multi.Data(),cfg.treeVersion.Data());
+   if(cfg.multi) loc=TString::Format("bTagEff/%s%s%s_%s.root",(currentSystematic.name()+"/").Data(),dssName_multi.Data(),(cfg.fileNR==0)?TString("").Data():TString("_"+std::to_string(cfg.fileNR)).Data(),cfg.treeVersion.Data());
    io::RootFileSaver saver_hist(loc,TString::Format("bTagEff%.1f",cfg.processFraction*100),false);
    hs2d.saveHistograms(saver_hist,samplesToCombine);
    

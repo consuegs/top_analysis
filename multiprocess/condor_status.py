@@ -21,10 +21,11 @@ def getSummary():
     return out.split("\n")[-3]
 
 def getNameFromOutFile(outFile):
-    return outFile.split("/")[-1].replace("distributions_","").replace(".out","")
+    moduleName = outFile.split("/")[-2]
+    return outFile.split("/")[-1].replace(moduleName+"_","").replace(".out","")
 
 def getNameFromFile(fname):
-    return fname.split("dataset=")[-1]
+    return fname.split(" ")[1]+" "+fname.split("dataset=")[-1]
     
 def getMachineFromOut(outName):
     logName = outName.replace(".out",".log")
@@ -142,7 +143,7 @@ def checkStatusFromQueue(printOutput=True):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--checkCompleted', type=str, default="", help="Checks status of all jobs in given log folder")
+    parser.add_argument("-c",'--checkCompleted', type=str, default="", help="Checks status of all jobs in given log folder")
     args = parser.parse_args()
     
     runningLogs = checkStatusFromQueue(args.checkCompleted == "")

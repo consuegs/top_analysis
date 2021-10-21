@@ -30,8 +30,8 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["SingleTop","DrellYan_NLO","DrellYan"]
    #  ~toProcess_mc=["TTbar_amcatnlo"]
    #  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","DrellYan"]
-   #  ~toProcess_mc=["TTbar_diLepton"]
-   toProcess_mc=["DrellYan"]
+   toProcess_mc=["TTbar_diLepton"]
+   #  ~toProcess_mc=["DrellYan"]
    #  ~toProcess_mc=[]
    #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
    #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
    # define command line arguments
    parser = argparse.ArgumentParser()
-   parser.add_argument('-m', type=str, default="distributions", help="module")
+   parser.add_argument('-m', type=str, default="distributions", help="module, default is distributions")
    parser.add_argument('-f', type=float, choices=[Range(0.0, 1.0)], default=1.0, help="process fraction")
    parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",required=True)
    parser.add_argument('-s', type=str, default="Nominal", help="systematic shift")
@@ -71,9 +71,15 @@ if __name__ == "__main__":
    if (toProcess_data and args.s!="Nominal"):
       toProcess_data=[]
       print "!!!!!!!!!!!!!!!!Data is not processed with systematic shift!!!!!!!!!!!!!!!!!!!!"
-
+   
+   # bTagEff only submitted with TTbar_dilepton
+   if (args.m == "bTagEff"):
+      if ("TTbar_diLepton" not in toProcess_mc or len(toProcess_mc)>1 or toProcess_data or toProcess_signal):
+         print "Error: bTagEff should only be submitted with TTbar_dilepton"
+         sys.exit(1)
+   
    # create logpath if not existing
-   logpath="logs/"+args.y+"/"+args.s+"/"+str(args.f)
+   logpath="logs/"+args.y+"/"+args.s+"/"+str(args.f)+"/"+args.m
    if not os.path.exists(logpath):
       try:
          os.makedirs(logpath)
@@ -110,9 +116,9 @@ if __name__ == "__main__":
 Universe        = vanilla
 Executable      = run.sh
 Arguments       = -f{0} {1} {2} {5} -s{6} --fileNR={7}
-Log             = logs/{5}/{6}/{0}/{1}_{3}_{7}.log
-Output          = logs/{5}/{6}/{0}/{1}_{3}_{7}.out
-Error           = logs/{5}/{6}/{0}/{1}_{3}_{7}.error
+Log             = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
+Output          = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
+Error           = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
 Request_Memory  = {4} Mb
 Requirements    = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {8}
 Queue
