@@ -63,37 +63,14 @@ namespace Systematic{
         dynorm,             // uncertainty on the Drell-Yan background estimation normalization
         kin,                // scale kinematic reconstruction scale factors
         jetPileupID,        // jet pileup-ID Data/MC scale factors
-        btag,               // scale b-tagging data-to-MC scale factors of the b-/c-jets
-        btagJes,               // scale b-tagging data-to-MC scale factors of the b-/c-jets
-        btagPileup,               // scale b-tagging data-to-MC scale factors of the b-/c-jets
-        btagStatistic,               // scale b-tagging data-to-MC scale factors of the b-/c-jets
-        btagType3,               // scale b-tagging data-to-MC scale factors of the b-/c-jets
-        btagPt,             // median method: scale b-tagging data-to-MC scale factors of the b-/c-jets below/above median pt down/up or up/down
-        btagEta,            // median method: scale b-tagging data-to-MC scale factors of the b-/c-jets below/above median eta down/up or up/down
-        btagLjet,           // scale b-tagging data-to-MC scale factors of the l-jets
-        btagLjetPt,         // median method: scale b-tagging data-to-MC scale factors of the l-jets below/above median pt down/up or up/down
-        btagLjetEta,        // median method: scale b-tagging data-to-MC scale factors of the l-jets below/above median eta down/up or up/down
-        btagBeff,           // scale the b-tagging efficiencies as estimated from MC for b-jets for stat. uncertainty (not applied anywhere, should it be removed?)
-        btagCeff,           // scale the b-tagging efficiencies as estimated from MC for c-jets for stat. uncertainty (not applied anywhere, should it be removed?)
-        btagLeff,           // scale the b-tagging efficiencies as estimated from MC for l-jets for stat. uncertainty (not applied anywhere, should it be removed?)
-        btagDiscrBpurity,   // for b-tag discriminator reweighting: purity of the HF sample used for the LF SF determination
-        btagDiscrLpurity,   // for b-tag discriminator reweighting: purity of the LF sample used for the HF SF determination
-        btagDiscrBstat1,    // for b-tag discriminator reweighting: scale part 1 of the statistical uncertainty for b-jets
-        btagDiscrBstat2,    // for b-tag discriminator reweighting: scale part 2 of the statistical uncertainty for b-jets
-        btagDiscrLstat1,    // for b-tag discriminator reweighting: scale part 1 of the statistical uncertainty for l-jets
-        btagDiscrLstat2,    // for b-tag discriminator reweighting: scale part 2 of the statistical uncertainty for l-jets
-        btagDiscrCerr1,     // for b-tag discriminator reweighting: scale part 1 of the total uncertainty for c-jets
-        btagDiscrCerr2,     // for b-tag discriminator reweighting: scale part 2 of the total uncertainty for c-jets
-        subjetbtagDiscrBpurity, // subjet b-tag discriminator reweighting: purity of the HF sample used for the LF SF determination
-        subjetbtagDiscrLpurity, // subjet b-tag discriminator reweighting: purity of the LF sample used for the HF SF determination
-        subjetbtagDiscrBstat1,  // subjet b-tag discriminator reweighting: scale part 1 of the statistical uncertainty for b-jets
-        subjetbtagDiscrBstat2,  // subjet b-tag discriminator reweighting: scale part 2 of the statistical uncertainty for b-jets
-        subjetbtagDiscrLstat1,  // subjet b-tag discriminator reweighting: scale part 1 of the statistical uncertainty for l-jets
-        subjetbtagDiscrLstat2,  // subjet b-tag discriminator reweighting: scale part 2 of the statistical uncertainty for l-jets
-        subjetbtagDiscrCerr1,   // subjet b-tag discriminator reweighting: scale part 1 of the total uncertainty for c-jets
-        subjetbtagDiscrCerr2,   // subjet b-tag discriminator reweighting: scale part 2 of the total uncertainty for c-jets
-        subjetbtagHeavyFlavor,  // subjet b-tagging efficiency
-        subjetbtagLightFlavor,  // subjet b-tagging mis-tag rate
+        
+        btagBC,
+        btagL,
+        btagBCcorr,
+        btagBCuncorr,
+        btagLcorr,
+        btagLuncorr,
+        
         jerEta0,    // scale jet energy resolution scale factors (pt/eta bin0)
         jerEta1,    // scale jet energy resolution scale factors (pt/eta bin1)
         jerEta2Pt0, // scale jet energy resolution scale factors (pt/eta bin2)
@@ -356,13 +333,7 @@ namespace Systematic{
         dy, bg, kin,
         dynorm,
         jetPileupID,
-        btag, btagPt, btagEta, btagJes, btagPileup, btagStatistic, btagType3,
-        btagLjet, btagLjetPt, btagLjetEta,
-        btagBeff, btagCeff, btagLeff,
-        btagDiscrBstat1, btagDiscrBstat2,
-        btagDiscrLstat1, btagDiscrLstat2,
-        btagDiscrBpurity, btagDiscrLpurity,
-        btagDiscrCerr1, btagDiscrCerr2,
+        btagBC, btagL, btagBCcorr, btagBCuncorr, btagLcorr, btagLuncorr,
         jer, jerEta0, jerEta1, jerEta2Pt0, jerEta2Pt1, jerEta3Pt0, jerEta3Pt1,
         jesTotal, jesAbsoluteStat, jesAbsoluteScale, jesAbsoluteFlavMap, jesAbsoluteMPFBias, jesFragmentation, jesSinglePionECAL,
         jesSinglePionHCAL, jesFlavorQCD, jesTimePtEta, jesRelativeJEREC1, jesRelativeJEREC2, jesRelativeJERHF, jesRelativePtBB, jesRelativePtEC1,
@@ -447,29 +418,9 @@ namespace Systematic{
 
     /// Define b-tag systematics, valid for all b-tag corrections
     const std::vector<Type> btagTypes{
-        btag, btagPt, btagEta, btagJes, btagPileup, btagStatistic, btagType3,
-        btagLjet, btagLjetPt, btagLjetEta,
-        btagBeff, btagCeff, btagLeff,
-        btagDiscrBstat1, btagDiscrBstat2,
-        btagDiscrLstat1, btagDiscrLstat2,
-        btagDiscrBpurity, btagDiscrLpurity,
-        btagDiscrCerr1, btagDiscrCerr2,
-    };
-
-    /// Define b-tag systematics, valid for b-tag corrections concerning discriminator reweighting
-    const std::vector<Type> btagDiscriminatorReweightTypes{
-        btag, btagLjet,
-        btagDiscrBstat1, btagDiscrBstat2,
-        btagDiscrLstat1, btagDiscrLstat2,
-        btagDiscrBpurity, btagDiscrLpurity,
-        btagDiscrCerr1, btagDiscrCerr2,
-    };
-
-    /// Define b-tag systematics, valid for b-tag corrections concerning efficiency
-    const std::vector<Type> btagEfficiencyCorrectionTypes{
-        btag, btagPt, btagEta, btagJes, btagPileup, btagStatistic, btagType3,
-        btagLjet, btagLjetPt, btagLjetEta,
-        btagBeff, btagCeff, btagLeff,
+        btagBC,btagL,
+        btagBCcorr,btagBCuncorr,
+        btagLcorr,btagLuncorr,
     };
 
     /// Define ttbar systematics, i.e. variations of the ttbar sample (e.g. mass or scale variations)
@@ -519,13 +470,17 @@ namespace Systematic{
         lumi,
         normPdfGg, normPdfGq, normPdfQq, normPdfTth
     };
+    
+    /// Define systematics that do not require dedicated b tagging efficiencies
+    const std::vector<Type> noBtagEffTypes{
+        nominal,lumi,
+        btagBC,btagL,
+        btagBCcorr,btagBCuncorr,
+        btagLcorr,btagLuncorr,
+    };
 
     const std::vector<Type> uncorrelatedTypes{
         jer, jerEta0, jerEta1, jerEta2Pt0, jerEta2Pt1, jerEta3Pt0, jerEta3Pt1,
-        btagDiscrBstat1, btagDiscrBstat2,
-        btagDiscrLstat1, btagDiscrLstat2,
-        btagDiscrBpurity, btagDiscrLpurity,
-        btagDiscrCerr1, btagDiscrCerr2,
         jesAbsoluteStat, jesRelativeStatEC, jesRelativeStatFSR,
         jesRelativeJEREC1, jesRelativeJEREC2,
         jesRelativePtEC1, jesRelativePtEC2, jesTimePtEta,

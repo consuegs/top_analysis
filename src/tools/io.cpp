@@ -183,3 +183,9 @@ static void getPathAndFilename(TString fullName,TString& path,TString& fileName)
    }
    fileName=((TObjString*)(tokens->At(i)))->GetString();
 }
+
+bool io::fileExists(const std::string& name) 
+{
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}

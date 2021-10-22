@@ -12,6 +12,7 @@ set(SRCS
   dataTrigger2018.cpp
   jetCorrections.cpp
   systematics.cpp
+  bTagWeights.cpp
   )
 
 add_library(tools SHARED ${SRCS})

@@ -47,8 +47,16 @@ public:
    TString eleMuTrigg4;
    TString singleEleTrigg;
    
-   float DeepCSV_loose;
-   float DeepJet_loose;
+   TString bTagger;
+   int bTagWP;
+   float bTagWPcut;
+   
+   TString bTagger_alt;
+   int bTagWP_alt;
+   float bTagWPcut_alt;
+   
+   TString bTagSF_file;
+   TString bTagEffPath;
    
    bool applyDNN;
    TString DNN_Path;

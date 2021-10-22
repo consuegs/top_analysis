@@ -68,37 +68,12 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("BG")) return bg;
     if(type.BeginsWith("KIN")) return kin;
     if(type.BeginsWith("JetPileupID")) return jetPileupID;
-    if(type.BeginsWith("BTAGDISCR_BSTAT1")) return btagDiscrBstat1;
-    if(type.BeginsWith("BTAGDISCR_BSTAT2")) return btagDiscrBstat2;
-    if(type.BeginsWith("BTAGDISCR_LSTAT1")) return btagDiscrLstat1;
-    if(type.BeginsWith("BTAGDISCR_LSTAT2")) return btagDiscrLstat2;
-    if(type.BeginsWith("BTAGDISCR_BPURITY")) return btagDiscrBpurity;
-    if(type.BeginsWith("BTAGDISCR_LPURITY")) return btagDiscrLpurity;
-    if(type.BeginsWith("BTAGDISCR_CERR1")) return btagDiscrCerr1;
-    if(type.BeginsWith("BTAGDISCR_CERR2")) return btagDiscrCerr2;
-    if(type.BeginsWith("BTAG_LJET_PT")) return btagLjetPt;
-    if(type.BeginsWith("BTAG_LJET_ETA")) return btagLjetEta;
-    if(type.BeginsWith("BTAG_LJET")) return btagLjet;
-    if(type.BeginsWith("BTAG_BEFF")) return btagBeff;
-    if(type.BeginsWith("BTAG_CEFF")) return btagCeff;
-    if(type.BeginsWith("BTAG_LEFF")) return btagLeff;
-    if(type.BeginsWith("BTAG_PT")) return btagPt;
-    if(type.BeginsWith("BTAG_ETA")) return btagEta;
-    if(type.BeginsWith("BTAG_JES")) return btagJes;
-    if(type.BeginsWith("BTAG_PILEUP")) return btagPileup;
-    if(type.BeginsWith("BTAG_STATISTIC")) return btagStatistic;
-    if(type.BeginsWith("BTAG_TYPE3")) return btagType3;
-    if(type.BeginsWith("BTAG")) return btag;
-    if(type.BeginsWith("SUBJETBTAGDISCR_BSTAT1" )){ return subjetbtagDiscrBstat1; }
-    if(type.BeginsWith("SUBJETBTAGDISCR_BSTAT2" )){ return subjetbtagDiscrBstat2; }
-    if(type.BeginsWith("SUBJETBTAGDISCR_LSTAT1" )){ return subjetbtagDiscrLstat1; }
-    if(type.BeginsWith("SUBJETBTAGDISCR_LSTAT2" )){ return subjetbtagDiscrLstat2; }
-    if(type.BeginsWith("SUBJETBTAGDISCR_BPURITY")){ return subjetbtagDiscrBpurity; }
-    if(type.BeginsWith("SUBJETBTAGDISCR_LPURITY")){ return subjetbtagDiscrLpurity; }
-    if(type.BeginsWith("SUBJETBTAGDISCR_CERR1"  )){ return subjetbtagDiscrCerr1; }
-    if(type.BeginsWith("SUBJETBTAGDISCR_CERR2"  )){ return subjetbtagDiscrCerr2; }
-    if(type.BeginsWith("SUBJETBTAG_HEAVYFLAVOR" )){ return subjetbtagHeavyFlavor; }
-    if(type.BeginsWith("SUBJETBTAG_LIGHTFLAVOR" )){ return subjetbtagLightFlavor; }
+    if(type.BeginsWith("BTAGBC")) return btagBC;
+    if(type.BeginsWith("BTAGL")) return btagL;
+    if(type.BeginsWith("BTAGBC_CORR")) return btagBCcorr;
+    if(type.BeginsWith("BTAGBC_UNCORR")) return btagBCuncorr;
+    if(type.BeginsWith("BTAGL_CORR")) return btagLcorr;
+    if(type.BeginsWith("BTAGL_UNCORR")) return btagLuncorr;
     if(type.BeginsWith("JEREta0")) return jerEta0;
     if(type.BeginsWith("JEREta1")) return jerEta1;
     if(type.BeginsWith("JEREta2Pt0")) return jerEta2Pt0;
@@ -375,37 +350,12 @@ TString Systematic::convertType(const Type& type)
     if(type == dynorm) return "DYNORM";
     if(type == kin) return "KIN";
     if(type == jetPileupID) return "JetPileupID";
-    if(type == btagDiscrBstat1) return "BTAGDISCR_BSTAT1";
-    if(type == btagDiscrBstat2) return "BTAGDISCR_BSTAT2";
-    if(type == btagDiscrLstat1) return "BTAGDISCR_LSTAT1";
-    if(type == btagDiscrLstat2) return "BTAGDISCR_LSTAT2";
-    if(type == btagDiscrBpurity) return "BTAGDISCR_BPURITY";
-    if(type == btagDiscrLpurity) return "BTAGDISCR_LPURITY";
-    if(type == btagDiscrCerr1) return "BTAGDISCR_CERR1";
-    if(type == btagDiscrCerr2) return "BTAGDISCR_CERR2";
-    if(type == btagLjetPt) return "BTAG_LJET_PT";
-    if(type == btagLjetEta) return "BTAG_LJET_ETA";
-    if(type == btagLjet) return "BTAG_LJET";
-    if(type == btagBeff) return "BTAG_BEFF";
-    if(type == btagCeff) return "BTAG_CEFF";
-    if(type == btagLeff) return "BTAG_LEFF";
-    if(type == btagPt) return "BTAG_PT";
-    if(type == btagEta) return "BTAG_ETA";
-    if(type == btagJes) return "BTAG_JES";
-    if(type == btagPileup) return "BTAG_PILEUP";
-    if(type == btagStatistic) return "BTAG_STATISTIC";
-    if(type == btagType3) return "BTAG_TYPE3";
-    if(type == btag) return "BTAG";
-    if(type == subjetbtagDiscrBstat1 ){ return "SUBJETBTAGDISCR_BSTAT1" ; }
-    if(type == subjetbtagDiscrBstat2 ){ return "SUBJETBTAGDISCR_BSTAT2" ; }
-    if(type == subjetbtagDiscrLstat1 ){ return "SUBJETBTAGDISCR_LSTAT1" ; }
-    if(type == subjetbtagDiscrLstat2 ){ return "SUBJETBTAGDISCR_LSTAT2" ; }
-    if(type == subjetbtagDiscrBpurity){ return "SUBJETBTAGDISCR_BPURITY"; }
-    if(type == subjetbtagDiscrLpurity){ return "SUBJETBTAGDISCR_LPURITY"; }
-    if(type == subjetbtagDiscrCerr1  ){ return "SUBJETBTAGDISCR_CERR1"  ; }
-    if(type == subjetbtagDiscrCerr2  ){ return "SUBJETBTAGDISCR_CERR2"  ; }
-    if(type == subjetbtagHeavyFlavor ){ return "SUBJETBTAG_HEAVYFLAVOR" ; }
-    if(type == subjetbtagLightFlavor ){ return "SUBJETBTAG_LIGHTFLAVOR" ; }
+    if(type == btagBC) return "BTAGBC";
+    if(type == btagL) return "BTAGL";
+    if(type == btagBCcorr) return "BTAGBC_CORR";
+    if(type == btagBCuncorr) return "BTAGBC_UNCORR";
+    if(type == btagLcorr) return "BTAGL_CORR";
+    if(type == btagLuncorr) return "BTAGL_UNCORR";
     if(type == jerEta0) return "JEREta0";
     if(type == jerEta1) return "JEREta1";
     if(type == jerEta2Pt0) return "JEREta2Pt0";

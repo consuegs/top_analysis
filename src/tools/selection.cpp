@@ -124,7 +124,7 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    bool bTag=false;
    if(cfg.year_int==1){
       for (tree::Jet const &jet : cleanJets) {
-         if (jet.bTagDeepCSV>cfg.DeepCSV_loose) {      //Loose working point for deepCSV
+         if (jet.bTagDeepCSV>cfg.bTagWPcut_alt) {      //Loose working point for deepCSV
             bTag=true;
             bJets.push_back(jet);
          }
@@ -132,7 +132,7 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    }
    else{
       for (tree::Jet const &jet : cleanJets) {
-         if (jet.bTagDeepJet>cfg.DeepJet_loose) {      //Loose working point for deepCSV
+         if (jet.bTagDeepJet>cfg.bTagWPcut) {      //Loose working point for deepCSV
             bTag=true;
             bJets.push_back(jet);
          }
@@ -190,7 +190,7 @@ std::vector<bool> selection::kitSyncSelection(TLorentzVector const &p_l1, TLoren
    bool bTag=false;
    if(cfg.year_int==1){
       for (tree::Jet const &jet : cleanJets) {
-         if (jet.bTagDeepCSV>cfg.DeepCSV_loose) {      //Loose working point for deepCSV
+         if (jet.bTagDeepCSV>cfg.bTagWPcut_alt) {      //Loose working point for deepCSV
             bTag=true;
             bJets.push_back(jet);
          }
@@ -198,7 +198,7 @@ std::vector<bool> selection::kitSyncSelection(TLorentzVector const &p_l1, TLoren
    }
    else{
       for (tree::Jet const &jet : cleanJets) {
-         if (jet.bTagDeepJet>cfg.DeepJet_loose) {      //Loose working point for deepCSV
+         if (jet.bTagDeepJet>cfg.bTagWP) {      //Loose working point for deepCSV
             bTag=true;
             bJets.push_back(jet);
          }

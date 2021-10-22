@@ -66,8 +66,8 @@ void run()
       io::log * ("Processing '"+dss.name+"' ");
 
       int year_int=cfg.year_int;
-      float DeepCSV_loose=cfg.DeepCSV_loose;
-      float DeepJet_loose=cfg.DeepJet_loose;
+      float DeepCSV_loose=cfg.bTagWPcut_alt;
+      float DeepJet_loose=cfg.bTagWPcut;
       
       hs2d.setCurrentSample(dss.name);
       

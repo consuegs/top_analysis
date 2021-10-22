@@ -9,9 +9,9 @@ set(MODULES
   # ~templateFit
   # ~compare_ttMC
   # ~test_MT2
-  plot2D_sensitivity
+  # ~plot2D_sensitivity
   # ~plot2D_sensitivity_MT
-  binningUnfolding
+  # ~binningUnfolding
   # ~binningUnfolding_MT
   # ~scaleFactorUnfolding
   # ~plot_scaleFactorUnfolding
@@ -19,9 +19,9 @@ set(MODULES
   # ~compare_pseudoGen
   # ~diff_dPhiResolution
   # ~plot_dPhiResolution
-  TUnfold_binning
-  TUnfold_unfolding
-  TUnfold_plotting
+  # ~TUnfold_binning
+  # ~TUnfold_unfolding
+  # ~TUnfold_plotting
   # ~TUnfold_minimalTest
   # ~RooUnfold_test
   # ~plot_metSF
@@ -38,25 +38,26 @@ set(MODULES
   # ~plot_distributions_Philipp
   # ~Routin
   # ~test_BJetRegression
-  triggerEff
-  plot_triggerEff
+  # ~triggerEff
+  # ~plot_triggerEff
   # ~dnn_Classification
   # ~dnn_Classification_fourVec
-  binningUnfolding_DNN
+  # ~binningUnfolding_DNN
   # ~binningUnfolding_DNN_multi
-  binningUnfolding_DNN_cppflow
-  binningUnfolding_DNN_cppflow_2D
-  plot_DNNresolution
+  # ~binningUnfolding_DNN_cppflow
+  # ~binningUnfolding_DNN_cppflow_2D
+  # ~plot_DNNresolution
   # ~applyDNN
   # ~check_leptonVeto
   # ~test_tensorflow
   # ~plot_leptonVeto
-  plot_yearComparisons
+  # ~plot_yearComparisons
   # ~compare_powheg_amcatnlo
   # ~binningUnfolding1D_Fabian
   bTagEff
   plot_bTagEff
-  distributions_KITsync
+  # ~distributions_KITsync
+  # ~plot_yearComparisonsSebastian
   )
 
 foreach(MODULE ${MODULES})

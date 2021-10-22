@@ -5,6 +5,7 @@
 #include "tools/weighters.hpp"
 #include "tools/selection.hpp"
 #include "tools/jetCorrections.hpp"
+#include "tools/bTagWeights.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -240,6 +241,9 @@ void run()
          jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(runEra,false).Data(),currentSystematic);
          jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(runEra,true).Data(),currentSystematic);
          jerCorrections jerCorrector = jerCorrections(isData? cfg.jer_SF_data.Data() : cfg.jer_SF_mc.Data(),isData? cfg.jer_RES_data.Data() : cfg.jer_RES_mc.Data(),currentSystematic);
+         
+         //Configure bTag Weights
+         BTagWeights bTagWeighter = BTagWeights(cfg.bTagSF_file.Data(),cfg.bTagEffPath.Data(),cfg.bTagger.Data(),BTagEntry::OperatingPoint(cfg.bTagWP),cfg.bTagWPcut,currentSystematic);
          
          // Log current sample
          io::log * ("Processing '"+dss.name+"' ");
@@ -518,7 +522,6 @@ void run()
          TTreeReaderValue<std::vector<float>> w_pdf(reader, "pdf_weights");
          TTreeReaderValue<float> w_topPT(reader, "topPTweight");
          // ~TTreeReaderValue<float> w_bTag(reader, (year_int==1)? "bTagWeight_DeepCSV" : "bTagWeight");     //Use DeepCSV for 2016 at the moment
-         TTreeReaderValue<float> w_bTag(reader, "bTagWeight");
          TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
          TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
          // ~TTreeReaderValue<std::vector<tree::Electron>> electrons_add(reader, "electrons_add");
@@ -668,14 +671,21 @@ void run()
                   hs_cutflow.fillweight("cutflow/"+cat,3,cutFlow_weight);
                   if(ttbarSelection[2]){
                      hs_cutflow.fillweight("cutflow/"+cat,4,cutFlow_weight);
-                     if(ttbarSelection[3]){
-                        hs_cutflow.fillweight("cutflow/"+cat,5,(isData)? cutFlow_weight : cutFlow_weight * *w_bTag);
-                     }
                   }
                }
             }
             
             if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
+            
+            //Get bTag weight
+            float bTagWeight = 1.;
+            if(rec_selection && !isData) {
+               int channelID = 3;
+               if (*is_ee) channelID = 1;
+               if (*is_mumu) channelID = 2;
+               bTagWeight = bTagWeighter.getEventWeight(cjets,channelID);
+            }
+            return;
                               
             // end reco baseline selection
             
@@ -704,7 +714,7 @@ void run()
                   else triggerSF = triggerSF_emu_hist->GetBinContent(triggerSF_emu_hist->GetXaxis()->FindBin(p_l2_trigg), triggerSF_emu_hist->GetYaxis()->FindBin(p_l1_trigg));
                }
                fEventWeight=*w_pu * *w_mc;     //Set event weight 
-               SFWeight=*sf_lep1 * *sf_lep2 * *w_topPT * *w_bTag * triggerSF;     //Set combined SF weight
+               SFWeight=*sf_lep1 * *sf_lep2 * *w_topPT * bTagWeight * triggerSF;     //Set combined SF weight
                hs.setFillWeight(fEventWeight*SFWeight);
                hs2d.setFillWeight(fEventWeight*SFWeight);
             }
@@ -714,12 +724,13 @@ void run()
                hs_cutflow.setFillWeight(1);
             }
             if(rec_selection){
+               hs_cutflow.fillweight("cutflow/"+cat,5,(isData)? cutFlow_weight : cutFlow_weight * bTagWeight);
                if(isData) hs_cutflow.fillweight("cutflow/"+cat,6,1);
-               else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_bTag * *w_topPT *triggerSF);
+               else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * bTagWeight * *w_topPT *triggerSF);
             }
             if(rec_selection && !*addLepton){
                if(isData) hs_cutflow.fillweight("cutflow/"+cat,7,1);
-               else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_bTag * *w_topPT *triggerSF);
+               else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * bTagWeight * *w_topPT *triggerSF);
             }
                      
             //Muon and Electron Fraction for bJets and cleaned jets

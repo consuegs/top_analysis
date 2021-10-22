@@ -5,6 +5,8 @@ set(SRCS
    Utilities.cc
    JetResolution.cc
    JetResolutionObject.cc
+   JetResolutionObject.cc
+   BTagCalibrationStandalone.cpp
   )
 
 add_library(ext SHARED ${SRCS})

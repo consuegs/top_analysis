@@ -70,8 +70,13 @@ Config::Config()
    eleMuTrigg4=pt.get<std::string>("trigger.eleMuTrigg4");
    singleEleTrigg=pt.get<std::string>("trigger.singleEleTrigg");
    
-   DeepCSV_loose=pt.get<float>("bTag_WP.DeepCSV_loose");
-   DeepJet_loose=pt.get<float>("bTag_WP.DeepJet_loose");
+   bTagger=pt.get<std::string>("bTag.tagger");
+   bTagWP=pt.get<int>("bTag.WP");
+   bTagWPcut=pt.get<float>("bTag.WPcut");
+   
+   bTagger_alt=pt.get<std::string>("bTag_alternativ.tagger");
+   bTagWP_alt=pt.get<int>("bTag_alternativ.WP");
+   bTagWPcut_alt=pt.get<float>("bTag_alternativ.WPcut");
    
    applyDNN=pt.get<bool>("DNN.applyDNN");
    DNN_Path=pt.get<std::string>("DNN.DNN_Path");
@@ -84,6 +89,9 @@ Config::Config()
 
    outputDirectory=pt.get<std::string>("output.directory")+treeVersion+"/output_framework";
    datasets=DatasetCollection(pt,dataBasePath);
+   
+   bTagSF_file=pt.get<std::string>("BTag_Weights.BTagSF_file");
+   bTagEffPath=outputDirectory+pt.get<std::string>("BTag_Weights.BTagEffPath");
 }
 
 TString Config::getJESPath(const int run_era, const bool isPuppi=false) const{

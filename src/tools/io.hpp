@@ -4,6 +4,7 @@
 #include <TFile.h>
 #include <TObject.h>
 #include <TString.h>
+#include <sys/stat.h>
 
 #include <iostream>
 #include <fstream>
@@ -18,6 +19,8 @@ namespace io
    std::string shellOutput(const char* cmd);
 
    void ensurePathForFile(TString fileName);
+   
+   bool fileExists(const std::string&);
 
    /* class for saving Objects (e.g. Canvases) to a root file */
    class RootFileSaver
