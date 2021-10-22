@@ -685,8 +685,7 @@ void run()
                if (*is_mumu) channelID = 2;
                bTagWeight = bTagWeighter.getEventWeight(cjets,channelID);
             }
-            return;
-                              
+ 
             // end reco baseline selection
             
             // Get pT of Neutrino Pair, which is further changed in case of BSM scenarios!!
