@@ -6,6 +6,8 @@ import os
 import glob
 from termcolor import colored
 import re
+import subprocess as sp
+
 
 def getInfos():
     out = subprocess.check_output(["condor_q", "-long"])
@@ -36,6 +38,12 @@ def getMachineFromOut(outName):
                     machine = line.split("alias=")[-1]
                     machine = machine.split("&")[0]
     return machine
+    
+def resubmitJob(outName):
+    value = input("For resubmitting "+getNameFromOutFile(outName)+" enter 1:\n")
+    if value==1:
+        print "Resubmitting..."
+        sp.call(["condor_submit", outName.replace(".out",".submit")])
 
 def getProgressFromOut(outName,checkCompleted=False):
     processing = False
@@ -55,6 +63,7 @@ def getProgressFromOut(outName,checkCompleted=False):
         if(processing == False and checkCompleted and lines>2):
             color = "red"
             print colored(getNameFromOutFile(outName)+" failed",color)
+            resubmitJob(outName)
         
 
 def getStatusFromOut(outName,running):
@@ -65,7 +74,8 @@ def getStatusFromOut(outName,running):
             print colored(getNameFromOutFile(outName)+" no output yet",color)
         else:
             color = "red"
-            print colored(getNameFromOutFile(outName)+" failed",color) 
+            print colored(getNameFromOutFile(outName)+" failed",color)
+            resubmitJob(outName)
     else:
         datasetName = getNameFromOutFile(outName)
         if len(open(outName).readlines(  )) !=0:
@@ -81,19 +91,24 @@ def getStatusFromOut(outName,running):
         elif finished == False and running == False:
             color = "red"
             print colored(getNameFromOutFile(outName)+" failed"+" on "+getMachineFromOut(outName),color)
+            resubmitJob(outName)
     
     return finished
     
 def checkStatusFromLog(logPath,runningLogs):
+    allFinished = True
     with open(args.checkCompleted+"finished.txt","w") as f:
         for log in glob.glob(args.checkCompleted+"*.log"):
             outFile = log.replace(".log",".out")
             if outFile in runningLogs:
                 getStatusFromOut(outFile,True)
+                allFinished = False
             else:
                 if getStatusFromOut(outFile,False):
                     f.write(getNameFromOutFile(outFile)+"\n")
-    return args.checkCompleted+"finished.txt"
+                else:
+                    allFinished = False
+    return allFinished
 
 def checkStatusFromQueue(printOutput=True):
     jobs = getInfos()
@@ -150,7 +165,11 @@ if __name__ == "__main__":
     
     if(args.checkCompleted != ""):
         if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list
-            checkStatusFromLog(args.checkCompleted,runningLogs)
+            if checkStatusFromLog(args.checkCompleted,runningLogs):
+                value = input("All jobs finished succesfully. For merging the outputs enter 1:\n")
+                if value==1:
+                    print "merging output for "+args.checkCompleted
+                    sp.call(["python","mergeOutputs.py",args.checkCompleted])
         else:
             print "Wrong Path"
 

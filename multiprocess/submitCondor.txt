@@ -1,11 +1,10 @@
 
 Universe        = vanilla
 Executable      = run.sh
-Arguments       = -f1.0 bTagEff --mc_dataset=TTbar_diLepton 2018 -sJER_DOWN --fileNR=15
-Log             = logs/2018/JER_DOWN/1.0/bTagEff/bTagEff_TTbar_diLepton_15.log
-Output          = logs/2018/JER_DOWN/1.0/bTagEff/bTagEff_TTbar_diLepton_15.out
-Error           = logs/2018/JER_DOWN/1.0/bTagEff/bTagEff_TTbar_diLepton_15.error
+Arguments       = -f1.0 distributions --data_dataset=EGamma 2018 -sjetPileupIDapplied --fileNR=4
+Log             = logs/2018/jetPileupIDapplied/1.0/distributions/distributions_EGamma_4.log
+Output          = logs/2018/jetPileupIDapplied/1.0/distributions/distributions_EGamma_4.out
+Error           = logs/2018/jetPileupIDapplied/1.0/distributions/distributions_EGamma_4.error
 Request_Memory  = 1500 Mb
 Requirements    = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  
-Rank = CpuFamily
 Queue

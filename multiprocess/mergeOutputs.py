@@ -121,7 +121,7 @@ if __name__ == "__main__":
     parser.add_argument("--onlyTrees", action='store_true', help="Only minTrees are merged")
     parser.add_argument("--onlyHists", action='store_true', help="Only histograms are merged")
     parser.add_argument('--singleDataset', type=str, default="", help="Defines single dataset to merge (otherwise all samples are merged)")
-    parser.add_argument("--mergeAllHists", action='store_true', help="Merge all hist of different datasets to one file")
+    parser.add_argument("--mergeAllHists", action='store_true', default=True, help="Merge all hist of different datasets to one file")
     args = parser.parse_args()
     
     isDistributions = (args.logPath.find("distributions") > 0)

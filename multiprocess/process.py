@@ -111,7 +111,9 @@ if __name__ == "__main__":
                      if os.path.exists(logFile):
                         os.remove(logFile)
                   
-                  with open("submitCondor.txt","w") as f:   # write condor submit
+                  submitFile = logpath+"/"+args.m+"_"+x+"_"+str(fileNR+1)+".submit"    #define submit file
+                  
+                  with open(submitFile,"w") as f:   # write condor submit
                      f.write("""
 Universe        = vanilla
 Executable      = run.sh
@@ -123,4 +125,4 @@ Request_Memory  = {4} Mb
 Requirements    = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {8}
 Queue
 """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),"\nRank = CpuFamily" if(x=="TTbar_diLepton") else ""))
-                  subprocess.call(["condor_submit", "submitCondor.txt"])
+                  subprocess.call(["condor_submit", submitFile])
