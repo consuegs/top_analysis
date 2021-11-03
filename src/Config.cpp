@@ -41,9 +41,9 @@ Config::Config()
    if (TString(io::shellOutput("git status")).Contains("modified")) gitHash+="*";
    lumi=pt.get<float>("general.lumi");
    
-   trigger_SF_ee=pt.get<std::string>("sf.trigger_SF_ee");
-   trigger_SF_mumu=pt.get<std::string>("sf.trigger_SF_mumu");
-   trigger_SF_emu=pt.get<std::string>("sf.trigger_SF_emu");
+   trigger_SF_ee=pt.get<std::string>("triggerSF.trigger_SF_ee");
+   trigger_SF_mumu=pt.get<std::string>("triggerSF.trigger_SF_mumu");
+   trigger_SF_emu=pt.get<std::string>("triggerSF.trigger_SF_emu");
    
    jer_SF_mc=pt.get<std::string>("jetCorrections.jer_SF_mc");
    jer_RES_mc=pt.get<std::string>("jetCorrections.jer_RES_mc");
@@ -77,6 +77,17 @@ Config::Config()
    bTagger_alt=pt.get<std::string>("bTag_alternativ.tagger");
    bTagWP_alt=pt.get<int>("bTag_alternativ.WP");
    bTagWPcut_alt=pt.get<float>("bTag_alternativ.WPcut");
+   
+   electronID_file=pt.get<std::string>("leptonSF.electronFileNameID");
+   electronID_hist=pt.get<std::string>("leptonSF.electronHistNameID");
+   electronRECO_file=pt.get<std::string>("leptonSF.electronFileNameRECO");
+   electronRECO_hist=pt.get<std::string>("leptonSF.electronHistNameRECO");
+   muonID_file=pt.get<std::string>("leptonSF.muonFileNameID");
+   muonID_hist=pt.get<std::string>("leptonSF.muonHistNameID");
+   muonISO_file=pt.get<std::string>("leptonSF.muonFileNameISO");
+   muonISO_hist=pt.get<std::string>("leptonSF.muonHistNameISO");
+   muonDYunc=pt.get<float>("leptonSF.muonDYextrapolationunc");
+   electronDYunc=pt.get<float>("leptonSF.electronDYextrapolationunc");
    
    applyDNN=pt.get<bool>("DNN.applyDNN");
    DNN_Path=pt.get<std::string>("DNN.DNN_Path");

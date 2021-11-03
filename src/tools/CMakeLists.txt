@@ -13,6 +13,7 @@ set(SRCS
   jetCorrections.cpp
   systematics.cpp
   bTagWeights.cpp
+  leptonSF.cpp
   )
 
 add_library(tools SHARED ${SRCS})

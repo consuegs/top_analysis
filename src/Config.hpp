@@ -58,6 +58,17 @@ public:
    TString bTagSF_file;
    TString bTagEffPath;
    
+   std::string electronID_file;
+   std::string electronID_hist;
+   std::string electronRECO_file;
+   std::string electronRECO_hist;
+   std::string muonID_file;
+   std::string muonID_hist;
+   std::string muonISO_file;
+   std::string muonISO_hist;
+   float muonDYunc;
+   float electronDYunc;
+   
    bool applyDNN;
    TString DNN_Path;
 

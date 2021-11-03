@@ -33,20 +33,20 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("mTop175")) return mTop175;
     if(type.BeginsWith("mTop178")) return mTop178;
     if(type.BeginsWith("LEPT")) return lept;
-    if(type.BeginsWith("ELE_SCALE_SYST")) return eleScaleSyst;
-    if(type.BeginsWith("ELE_SCALE_ET")) return eleScaleEt;
-    if(type.BeginsWith("ELE_SCALE_GAIN")) return eleScaleGain;
-    if(type.BeginsWith("ELE_SCALE_STAT")) return eleScaleStat;
-    if(type.BeginsWith("ELE_SCALESMEARING")) return eleScaleSmearing;
-    if(type.BeginsWith("ELE_SMEARING_PHI")) return eleSmearingPhi;
-    if(type.BeginsWith("ELE_SMEARING_RHO")) return eleSmearingRho;
-    if(type.BeginsWith("ELE_ID_STAT")) return eleIDStat;
-    if(type.BeginsWith("ELE_ID_SYST")) return eleIDSyst;
-    if(type.BeginsWith("ELE_ID")) return eleID;
-    if(type.BeginsWith("ELE_RECO_STAT")) return eleRecoStat;
-    if(type.BeginsWith("ELE_RECO_SYST")) return eleRecoSyst;
-    if(type.BeginsWith("ELE_RECO")) return eleReco;
-    if(type.BeginsWith("ELE")) return ele;
+    if(type.BeginsWith("ELECTRON_SCALE_SYST")) return eleScaleSyst;
+    if(type.BeginsWith("ELECTRON_SCALE_ET")) return eleScaleEt;
+    if(type.BeginsWith("ELECTRON_SCALE_GAIN")) return eleScaleGain;
+    if(type.BeginsWith("ELECTRON_SCALE_STAT")) return eleScaleStat;
+    if(type.BeginsWith("ELECTRON_SCALESMEARING")) return eleScaleSmearing;
+    if(type.BeginsWith("ELECTRON_SMEARING_PHI")) return eleSmearingPhi;
+    if(type.BeginsWith("ELECTRON_SMEARING_RHO")) return eleSmearingRho;
+    if(type.BeginsWith("ELECTRON_ID_STAT")) return eleIDStat;
+    if(type.BeginsWith("ELECTRON_ID_SYST")) return eleIDSyst;
+    if(type.BeginsWith("ELECTRON_ID")) return eleID;
+    if(type.BeginsWith("ELECTRON_RECO_STAT")) return eleRecoStat;
+    if(type.BeginsWith("ELECTRON_RECO_SYST")) return eleRecoSyst;
+    if(type.BeginsWith("ELECTRON_RECO")) return eleReco;
+    if(type.BeginsWith("ELECTRON")) return ele;
     if(type.BeginsWith("MUON_SCALE_EWK2")) return muonScaleEwk2;
     if(type.BeginsWith("MUON_SCALE_STAT")) return muonScaleStat;
     if(type.BeginsWith("MUON_SCALE_ZPT")) return muonScaleZpt;
@@ -290,6 +290,8 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("closure")) return closure;
     if(type.BeginsWith("allAvailable")) return allAvailable;
     if(type.BeginsWith("all")) return all;
+    if(type.BeginsWith("jetPileupIDapplied")) return jetPileupIDapplied;
+    if(type.BeginsWith("jetLooseCleaningApplied")) return jetLooseCleaningApplied;
     std::cout<<"Warning in Systematic::convertType()! Following conversion is not implemented: "
              <<type<<std::endl<<std::endl;
     return undefinedType;
@@ -316,19 +318,19 @@ TString Systematic::convertType(const Type& type)
     if(type == mTop178) return "mTop178";
     if(type == lept) return "LEPT";
     if(type == ele) return "ELE";
-    if(type == eleID) return "ELE_ID";
-    if(type == eleIDSyst) return "ELE_ID_SYST";
-    if(type == eleIDStat) return "ELE_ID_STAT";
-    if(type == eleReco) return "ELE_RECO";
-    if(type == eleRecoSyst) return "ELE_RECO_SYST";
-    if(type == eleRecoStat) return "ELE_RECO_STAT";
-    if(type == eleScaleSyst) return "ELE_SCALE_SYST";
-    if(type == eleScaleStat) return "ELE_SCALE_STAT";
-    if(type == eleScaleGain) return "ELE_SCALE_GAIN";
-    if(type == eleScaleEt) return "ELE_SCALE_ET";
-    if(type == eleScaleSmearing) return "ELE_SCALESMEARING";
-    if(type == eleSmearingRho) return "ELE_SMEARING_RHO";
-    if(type == eleSmearingPhi) return "ELE_SMEARING_PHI";
+    if(type == eleID) return "ELECTRON_ID";
+    if(type == eleIDSyst) return "ELECTRON_ID_SYST";
+    if(type == eleIDStat) return "ELECTRON_ID_STAT";
+    if(type == eleReco) return "ELECTRON_RECO";
+    if(type == eleRecoSyst) return "ELECTRON_RECO_SYST";
+    if(type == eleRecoStat) return "ELECTRON_RECO_STAT";
+    if(type == eleScaleSyst) return "ELECTRON_SCALE_SYST";
+    if(type == eleScaleStat) return "ELECTRON_SCALE_STAT";
+    if(type == eleScaleGain) return "ELECTRON_SCALE_GAIN";
+    if(type == eleScaleEt) return "ELECTRON_SCALE_ET";
+    if(type == eleScaleSmearing) return "ELECTRON_SCALESMEARING";
+    if(type == eleSmearingRho) return "ELECTRON_SMEARING_RHO";
+    if(type == eleSmearingPhi) return "ELECTRON_SMEARING_PHI";
     if(type == muon) return "MUON";
     if(type == muonID) return "MUON_ID";
     if(type == muonIDSyst) return "MUON_ID_SYST";
@@ -572,6 +574,10 @@ TString Systematic::convertType(const Type& type)
     if(type == allAvailable) return "allAvailable";
     if(type == all) return "all";
     if(type == undefinedType) return "";
+    
+    if(type == jetPileupIDapplied) return "jetPileupIDapplied";
+    if(type == jetLooseCleaningApplied) return "jetLooseCleaningApplied";
+    
     std::cerr<<"Error in Systematic::convertType()! Conversion is not implemented\n...break\n"<<std::endl;
     exit(99);
 }

@@ -2,13 +2,18 @@
 
 #include <limits>
 
-std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets)
+std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets, bool const &usePileUpID, bool const &useLooseCleaning)
 {
    std::vector<tree::Jet> cjets;
    for (tree::Jet j: jets){
-      // ~if (!j.isLoose || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
       if (!j.TightIDlepVeto || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
-      if (j.hasElectronMatch || j.hasMuonMatch) continue;
+      if (useLooseCleaning){
+         if (j.hasMuonMatch_loose || j.hasElectronMatch_loose) continue;
+      }
+      else{
+         if (j.hasElectronMatch || j.hasMuonMatch) continue;
+      }
+      if (usePileUpID && !j.PileupIDloose) continue;
       cjets.push_back(j);
    }
    sort(cjets.begin(), cjets.end(), tree::PtGreater);

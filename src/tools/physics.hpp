@@ -2,11 +2,13 @@
 #define PHYSICS_HPP__
 
 #include "tree/TreeParticles.hpp"
+#include "tools/systematics.hpp"
 #include <TH1F.h>
 
 namespace phys
 {
-   std::vector<tree::Jet> getCleanedJets(std::vector<tree::Jet> const &jets);
+   // ~std::vector<tree::Jet> getCleanedJets(std::vector<tree::Jet> const &jets);
+   std::vector<tree::Jet> getCleanedJets(std::vector<tree::Jet> const &jets, bool const &usePileUpID=false, bool const &useLooseCleaning=false);
    std::vector<tree::Jet> getCleanedJets_looseID(std::vector<tree::Jet> const &jets);
    float computeHT(std::vector<tree::Jet> const &jets);
    float METoverSqrtHT(float MET, float HT); // returns inf for HT=0.0

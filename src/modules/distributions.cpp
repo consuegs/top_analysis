@@ -6,6 +6,7 @@
 #include "tools/selection.hpp"
 #include "tools/jetCorrections.hpp"
 #include "tools/bTagWeights.hpp"
+#include "tools/leptonSF.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -45,6 +46,8 @@ void run()
    //Read systematic from command line
    Systematic::Systematic currentSystematic(cfg.systematic);
    bool isNominal = (currentSystematic.type()==Systematic::nominal);
+   bool usePileUpID = (currentSystematic.type()==Systematic::jetPileupIDapplied);
+   bool useLooseCleaning = (currentSystematic.type()==Systematic::jetLooseCleaningApplied);
    
    hist::Histograms<TH1F> hs(vsDatasubsets);    //Define histograms in the following
    hist::Histograms<TH1F> hs_cutflow(vsDatasubsets);
@@ -214,7 +217,7 @@ void run()
       
       bool const isData=ds.isData;
       //Break if systematic shift is selected for data
-      if(!isNominal && isData){
+      if((!isNominal && !usePileUpID && !useLooseCleaning) && isData){
          std::cerr<<"Systematic shift should not be applied to data!"<<std::endl;
          exit(98);
       }
@@ -242,8 +245,13 @@ void run()
          jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(runEra,true).Data(),currentSystematic);
          jerCorrections jerCorrector = jerCorrections(isData? cfg.jer_SF_data.Data() : cfg.jer_SF_mc.Data(),isData? cfg.jer_RES_data.Data() : cfg.jer_RES_mc.Data(),currentSystematic);
          
-         //Configure bTag Weights
+         // Configure bTag Weights
          BTagWeights bTagWeighter = BTagWeights(cfg.bTagSF_file.Data(),cfg.bTagEffPath.Data(),cfg.bTagger.Data(),BTagEntry::OperatingPoint(cfg.bTagWP),cfg.bTagWPcut,currentSystematic);
+         
+         // Configure leptonSF
+         LeptonScaleFactors leptonSF = LeptonScaleFactors(cfg.electronID_file,cfg.electronID_hist,cfg.electronRECO_file,cfg.electronRECO_hist,
+                                                         cfg.muonID_file,cfg.muonID_hist,cfg.muonISO_file,cfg.muonISO_hist,currentSystematic);
+         leptonSF.setDYExtrapolationUncFactors(cfg.muonDYunc,cfg.electronDYunc);
          
          // Log current sample
          io::log * ("Processing '"+dss.name+"' ");
@@ -532,11 +540,8 @@ void run()
          TTreeReaderValue<std::vector<tree::Particle>> triggerObjects(reader, "hltEG165HE10Filter");
          TTreeReaderValue<tree::MET> MET(reader, "met");
          TTreeReaderValue<tree::MET> GENMET(reader, "met_gen");
-         TTreeReaderValue<tree::MET> MET_JESu(reader, "met_JESu");
-         TTreeReaderValue<tree::MET> MET_JESd(reader, "met_JESd");
          TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
          TTreeReaderValue<tree::MET> MET_XYcorr(reader, "metXYcorr");
-         TTreeReaderValue<tree::MET> MET_NoHF(reader, "metNoHF");
          TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
          TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
          TTreeReaderValue<int> n_Interactions(reader, "nPV");
@@ -551,8 +556,6 @@ void run()
          TTreeReaderValue<float> mt2   (reader, "MT2");
          TTreeReaderValue<float> genMT2   (reader, "genMT2");
          TTreeReaderValue<float> genMT2neutrino   (reader, "genMT2neutrino");
-         TTreeReaderValue<float> sf_lep1(reader, "lepton1SF");
-         TTreeReaderValue<float> sf_lep2(reader, "lepton2SF");
          TTreeReaderValue<bool> muonTrigg1(reader, cfg.muonTrigg1);
          TTreeReaderValue<bool> muonTrigg2(reader, cfg.muonTrigg2);
          TTreeReaderValue<bool> muonTrigg3(reader, cfg.muonTrigg3);
@@ -641,8 +644,6 @@ void run()
             int flavor_l2=0;
             bool muonLead=true; //Boolean for emu channel
             TString cat="";
-            if(isSignal) *w_topPT=1.;  //Set top weight for signals to 1 
-            float cutFlow_weight=(isData)? 1: *w_pu * *w_mc * *sf_lep2 * *sf_lep1 * *w_topPT;
             
             rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead);
             
@@ -654,6 +655,12 @@ void run()
                jerCorrector.smearCollection_Hybrid(*jets,*rho);
             }
             
+            // Get leptonSF weight
+            float leptonSFweight =(isData)? 1. : leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2);
+            
+            if(isSignal) *w_topPT=1.;  //Set top weight for signals to 1 
+            float cutFlow_weight=(isData)? 1: *w_pu * *w_mc * leptonSFweight * *w_topPT;
+            
             //Set some met variables
             float met=MET->p.Pt();
             float const met_puppi=MET_Puppi->p.Pt();
@@ -663,7 +670,8 @@ void run()
             
             std::vector<tree::Jet> cjets;
             std::vector<tree::Jet> BJets;
-            std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
+            // ~std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
+            std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets,usePileUpID,useLooseCleaning);
             
             if(rec_selection && ttbarSelection[0]){
                hs_cutflow.fillweight("cutflow/"+cat,2,cutFlow_weight);
@@ -713,7 +721,7 @@ void run()
                   else triggerSF = triggerSF_emu_hist->GetBinContent(triggerSF_emu_hist->GetXaxis()->FindBin(p_l2_trigg), triggerSF_emu_hist->GetYaxis()->FindBin(p_l1_trigg));
                }
                fEventWeight=*w_pu * *w_mc;     //Set event weight 
-               SFWeight=*sf_lep1 * *sf_lep2 * *w_topPT * bTagWeight * triggerSF;     //Set combined SF weight
+               SFWeight=leptonSFweight * *w_topPT * bTagWeight * triggerSF;     //Set combined SF weight
                hs.setFillWeight(fEventWeight*SFWeight);
                hs2d.setFillWeight(fEventWeight*SFWeight);
             }
@@ -725,11 +733,11 @@ void run()
             if(rec_selection){
                hs_cutflow.fillweight("cutflow/"+cat,5,(isData)? cutFlow_weight : cutFlow_weight * bTagWeight);
                if(isData) hs_cutflow.fillweight("cutflow/"+cat,6,1);
-               else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * bTagWeight * *w_topPT *triggerSF);
+               else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * *w_mc * leptonSFweight * bTagWeight * *w_topPT *triggerSF);
             }
             if(rec_selection && !*addLepton){
                if(isData) hs_cutflow.fillweight("cutflow/"+cat,7,1);
-               else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * *w_mc * *sf_lep2 * *sf_lep1 * bTagWeight * *w_topPT *triggerSF);
+               else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * *w_mc * leptonSFweight * bTagWeight * *w_topPT *triggerSF);
             }
                      
             //Muon and Electron Fraction for bJets and cleaned jets

@@ -102,7 +102,8 @@ bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, 
 }
 
 std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
-                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
+                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets,
+                                    bool const &usePileUpID, bool const &useLooseCleaning)
 {
    std::vector<bool> selection_vec={false,false,false,false};
       
@@ -112,7 +113,8 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    else selection_vec[0]=true;
    
    //Jet Cut
-   cleanJets=phys::getCleanedJets(jets);
+   // ~cleanJets=phys::getCleanedJets(jets);
+   cleanJets=phys::getCleanedJets(jets,usePileUpID,useLooseCleaning);
    if(cleanJets.size()<2) return selection_vec;
    else selection_vec[1]=true;
    
@@ -144,40 +146,6 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
       return selection_vec;
    }
 }
-
-// ~std::vector<bool> selection::ttbarSelection_looseJetID(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
-                                    // ~std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
-// ~{
-   // ~std::vector<bool> selection_vec={false,false,false,false};
-   
-   // ~//mLL Cut
-   // ~float mll_corr=(p_l1+p_l2).M();
-   // ~if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) return selection_vec;
-   // ~else selection_vec[0]=true;
-   
-   // ~//Jet Cut
-   // ~cleanJets=phys::getCleanedJets_looseID(jets);
-   // ~if(cleanJets.size()<2) return selection_vec;
-   // ~else selection_vec[1]=true;
-   
-   // ~//MET Cut
-   // ~if ((channel[0] || channel[1]) && met<40) return selection_vec;
-   // ~else selection_vec[2]=true;
-   
-   // ~//bJet Cut
-   // ~bool bTag=false;
-   // ~for (tree::Jet const &jet : cleanJets) {
-      // ~if (jet.bTagDeepCSV>0.2217) {      //Loose working point for deepCSV
-         // ~bTag=true;
-         // ~bJets.push_back(jet);
-      // ~}
-   // ~}
-   // ~if(!bTag) return selection_vec;
-   // ~else{
-      // ~selection_vec[3]=true;
-      // ~return selection_vec;
-   // ~}
-// ~}
 
 std::vector<bool> selection::kitSyncSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
                                     std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)

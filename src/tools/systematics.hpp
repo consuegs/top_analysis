@@ -278,7 +278,11 @@ namespace Systematic{
         closure,            // Closure test
         allAvailable,       // All systematics which are available
         all,                // All allowed systematics
-        undefinedType       // No systematic defined (also not nominal)
+        undefinedType,       // No systematic defined (also not nominal)
+        
+        jetPileupIDapplied,             // Check impact of jetPileupID
+        jetLooseCleaningApplied        // Check impact of loose cleaning
+        
     };
 
 
@@ -422,6 +426,12 @@ namespace Systematic{
         btagBCcorr,btagBCuncorr,
         btagLcorr,btagLuncorr,
     };
+    
+    /// Define lepton SF systematics
+    const std::vector<Type> leptonsfTypes{
+        eleID,eleReco,
+        muonID,muonIDStat,muonIDSyst,muonIso,muonIsoStat,muonIsoSyst,
+    };
 
     /// Define ttbar systematics, i.e. variations of the ttbar sample (e.g. mass or scale variations)
     const std::vector<Type> ttbarTypes{
@@ -477,6 +487,9 @@ namespace Systematic{
         btagBC,btagL,
         btagBCcorr,btagBCuncorr,
         btagLcorr,btagLuncorr,
+        eleID,eleReco,
+        muonID,muonIDStat,muonIDSyst,muonIso,muonIsoStat,muonIsoSyst,
+        jetPileupIDapplied,jetLooseCleaningApplied
     };
 
     const std::vector<Type> uncorrelatedTypes{
