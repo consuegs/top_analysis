@@ -2,8 +2,6 @@
 #include "Config.hpp"
 #include <iostream>
 
-//Currently fixed to DeepJet loose WP!!!!!!!!!
-
 //////////////////////////////////// btag Eff //////////////////////////////////////////////////////
 
 BTagEffMapFunctor::BTagEffMapFunctor(const std::string& bTagEffPath,const std::string& tagger, const BTagEntry::OperatingPoint& WP, const Systematic::Systematic& systematic) :
