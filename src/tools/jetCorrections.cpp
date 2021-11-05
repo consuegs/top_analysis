@@ -53,7 +53,7 @@ void jesCorrections::applySystematics(std::vector<tree::Jet>& Jets, TLorentzVect
 {
    if(systematicInternal_!=nominal){ // Apply shifts only if JES systematic is selected
       for(size_t iJet=0; iJet<Jets.size(); ++iJet){   //Remove jets, which will be corrected from MET
-         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch) continue;
+         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch_loose) continue;
          TLorentzVector temp(0.,0.,0.,0.);
          temp.SetPtEtaPhiM(Jets.at(iJet).p.Pt(),0.,Jets.at(iJet).p.Phi(),0.);
          MET = MET + (temp-(temp*(Jets.at(iJet).uncorJecFactor_L1)));
@@ -66,7 +66,7 @@ void jesCorrections::applySystematics(std::vector<tree::Jet>& Jets, TLorentzVect
       }
       
       for(size_t iJet=0; iJet<Jets.size(); ++iJet){   //Add shifted jets to MET
-         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch) continue;
+         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch_loose) continue;
          TLorentzVector temp(0.,0.,0.,0.);
          temp.SetPtEtaPhiM(Jets.at(iJet).p.Pt(),0.,Jets.at(iJet).p.Phi(),0.);
          MET = MET - (temp-(temp*(Jets.at(iJet).uncorJecFactor_L1)));
@@ -285,13 +285,3 @@ bool jerCorrections::checkApplySystematic(const TLorentzVector& p)
 	}
    return false;
 }
-
-   
-
-
-
-
-
-
-
-

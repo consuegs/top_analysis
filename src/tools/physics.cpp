@@ -1,19 +1,18 @@
 #include "physics.hpp"
 
 #include <limits>
+#include <iostream>
 
-std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets, bool const &usePileUpID, bool const &useLooseCleaning)
+std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets,TLorentzVector const &p_l1,TLorentzVector const &p_l2)
 {
    std::vector<tree::Jet> cjets;
-   for (tree::Jet j: jets){
+   for (const tree::Jet j: jets){
       if (!j.TightIDlepVeto || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
-      if (useLooseCleaning){
-         if (j.hasMuonMatch_loose || j.hasElectronMatch_loose) continue;
-      }
-      else{
-         if (j.hasElectronMatch || j.hasMuonMatch) continue;
-      }
-      if (usePileUpID && !j.PileupIDloose) continue;
+      
+      // Check overlap with selected leptons
+      if(j.p.DeltaR(p_l1)<0.4) continue;
+      else if (j.p.DeltaR(p_l2)<0.4) continue;
+      
       cjets.push_back(j);
    }
    sort(cjets.begin(), cjets.end(), tree::PtGreater);

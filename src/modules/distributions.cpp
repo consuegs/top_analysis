@@ -7,6 +7,7 @@
 #include "tools/jetCorrections.hpp"
 #include "tools/bTagWeights.hpp"
 #include "tools/leptonSF.hpp"
+#include "tools/leptonCorrections.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -46,8 +47,6 @@ void run()
    //Read systematic from command line
    Systematic::Systematic currentSystematic(cfg.systematic);
    bool isNominal = (currentSystematic.type()==Systematic::nominal);
-   bool usePileUpID = (currentSystematic.type()==Systematic::jetPileupIDapplied);
-   bool useLooseCleaning = (currentSystematic.type()==Systematic::jetLooseCleaningApplied);
    
    hist::Histograms<TH1F> hs(vsDatasubsets);    //Define histograms in the following
    hist::Histograms<TH1F> hs_cutflow(vsDatasubsets);
@@ -217,7 +216,7 @@ void run()
       
       bool const isData=ds.isData;
       //Break if systematic shift is selected for data
-      if((!isNominal && !usePileUpID && !useLooseCleaning) && isData){
+      if(!isNominal && isData){
          std::cerr<<"Systematic shift should not be applied to data!"<<std::endl;
          exit(98);
       }
@@ -245,6 +244,9 @@ void run()
          jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(runEra,true).Data(),currentSystematic);
          jerCorrections jerCorrector = jerCorrections(isData? cfg.jer_SF_data.Data() : cfg.jer_SF_mc.Data(),isData? cfg.jer_RES_data.Data() : cfg.jer_RES_mc.Data(),currentSystematic);
          
+         // Configure lepton Correction
+         leptonCorrections leptonCorretor = leptonCorrections(currentSystematic);
+         
          // Configure bTag Weights
          BTagWeights bTagWeighter = BTagWeights(cfg.bTagSF_file.Data(),cfg.bTagEffPath.Data(),cfg.bTagger.Data(),BTagEntry::OperatingPoint(cfg.bTagWP),cfg.bTagWPcut,currentSystematic);
          
@@ -268,7 +270,7 @@ void run()
          
          //Check if current sample is TTbar powheg dilepton
          bool ttBar_dilepton=false;
-         if (dss.datasetName=="TTbar_diLepton") ttBar_dilepton=true;
+         if (dss.datasetName=="TTbar_diLepton" || dss.datasetName=="TTbar_diLepton_new") ttBar_dilepton=true;
          
          //Check if current sample is TTbar powheg dilepton tau
          bool ttBar_dilepton_tau=false;
@@ -548,12 +550,7 @@ void run()
          TTreeReaderValue<int> n_Interactions_gen(reader, "true_nPV");
          TTreeReaderValue<float> HTgen(reader, "genHt");
          TTreeReaderValue<float> rho(reader, "rho");
-         TTreeReaderValue<bool> is_ee   (reader, "ee");
-         TTreeReaderValue<bool> is_emu   (reader, "emu");
-         TTreeReaderValue<bool> is_mumu   (reader, "mumu");
          TTreeReaderValue<bool> addLepton   (reader, "addLepton");
-         TTreeReaderValue<float> mll   (reader, "mll");
-         TTreeReaderValue<float> mt2   (reader, "MT2");
          TTreeReaderValue<float> genMT2   (reader, "genMT2");
          TTreeReaderValue<float> genMT2neutrino   (reader, "genMT2neutrino");
          TTreeReaderValue<bool> muonTrigg1(reader, cfg.muonTrigg1);
@@ -622,11 +619,25 @@ void run()
             //Do only use ee,emu,mumu in in amc ttbar
             if (ttBar_amc && (*genDecayMode>3 || *genDecayMode==0)) continue;
             
+            // Correct and select leptons
+            *muons = leptonCorretor.correctMuons(*muons);
+            *electrons = leptonCorretor.correctElectrons(*electrons);
+            
+            //Baseline selection (including separation into ee, emu, mumu)
+            TLorentzVector p_l1;
+            TLorentzVector p_l2;
+            int flavor_l1=0;  //1 for electron and 2 for muon
+            int flavor_l2=0;
+            bool muonLead=true; //Boolean for emu channel
+            std::vector<bool> channel={false,false,false};     //ee, mumu, emu
+            TString cat="";
+            
+            rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead);
+            
             //Trigger selection
             std::vector<bool> diElectronTriggers={*eleTrigg1,*eleTrigg2,*singleEleTrigg};
             std::vector<bool> diMuonTriggers={*muonTrigg1,*muonTrigg2,*muonTrigg3,*muonTrigg4,*singleMuonTrigg1,*singleMuonTrigg2};
             std::vector<bool> electronMuonTriggers={*eleMuTrigg1,*eleMuTrigg2,*eleMuTrigg3,*eleMuTrigg4,*singleMuonTrigg1,*singleMuonTrigg2,*singleEleTrigg};
-            std::vector<bool> channel={*is_ee,*is_mumu,*is_emu};
             std::vector<bool> PD={SingleElectron,DoubleEG,SingleMuon,DoubleMuon,MuonEG,EGamma};
             bool triggerMC=true;
             
@@ -636,16 +647,6 @@ void run()
             else{
                if(!selection::triggerSelection(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,true,year_int,PD,Run2016H,Run2017AB)) continue;
             }
-            
-            //Baseline selection (separation into ee, emu, mumu already done at TreeWriter)
-            TLorentzVector p_l1;
-            TLorentzVector p_l2;
-            int flavor_l1=0;  //1 for electron and 2 for muon
-            int flavor_l2=0;
-            bool muonLead=true; //Boolean for emu channel
-            TString cat="";
-            
-            rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead);
             
             if (triggerMC==false) rec_selection=false;
             
@@ -665,13 +666,13 @@ void run()
             float met=MET->p.Pt();
             float const met_puppi=MET_Puppi->p.Pt();
             float const genMet=GENMET->p.Pt();
+            float mt2 = -1.;
             
             if(rec_selection) hs_cutflow.fillweight("cutflow/"+cat,1,cutFlow_weight);
             
             std::vector<tree::Jet> cjets;
             std::vector<tree::Jet> BJets;
-            // ~std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
-            std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets,usePileUpID,useLooseCleaning);
+            std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
             
             if(rec_selection && ttbarSelection[0]){
                hs_cutflow.fillweight("cutflow/"+cat,2,cutFlow_weight);
@@ -689,8 +690,8 @@ void run()
             float bTagWeight = 1.;
             if(rec_selection && !isData) {
                int channelID = 3;
-               if (*is_ee) channelID = 1;
-               if (*is_mumu) channelID = 2;
+               if (channel[0]) channelID = 1;
+               if (channel[1]) channelID = 2;
                bTagWeight = bTagWeighter.getEventWeight(cjets,channelID);
             }
  
@@ -714,9 +715,9 @@ void run()
             float p_l1_trigg = std::min(199.,p_l1.Pt());
             float p_l2_trigg = std::min(199.,p_l2.Pt());
             if(!isData){
-               if (*is_ee) triggerSF = triggerSF_ee_hist->GetBinContent(triggerSF_ee_hist->GetXaxis()->FindBin(p_l1_trigg), triggerSF_ee_hist->GetYaxis()->FindBin(p_l2_trigg));
-               else if (*is_mumu) triggerSF = triggerSF_mumu_hist->GetBinContent(triggerSF_mumu_hist->GetXaxis()->FindBin(p_l1_trigg), triggerSF_mumu_hist->GetYaxis()->FindBin(p_l2_trigg));
-               else if (*is_emu){
+               if (channel[0]) triggerSF = triggerSF_ee_hist->GetBinContent(triggerSF_ee_hist->GetXaxis()->FindBin(p_l1_trigg), triggerSF_ee_hist->GetYaxis()->FindBin(p_l2_trigg));
+               else if (channel[1]) triggerSF = triggerSF_mumu_hist->GetBinContent(triggerSF_mumu_hist->GetXaxis()->FindBin(p_l1_trigg), triggerSF_mumu_hist->GetYaxis()->FindBin(p_l2_trigg));
+               else if (channel[2]){
                   if(muonLead)triggerSF = triggerSF_emu_hist->GetBinContent(triggerSF_emu_hist->GetXaxis()->FindBin(p_l1_trigg), triggerSF_emu_hist->GetYaxis()->FindBin(p_l2_trigg));
                   else triggerSF = triggerSF_emu_hist->GetBinContent(triggerSF_emu_hist->GetXaxis()->FindBin(p_l2_trigg), triggerSF_emu_hist->GetYaxis()->FindBin(p_l1_trigg));
                }
@@ -962,9 +963,9 @@ void run()
             
             //Fill minimal tree for TTbar resolution used in binning/unfolding studies
             if (minimalTree){
-               minTree_ee=*is_ee;
-               minTree_mumu=*is_mumu;
-               minTree_emu=*is_emu;
+               minTree_ee=channel[0];
+               minTree_mumu=channel[1];
+               minTree_emu=channel[2];
                minTree_MET=met;
                minTree_PtNuNu=neutrinoPair.Pt();
                minTree_PhiRec=abs(dPhiMETnearLep);
@@ -1022,7 +1023,7 @@ void run()
                minTree_PtNuNu_phi=neutrinoPair.Phi();
                minTree_NpromptNeutrinos=NpromptNeutrinos;
                minTree_NnonpromptNeutrinos=NnonpromptNeutrinos;
-               minTree_MT2=*mt2;
+               minTree_MT2=mt2;
                minTree_vecsum_pT_allJet=MHT.Pt();
                minTree_vecsum_pT_l1l2_allJet=(MHT+p_l1+p_l2).Pt();
                minTree_mass_l1l2_allJet=(MHT+p_l1+p_l2).M();
@@ -1267,9 +1268,7 @@ void run()
             count[dss.datasetName]++;
             
             //Fill hists
-            TString path_cat="ee";
-            if (*is_emu) path_cat="emu";
-            else if (*is_mumu) path_cat="mumu";
+            TString path_cat=cat;
             
             hs.fill("baseline/"+path_cat+"/MET",met);
             hs.fill("baseline/"+path_cat+"/PuppiMET",met_puppi);
@@ -1305,9 +1304,9 @@ void run()
             hs.fill("baseline/"+path_cat+"/dR_Lep1Lep2",abs(dR_Lep1Lep2));
             hs.fill("baseline/"+path_cat+"/nJets",cjets.size());
             hs.fill("baseline/"+path_cat+"/nBjets",nBjets);
-            hs.fill("baseline/"+path_cat+"/MT2",*mt2);
-            hs.fill("baseline/"+path_cat+"/C_em_W_p",*mt2+0.2*(200-met_puppi));
-            hs.fill("baseline/"+path_cat+"/C_em_W_m",*mt2-0.2*(200-met_puppi));
+            hs.fill("baseline/"+path_cat+"/MT2",mt2);
+            hs.fill("baseline/"+path_cat+"/C_em_W_p",mt2+0.2*(200-met_puppi));
+            hs.fill("baseline/"+path_cat+"/C_em_W_m",mt2-0.2*(200-met_puppi));
             hs.fill("baseline/"+path_cat+"/MT",mt_MetLep1);
             hs.fill("baseline/"+path_cat+"/mt_MetLep2",mt_MetLep2);
             hs.fill("baseline/"+path_cat+"/mt_MetNextLep",mt_MetNextLep);
@@ -1369,7 +1368,7 @@ void run()
             hs2d.fill("baseline/"+path_cat+"/2d_MetVSdPhiMetNearLep_Puppi",met_puppi,abs(dPhiMETnearLepPuppi));
             hs2d.fill("baseline/"+path_cat+"/2d_MetVSdPhiMetNearLep_DNN",DNN_MET_pT,abs(DNN_MET_dPhi_nextLep));
             hs2d.fill("genParticles/"+path_cat+"/2d_PtNuNuVSdPhiNuNuNearLep",neutrinoPair.Pt(),abs(dPhiPtNunearLep));
-            hs2d.fill("baseline/"+path_cat+"/2d_CemVSdPhiMetNearLep",*mt2-0.2*(200-met_puppi),abs(dPhiMETnearLepPuppi));
+            hs2d.fill("baseline/"+path_cat+"/2d_CemVSdPhiMetNearLep",mt2-0.2*(200-met_puppi),abs(dPhiMETnearLepPuppi));
             
             if (met>200){
                hs.fill("baseline_Met200/"+path_cat+"/MET",met);
@@ -1377,7 +1376,7 @@ void run()
                hs.fill("baseline_Met200/"+path_cat+"/met1000",met);
                hs.fill("baseline_Met200/"+path_cat+"/DNN_MET_pT",DNN_MET_pT);
                hs.fill("baseline_Met200/"+path_cat+"/DNN_MET_dPhi_nextLep",DNN_MET_dPhi_nextLep);
-               hs.fill("baseline_Met200/"+path_cat+"/mLL",*mll);
+               hs.fill("baseline_Met200/"+path_cat+"/mLL",minTree_mLL);
                hs.fill("baseline_Met200/"+path_cat+"/Lep1_pt",p_l1.Pt());
                hs.fill("baseline_Met200/"+path_cat+"/Lep2_pt",p_l2.Pt());
                hs.fill("baseline_Met200/"+path_cat+"/pTsumlep",(p_l1+p_l2).Pt());
@@ -1406,9 +1405,9 @@ void run()
                hs.fill("baseline_Met200/"+path_cat+"/dR_Lep1Lep2",abs(dR_Lep1Lep2));
                hs.fill("baseline_Met200/"+path_cat+"/nJets",cjets.size());
                hs.fill("baseline_Met200/"+path_cat+"/nBjets",nBjets);
-               hs.fill("baseline_Met200/"+path_cat+"/MT2",*mt2);
-               hs.fill("baseline_Met200/"+path_cat+"/C_em_W_p",*mt2+0.2*(200-met_puppi));
-               hs.fill("baseline_Met200/"+path_cat+"/C_em_W_m",*mt2-0.2*(200-met_puppi));
+               hs.fill("baseline_Met200/"+path_cat+"/MT2",mt2);
+               hs.fill("baseline_Met200/"+path_cat+"/C_em_W_p",mt2+0.2*(200-met_puppi));
+               hs.fill("baseline_Met200/"+path_cat+"/C_em_W_m",mt2-0.2*(200-met_puppi));
                hs.fill("baseline_Met200/"+path_cat+"/MT",mt_MetLep1);
                hs.fill("baseline_Met200/"+path_cat+"/mt_MetLep2",mt_MetLep2);
                hs.fill("baseline_Met200/"+path_cat+"/mt_MetNextLep",mt_MetNextLep);
@@ -1417,7 +1416,7 @@ void run()
                hs.fill("baseline_Met200/"+path_cat+"/HT",HT);
                hs.fill("baseline_Met200/"+path_cat+"/sum_STHT",ST+HT);
                hs.fill("baseline_Met200/"+path_cat+"/sum_mlb",sum_mlb);
-               hs2d.fill("baseline_Met200/"+path_cat+"/2d_CemVSdPhiMetNearLep",*mt2-0.2*(200-met_puppi),abs(dPhiMETnearLepPuppi));
+               hs2d.fill("baseline_Met200/"+path_cat+"/2d_CemVSdPhiMetNearLep",mt2-0.2*(200-met_puppi),abs(dPhiMETnearLepPuppi));
             }
                   
          }// evt loop

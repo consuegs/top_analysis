@@ -44,66 +44,62 @@ bool selection::triggerSelection(std::vector<bool> const &diElectronTriggers, st
    Lepton Selection Function for 2016
 */
 
-bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, std::vector<tree::Muon> const &muons, std::vector<bool> const &channel,
+bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, std::vector<tree::Muon> const &muons, std::vector<bool> &channel,
                         TLorentzVector &p_l1, TLorentzVector &p_l2, int &flavor_l1, int &flavor_l2, TString &cat, bool &muonLead)
 {
-   int leadLepton=0;
-   int subleadLepton=1;
-   bool rec_selection=false;
    
-   if (channel[0]){
-      rec_selection=true;
-      if(!electrons[0].isTight || !electrons[1].isTight) rec_selection=false; //currently double check since trees only have tight leptons!!
-      if(abs(electrons[0].etaSC)>2.4 || abs(electrons[1].etaSC>2.4)) rec_selection=false; //To use same region as for muons, cut on supercluster eta
-      if(electrons[0].p.Pt()*electrons[0].corr<electrons[1].p.Pt()*electrons[1].corr) leadLepton=1,subleadLepton=0;
-      p_l1=electrons[leadLepton].p*electrons[leadLepton].corr;
-      p_l2=electrons[subleadLepton].p*electrons[subleadLepton].corr;
-      flavor_l1=1;
-      flavor_l2=1;
-      cat="ee";
-   }
-   else if (channel[1]){
-      rec_selection=true;
-      if(!muons[0].isTight || !muons[1].isTight) rec_selection=false;
-      if(muons[0].rIso>0.15 || muons[1].rIso>0.15) rec_selection=false;
-      if(abs(muons[0].p.Eta())>2.4 || abs(muons[1].p.Eta())>2.4) rec_selection=false;
-      if(muons[0].p.Pt()*muons[0].rochesterCorrection<muons[1].p.Pt()*muons[1].rochesterCorrection) leadLepton=1,subleadLepton=0;
-      p_l1=muons[leadLepton].p*muons[leadLepton].rochesterCorrection;
-      p_l2=muons[subleadLepton].p*muons[subleadLepton].rochesterCorrection;
-      flavor_l1=2;
-      flavor_l2=2;
-      cat="mumu";
-   }
-   else if (channel[2]){
-      rec_selection=true;
-      if(!muons[0].isTight || !electrons[0].isTight) rec_selection=false;
-      if(muons[0].rIso>0.15 ) rec_selection=false;
-      if(abs(muons[0].p.Eta())>2.4) rec_selection=false;
-      if(abs(electrons[0].etaSC>2.4) ) rec_selection=false;
-      if (muons[0].p.Pt()*muons[0].rochesterCorrection>electrons[0].p.Pt()*electrons[0].corr){
-         p_l1=muons[0].p*muons[0].rochesterCorrection;
-         p_l2=electrons[0].p*electrons[0].corr;
-         flavor_l1=2;
-         flavor_l2=1;
+   if ((electrons.size()+muons.size()) == 2){
+      if (electrons.size() == 2){
+         if (electrons[0].charge*electrons[1].charge!=-1) return false;
+         else{
+            channel[0] = true;
+            p_l1 = electrons[0].p;
+            p_l2 = electrons[1].p;
+            flavor_l1 = 1;
+            flavor_l2 = 1;
+            cat = "ee";
+         }
+      }
+      else if (muons.size() == 2){
+         if (muons[0].charge*muons[1].charge != -1) return false;
+         else{
+            channel[1] = true;
+            p_l1 = muons[0].p;
+            p_l2 = muons[1].p;
+            flavor_l1 = 2;
+            flavor_l2 = 2;
+            cat = "mumu";
+         }
       }
       else {
-         p_l1=electrons[0].p*electrons[0].corr;
-         p_l2=muons[0].p*muons[0].rochesterCorrection;
-         flavor_l1=1;
-         flavor_l2=2;
-         muonLead=false;
+         if (muons[0].charge*electrons[0].charge != -1) return false;
+         else{
+            if (muons[0].p.Pt() > electrons[0].p.Pt()){
+               muonLead = true;
+               p_l1 = muons[0].p;
+               p_l2 = electrons[0].p;
+               flavor_l1 = 2;
+               flavor_l2 = 1;
+            }
+            else{
+               muonLead = false;
+               p_l1 = electrons[0].p;
+               p_l2 = muons[0].p;
+               flavor_l1 = 1;
+               flavor_l2 = 2;
+            }
+            channel[2] = true;
+            cat = "emu";
+         }
       }
-      cat="emu";
    }
+   else return false;
    
-   if (p_l1.Pt()<25 || p_l2.Pt()<20) rec_selection=false;
-   
-   return rec_selection;
+   return (p_l1.Pt()>=25 && p_l2.Pt()>=20);
 }
 
 std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
-                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets,
-                                    bool const &usePileUpID, bool const &useLooseCleaning)
+                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
 {
    std::vector<bool> selection_vec={false,false,false,false};
       
@@ -113,8 +109,7 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    else selection_vec[0]=true;
    
    //Jet Cut
-   // ~cleanJets=phys::getCleanedJets(jets);
-   cleanJets=phys::getCleanedJets(jets,usePileUpID,useLooseCleaning);
+   cleanJets=phys::getCleanedJets(jets, p_l1, p_l2);
    if(cleanJets.size()<2) return selection_vec;
    else selection_vec[1]=true;
    
@@ -153,7 +148,7 @@ std::vector<bool> selection::kitSyncSelection(TLorentzVector const &p_l1, TLoren
    std::vector<bool> selection_vec={false};
    
    //Still check jets
-   cleanJets=phys::getCleanedJets(jets);
+   cleanJets=phys::getCleanedJets(jets,p_l1,p_l2);
    
    bool bTag=false;
    if(cfg.year_int==1){

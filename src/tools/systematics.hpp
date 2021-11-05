@@ -398,7 +398,7 @@ namespace Systematic{
     /// Check the validity of a variation for a given type
     void isValid(const Type& type, const Variation& variation, const int variationNumber =-1);
 
-
+    /// Define jes systematics
     const std::vector<Type> jesTypes{
         jesTotal, jesAbsoluteStat, jesAbsoluteScale, jesAbsoluteFlavMap, jesAbsoluteMPFBias, jesFragmentation, jesSinglePionECAL,
         jesSinglePionHCAL, jesFlavorQCD, jesTimePtEta, jesRelativeJEREC1, jesRelativeJEREC2, jesRelativeJERHF, jesRelativePtBB, jesRelativePtEC1,
@@ -415,8 +415,15 @@ namespace Systematic{
         jesUserDefinedHEM1516,
     };
     
+    /// Define jer systematics
     const std::vector<Type> jerTypes{
         jer, jerEta0, jerEta1, jerEta2Pt0, jerEta2Pt1, jerEta3Pt0, jerEta3Pt1
+    };
+    
+    /// Define lepton scale and resolution systematics
+    const std::vector<Type> leptonScaleResTypes{
+        eleScaleEt,eleScaleStat,eleSmearingPhi,eleSmearingRho,eleScaleSmearing,
+        muonScaleStat,muonScaleZpt,muonScaleEwk,muonScaleDeltaM,muonScaleEwk2,muonScale
     };
 
 
@@ -489,7 +496,10 @@ namespace Systematic{
         btagLcorr,btagLuncorr,
         eleID,eleReco,
         muonID,muonIDStat,muonIDSyst,muonIso,muonIsoStat,muonIsoSyst,
-        jetPileupIDapplied,jetLooseCleaningApplied
+        jetPileupIDapplied,jetLooseCleaningApplied,
+        
+        eleScaleEt,eleScaleStat,eleSmearingPhi,eleSmearingRho,eleScaleSmearing,
+        muonScaleStat,muonScaleZpt,muonScaleEwk,muonScaleDeltaM,muonScaleEwk2,muonScale
     };
 
     const std::vector<Type> uncorrelatedTypes{
