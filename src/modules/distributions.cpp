@@ -666,7 +666,7 @@ void run()
             float met=MET->p.Pt();
             float const met_puppi=MET_Puppi->p.Pt();
             float const genMet=GENMET->p.Pt();
-            float mt2 = -1.;
+            float mt2 = phys::MT2(p_l1,p_l2,MET_Puppi->p);
             
             if(rec_selection) hs_cutflow.fillweight("cutflow/"+cat,1,cutFlow_weight);
             

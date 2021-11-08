@@ -52,14 +52,14 @@ float phys::METoverSqrtHT(float MET, float HT)
            : MET/TMath::Sqrt(HT));
 }
 
-float phys::M_T2(TLorentzVector const &v1, TLorentzVector const &v2)
+float phys::M_T_squared(TLorentzVector const &v1, TLorentzVector const &v2)
 {
    return 2.0*v1.Pt()*v2.Pt()*(1-TMath::Cos(v1.DeltaPhi(v2)));
 }
 
 float phys::M_T(TLorentzVector const &v1, TLorentzVector const &v2)
 {
-   return TMath::Sqrt(M_T2(v1,v2));
+   return TMath::Sqrt(M_T_squared(v1,v2));
 }
 
 float phys::M_T(tree::Particle const &p1, tree::Particle const &p2)
@@ -165,6 +165,18 @@ float phys::dPhi(float &a, float &b){
    if (x >= M_PI) x -= 2*M_PI;
    else if (x < -M_PI) x += 2*M_PI;
    return x;
+}
+
+float phys::MT2(TLorentzVector const &v1, TLorentzVector const &v2, TLorentzVector const &met){
+   MT2Functor fctMT2_;
+   double pa[3] = {v1.M(),v1.Px(),v1.Py()};
+   double pb[3] = {v2.M(),v2.Px(),v2.Py()};
+   double pmiss[3] = {0.,met.Px(),met.Py()};
+   
+   fctMT2_.set_mn(0.);
+   fctMT2_.set_momenta(pa,pb,pmiss);
+   
+   return fctMT2_.get_mt2();
 }
 
 TH1F phys::getSystShift(TH1F const &nominal,TH1F const &syst){

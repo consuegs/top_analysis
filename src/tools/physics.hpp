@@ -3,6 +3,7 @@
 
 #include "tree/TreeParticles.hpp"
 #include "tools/systematics.hpp"
+#include "tools/MT2Functor.h"
 #include <TH1F.h>
 
 namespace phys
@@ -15,7 +16,7 @@ namespace phys
    // transverse mass (for massless daughters)
    float M_T (tree::Particle const &p1, tree::Particle const &p2);
    float M_T (TLorentzVector const &v1, TLorentzVector const &v2);
-   float M_T2(TLorentzVector const &v1, TLorentzVector const &v2);
+   float M_T_squared(TLorentzVector const &v1, TLorentzVector const &v2);
    
    // contransverse mass (for massless daugthers)
    float conM_T(TLorentzVector const &v1, TLorentzVector const &v2);
@@ -32,6 +33,9 @@ namespace phys
   
    // sum dPhi
    float dPhi(float &a, float &b);
+   
+   // MT2
+   float MT2(TLorentzVector const &v1, TLorentzVector const &v2, TLorentzVector const &met);
    
    // systematics
    TH1F getSystShift(TH1F const &nominal, TH1F const &syst);
