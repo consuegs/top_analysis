@@ -34,8 +34,8 @@ public:
 
 
    /// Get lepton per-event scale factor for exactly two leptons
-   const float getSFDilepton(const TLorentzVector p_l1, const TLorentzVector p_l2,
-                   const int flavor_l1, const int flavor_l2);
+   const float getSFDilepton(const TLorentzVector &p_l1, const TLorentzVector &p_l2,
+                   const int &flavor_l1, const int &flavor_l2);
 
    void setDYExtrapolationUncFactors(const float& muon_ISO_DY_unc, const float& electron_ID_DY_unc);
 

@@ -8,6 +8,7 @@
 #include "tools/bTagWeights.hpp"
 #include "tools/leptonSF.hpp"
 #include "tools/leptonCorrections.hpp"
+#include "tools/triggerSF.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -254,6 +255,9 @@ void run()
          LeptonScaleFactors leptonSF = LeptonScaleFactors(cfg.electronID_file,cfg.electronID_hist,cfg.electronRECO_file,cfg.electronRECO_hist,
                                                          cfg.muonID_file,cfg.muonID_hist,cfg.muonISO_file,cfg.muonISO_hist,currentSystematic);
          leptonSF.setDYExtrapolationUncFactors(cfg.muonDYunc,cfg.electronDYunc);
+         
+         // Configure triggerSF
+         TriggerScaleFactors triggerSFcalc = TriggerScaleFactors(cfg.trigger_SF_ee.Data(),cfg.trigger_SF_mumu.Data(),cfg.trigger_SF_emu.Data(),currentSystematic);
          
          // Log current sample
          io::log * ("Processing '"+dss.name+"' ");
@@ -688,11 +692,12 @@ void run()
             
             //Get bTag weight
             float bTagWeight = 1.;
-            if(rec_selection && !isData) {
-               int channelID = 3;
+            int channelID = 0;
+            if(rec_selection) {
                if (channel[0]) channelID = 1;
-               if (channel[1]) channelID = 2;
-               bTagWeight = bTagWeighter.getEventWeight(cjets,channelID);
+               else if (channel[1]) channelID = 2;
+               else if (channel[2]) channelID = 3;
+               if (!isData) bTagWeight = bTagWeighter.getEventWeight(cjets,channelID);
             }
  
             // end reco baseline selection
@@ -715,12 +720,7 @@ void run()
             float p_l1_trigg = std::min(199.,p_l1.Pt());
             float p_l2_trigg = std::min(199.,p_l2.Pt());
             if(!isData){
-               if (channel[0]) triggerSF = triggerSF_ee_hist->GetBinContent(triggerSF_ee_hist->GetXaxis()->FindBin(p_l1_trigg), triggerSF_ee_hist->GetYaxis()->FindBin(p_l2_trigg));
-               else if (channel[1]) triggerSF = triggerSF_mumu_hist->GetBinContent(triggerSF_mumu_hist->GetXaxis()->FindBin(p_l1_trigg), triggerSF_mumu_hist->GetYaxis()->FindBin(p_l2_trigg));
-               else if (channel[2]){
-                  if(muonLead)triggerSF = triggerSF_emu_hist->GetBinContent(triggerSF_emu_hist->GetXaxis()->FindBin(p_l1_trigg), triggerSF_emu_hist->GetYaxis()->FindBin(p_l2_trigg));
-                  else triggerSF = triggerSF_emu_hist->GetBinContent(triggerSF_emu_hist->GetXaxis()->FindBin(p_l2_trigg), triggerSF_emu_hist->GetYaxis()->FindBin(p_l1_trigg));
-               }
+               if(rec_selection) triggerSF = triggerSFcalc.getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);
                fEventWeight=*w_pu * *w_mc;     //Set event weight 
                SFWeight=leptonSFweight * *w_topPT * bTagWeight * triggerSF;     //Set combined SF weight
                hs.setFillWeight(fEventWeight*SFWeight);

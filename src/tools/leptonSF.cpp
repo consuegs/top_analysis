@@ -104,8 +104,8 @@ TH2* LeptonScaleFactors::prepareSF(const std::string& sfInputFileName,
 
 
 
-const float LeptonScaleFactors::getSFDilepton(const TLorentzVector p_l1, const TLorentzVector p_l2,
-                                             const int flavor_l1, const int flavor_l2)
+const float LeptonScaleFactors::getSFDilepton(const TLorentzVector &p_l1, const TLorentzVector &p_l2,
+                                             const int &flavor_l1, const int &flavor_l2)
 {
    float result(1.);
 

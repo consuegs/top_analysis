@@ -15,6 +15,7 @@ set(SRCS
   bTagWeights.cpp
   leptonSF.cpp
   leptonCorrections.cpp
+  triggerSF.cpp
   )
 
 add_library(tools SHARED ${SRCS})
