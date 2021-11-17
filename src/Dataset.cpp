@@ -89,12 +89,17 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    std::vector<float> feffs;
    std::string label;
    float syst_unc;
+   bool isSplitSample=false;
    std::vector<std::string> mcDataset = util::to_vector<std::string>(pt.get<std::string>("input.mc_datasets"));
    if(single) mcDataset = util::to_vector<std::string>(datasetMC_single);  // Use only one dataset if single option is choosen
    for (std::string sDs: mcDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
-      if(xsecs.size()==1) xsecs.resize(filenames.size(),xsecs[0]);   // Use same xsec for all files if only one is given
+      isSplitSample = pt.get_optional<bool>(sDs+".splitSample");
+      if(isSplitSample && xsecs.size()==1) {   // Use split xsec for splitSamples
+         xsecs[0] = xsecs[0]/(1.0*filenames.size());
+         xsecs.resize(filenames.size(),xsecs[0]);
+      }
       assert(filenames.size()==xsecs.size());
       kfacts = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
       boost::optional<std::string> s_kfacts = pt.get_optional<std::string>(sDs+".kfact");
@@ -128,8 +133,11 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    for (std::string sDs: util::to_vector<std::string>(pt.get<std::string>("input.mc_alternative_datasets"))){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
-      if(xsecs.size()==1) xsecs.resize(filenames.size(),xsecs[0]);   // Use same xsec for all files if only one is given
-      assert(filenames.size()==xsecs.size());
+      isSplitSample = pt.get_optional<bool>(sDs+".splitSample");
+      if(isSplitSample && xsecs.size()==1) {   // Use split xsec for splitSamples
+         xsecs[0] = xsecs[0]/(1.0*filenames.size());
+         xsecs.resize(filenames.size(),xsecs[0]);
+      }      assert(filenames.size()==xsecs.size());
       boost::optional<std::string> s_kfacts = pt.get_optional<std::string>(sDs+".kfact");
       if (s_kfacts) { // apply k factors
          kfacts=util::to_vector<float>(*s_kfacts);
@@ -152,8 +160,11 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    for (std::string sDs: signalDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
-      if(xsecs.size()==1) xsecs.resize(filenames.size(),xsecs[0]);   // Use same xsec for all files if only one is given
-      assert(filenames.size()==xsecs.size());
+      isSplitSample = pt.get_optional<bool>(sDs+".splitSample");
+      if(isSplitSample && xsecs.size()==1) {   // Use split xsec for splitSamples
+         xsecs[0] = xsecs[0]/(1.0*filenames.size());
+         xsecs.resize(filenames.size(),xsecs[0]);
+      }      assert(filenames.size()==xsecs.size());
       boost::optional<std::string> s_kfacts = pt.get_optional<std::string>(sDs+".kfact");
       if (s_kfacts) { // apply k factors
          kfacts=util::to_vector<float>(*s_kfacts);
