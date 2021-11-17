@@ -66,6 +66,7 @@ namespace hist
       float getCount(TString const &varName, TString const &sample);
       float getCountError(TString const &varName, TString const &sample);
       void saveHistograms(io::RootFileSaver const &saver_hist, std::vector<TString> const &Samples);
+      void saveHistograms(io::RootFileSaver const &saver_hist, std::vector<std::string> const &Samples);
 
       gfx::LegendEntries getLegendEntries();
    private:

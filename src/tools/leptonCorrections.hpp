@@ -11,8 +11,9 @@ class leptonCorrections
       leptonCorrections(const Systematic::Systematic& systematic);
       
       /// Correct leptons based opn selected systematic
-      std::vector<tree::Electron> correctElectrons(std::vector<tree::Electron>& electrons, const bool applySCcut = false);
-      std::vector<tree::Muon> correctMuons(std::vector<tree::Muon>& muons);
+      std::vector<tree::Electron> correctElectrons(std::vector<tree::Electron>& electrons, TLorentzVector& met, 
+                                                      TLorentzVector& metPuppi, const bool applySCcut = false);
+      std::vector<tree::Muon> correctMuons(std::vector<tree::Muon>& muons, TLorentzVector& met, TLorentzVector& metPuppi);
    
    private:
       

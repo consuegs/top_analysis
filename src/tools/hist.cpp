@@ -350,6 +350,20 @@ void hist::Histograms<HIST>::saveHistograms(io::RootFileSaver const &saver_hist,
    }
 }
 
+template <class HIST>
+void hist::Histograms<HIST>::saveHistograms(io::RootFileSaver const &saver_hist, std::vector<std::string> const &Samples)
+{   
+   for (auto const &mv:mmH_){
+      for (std::string sSample: Samples){
+         TString tempString(sSample);
+         auto temp=getHistogram(mv.first,tempString);
+         temp->SetName(tempString);
+         // ~saver_hist.save(*getHistogram(mv.first,sSample),mv.first+"/"+sSample);
+         saver_hist.save(*temp,mv.first+"/"+tempString);
+      }
+   }
+}
+
 /*******************************************************************************
  * end class Histograms
  ******************************************************************************/

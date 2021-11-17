@@ -75,8 +75,16 @@ leptonCorrections::leptonCorrections(const Systematic::Systematic& systematic) :
 
 }
 
-std::vector<tree::Electron> leptonCorrections::correctElectrons(std::vector<tree::Electron>& electrons, const bool applySCcut)
+std::vector<tree::Electron> leptonCorrections::correctElectrons(std::vector<tree::Electron>& electrons, TLorentzVector& met, 
+                                                      TLorentzVector& metPuppi, const bool applySCcut)
 {
+   for(size_t iEle=0; iEle<electrons.size(); ++iEle){   //Remove electrons, which will be corrected from MET
+      TLorentzVector temp(0.,0.,0.,0.);
+      temp.SetPtEtaPhiM(electrons.at(iEle).p.Pt(),0.,electrons.at(iEle).p.Phi(),0.);
+      met = met + temp;
+      metPuppi = metPuppi + temp;
+   }
+   
    std::vector<tree::Electron> cElectrons;
    for(size_t iEle=0; iEle<electrons.size(); ++iEle){
       this->correctEletron(electrons.at(iEle));
@@ -84,17 +92,38 @@ std::vector<tree::Electron> leptonCorrections::correctElectrons(std::vector<tree
          cElectrons.push_back(electrons.at(iEle));
       }
    }
+   
+   for(size_t iEle=0; iEle<electrons.size(); ++iEle){   //Add shifted electrons back to met
+      TLorentzVector temp(0.,0.,0.,0.);
+      temp.SetPtEtaPhiM(electrons.at(iEle).p.Pt(),0.,electrons.at(iEle).p.Phi(),0.);
+      met = met - temp;
+      metPuppi = metPuppi - temp;
+   }
    return cElectrons;
 }
 
-std::vector<tree::Muon> leptonCorrections::correctMuons(std::vector<tree::Muon>& muons)
+std::vector<tree::Muon> leptonCorrections::correctMuons(std::vector<tree::Muon>& muons, TLorentzVector& met, TLorentzVector& metPuppi)
 {
+   for(size_t iMu=0; iMu<muons.size(); ++iMu){   //Remove muons, which will be corrected from MET
+      TLorentzVector temp(0.,0.,0.,0.);
+      temp.SetPtEtaPhiM(muons.at(iMu).p.Pt(),0.,muons.at(iMu).p.Phi(),0.);
+      met = met + temp;
+      metPuppi = metPuppi + temp;
+   }
+   
    std::vector<tree::Muon> cMuons;
    for(size_t iMu=0; iMu<muons.size(); ++iMu){
       this->correctMuon(muons.at(iMu));
       if(muons.at(iMu).p.Pt()>20){     // Check only pT. Other cuts applied on tree level
          cMuons.push_back(muons.at(iMu));
       }
+   }
+   
+   for(size_t iMu=0; iMu<muons.size(); ++iMu){   //Add shifted muons back to met
+      TLorentzVector temp(0.,0.,0.,0.);
+      temp.SetPtEtaPhiM(muons.at(iMu).p.Pt(),0.,muons.at(iMu).p.Phi(),0.);
+      met = met - temp;
+      metPuppi = metPuppi - temp;
    }
    return cMuons;
 }

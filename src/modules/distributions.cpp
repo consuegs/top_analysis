@@ -37,13 +37,6 @@ void run()
    std::vector<std::string> vsDatasubsets(cfg.datasets.getDatasubsetNames());
    
    TString dssName_multi="";
-   //Read TriggerSF hists
-   io::RootFileReader triggerSF_ee(cfg.trigger_SF_ee,"");
-   TH2F* triggerSF_ee_hist = (TH2F*)(triggerSF_ee.read<TH2F>("eff_histo"));
-   io::RootFileReader triggerSF_mumu(cfg.trigger_SF_mumu,"");
-   TH2F* triggerSF_mumu_hist = (TH2F*)(triggerSF_mumu.read<TH2F>("eff_histo"));
-   io::RootFileReader triggerSF_emu(cfg.trigger_SF_emu,"");
-   TH2F* triggerSF_emu_hist = (TH2F*)(triggerSF_emu.read<TH2F>("eff_histo"));
    
    //Read systematic from command line
    Systematic::Systematic currentSystematic(cfg.systematic);
@@ -257,7 +250,7 @@ void run()
          leptonSF.setDYExtrapolationUncFactors(cfg.muonDYunc,cfg.electronDYunc);
          
          // Configure triggerSF
-         TriggerScaleFactors triggerSFcalc = TriggerScaleFactors(cfg.trigger_SF_ee.Data(),cfg.trigger_SF_mumu.Data(),cfg.trigger_SF_emu.Data(),currentSystematic);
+         TriggerScaleFactors triggerSFcalc = TriggerScaleFactors(cfg.trigger_SF.Data(),currentSystematic);
          
          // Log current sample
          io::log * ("Processing '"+dss.name+"' ");
@@ -541,6 +534,7 @@ void run()
          // ~TTreeReaderValue<std::vector<tree::Electron>> electrons_add(reader, "electrons_add");
          // ~TTreeReaderValue<std::vector<tree::Muon>>     muons_add    (reader, "muons_add");
          TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
+         TTreeReaderValue<std::vector<tree::Jet>>      jets_puppi     (reader, "jetsPuppi");
          TTreeReaderValue<std::vector<tree::GenParticle>> genParticles(reader, "genParticles");
          TTreeReaderValue<std::vector<tree::IntermediateGenParticle>> intermediateGenParticles(reader, "intermediateGenParticles");     
          TTreeReaderValue<std::vector<tree::Particle>> triggerObjects(reader, "hltEG165HE10Filter");
@@ -624,8 +618,8 @@ void run()
             if (ttBar_amc && (*genDecayMode>3 || *genDecayMode==0)) continue;
             
             // Correct and select leptons
-            *muons = leptonCorretor.correctMuons(*muons);
-            *electrons = leptonCorretor.correctElectrons(*electrons);
+            *muons = leptonCorretor.correctMuons(*muons,MET->p,MET_Puppi->p);
+            *electrons = leptonCorretor.correctElectrons(*electrons,MET->p,MET_Puppi->p);
             
             //Baseline selection (including separation into ee, emu, mumu)
             TLorentzVector p_l1;
@@ -657,6 +651,7 @@ void run()
             //Apply JES and JER systematics
             if(!isData){
                jesCorrector.applySystematics(*jets,MET->p);
+               jesCorrector_puppi.applySystematics(*jets_puppi,MET_Puppi->p);    // Needed for correction of Puppi MET
                jerCorrector.smearCollection_Hybrid(*jets,*rho);
             }
             
@@ -740,7 +735,7 @@ void run()
                if(isData) hs_cutflow.fillweight("cutflow/"+cat,7,1);
                else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * *w_mc * leptonSFweight * bTagWeight * *w_topPT *triggerSF);
             }
-                     
+                                 
             //Muon and Electron Fraction for bJets and cleaned jets
             // ~minTree_v_bJet_muonFraction.clear();
             // ~minTree_v_bJet_electronFraction.clear();

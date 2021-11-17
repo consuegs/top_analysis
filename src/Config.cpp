@@ -41,9 +41,7 @@ Config::Config()
    if (TString(io::shellOutput("git status")).Contains("modified")) gitHash+="*";
    lumi=pt.get<float>("general.lumi");
    
-   trigger_SF_ee=pt.get<std::string>("triggerSF.trigger_SF_ee");
-   trigger_SF_mumu=pt.get<std::string>("triggerSF.trigger_SF_mumu");
-   trigger_SF_emu=pt.get<std::string>("triggerSF.trigger_SF_emu");
+   trigger_SF=pt.get<std::string>("triggerSF.trigger_SF");
    
    jer_SF_mc=pt.get<std::string>("jetCorrections.jer_SF_mc");
    jer_RES_mc=pt.get<std::string>("jetCorrections.jer_RES_mc");

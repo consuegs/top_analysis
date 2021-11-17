@@ -497,6 +497,7 @@ namespace Systematic{
         eleID,eleReco,
         muonID,muonIDStat,muonIDSyst,muonIso,muonIsoStat,muonIsoSyst,
         jetPileupIDapplied,jetLooseCleaningApplied,
+        trig,
         
         eleScaleEt,eleScaleStat,eleSmearingPhi,eleSmearingRho,eleScaleSmearing,
         muonScaleStat,muonScaleZpt,muonScaleEwk,muonScaleDeltaM,muonScaleEwk2,muonScale

@@ -17,9 +17,7 @@ public:
    boost::property_tree::ptree pt;
    static Config& get();
    float lumi;
-   TString trigger_SF_ee;
-   TString trigger_SF_mumu;
-   TString trigger_SF_emu;
+   TString trigger_SF;
    
    TString jer_SF_mc;
    TString jer_RES_mc;

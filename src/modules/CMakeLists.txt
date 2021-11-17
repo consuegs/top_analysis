@@ -38,8 +38,8 @@ set(MODULES
   # ~plot_distributions_Philipp
   # ~Routin
   # ~test_BJetRegression
-  # ~triggerEff
-  # ~plot_triggerEff
+  triggerEff
+  plot_triggerEff
   # ~dnn_Classification
   # ~dnn_Classification_fourVec
   # ~binningUnfolding_DNN

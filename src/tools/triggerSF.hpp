@@ -15,9 +15,7 @@ class TriggerScaleFactors{
 public:
 
    /// Constructor
-   TriggerScaleFactors(const std::string& fileName_ee,
-                  const std::string& fileName_mumu,
-                  const std::string& fileName_emu,
+   TriggerScaleFactors(const std::string& fileName,
                   const Systematic::Systematic& systematic);
 
    /// Destructor
@@ -34,6 +32,7 @@ private:
 
    /// Enumeration for possible systematics
    enum SystematicInternal{nominal, vary_up, vary_down};
+   SystematicInternal systematicInternal_;
    
    const Systematic::Systematic systematic_;
 
