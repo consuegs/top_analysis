@@ -89,20 +89,20 @@ void run()
          hs2d.addHist(selection+"/"+base+"/mumu/pTl1_pTl2"   ,";%pTl1;%pTl2;EventsBIN"           ,40,0,200,40,0,200);
       }
    }
+   
+   TString dssName_multi="";
 
    for (TString ds_name: cfg.datasets.getDatasetNames()){
       auto ds=cfg.datasets.getDataset(ds_name);
-      // ~if (ds.name.find("MET")==std::string::npos && ds.name.find("TTbar_diLepton")==std::string::npos) {
-         // ~std::cout<<ds.name<<" found in running schedule, but module should ony be running with ttbar MC or MET PD"<<std::endl;
-         // ~return;
-      // ~}
+      if (ds.name.find("MET")==std::string::npos && ds.name.find("TTbar_diLepton")==std::string::npos) {
+         std::cout<<ds.name<<" found in running schedule, but module should ony be running with ttbar MC or MET PD"<<std::endl;
+         return;
+      }
       for (auto dss: cfg.datasets.getDatasubsets({ds.name})){   
          TFile file(dss.getPath(),"read");
          if (file.IsZombie()) {
             return;
          }
-         
-         io::log * ("Processing '"+dss.name+"' ");
          
          hs.setCurrentSample(dss.name);
          hs2d.setCurrentSample(dss.name);
@@ -124,10 +124,10 @@ void run()
          
          // Configure bTag Weights
          BTagWeights bTagWeighter = BTagWeights(cfg.bTagSF_file.Data(),cfg.bTagEffPath.Data(),cfg.bTagger.Data(),BTagEntry::OperatingPoint(cfg.bTagWP),cfg.bTagWPcut,currentSystematic);
-         
+                  
          //Check if current sample is TTbar powheg dilepton
          bool ttBar_dilepton=false;
-         if (dss.datasetName=="TTbar_diLepton" || dss.datasetName=="TTbar_diLepton_CP5up") ttBar_dilepton=true;
+         if (dss.datasetName=="TTbar_diLepton") ttBar_dilepton=true;
                
          //Check if current sample is Run2016H
          bool Run2016H=false;
@@ -190,7 +190,8 @@ void run()
          TTreeReaderValue<bool> baselineTrigg8(reader, baselineTriggerNames[7]);
          TTreeReaderValue<bool> baselineTrigg9(reader, baselineTriggerNames[8]);
          TTreeReaderValue<bool> baselineTrigg10(reader, baselineTriggerNames[9]);
-      
+         
+         io::log * ("Processing '"+dss.name+"' ");
          int iEv=0;
          int processEvents=cfg.processFraction*dss.entries;
          // ~if(DY_MC) processEvents*=0.1;
@@ -322,6 +323,9 @@ void run()
          hs2d.mergeOverflow();
          file.Close();
          
+         //For multi save dss name
+         dssName_multi=TString(dss.datasetName);
+         
       }  // datasubset loop
    } // dataset loop
    
@@ -331,7 +335,9 @@ void run()
    hs2d.combineFromSubsamples(samplesToCombine);
    
    // Save 1d histograms
-   io::RootFileSaver saver_hist(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("triggerEff%.1f",cfg.processFraction*100),false);
+   TString loc=TString::Format("triggerEff/%s_%s_%s.root",currentSystematic.name().Data(),dssName_multi.Data(),cfg.treeVersion.Data());
+   if(cfg.multi) loc=TString::Format("triggerEff/%s%s%s_%s.root",(currentSystematic.name()+"/").Data(),dssName_multi.Data(),(cfg.fileNR==0)?TString("").Data():TString("_"+std::to_string(cfg.fileNR)).Data(),cfg.treeVersion.Data());
+   io::RootFileSaver saver_hist(loc,TString::Format("triggerEff%.1f",cfg.processFraction*100),false);
    hs.saveHistograms(saver_hist,samplesToCombine);
    hs2d.saveHistograms(saver_hist,samplesToCombine);
    hs.saveHistograms(saver_hist,saveDatasubsets);

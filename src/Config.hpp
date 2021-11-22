@@ -75,7 +75,7 @@ public:
    int year_int;
    TString treeName;
    TString gitHash;
-   TString dataBasePath;
+   std::string dataBasePath;
 
    TString outputDirectory;
 

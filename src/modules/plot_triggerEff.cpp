@@ -5,6 +5,7 @@
 #include "tools/physics.hpp"
 #include "tools/io.hpp"
 #include "tools/weighters.hpp"
+#include "tools/systematics.hpp"
 
 #include <TFile.h>
 #include <TF1.h>
@@ -13,8 +14,49 @@
 #include <TCanvas.h>
 #include <TColor.h>
 #include <TEfficiency.h>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
 
 Config const &cfg=Config::get();
+
+std::vector<float> Edges={20,40,60,80,100,150,200};
+
+// Function to plot 2D eff or SF
+void plot2D(TH2 &hist, TString const &cat, TString const &savePath, io::RootFileSaver const &saver, float const &zMin=0.85, float const &zMax=1.0){
+   TCanvas can;
+   gPad->SetRightMargin(0.2);
+   gPad->SetLeftMargin(0.13);
+   hist.GetYaxis()->SetTitleOffset(1.0);
+   hist.GetZaxis()->SetLabelOffset(0.02);
+   hist.SetMaximum(zMax);
+   hist.SetMinimum(zMin);
+   hist.SetMarkerSize(1.2);
+   hist.Draw("colz text e");
+   TLatex label=gfx::cornerLabel(cat,1);
+   label.Draw();
+   saver.save(can,savePath,true,false,true);
+}
+
+// Function to derive unc. range in percent
+std::pair<float,float> getRelUncRange(TH2 const &hist){
+   float minUnc = 1.;
+   float maxUnc = 0.;
+   float currentUnc;
+   for(int i=0; i<=hist.GetNbinsX();i++){
+      for(int j=0; j<=hist.GetNbinsY();j++){
+         if (hist.GetBinContent(i,j)>0) {
+            currentUnc = hist.GetBinError(i,j)/hist.GetBinContent(i,j);
+            minUnc = std::min(minUnc,currentUnc);
+            maxUnc = std::max(maxUnc,currentUnc);
+         }
+      }
+   }
+   std::pair<float,float> result{minUnc*100,maxUnc*100};
+   return result;
+}  
+   
+   
 
 // Function to derive and plot eff. for data and MC in 1D
 void eff1D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, TString const &dataName, TString const &mcName){
@@ -28,7 +70,7 @@ void eff1D(io::RootFileReader const &histReader, io::RootFileSaver const &saver,
                TH1F* data=histReader.read<TH1F>(selection+"/"+trigg+"/"+channel+"/"+var+"/"+dataName);
                TH1F* base_MC=histReader.read<TH1F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+mcName);
                TH1F* MC=histReader.read<TH1F>(selection+"/"+trigg+"/"+channel+"/"+var+"/"+mcName);
-               
+                              
                // Derive integrated efficiency with correct unc.
                float efficiency_data=data->Integral()/float(base_data->Integral());
                float e_u_data= TEfficiency::ClopperPearson(base_data->Integral(),data->Integral(),0.682689492137,true) -efficiency_data;
@@ -64,7 +106,7 @@ void eff1D(io::RootFileReader const &histReader, io::RootFileSaver const &saver,
                TLegend leg=legE.buildLegend(.52,.7,1-(gPad->GetRightMargin()+0.02),-1);
                leg.Draw();
                
-               saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var,true,false);
+               saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var,true,false,true);
             }
          }
       }
@@ -83,7 +125,6 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
             TH2F* base_MC=histReader.read<TH2F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+mcName);
             TH2F* MC=histReader.read<TH2F>(selection+"/"+trigg+"/"+channel+"/"+var+"/"+mcName);
             
-            std::vector<float> Edges={20,40,60,80,100,150,200};
             *base_data=hist::rebinned(*base_data,Edges,Edges);
             *data=hist::rebinned(*data,Edges,Edges);
             *base_MC=hist::rebinned(*base_MC,Edges,Edges);
@@ -124,15 +165,7 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
             std::vector<TString> nameVec = {"_MC_statUp","_data_statUp","_MC_statDown","_data_statDown"};
             int i = 0;
             for (auto tempHist : histVec){
-               can.Clear();
-               tempHist->GetYaxis()->SetTitleOffset(1.0);
-               tempHist->GetZaxis()->SetLabelOffset(0.02);
-               tempHist->SetMaximum(1.0);
-               tempHist->SetMinimum(0.85);
-               tempHist->SetMarkerSize(1.2);
-               tempHist->Draw("colz text e");
-               label.Draw();
-               saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+nameVec[i],true,false);
+               plot2D(*tempHist,cat+","+nameVec[i],selection+"/"+trigg+"/"+channel+"/"+var+nameVec[i],saver);
                i++;
             }
             
@@ -147,15 +180,7 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
             i = 0;
             for (auto tempHist : histVec){
                can.Clear();
-               saverHist.save(*tempHist,selection+"/"+trigg+"/"+channel+"/"+var+nameVec[i]);      //Save hist for further unc. calculation
-               tempHist->SetMaximum(1.05);
-               tempHist->SetMinimum(0.9);
-               tempHist->GetYaxis()->SetTitleOffset(1.0);
-               tempHist->GetZaxis()->SetLabelOffset(0.02);
-               tempHist->SetMarkerSize(1.2);
-               tempHist->Draw("colz text e");
-               label.Draw();
-               saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+nameVec[i],true,false);
+               plot2D(*tempHist,cat+","+nameVec[i],selection+"/"+trigg+"/"+channel+"/"+var+nameVec[i],saver);
                i++;
             }
             
@@ -175,7 +200,6 @@ void alpha(io::RootFileReader const &histReader, io::RootFileSaver const &saver,
          TH2F* diLepton_MC=histReader.read<TH2F>("noTrigger/"+trigg+"/"+channel+"/"+var+"/"+mcName);
          TH2F* both_MC=histReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"/"+mcName);
          
-         std::vector<float> Edges={20,40,60,80,100,150,200};
          *all_MC=hist::rebinned(*all_MC,Edges,Edges);
          *base_MC=hist::rebinned(*base_MC,Edges,Edges);
          *diLepton_MC=hist::rebinned(*diLepton_MC,Edges,Edges);
@@ -203,16 +227,7 @@ void alpha(io::RootFileReader const &histReader, io::RootFileSaver const &saver,
          std::vector<TString> nameVec = {"_eff_baseline","_eff_trigger","_eff_both"};
          int i = 0;
          for (auto tempHist : histVec){
-            can.Clear();
-            TLatex label=gfx::cornerLabel(cat+", "+nameVec[i],1);
-            tempHist->GetYaxis()->SetTitleOffset(1.0);
-            tempHist->GetZaxis()->SetLabelOffset(0.02);
-            // ~tempHist->SetMaximum(1.0);
-            // ~tempHist->SetMinimum(0.85);
-            tempHist->SetMarkerSize(1.2);
-            tempHist->Draw("colz text e");
-            label.Draw();
-            saver.save(can,"alpha/"+trigg+"/"+channel+"/"+var+nameVec[i],true,false);
+            plot2D(*tempHist,cat+","+nameVec[i],"alpha/"+trigg+"/"+channel+"/"+var+nameVec[i],saver,0.,1.);
             i++;
          }
          
@@ -222,21 +237,12 @@ void alpha(io::RootFileReader const &histReader, io::RootFileSaver const &saver,
          
          saverHist.save(*alpha,"alpha/"+trigg+"/"+channel+"/"+var+"_alpha");      //Save hist for further unc. calculation
          
-         can.Clear();
-         alpha->SetMaximum(1.05);
-         alpha->SetMinimum(0.9);
-         alpha->GetYaxis()->SetTitleOffset(1.0);
-         alpha->GetZaxis()->SetLabelOffset(0.02);
-         alpha->GetZaxis()->SetTitle("alpha");
-         alpha->SetMarkerSize(1.2);
-         alpha->Draw("colz text e");
-         label.Draw();
-         saver.save(can,"alpha/"+trigg+"/"+channel+"/"+var+"_alpha",true,false);
+         plot2D(*alpha,cat+",""alpha","alpha/"+trigg+"/"+channel+"/"+var+"_alpha",saver);
       }
    }
 }
 
-void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver const &saver, io::RootFileSaver const &saverHist, TString const &mcName, TString const &datasetName){
+void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver const &saver, io::RootFileSaver const &saverHist, TString const &datasetName, TString const &mcName){
    std::map<int,std::map<TString,float>> lumiFractionsPerEra = {
                                                             {2,{{"B",0.116},{"C",0.233},{"D",0.102},{"E",0.223},{"F",0.326}}},   //2017B,2017C,2017D,2017E,2017F
                                                             {3,{{"A",0.233},{"B",0.118},{"C",0.116},{"D",0.532}}}};        //2018A,2018B,2018C,2018D
@@ -245,13 +251,13 @@ void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver cons
                                                             {3,{"A","B","C","D"}}};        //2018A,2018B,2018C,2018D
    
    TCanvas can;
-   std::vector<float> Edges={20,40,60,80,100,150,200};
    for(TString selection:{"baselineTrigger"}){
       for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
          for(TString channel:{"ee","mumu","emu"}){
             TString var=(channel!="emu")? "pTl1_pTl2":"pTlmu_pTle";
             int i = 0;
-            TH2F lumiWeightSF("","",Edges.size(),&Edges[0],Edges.size(),&Edges[0]);
+            std::vector<float> Edges2={20,40,60,80,100,150,200};
+            TH2F lumiWeightSF("","",Edges2.size(),&Edges2[0],Edges2.size(),&Edges2[0]);
             for (auto dsName: cfg.datasets.getDatasubsetNames({datasetName})){
                TH2F* base_data=histReader.read<TH2F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+dsName);
                TH2F* data=histReader.read<TH2F>(selection+"/"+trigg+"/"+channel+"/"+var+"/"+dsName);
@@ -284,51 +290,23 @@ void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver cons
                if (channel.Contains("ee")) cat="ee";
                else if (channel.Contains("emu")) cat="e#mu";
                else if (channel.Contains("mumu")) cat="#mu#mu";
-               TLatex label=gfx::cornerLabel(cat+", Era"+eraNames[cfg.year_int][i],1);
-               
-               gPad->SetRightMargin(0.2);
-               gPad->SetLeftMargin(0.13);
                
                //Plot eff
-               can.Clear();
-               eff_data_hist->GetYaxis()->SetTitleOffset(1.0);
-               eff_data_hist->GetZaxis()->SetLabelOffset(0.02);
-               eff_data_hist->SetMaximum(1.0);
-               eff_data_hist->SetMinimum(0.85);
-               eff_data_hist->SetMarkerSize(1.2);
-               eff_data_hist->Draw("colz text e");
-               label.Draw();
-               saver.save(can,selection+"/"+trigg+"/"+channel+"/Era"+eraNames[cfg.year_int][i]+"/"+var+"_data",true,false);
+               plot2D(*eff_data_hist,cat+", Era"+eraNames[cfg.year_int][i],selection+"/"+trigg+"/"+channel+"/Era"+eraNames[cfg.year_int][i]+"/"+var+"_data",saver);
 
                
                // Derive SF
                eff_data_hist->Divide(eff_MC_hist);
-               
-               can.Clear();
-               eff_data_hist->SetMaximum(1.05);
-               eff_data_hist->SetMinimum(0.9);
-               eff_data_hist->GetYaxis()->SetTitleOffset(1.0);
-               eff_data_hist->GetZaxis()->SetLabelOffset(0.02);
-               eff_data_hist->SetMarkerSize(1.2);
-               eff_data_hist->Draw("colz text e");
-               label.Draw();
-               saver.save(can,selection+"/"+trigg+"/"+channel+"/Era"+eraNames[cfg.year_int][i]+"/"+var+"_SF",true,false);
+
+               plot2D(*eff_data_hist,cat+", Era"+eraNames[cfg.year_int][i],selection+"/"+trigg+"/"+channel+"/Era"+eraNames[cfg.year_int][i]+"/"+var+"_SF",saver);
                
                // Store for lumi weighted sum
                eff_data_hist->Scale(lumiFractionsPerEra[cfg.year_int][eraNames[cfg.year_int][i]]);
                lumiWeightSF.Add(eff_data_hist);
                if((i+1)==eraNames[cfg.year_int].size()){  //store if last era is reached
-                  can.Clear();
                   saverHist.save(lumiWeightSF,selection+"/"+trigg+"/"+channel+"/"+var+"_SF_lumiWeighted");
-                  lumiWeightSF.SetMaximum(1.05);
-                  lumiWeightSF.SetMinimum(0.9);
-                  lumiWeightSF.GetYaxis()->SetTitleOffset(1.0);
-                  lumiWeightSF.GetZaxis()->SetLabelOffset(0.02);
-                  lumiWeightSF.SetMarkerSize(1.2);
-                  lumiWeightSF.Draw("colz text e");
-                  TLatex labelLumi=gfx::cornerLabel(cat+", lumiWeighted",1);
-                  labelLumi.Draw();
-                  saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var+"_SF_lumiWeighted",true,false);
+                  lumiWeightSF.SetStats(0);
+                  plot2D(lumiWeightSF,cat+", lumiWeighted",selection+"/"+trigg+"/"+channel+"/"+var+"_SF_lumiWeighted",saver);
                }
                i++;
             }
@@ -338,15 +316,27 @@ void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver cons
 }
 
 void finalSFunc(io::RootFileReader const &sFReader, io::RootFileSaver const &saver, io::RootFileSaver const &saverHist, io::RootFileSaver const &saverSF){
+   std::ofstream uncFile;
+   uncFile.open(cfg.outputDirectory+"/triggerEff/triggerUnc.txt");
    for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
       for(TString channel:{"ee","mumu","emu"}){
          TString var=(channel!="emu")? "pTl1_pTl2":"pTlmu_pTle";
          TH2F* alpha=sFReader.read<TH2F>("alpha/"+trigg+"/"+channel+"/"+var+"_alpha");
          TH2F* nominalSF_alpha=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statUp");
+         TH2F* nominalSF_totalSyst=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statUp");
          TH2F* nominalSF_lumiWeight=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statUp");
          TH2F* lumiWeighted=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_lumiWeighted");
          TH2F* totalUp=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statUp");
          TH2F* totalDown=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statDown");
+         TH2F* statUp=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statUp");
+         TH2F* statDown=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statDown");
+         
+         bool isAnalysisTrigg = trigg=="analysisTrigg";
+         
+         TString cat;
+         if (channel.Contains("ee")) cat="ee";
+         else if (channel.Contains("emu")) cat="e#mu";
+         else if (channel.Contains("mumu")) cat="#mu#mu";
          
          //Derive unc. based on alpha
          for(int i=0; i<=alpha->GetNbinsX();i++){
@@ -355,7 +345,7 @@ void finalSFunc(io::RootFileReader const &sFReader, io::RootFileSaver const &sav
             }
          }
          saverHist.save(*nominalSF_alpha,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_systAlpha");
-         if(trigg=="analysisTrigg") saverSF.save(*nominalSF_alpha,channel+"_SF_systAlpha");
+         if(isAnalysisTrigg) saverSF.save(*nominalSF_alpha,channel+"_SF_systAlpha");
          
          //Derive unc. based on lumiWeightedSF
          for(int i=0; i<=lumiWeighted->GetNbinsX();i++){
@@ -364,34 +354,51 @@ void finalSFunc(io::RootFileReader const &sFReader, io::RootFileSaver const &sav
             }
          }
          saverHist.save(*nominalSF_lumiWeight,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_systLumiWeight");
-         if(trigg=="analysisTrigg") saverSF.save(*nominalSF_lumiWeight,channel+"_SF_systLumiWeight");
+         if(isAnalysisTrigg) saverSF.save(*nominalSF_lumiWeight,channel+"_SF_systLumiWeight");
          
          //Derive total syst unc.
          for(int i=0; i<=alpha->GetNbinsX();i++){
             for(int j=0; j<=alpha->GetNbinsY();j++){
-               nominalSF_alpha->SetBinError(i,j,sqrt(pow(nominalSF_alpha->GetBinError(i,j),2)+pow(nominalSF_lumiWeight->GetBinError(i,j),2)));
+               nominalSF_totalSyst->SetBinError(i,j,sqrt(pow(nominalSF_alpha->GetBinError(i,j),2)+pow(nominalSF_lumiWeight->GetBinError(i,j),2)));
             }
          }
-         saverHist.save(*nominalSF_alpha,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_systTotal");
-         if(trigg=="analysisTrigg") saverSF.save(*nominalSF_alpha,channel+"_SF_systTotal");
+         saverHist.save(*nominalSF_totalSyst,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_systTotal");
+         if(isAnalysisTrigg) saverSF.save(*nominalSF_totalSyst,channel+"_SF_systTotal");
          
          //Derive total unc.
          for(int i=0; i<=alpha->GetNbinsX();i++){
             for(int j=0; j<=alpha->GetNbinsY();j++){
-               totalUp->SetBinError(i,j,sqrt(pow(nominalSF_alpha->GetBinError(i,j),2)+pow(totalUp->GetBinError(i,j),2)));
-               totalDown->SetBinError(i,j,sqrt(pow(nominalSF_alpha->GetBinError(i,j),2)+pow(totalDown->GetBinError(i,j),2)));
+               totalUp->SetBinError(i,j,sqrt(pow(nominalSF_totalSyst->GetBinError(i,j),2)+pow(totalUp->GetBinError(i,j),2)));
+               totalDown->SetBinError(i,j,sqrt(pow(nominalSF_totalSyst->GetBinError(i,j),2)+pow(totalDown->GetBinError(i,j),2)));
             }
          }
          
          saverHist.save(*totalUp,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_totalUp");
          saverHist.save(*totalDown,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_totalDown");
-         if(trigg=="analysisTrigg"){
+         if(isAnalysisTrigg){
              saverSF.save(*totalUp,channel+"_SF_totalUp");
              saverSF.save(*totalDown,channel+"_SF_totalDown");
          }
+         plot2D(*totalUp,cat+",SF_totalUp","baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_totalUp",saver);
+         plot2D(*totalDown,cat+",SF_totalDown","baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_totalDown",saver);
          
+         //Store min max unc. in File
+         if(isAnalysisTrigg){
+            uncFile<<cat<<std::endl;
+            uncFile<<std::setprecision(3);
+            uncFile<<"statUp: "<<getRelUncRange(*statUp).first<<"   "<<getRelUncRange(*statUp).second<<std::endl;
+            uncFile<<"statDown: "<<getRelUncRange(*statDown).first<<"   "<<getRelUncRange(*statDown).second<<std::endl;
+            uncFile<<"systLumWeight: "<<getRelUncRange(*nominalSF_lumiWeight).first<<"   "<<getRelUncRange(*nominalSF_lumiWeight).second<<std::endl;
+            uncFile<<"systAlpha: "<<getRelUncRange(*nominalSF_alpha).first<<"   "<<getRelUncRange(*nominalSF_alpha).second<<std::endl;
+            uncFile<<"systTotal: "<<getRelUncRange(*nominalSF_totalSyst).first<<"   "<<getRelUncRange(*nominalSF_totalSyst).second<<std::endl;
+            uncFile<<"totalUp: "<<getRelUncRange(*totalUp).first<<"   "<<getRelUncRange(*totalUp).second<<std::endl;
+            uncFile<<"totalDown: "<<getRelUncRange(*totalDown).first<<"   "<<getRelUncRange(*totalDown).second<<std::endl;
+            uncFile<<std::endl;
+            
+         }
       }
    }
+   uncFile.close();
 }
          
          
@@ -399,27 +406,32 @@ void finalSFunc(io::RootFileReader const &sFReader, io::RootFileSaver const &sav
 
 extern "C"
 void run()
-{   
-   io::RootFileReader histReader(TString::Format("histograms_%s.root",cfg.treeVersion.Data()),TString::Format("triggerEff%.1f",cfg.processFraction*100));
+{  
+   Systematic::Systematic currentSystematic(cfg.systematic);
+   
+   TString inputLoc = TString::Format("triggerEff/%s/%s_merged_%s.root",currentSystematic.name().Data(),"histograms",cfg.treeVersion.Data());
+   io::RootFileReader histReader(inputLoc,TString::Format("triggerEff%.1f",cfg.processFraction*100));
    io::RootFileSaver saver(TString::Format("triggerEff/plots_triggerEff%.1f.root",cfg.processFraction*100),"plot_triggerEff");
    io::RootFileSaver saverHist(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
-   io::RootFileReader sfReader(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
    io::RootFileSaver saverSF(TString::Format("data/TriggerSF_%s.root",cfg.year.Data()),"");
 
    
-   // ~//Plot 1D efficiencies
-   // ~eff1D(histReader,saver,"TTbar_diLepton_CP5up","DoubleMuon");
+   //Plot 1D efficiencies
+   eff1D(histReader,saver,"MET","TTbar_diLepton");
    
    //Plot 2D scale factors (Data/MC)
-   SF2D(histReader,saver,saverHist,"TTbar_diLepton_CP5up","DoubleMuon");
+   SF2D(histReader,saver,saverHist,"MET","TTbar_diLepton");
    
    // Derive correlation between dilepton and reference trigger
-   alpha(histReader,saver,saverHist,"TTbar_diLepton_CP5up");
+   alpha(histReader,saver,saverHist,"TTbar_diLepton");
    
    // Derive SF per era and compare to nominal
-   lumiWeightedSF(histReader,saver,saverHist,"TTbar_diLepton_CP5up","DoubleMuon");
+   lumiWeightedSF(histReader,saver,saverHist,"MET","TTbar_diLepton");
    
-   // Derive final uncertainties
-   finalSFunc(sfReader,saver,saverHist,saverSF);
+   // Derive final uncertainties (new saver needed, since sfReader uses same file)
+   saverHist.closeFile();
+   io::RootFileSaver saverHist2(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
+   io::RootFileReader sfReader(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
+   finalSFunc(sfReader,saver,saverHist2,saverSF);
 
 }

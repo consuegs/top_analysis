@@ -23,6 +23,10 @@
 #include "TMVA/DataLoader.h"
 #include "TMVA/PyMethodBase.h"
 
+#include "tools/leptonSF.hpp"
+#include "tools/leptonCorrections.hpp"
+#include "tools/triggerSF.hpp"
+
 Config const &cfg=Config::get();
 
 extern "C"
@@ -38,6 +42,14 @@ void run()
    jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(0,false).Data(),currentSystematic);
    jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(0,true).Data(),currentSystematic);
    jerCorrections jerCorrector = jerCorrections(cfg.jer_SF_mc.Data(),cfg.jer_RES_mc.Data(),currentSystematic);
+   
+   // Configure lepton Correction
+   leptonCorrections leptonCorretor = leptonCorrections(currentSystematic);
+   
+   // Configure leptonSF
+   LeptonScaleFactors leptonSF = LeptonScaleFactors(cfg.electronID_file,cfg.electronID_hist,cfg.electronRECO_file,cfg.electronRECO_hist,
+                                                cfg.muonID_file,cfg.muonID_hist,cfg.muonISO_file,cfg.muonISO_hist,currentSystematic);
+   leptonSF.setDYExtrapolationUncFactors(cfg.muonDYunc,cfg.electronDYunc);
    
    TString dssName_multi="";
    
@@ -86,40 +98,15 @@ void run()
       TTreeReaderValue<UInt_t> lumNo(reader, "lumNo");
       TTreeReaderValue<ULong64_t> evtNo(reader, "evtNo");
       TTreeReaderValue<Char_t> w_mc(reader, "mc_weight");
-      TTreeReaderValue<std::vector<float>> w_pdf(reader, "pdf_weights");
       TTreeReaderValue<float> w_topPT(reader, "topPTweight");
-      TTreeReaderValue<float> w_bTag(reader, "bTagWeight");
       TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
       TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
-      // ~TTreeReaderValue<std::vector<tree::Electron>> electrons_add(reader, "electrons_add");
-      // ~TTreeReaderValue<std::vector<tree::Muon>>     muons_add    (reader, "muons_add");
       TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
-      TTreeReaderValue<std::vector<tree::GenParticle>> genParticles(reader, "genParticles");
-      TTreeReaderValue<std::vector<tree::IntermediateGenParticle>> intermediateGenParticles(reader, "intermediateGenParticles");     
-      TTreeReaderValue<std::vector<tree::Particle>> triggerObjects(reader, "hltEG165HE10Filter");
+      TTreeReaderValue<std::vector<tree::Jet>>      jets_puppi     (reader, "jetsPuppi");
       TTreeReaderValue<tree::MET> MET(reader, "met");
       TTreeReaderValue<tree::MET> GENMET(reader, "met_gen");
-      TTreeReaderValue<tree::MET> MET_JESu(reader, "met_JESu");
-      TTreeReaderValue<tree::MET> MET_JESd(reader, "met_JESd");
       TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
-      TTreeReaderValue<tree::MET> MET_XYcorr(reader, "metXYcorr");
-      TTreeReaderValue<tree::MET> MET_NoHF(reader, "metNoHF");
-      TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
-      TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
-      TTreeReaderValue<int> n_Interactions(reader, "nPV");
-      TTreeReaderValue<int> n_Interactions_gen(reader, "true_nPV");
-      TTreeReaderValue<float> HTgen(reader, "genHt");
       TTreeReaderValue<float> rho(reader, "rho");
-      TTreeReaderValue<bool> is_ee   (reader, "ee");
-      TTreeReaderValue<bool> is_emu   (reader, "emu");
-      TTreeReaderValue<bool> is_mumu   (reader, "mumu");
-      TTreeReaderValue<bool> addLepton   (reader, "addLepton");
-      TTreeReaderValue<float> mll   (reader, "mll");
-      TTreeReaderValue<float> mt2   (reader, "MT2");
-      TTreeReaderValue<float> genMT2   (reader, "genMT2");
-      TTreeReaderValue<float> genMT2neutrino   (reader, "genMT2neutrino");
-      TTreeReaderValue<float> sf_lep1(reader, "lepton1SF");
-      TTreeReaderValue<float> sf_lep2(reader, "lepton2SF");
       TTreeReaderValue<bool> muonTrigg1(reader, cfg.muonTrigg1);
       TTreeReaderValue<bool> muonTrigg2(reader, cfg.muonTrigg2);
       TTreeReaderValue<bool> muonTrigg3(reader, cfg.muonTrigg3);
@@ -133,21 +120,6 @@ void run()
       TTreeReaderValue<bool> eleMuTrigg3(reader, cfg.eleMuTrigg3);
       TTreeReaderValue<bool> eleMuTrigg4(reader, cfg.eleMuTrigg4);
       TTreeReaderValue<bool> singleEleTrigg(reader, cfg.singleEleTrigg);
-      TTreeReaderValue<TLorentzVector> genTop(reader, "pseudoTop");
-      TTreeReaderValue<TLorentzVector> genAntiTop(reader, "pseudoAntiTop");
-      TTreeReaderValue<TLorentzVector> genLepton(reader, "pseudoLepton");
-      TTreeReaderValue<TLorentzVector> genAntiLepton(reader, "pseudoAntiLepton");
-      TTreeReaderValue<TLorentzVector> genTau(reader, "pseudoTau");
-      TTreeReaderValue<TLorentzVector> genAntiTau(reader, "pseudoAntiTau");
-      TTreeReaderValue<int> genLeptonPdgId(reader, "pseudoLeptonPdgId");
-      TTreeReaderValue<int> genAntiLeptonPdgId(reader, "pseudoAntiLeptonPdgId");
-      TTreeReaderValue<TLorentzVector> genB(reader, "pseudoBJet");
-      TTreeReaderValue<TLorentzVector> genAntiB(reader, "pseudoAntiBJet");
-      TTreeReaderValue<TLorentzVector> genNeutrino(reader, "pseudoNeutrino");
-      TTreeReaderValue<TLorentzVector> genAntiNeutrino(reader, "pseudoAntiNeutrino");
-      TTreeReaderValue<TLorentzVector> genWMinus(reader, "pseudoWMinus");
-      TTreeReaderValue<TLorentzVector> genWPlus(reader, "pseudoWPlus");
-      TTreeReaderValue<int> genDecayMode_pseudo(reader, "ttbarPseudoDecayMode");
       TTreeReaderValue<int> genDecayMode(reader, "ttbarDecayMode");
    
    
@@ -167,27 +139,32 @@ void run()
          //Do only use ee,emu,mumu in in amc ttbar
          if (ttBar_amc && (*genDecayMode>3 || *genDecayMode==0)) continue;
          
-         //Trigger selection
-         std::vector<bool> diElectronTriggers={*eleTrigg1,*eleTrigg2,*singleEleTrigg};
-         std::vector<bool> diMuonTriggers={*muonTrigg1,*muonTrigg2,*muonTrigg3,*muonTrigg4,*singleMuonTrigg1,*singleMuonTrigg2};
-         std::vector<bool> electronMuonTriggers={*eleMuTrigg1,*eleMuTrigg2,*eleMuTrigg3,*eleMuTrigg4,*singleMuonTrigg1,*singleMuonTrigg2,*singleEleTrigg};
-         std::vector<bool> channel={*is_ee,*is_mumu,*is_emu};
-         bool triggerMC=selection::triggerSelection(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,false,year_int);
-
-         //Baseline selection (separation into ee, emu, mumu already done at TreeWriter)
+         // Correct and select leptons
+         *muons = leptonCorretor.correctMuons(*muons,MET->p,MET_Puppi->p);
+         *electrons = leptonCorretor.correctElectrons(*electrons,MET->p,MET_Puppi->p);
+         
+         //Baseline selection (including separation into ee, emu, mumu)
          TLorentzVector p_l1;
          TLorentzVector p_l2;
          int flavor_l1=0;  //1 for electron and 2 for muon
          int flavor_l2=0;
          bool muonLead=true; //Boolean for emu channel
+         std::vector<bool> channel={false,false,false};     //ee, mumu, emu
          TString cat="";
          
          if(!selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead)) continue;
          
+         //Trigger selection
+         std::vector<bool> diElectronTriggers={*eleTrigg1,*eleTrigg2,*singleEleTrigg};
+         std::vector<bool> diMuonTriggers={*muonTrigg1,*muonTrigg2,*muonTrigg3,*muonTrigg4,*singleMuonTrigg1,*singleMuonTrigg2};
+         std::vector<bool> electronMuonTriggers={*eleMuTrigg1,*eleMuTrigg2,*eleMuTrigg3,*eleMuTrigg4,*singleMuonTrigg1,*singleMuonTrigg2,*singleEleTrigg};
+         bool triggerMC=selection::triggerSelection(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,false,year_int);
+
          if (triggerMC==false) continue;
          
          //Apply JES and JER systematics
          jesCorrector.applySystematics(*jets,MET->p);
+         jesCorrector_puppi.applySystematics(*jets_puppi,MET_Puppi->p);    // Needed for correction of Puppi MET
          jerCorrector.smearCollection_Hybrid(*jets,*rho);
          
          float met=MET->p.Pt();
@@ -201,9 +178,20 @@ void run()
          // Perform selection up to bTag requirement (last entry in bool vector)
          if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end()-1, [](bool v) { return v; })) continue;
          
+         // Get weights
+         int channelID = 0;
+         if (channel[0]) channelID = 1;
+         else if (channel[1]) channelID = 2;
+         else if (channel[2]) channelID = 3;
+         float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2);
+         // ~float triggerSF = triggerSFcalc.getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);    //Not used since bTagEff needed in triggerSF calc.
+         float fEventWeight=*w_pu * *w_mc;     //Set event weight 
+         float SFWeight=leptonSFweight * *w_topPT;     //Set combined SF weight
+         hs2d.setFillWeight(fEventWeight*SFWeight);
+         
          TString path_cat="ee";
-         if (*is_emu) path_cat="emu";
-         else if (*is_mumu) path_cat="mumu";
+         if (channel[2]) path_cat="emu";
+         else if (channel[1]) path_cat="mumu";
          
          for(auto jet : cjets){
             int flavor=jet.hadronFlavour;

@@ -99,6 +99,7 @@ std::vector<tree::Electron> leptonCorrections::correctElectrons(std::vector<tree
       met = met - temp;
       metPuppi = metPuppi - temp;
    }
+   sort(cElectrons.begin(), cElectrons.end(), tree::PtGreater);
    return cElectrons;
 }
 
@@ -125,6 +126,7 @@ std::vector<tree::Muon> leptonCorrections::correctMuons(std::vector<tree::Muon>&
       met = met - temp;
       metPuppi = metPuppi - temp;
    }
+   sort(cMuons.begin(), cMuons.end(), tree::PtGreater);
    return cMuons;
 }
 

@@ -20,7 +20,8 @@ Config const &cfg=Config::get();
 extern "C"
 void run()
 {
-   std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN"};
+   std::vector<TString> systToPlot = {"Nominal"};
    
    for (TString systName : systToPlot){
       std::cout<<"---------------"<<systName<<"----------------"<<std::endl;

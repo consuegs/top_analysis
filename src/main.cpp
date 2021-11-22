@@ -45,6 +45,7 @@ static int parseCLIopt(int argc, char* argv[])
       ("signal_dataset", po::value<std::string>(&cfg.datasetSIGNAL_single)->default_value(""), "Single signal dataset to be processed, if empty datasets are taken from config.ini")
       ("fileNR", po::value<int>(&cfg.fileNR)->default_value(0), "FileNR to be processed, if zero all files are processed (filelist defined in .ini)")
       ("systematic,s", po::value<std::string>(&cfg.systematic)->default_value("Nominal"), "Systematic uncertainty to be applied (only for distributions)")
+      ("dataBasePath,d", po::value<std::string>(&cfg.dataBasePath)->default_value(cfg.dataBasePath), "Alternative dataBasePath, which can be used for condor submission with inputFileTransfer")
       ("release",  po::bool_switch(&cfg.releaseMode)->default_value(false), "Release mode (don't draw version labels)")
       ;
    hid_desc.add_options()

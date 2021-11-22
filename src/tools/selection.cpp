@@ -39,11 +39,6 @@ bool selection::triggerSelection(std::vector<bool> const &diElectronTriggers, st
    }
 }
 
-
-/*
-   Lepton Selection Function for 2016
-*/
-
 bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, std::vector<tree::Muon> const &muons, std::vector<bool> &channel,
                         TLorentzVector &p_l1, TLorentzVector &p_l2, int &flavor_l1, int &flavor_l2, TString &cat, bool &muonLead)
 {
