@@ -18,25 +18,25 @@ def get_fileNR(dataset,year):    #checks config for number of files for given da
    config = configparser.ConfigParser()
    config.read("../config"+year+".ini")
    return len(config[dataset]["files"].split(","))
+   
+def get_fileName(dataset,year,fileNR):      #checks config for name of file
+   config = configparser.ConfigParser()
+   config.read("../config"+year+".ini")
+   return config[dataset]["files"].split(",")[fileNR]
+
+def get_dataBasePath(year):      #checks config for name of file
+   config = configparser.ConfigParser()
+   config.read("../config"+year+".ini")
+   return "{0}{1}/nTuple/".format(config["input"]["dataBasePath"],config["input"]["version"])
 
 if __name__ == "__main__":
    
    #############################################
    # Select datasets to process
    #############################################
-   #  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","WW","WZ","ZZ","ttZ","ttW"]
-   #  ~toProcess_mc=["TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
-   #  ~toProcess_mc=["WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","ttG"]
-   #  ~toProcess_mc=["SingleTop","DrellYan_NLO","DrellYan"]
-   #  ~toProcess_mc=["TTbar_amcatnlo"]
-   #  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","DrellYan"]
-   toProcess_mc=["TTbar_diLepton"]
-   #  ~toProcess_mc=["DrellYan"]
-   #  ~toProcess_mc=[]
+   toProcess_mc=["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
    #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
-   #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
-   #  ~toProcess_data=["EGamma"]
-   toProcess_data=[]
+   toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10"]
    #  ~toProcess_signal=["T1tttt_1200_800"]
@@ -77,6 +77,12 @@ if __name__ == "__main__":
       if ("TTbar_diLepton" not in toProcess_mc or len(toProcess_mc)>1 or toProcess_data or toProcess_signal):
          print "Error: bTagEff should only be submitted with TTbar_dilepton"
          sys.exit(1)
+         
+   # triggerEff only submitted with TTbar_dilepton and MET
+   if (args.m == "triggerEff"):
+      if ("TTbar_diLepton" not in toProcess_mc or len(toProcess_mc)>1 or toProcess_signal or "MET" not in toProcess_data):
+         print "Error: triggerEff should only be submitted with TTbar_dilepton and MET"
+         sys.exit(1)
    
    # create logpath if not existing
    logpath="logs/"+args.y+"/"+args.s+"/"+str(args.f)+"/"+args.m
@@ -107,22 +113,24 @@ if __name__ == "__main__":
                
                for fileNR in range(startFileNR-1,totalFiles):     # loop over files for given dataset
                   
+                  inputFile=(get_dataBasePath(args.y)+get_fileName(x,args.y,fileNR)).replace(" ","")
+                  
                   for logFile in glob.glob(logpath+"/"+args.m+"_"+x+"_"+str(fileNR+1)+"*"):  # Remove old logs
                      if os.path.exists(logFile):
                         os.remove(logFile)
                   
                   submitFile = logpath+"/"+args.m+"_"+x+"_"+str(fileNR+1)+".submit"    #define submit file
-                  
+                                    
                   with open(submitFile,"w") as f:   # write condor submit
                      f.write("""
-Universe        = vanilla
-Executable      = run.sh
-Arguments       = -f{0} {1} {2} {5} -s{6} --fileNR={7}
-Log             = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
-Output          = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
-Error           = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
-Request_Memory  = {4} Mb
-Requirements    = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {8}
+Universe                = vanilla
+Executable              = run.sh
+Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7}
+Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
+Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
+Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
+Request_Memory          = {4} Mb
+Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {8}
 Queue
 """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),"\nRank = CpuFamily" if(x=="TTbar_diLepton") else ""))
                   subprocess.call(["condor_submit", submitFile])

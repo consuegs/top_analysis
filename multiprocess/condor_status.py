@@ -27,7 +27,7 @@ def getNameFromOutFile(outFile):
     return outFile.split("/")[-1].replace(moduleName+"_","").replace(".out","")
 
 def getNameFromFile(fname):
-    return fname.split(" ")[1]+" "+fname.split("dataset=")[-1]
+    return fname.split(" ")[1]+" "+(fname.split("dataset=")[-1]).split("/")[0]
     
 def getMachineFromOut(outName):
     logName = outName.replace(".out",".log")

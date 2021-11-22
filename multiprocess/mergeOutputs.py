@@ -74,8 +74,9 @@ def mergeAllHists(datasets,logPath,histPath):       # merge all histograms into 
     nTupleVersion = getNTupleVersion(getInfoFromLogPath(logPath)["year"])
     datasetFiles = []
     outfile = "histograms_merged_"+nTupleVersion+".root"
+    fileStart = "histograms_" if getInfoFromLogPath(logPath)["module"] == "distributions" else ""
     for dataset in datasets:
-        datasetFiles.append("histograms_"+dataset+"_merged_"+nTupleVersion+".root")
+        datasetFiles.append(fileStart+dataset+"_merged_"+nTupleVersion+".root")
     runDir = os.getcwd()
     os.chdir(histPath)
     for datasetFile in datasetFiles:
@@ -125,6 +126,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     isDistributions = (args.logPath.find("distributions") > 0)
+    isTriggerEff = (args.logPath.find("triggerEff") > 0)
         
     if (isDistributions == False and (args.onlyHists == False)):
         print "Error: For other modules than distributions Trees can not be merged!"
@@ -161,6 +163,6 @@ if __name__ == "__main__":
                 if args.onlyTrees == False:
                     mergeHist(dataset,args.logPath,histPath)
     
-    if args.mergeAllHists:
+    if args.mergeAllHists and (isDistributions or isTriggerEff):
         print "-------------Start merging all datasets to one histFile----------------------"
         mergeAllHists(datasetList,args.logPath,histPath)
