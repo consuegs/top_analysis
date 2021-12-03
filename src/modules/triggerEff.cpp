@@ -66,22 +66,22 @@ void run()
    //Define histograms in the following
    hist::Histograms<TH1F> hs(vsDatasubsets);
    hist::Histograms<TH2F> hs2d(vsDatasubsets);
-   for(TString selection:{"baselineTrigger","noTrigger"}){
+   for(TString selection:{"baselineTrigger","noTrigger","nJets2","nJets3+","nPV30-","nPF30+","MET150-","MET150+"}){
       for(TString base:{"all","baselineTrigger","analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
          hs.addHist(selection+"/"+base+"/ee/pTl1"   ,";%pTl1;EventsBIN"           ,10,0,200);
-         hs.addHist(selection+"/"+base+"/emu/pTl1"   ,";%pTl1;EventsBIN"           ,10,0,200);
+         hs.addHist(selection+"/"+base+"/emu/pTle"   ,";%pTle;EventsBIN"           ,10,0,200);
          hs.addHist(selection+"/"+base+"/mumu/pTl1"   ,";%pTl1;EventsBIN"           ,10,0,200);
          
          hs.addHist(selection+"/"+base+"/ee/pTl2"   ,";%pTl2;EventsBIN"           ,10,0,200);
-         hs.addHist(selection+"/"+base+"/emu/pTl2"   ,";%pTl2;EventsBIN"           ,10,0,200);
+         hs.addHist(selection+"/"+base+"/emu/pTlmu"   ,";%pTlmu;EventsBIN"           ,10,0,200);
          hs.addHist(selection+"/"+base+"/mumu/pTl2"   ,";%pTl2;EventsBIN"           ,10,0,200);
          
          hs.addHist(selection+"/"+base+"/ee/etal1"   ,";#eta_{l1};EventsBIN"           ,15,-2.4,2.4);
-         hs.addHist(selection+"/"+base+"/emu/etal1"   ,";#eta_{l1};EventsBIN"           ,15,-2.4,2.4);
+         hs.addHist(selection+"/"+base+"/emu/etale"   ,";#eta_{e};EventsBIN"           ,15,-2.4,2.4);
          hs.addHist(selection+"/"+base+"/mumu/etal1"   ,";#eta_{l1};EventsBIN"           ,15,-2.4,2.4);
          
          hs.addHist(selection+"/"+base+"/ee/etal2"   ,";#eta_{l2};EventsBIN"           ,15,-2.4,2.4);
-         hs.addHist(selection+"/"+base+"/emu/etal2"   ,";#eta_{l2};EventsBIN"           ,15,-2.4,2.4);
+         hs.addHist(selection+"/"+base+"/emu/etalmu"   ,";#eta_{mu};EventsBIN"           ,15,-2.4,2.4);
          hs.addHist(selection+"/"+base+"/mumu/etal2"   ,";#eta_{l2};EventsBIN"           ,15,-2.4,2.4);
          
          hs2d.addHist(selection+"/"+base+"/ee/pTl1_pTl2"   ,";%pTl1;%pTl2;EventsBIN"           ,40,0,200,40,0,200);
@@ -99,8 +99,8 @@ void run()
          return;
       }
       for (auto dss: cfg.datasets.getDatasubsets({ds.name})){   
-         TFile file(dss.getPath(),"read");
-         if (file.IsZombie()) {
+         TFile* file = TFile::Open(dss.getPath(),"read");
+         if (file->IsZombie()) {
             return;
          }
          
@@ -125,9 +125,8 @@ void run()
          // Configure bTag Weights
          BTagWeights bTagWeighter = BTagWeights(cfg.bTagSF_file.Data(),cfg.bTagEffPath.Data(),cfg.bTagger.Data(),BTagEntry::OperatingPoint(cfg.bTagWP),cfg.bTagWPcut,currentSystematic);
                   
-         //Check if current sample is TTbar powheg dilepton
-         bool ttBar_dilepton=false;
-         if (dss.datasetName=="TTbar_diLepton") ttBar_dilepton=true;
+         //Check if current sample is TTbar 2L sample (later used to veto tau events)
+         bool ttBar_dilepton=dss.isTTbar2L;
                
          //Check if current sample is Run2016H
          bool Run2016H=false;
@@ -151,7 +150,7 @@ void run()
          bool DY_MC=false;
          if (dss.datasetName.find("DY")!=std::string::npos) DY_MC=true;
 
-         TTreeReader reader(cfg.treeName, &file);
+         TTreeReader reader(cfg.treeName, file);
          TTreeReaderValue<float> w_pu(reader, "pu_weight");
          TTreeReaderValue<UInt_t> runNo(reader, "runNo");
          TTreeReaderValue<UInt_t> lumNo(reader, "lumNo");
@@ -165,6 +164,7 @@ void run()
          TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
          TTreeReaderValue<float> rho(reader, "rho");
          TTreeReaderValue<int> genDecayMode(reader, "ttbarDecayMode");
+         TTreeReaderValue<int> n_Interactions(reader, "nPV");
          
          TTreeReaderValue<bool> muonTrigg1(reader, cfg.muonTrigg1);
          TTreeReaderValue<bool> muonTrigg2(reader, cfg.muonTrigg2);
@@ -291,27 +291,49 @@ void run()
             }
             
             std::vector<bool> triggerVec={true,baselineTriggers,trigger,doubleTrigger_DZ,doubleTrigger,singleTrigger};
-            int i=0;
-            bool checkBaseline = true;
-            for(TString selection:{"baselineTrigger/","noTrigger/"}){
+            std::vector<bool> selectionBool={baselineTriggers,true,
+                                             (cjets.size()<3 && baselineTriggers),
+                                             (cjets.size()>=3 && baselineTriggers),
+                                             (*n_Interactions<30 && baselineTriggers),
+                                             (*n_Interactions>=30 && baselineTriggers),
+                                             (met_puppi<150 && baselineTriggers),
+                                             (met_puppi>=150 && baselineTriggers)};
+            int i_trigger=0;
+            int i_selection=0;
+            // ~for(TString selection:{"baselineTrigger/","noTrigger/"}){
+            for(TString selection:{"baselineTrigger/","noTrigger/","nJets2/","nJets3+/","nPV30-/","nPF30+/","MET150-/","MET150+/"}){
                for(TString base:{"all","baselineTrigger","analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
-                  if(rec_selection==true && triggerVec[i]){
-                     if(!checkBaseline || baselineTriggers){
-                        hs.fill(selection+base+"/"+path_cat+"/pTl1",p_l1.Pt());
-                        hs.fill(selection+base+"/"+path_cat+"/pTl2",p_l2.Pt());
-                        hs.fill(selection+base+"/"+path_cat+"/etal1",p_l1.Eta());
-                        hs.fill(selection+base+"/"+path_cat+"/etal2",p_l2.Eta());
-                        if(!channel[2]) hs2d.fill(selection+base+"/"+path_cat+"/pTl1_pTl2",p_l1.Pt(),p_l2.Pt());
+                  if(rec_selection==true && triggerVec[i_trigger]){
+                     if(selectionBool[i_selection]){
+                        if(!channel[2]){
+                           hs.fill(selection+base+"/"+path_cat+"/pTl1",p_l1.Pt());
+                           hs.fill(selection+base+"/"+path_cat+"/pTl2",p_l2.Pt());
+                           hs.fill(selection+base+"/"+path_cat+"/etal1",p_l1.Eta());
+                           hs.fill(selection+base+"/"+path_cat+"/etal2",p_l2.Eta());
+                           hs2d.fill(selection+base+"/"+path_cat+"/pTl1_pTl2",p_l1.Pt(),p_l2.Pt());
+                        }
                         else{
-                           if(muonLead) hs2d.fill(selection+base+"/"+path_cat+"/pTlmu_pTle",p_l1.Pt(),p_l2.Pt());
-                           else hs2d.fill(selection+base+"/"+path_cat+"/pTlmu_pTle",p_l2.Pt(),p_l1.Pt());
+                           if(muonLead){
+                              hs2d.fill(selection+base+"/"+path_cat+"/pTlmu_pTle",p_l1.Pt(),p_l2.Pt());
+                              hs.fill(selection+base+"/"+path_cat+"/pTle",p_l2.Pt());
+                              hs.fill(selection+base+"/"+path_cat+"/pTlmu",p_l1.Pt());
+                              hs.fill(selection+base+"/"+path_cat+"/etale",p_l2.Eta());
+                              hs.fill(selection+base+"/"+path_cat+"/etalmu",p_l1.Eta());
+                           }
+                           else{
+                              hs2d.fill(selection+base+"/"+path_cat+"/pTlmu_pTle",p_l2.Pt(),p_l1.Pt());
+                              hs.fill(selection+base+"/"+path_cat+"/pTle",p_l1.Pt());
+                              hs.fill(selection+base+"/"+path_cat+"/pTlmu",p_l2.Pt());
+                              hs.fill(selection+base+"/"+path_cat+"/etale",p_l1.Eta());
+                              hs.fill(selection+base+"/"+path_cat+"/etalmu",p_l2.Eta());
+                           }
                         }
                      }
                   }
-                  i++;
+                  i_trigger++;
                }
-               i=0;
-               checkBaseline = false;
+               i_trigger=0;
+               i_selection++;
             }
             
          }// evt loop
@@ -321,7 +343,7 @@ void run()
          // ~hs2d.scaleLumi();
          hs.mergeOverflow();
          hs2d.mergeOverflow();
-         file.Close();
+         file->Close();
          
          //For multi save dss name
          dssName_multi=TString(dss.datasetName);

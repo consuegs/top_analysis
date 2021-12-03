@@ -16,17 +16,19 @@
  * - `files`: the files belonging to this dataset
  * - `xsec`: list of cross sections in pb ({0} for data files)
  */
-Dataset::Dataset(std::string name,std::string label,std::string color,std::vector<std::string> files,std::vector<float> xsecs,float syst_unc,TString dataBasePath,bool isData,bool isSignal)
+Dataset::Dataset(std::string name,std::string label,std::string color,std::vector<std::string> files,std::vector<float> xsecs,float syst_unc,TString dataBasePath,bool isData,bool isSignal,bool isTTbar2L,std::string systName)
    : name(name)
    , label(label)
    , color(gROOT->ProcessLine((color+";").c_str()))
    , syst_unc(syst_unc)
    , isData(isData)
    , isSignal(isSignal)
+   , isTTbar2L(isTTbar2L)
+   , systName(systName)
 {
    subsets.clear();
    for (uint i=0;i<files.size();i++){
-      subsets.push_back(Datasubset(files[i],xsecs[i],dataBasePath,name,isData,isSignal));
+      subsets.push_back(Datasubset(files[i],xsecs[i],dataBasePath,name,isData,isSignal,isTTbar2L));
    }
 }
 
@@ -44,22 +46,23 @@ std::vector<TString> Dataset::getSubsetNames() const
  * - `filename`: the filename of this datasubset
  * - `xsec`: cross section in pb (0 for data)
  */
-Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std::string datasetName,bool isData,bool isSignal)
+Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std::string datasetName,bool isData,bool isSignal,bool isTTbar2L)
    : filename(filename)
    , xsec(xsec)
    , isData(isData)
    , isSignal(isSignal)
+   , isTTbar2L(isTTbar2L)
    , datasetName(datasetName)
 {
    std::vector<std::string> splitString;
    boost::split(splitString,filename,boost::is_any_of("."));
    assert(splitString.size()>=2);
    name=splitString[0];
-
-   TFile f(dataBasePath+filename);
-   if (!f.IsZombie()){
-      TH1F*  h=(TH1F*)f.Get("TreeWriter/hCutFlow");
-      TTree* t=(TTree*)f.Get("TreeWriter/eventTree");
+   
+   TFile* f = TFile::Open(dataBasePath+filename);
+   if (!f->IsZombie()){
+      TH1F*  h=(TH1F*)f->Get("TreeWriter/hCutFlow");
+      TTree* t=(TTree*)f->Get("TreeWriter/eventTree");
       if (!h || !t) {
          debug_io<<TString::Format("%s is broken!",filename.c_str());
          Ngen=0;
@@ -68,7 +71,7 @@ Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std:
          Ngen=h->GetBinContent(2);
          entries=t->GetEntries();
       }
-      f.Close();
+      f->Close();
    } else {
       debug_io<<TString::Format("%s is broken!",filename.c_str());
    }
@@ -90,6 +93,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    std::string label;
    float syst_unc;
    bool isSplitSample=false;
+   std::string systName;
    std::vector<std::string> mcDataset = util::to_vector<std::string>(pt.get<std::string>("input.mc_datasets"));
    if(single) mcDataset = util::to_vector<std::string>(datasetMC_single);  // Use only one dataset if single option is choosen
    for (std::string sDs: mcDataset){
@@ -126,9 +130,15 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
          }
       }
       
+      boost::optional<std::string> s_systName = pt.get_optional<std::string>(sDs+".systName");
+      if (s_systName) systName = *s_systName;
+      else systName="Nominal";
+      
+      boost::optional<bool> s_isTTbar2L = pt.get_optional<bool>(sDs+".isTTbar2L");     // Check if ttbar2l sample
+      
       label=pt.get<std::string>(sDs+".label", sDs); // use Dataset name if no explicit label given
       syst_unc=pt.get<float>(sDs+".syst_unc", 1e6); // default is something huge, so set it if you want to use it!
-      mc_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath));
+      mc_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,false,s_isTTbar2L,systName));
    }
    for (std::string sDs: util::to_vector<std::string>(pt.get<std::string>("input.mc_alternative_datasets"))){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
@@ -150,9 +160,16 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
          assert(feffs.size()==xsecs.size());
          for (unsigned i=0; i<feffs.size();i++) xsecs[i]*=feffs[i];
       }
+      
+      boost::optional<std::string> s_systName = pt.get_optional<std::string>(sDs+".systName");
+      if (s_systName) systName = *s_systName;
+      else systName="Nominal";
+      
+      boost::optional<bool> s_isTTbar2L = pt.get_optional<bool>(sDs+".isTTbar2L");     // Check if ttbar2l sample
+
       label=pt.get<std::string>(sDs+".label", sDs); // use Dataset name if no explicit label given
       syst_unc=pt.get<float>(sDs+".syst_unc", 1e6); // default is something huge, so set it if you want to use it!
-      mc_alternative_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath));
+      mc_alternative_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,false,s_isTTbar2L,systName));
    }
    // Signals
    std::vector<std::string> signalDataset = util::to_vector<std::string>(pt.get<std::string>("input.signals"));
@@ -189,9 +206,13 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
          }      
       }
       
+      boost::optional<std::string> s_systName = pt.get_optional<std::string>(sDs+".systName");
+      if (s_systName) systName = *s_systName;
+      else systName="Nominal";
+      
       label=pt.get<std::string>(sDs+".label", sDs); // use Dataset name if no explicit label given
       syst_unc=pt.get<float>(sDs+".syst_unc", 1e6); // default is something huge, so set it if you want to use it!
-      signal_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,true));
+      signal_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,true,false,systName));
    }
    // Data
    std::vector<std::string> dataDataset = util::to_vector<std::string>(pt.get<std::string>("input.data_streams"));

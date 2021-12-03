@@ -23,6 +23,8 @@ systematic_(systematic)
                   << Systematic::convertVariation(systematic.variation()) << "\n...break\n\n";
          exit(98);
       }
+      if(systematicInternal_ == vary_up) {std::cout<<"Apply systematic variation: up\n";}
+      else if(systematicInternal_ == vary_down) std::cout<<"Apply systematic variation: down\n";
    }
    else std::cout<<"Do not apply systematic variation\n";
 

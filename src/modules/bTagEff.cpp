@@ -51,6 +51,9 @@ void run()
                                                 cfg.muonID_file,cfg.muonID_hist,cfg.muonISO_file,cfg.muonISO_hist,currentSystematic);
    leptonSF.setDYExtrapolationUncFactors(cfg.muonDYunc,cfg.electronDYunc);
    
+   //Configure topPT reweighting
+   bool applytopPTreweighting = checkTopPTreweighting(currentSystematic);
+   
    TString dssName_multi="";
    
    //Define 2D histograms in the following
@@ -70,11 +73,18 @@ void run()
       hs2d.addHist("baseline/"+channel+"/Light_DeepCSV_loose", ";p_{T}^{light-jet} (GeV);|#eta^{light-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
    }
    
+   for (TString ds_name: cfg.datasets.getDatasetNames()){
+      auto ds=cfg.datasets.getDataset(ds_name);
+      // Check if current systematic and sample match
+      Systematic::checkAlternativeSample(currentSystematic,ds.systName,ds.name);
+   }
+   
    for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){
-      TFile file(dss.getPath(),"read");
-      if (file.IsZombie()) {
+      TFile* file = TFile::Open(dss.getPath(),"read");
+      if (file->IsZombie()) {
          return;
       }
+      
       io::log * ("Processing '"+dss.name+"' ");
 
       int year_int=cfg.year_int;
@@ -83,16 +93,15 @@ void run()
       
       hs2d.setCurrentSample(dss.name);
       
-      //Check if current sample is TTbar powheg dilepton
-      bool ttBar_dilepton=false;
-      if (dss.datasetName=="TTbar_diLepton") ttBar_dilepton=true;
+      //Check if current sample is TTbar 2L sample (later used to veto tau events)
+      bool ttBar_dilepton=dss.isTTbar2L;
       
       //Check if current sample is TTbar amc@NLO
       bool ttBar_amc=false;
       if (dss.datasetName=="TTbar_amcatnlo") ttBar_amc=true;
       
       //Set Tree Input variables
-      TTreeReader reader(cfg.treeName, &file);
+      TTreeReader reader(cfg.treeName, file);
       TTreeReaderValue<float> w_pu(reader, "pu_weight");
       TTreeReaderValue<UInt_t> runNo(reader, "runNo");
       TTreeReaderValue<UInt_t> lumNo(reader, "lumNo");
@@ -179,6 +188,7 @@ void run()
          if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end()-1, [](bool v) { return v; })) continue;
          
          // Get weights
+         if (!applytopPTreweighting) *w_topPT = 1.;   //For topPt syst set weight to 1
          int channelID = 0;
          if (channel[0]) channelID = 1;
          else if (channel[1]) channelID = 2;
@@ -218,7 +228,7 @@ void run()
       io::log<<"";
       
       hs2d.mergeOverflow();
-      file.Close();
+      file->Close();
       
       //For multi save dss name
       dssName_multi=TString(dss.datasetName);

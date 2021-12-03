@@ -10,6 +10,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "tools/systematics.hpp"
+
 #include <TString.h>
 
 class Datasubset;
@@ -18,7 +20,7 @@ class Datasubset;
 class Dataset
 {
 public:
-   Dataset(std::string name,std::string label,std::string color,std::vector<std::string> files,std::vector<float> xsecs,float syst_unc,TString dataBasePath,bool isData=false,bool isSignal=false);
+   Dataset(std::string name,std::string label,std::string color,std::vector<std::string> files,std::vector<float> xsecs,float syst_unc,TString dataBasePath,bool isData=false,bool isSignal=false,bool isTTbar2L=false,std::string systName="Nominal");
    std::vector<TString> getSubsetNames() const;
    std::string name;
    TString label;
@@ -27,6 +29,8 @@ public:
    float syst_unc;
    bool isData;
    bool isSignal;
+   bool isTTbar2L;
+   std::string systName;
    std::vector<Datasubset> subsets;
 };
 
@@ -34,13 +38,14 @@ public:
 class Datasubset
 {
 public:
-   Datasubset(std::string filename,float xsec,TString dataBasePath,std::string datasetName,bool isData,bool isSignal);
+   Datasubset(std::string filename,float xsec,TString dataBasePath,std::string datasetName,bool isData,bool isSignal,bool isTTbar2L);
    TString getPath() const;
    std::string filename,name;
    float xsec;
    int entries,Ngen;
    bool isData;
    bool isSignal;
+   bool isTTbar2L;
    std::string const datasetName;
 };
 

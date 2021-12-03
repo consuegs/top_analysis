@@ -94,10 +94,11 @@ def getDatasetList(logPath):    # get list of dataset, where jobs have been subm
     datasets = []
     for out in glob.glob(logPath+"*.out"):
         fileName = condor_status.getNameFromOutFile(out)
-        datasetName = fileName.replace("_"+fileName.split("_")[-1],"")
+        datasetName = fileName.split("_")
+        datasetName.pop()
+        datasetName = "_".join(datasetName)
         if datasetName not in datasets:
             datasets.append(datasetName)
-    print datasets
     return datasets
     
 def getTreePath(logPath):       # get correct treePath from logPath

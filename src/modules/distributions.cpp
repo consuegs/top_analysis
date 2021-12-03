@@ -59,6 +59,8 @@ void run()
          hs.addHist(selection+channel+"/mLL"   ,";mll (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/Lep1_pt"   ,";%pTl1;EventsBIN"           ,100,0,600);
          hs.addHist(selection+channel+"/Lep2_pt"   ,";%pTl2;EventsBIN"           ,100,0,600);
+         hs.addHist(selection+channel+"/Lep_e_pt"   ,";%pTle;EventsBIN"           ,100,0,600);
+         hs.addHist(selection+channel+"/Lep_mu_pt"   ,";%pTlmu;EventsBIN"           ,100,0,600);
          hs.addHist(selection+channel+"/pTsumlep"   ,";p_{T}^{ll} (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/sumpTlep"   ,";%pTl1+%pTl2 (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/pTbJet"   ,";p_{T}^{b} (GeV);EventsBIN"           ,100,0,1000);
@@ -215,6 +217,9 @@ void run()
          exit(98);
       }
       
+      // Check if current systematic and sample match
+      Systematic::checkAlternativeSample(currentSystematic,ds.systName,ds.name);
+      
       io::RootFileSaver ttbar_res_saver(TString::Format("../minTrees/%.1f/%s%s.root",cfg.processFraction*100,("/"+currentSystematic.name()+"/").Data(),TString(ds_name+((cfg.fileNR==0)?"":"_"+std::to_string(cfg.fileNR))).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,true,true);
       TTree ttbar_res("ttbar_res","ttbar_res");
       
@@ -222,8 +227,8 @@ void run()
             
       for (auto dss: cfg.datasets.getDatasubsets({ds.name})){   
       // ~for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){
-         TFile file(dss.getPath(),"read");
-         if (file.IsZombie()) {
+         TFile* file = TFile::Open(dss.getPath(),"read");
+         if (file->IsZombie()) {
             return;
          }
 
@@ -252,8 +257,11 @@ void run()
          // Configure triggerSF
          TriggerScaleFactors triggerSFcalc = TriggerScaleFactors(cfg.trigger_SF.Data(),currentSystematic);
          
-         // Log current sample
-         io::log * ("Processing '"+dss.name+"' ");
+         //Configure unclustered energy shift
+         TString metAddition = Systematic::metNameAddition(currentSystematic);
+         
+         //Configure topPT reweighting
+         bool applytopPTreweighting = checkTopPTreweighting(currentSystematic);
          
          hs.setCurrentSample(dss.name);
          hs_cutflow.setCurrentSample(dss.name);
@@ -265,10 +273,9 @@ void run()
          //Save number of gen events for efficiency
          Ngen[dss.datasetName]=dss.Ngen;
          
-         //Check if current sample is TTbar powheg dilepton
-         bool ttBar_dilepton=false;
-         if (dss.datasetName=="TTbar_diLepton" || dss.datasetName=="TTbar_diLepton_new") ttBar_dilepton=true;
-         
+         //Check if current sample is TTbar 2L sample (later used to veto tau events)
+         bool ttBar_dilepton=dss.isTTbar2L;
+                  
          //Check if current sample is TTbar powheg dilepton tau
          bool ttBar_dilepton_tau=false;
          if (dss.datasetName=="TTbar_diLepton_tau") ttBar_dilepton_tau=true;
@@ -520,8 +527,8 @@ void run()
          shape[1]=54;
          
          //Set Tree Input variables
-         TTreeReader reader(cfg.treeName, &file);
-         TTreeReaderValue<float> w_pu(reader, "pu_weight");
+         TTreeReader reader(cfg.treeName, file);
+         TTreeReaderValue<float> w_pu(reader, Systematic::puWeightName(currentSystematic));
          TTreeReaderValue<UInt_t> runNo(reader, "runNo");
          TTreeReaderValue<UInt_t> lumNo(reader, "lumNo");
          TTreeReaderValue<ULong64_t> evtNo(reader, "evtNo");
@@ -538,9 +545,9 @@ void run()
          TTreeReaderValue<std::vector<tree::GenParticle>> genParticles(reader, "genParticles");
          TTreeReaderValue<std::vector<tree::IntermediateGenParticle>> intermediateGenParticles(reader, "intermediateGenParticles");     
          TTreeReaderValue<std::vector<tree::Particle>> triggerObjects(reader, "hltEG165HE10Filter");
-         TTreeReaderValue<tree::MET> MET(reader, "met");
+         TTreeReaderValue<tree::MET> MET(reader, "met"+metAddition);
          TTreeReaderValue<tree::MET> GENMET(reader, "met_gen");
-         TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
+         TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi"+metAddition);
          TTreeReaderValue<tree::MET> MET_XYcorr(reader, "metXYcorr");
          TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
          TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
@@ -595,7 +602,9 @@ void run()
          // ~TTreeReaderValue<TLorentzVector> genWPlus(reader, "genWPlus");
          TTreeReaderValue<int> genDecayMode(reader, "ttbarDecayMode");
       
-      
+         // Log current sample
+         io::log * ("Processing '"+dss.name+"' ");
+         
          int iEv=0;
          int processEvents=cfg.processFraction*dss.entries;
          while (reader.Next()){
@@ -658,7 +667,7 @@ void run()
             // Get leptonSF weight
             float leptonSFweight =(isData)? 1. : leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2);
             
-            if(isSignal) *w_topPT=1.;  //Set top weight for signals to 1 
+            if(isSignal || !applytopPTreweighting) *w_topPT=1.;  //Set top weight for signals or if topPTsystematic to 1 
             float cutFlow_weight=(isData)? 1: *w_pu * *w_mc * leptonSFweight * *w_topPT;
             
             //Set some met variables
@@ -1365,6 +1374,17 @@ void run()
             hs2d.fill("genParticles/"+path_cat+"/2d_PtNuNuVSdPhiNuNuNearLep",neutrinoPair.Pt(),abs(dPhiPtNunearLep));
             hs2d.fill("baseline/"+path_cat+"/2d_CemVSdPhiMetNearLep",mt2-0.2*(200-met_puppi),abs(dPhiMETnearLepPuppi));
             
+            if(channel[2]){
+               if (muonLead){
+                  hs.fill("baseline/"+path_cat+"/Lep_e_pt",p_l2.Pt());
+                  hs.fill("baseline/"+path_cat+"/Lep_mu_pt",p_l1.Pt());
+               }
+               else{
+                  hs.fill("baseline/"+path_cat+"/Lep_e_pt",p_l1.Pt());
+                  hs.fill("baseline/"+path_cat+"/Lep_mu_pt",p_l2.Pt());
+               }
+            }
+            
             if (met>200){
                hs.fill("baseline_Met200/"+path_cat+"/MET",met);
                hs.fill("baseline_Met200/"+path_cat+"/PuppiMET",met_puppi);
@@ -1423,7 +1443,7 @@ void run()
          hs.mergeOverflow();
          hs_cutflow.mergeOverflow();
          // ~hs2d.mergeOverflow();
-         file.Close();
+         file->Close();
          
          //Save ntuple for TTbar resolution used in binning studies (only if last file of sample e.g. for SingleTop)
          if (minimalTree && cfg.datasets.getDatasubsets({dss.datasetName}).back().name==dss.name) {

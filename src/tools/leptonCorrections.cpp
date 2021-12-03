@@ -24,9 +24,9 @@ leptonCorrections::leptonCorrections(const Systematic::Systematic& systematic) :
       // Set which correction to be used
       if(Systematic::convertType(type).BeginsWith("ELECTRON")){
          switch(type){
-            case Systematic::Type::eleScaleEt:
-               if (systematicInternal_ == vary_up) electronCorrection_ = ScaleEtUp;
-               else electronCorrection_ = ScaleEtDown;
+            case Systematic::Type::eleScale:
+               if (systematicInternal_ == vary_up) electronCorrection_ = ScaleUp;
+               else electronCorrection_ = ScaleDown;
                break;
             case Systematic::Type::eleSmearingRho:
                if (systematicInternal_ == vary_up) electronCorrection_ = SigmaRhoUp;
@@ -137,12 +137,12 @@ void leptonCorrections::correctEletron(tree::Electron& ele)
       float nominalCorr = ele.corrections[NominalEle];
       float totalCorr = 0.;
       if (systematicInternal_ == vary_up) {
-         totalCorr = nominalCorr+TMath::Sqrt(pow(nominalCorr-ele.corrections[ScaleEtUp],2)+
+         totalCorr = nominalCorr+TMath::Sqrt(pow(nominalCorr-ele.corrections[ScaleUp],2)+
                                           pow(nominalCorr-ele.corrections[SigmaRhoUp],2)+
                                           pow(nominalCorr-ele.corrections[SigmaPhiUp],2));
       }
       else {
-         totalCorr = nominalCorr-TMath::Sqrt(pow(nominalCorr-ele.corrections[ScaleEtDown],2)+
+         totalCorr = nominalCorr-TMath::Sqrt(pow(nominalCorr-ele.corrections[ScaleDown],2)+
                                           // ~pow(nominalCorr-ele.corrections[SigmaPhiDown],2)+    //only one template for SigmaPhi (see https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2#Applying_the_Energy_Scale_and_sm)
                                           pow(nominalCorr-ele.corrections[SigmaRhoDown],2));
       }

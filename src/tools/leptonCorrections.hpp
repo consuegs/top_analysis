@@ -29,7 +29,7 @@ class leptonCorrections
       SystematicInternal systematicInternal_;
       
       /// Enum for accessing correct shift
-      enum ElectronCorrection { NominalEle, ScaleEtUp, ScaleEtDown, SigmaRhoUp, SigmaRhoDown, SigmaPhiUp, SigmaPhiDown};
+      enum ElectronCorrection { NominalEle, ScaleUp, ScaleDown, SigmaRhoUp, SigmaRhoDown, SigmaPhiUp, SigmaPhiDown};
       ElectronCorrection electronCorrection_;
       bool isTotalEle_ = false;
       

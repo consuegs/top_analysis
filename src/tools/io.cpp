@@ -139,6 +139,11 @@ io::RootFileReader::RootFileReader(TString rootFileName,TString internalPath,boo
    }
 }
 
+void io::RootFileReader::closeFile() const
+{
+   file_->Close();
+}
+
 io::RootFileReader::~RootFileReader()
 {
    file_->Close();

@@ -16,6 +16,9 @@
 #include <TColor.h>
 #include <TGraphAsymmErrors.h>
 #include <iomanip>
+#include <chrono>
+#include <algorithm>
+using namespace std::chrono;
 
 Config const &cfg=Config::get();
 
@@ -23,15 +26,18 @@ Config const &cfg=Config::get();
 class systHists
 {
    public:
-      systHists(TString const systematicName, TString filePath, TString const histPath, std::vector<TString> const datasets):
+      systHists(TString const &systematicName, TString filePath, TString const &histPath, std::vector<TString> const &datasets, std::vector<TString> const &datasets_ttBar):
       systematic_(Systematic::Systematic(systematicName)),
       hists_(hist::Histograms<TH1F>(datasets)),
-      datasets_(datasets){
+      systematicName_(systematicName),
+      datasets_(datasets),
+      datasets_ttBar_(datasets_ttBar)
+      {
          const std::vector<Systematic::Type> typeVec = Systematic::fileIndependentTypes;
          if (std::find(typeVec.begin(), typeVec.end(), systematic_.type()) == typeVec.end()){
             histReader_ = new io::RootFileReader(filePath,histPath);
          }
-         else {
+         else {      //currently only used for lumi unc.
             hasRootFile_ = false;
             filePath.ReplaceAll(systematic_.name(),"Nominal");
             histReader_ = new io::RootFileReader(filePath,histPath);
@@ -43,14 +49,25 @@ class systHists
                std::cout<<"Error: Factor for "<<systematic_.type_str()<<" not found in config"<<std::endl;
             }
          }
+         
+         // Adapt datasets if systematic uses alternative samples
+         const std::vector<Systematic::Type> typeVec_alt = Systematic::altSampleTypes;
+         if (std::find(typeVec_alt.begin(), typeVec_alt.end(), systematic_.type()) != typeVec_alt.end()){
+            altSampleType = true;
+            datasets_ = datasets_ttBar;
+         }
+         
       }
       
       Systematic::Systematic systematic_;
       io::RootFileReader* histReader_;
       hist::Histograms<TH1F> hists_;
       std::vector<TString> datasets_;
+      std::vector<TString> datasets_ttBar_;
+      TString const systematicName_;
       float sf_ = 1.0;
       bool hasRootFile_ = true;
+      bool altSampleType = false;
 };
 
 // transform 2D hist to 1D hist
@@ -83,39 +100,46 @@ TH1F HistTrafo_2D(TH2F* const &hist2D, std::vector<float> binedges_x, std::vecto
 }
 
 //Import 1D hists for Nominal and systematics
-void importHists1D(std::vector<systHists> &systHists_vec, std::vector<TString> const samplesToPlot, std::vector<TString> const mcSamples,
-                     std::map<TString,std::vector<TString>> const msPresel_vVars) {
-   for (systHists& current : systHists_vec){
+void importHists1D(std::vector<systHists> &systHists_vec, std::vector<TString> const &samplesToPlot, std::vector<TString> const &mcSamples,
+                     std::map<TString,std::vector<TString>> const &msPresel_vVars) {
+   for (systHists &current : systHists_vec){
+      std::cout<<"Importing "<<current.systematicName_<<std::endl;
       std::vector<TString> inputSamples = current.datasets_;
       
       for (TString sSample : inputSamples){
+         // ~auto start = high_resolution_clock::now();
          current.hists_.setCurrentSample(sSample);
+         TString sSample_alt = sSample;
+         if (current.altSampleType) sSample_alt = sSample+"_"+current.systematicName_;    // get correct Sample name if alternative Sample Type
          for (auto const &sPresel_vVars:msPresel_vVars){
             TString const &sPresel=sPresel_vVars.first;
-            for (TString sVar:sPresel_vVars.second){
+            for (TString const &sVar:sPresel_vVars.second){
                TString loc;
                loc=sPresel+sVar;
-               TH1F* tempHist=current.histReader_->read<TH1F>(loc+"/"+sSample);
+               TH1F* tempHist=current.histReader_->read<TH1F>(loc+"/"+sSample_alt);
                if (tempHist->GetNbinsX()>25) tempHist->Rebin(2);
                if (sVar=="dphi_metNearLep" or sVar=="dphi_metNearLep_puppi") tempHist->Rebin(4);
                if (!current.hasRootFile_) tempHist->Scale(current.sf_);
                current.hists_.addFilledHist(loc,sSample,*(tempHist));
             }
             if(sPresel.Contains("cutflow")){
-               TH1F* tempHist=current.histReader_->read<TH1F>(sPresel+"ee/"+sSample);
-               tempHist->Add(current.histReader_->read<TH1F>(sPresel+"emu/"+sSample));
-               tempHist->Add(current.histReader_->read<TH1F>(sPresel+"mumu/"+sSample));
+               TH1F* tempHist=current.histReader_->read<TH1F>(sPresel+"ee/"+sSample_alt);
+               tempHist->Add(current.histReader_->read<TH1F>(sPresel+"emu/"+sSample_alt));
+               tempHist->Add(current.histReader_->read<TH1F>(sPresel+"mumu/"+sSample_alt));
                if (!current.hasRootFile_) tempHist->Scale(current.sf_);
                current.hists_.addFilledHist(sPresel+"all",sSample,*(tempHist));
             }
          }
+         // ~auto stop = high_resolution_clock::now();
+         // ~auto duration = duration_cast<milliseconds>(stop - start);
+         // ~std::cout<<sSample<<"   "<<duration.count()<<std::endl;
       }
    }
 }
 
 //Import 2D hists for Nominal and systematics (onyl signal variable currently)
-void importHists2D(std::vector<systHists> &systHists_vec, std::vector<TString> const samplesToPlot, std::vector<TString> const mcSamples,
-                     std::map<TString,std::vector<TString>> const msPresel_vVars) {
+void importHists2D(std::vector<systHists> &systHists_vec, std::vector<TString> const &samplesToPlot, std::vector<TString> const &mcSamples,
+                     std::map<TString,std::vector<TString>> const &msPresel_vVars) {
                         
    std::vector<float> binedges_x = {0, 20, 40, 60, 80, 100, 120, 140, 160, 195, 230, 400};
    std::vector<float> binedges_y = {0, 0.35, 0.7, 1.05, 1.4, 2.27, 3.14};
@@ -154,15 +178,32 @@ void add_Categories(TString const path, io::RootFileReader const &reader_hist, T
 }
 
 // get up and down shift for set of systematics
-std::pair<TH1F*,TH1F*> getTotalSyst(TH1F* const nominal, std::vector<systHists> &systHists_vec, TString const loc){
+std::pair<TH1F*,TH1F*> getTotalSyst(TH1F* const &nominal, std::vector<systHists> &systHists_vec, TString const loc, TString const sample=""){
    TH1F* hist_shiftUP = (TH1F*)nominal->Clone();
    TH1F* hist_shiftDOWN = (TH1F*)nominal->Clone();
    hist_shiftUP->Reset();
    hist_shiftDOWN->Reset();
+   TH1F* tempSys;
+   TH1F tempShift;
+   TH1F* nominal_ttbar;
    for (auto &current : systHists_vec){
-      if (current.systematic_.type() == Systematic::nominal) continue;
-      TH1F* tempSys = current.hists_.getSummedHist(loc);
-      TH1F tempShift = phys::getSystShift(*nominal,*tempSys);
+      if (current.systematic_.type() == Systematic::nominal){  //Store sum of ttBar for syst. with alt. samples
+         if (sample == "") nominal_ttbar = current.hists_.getSummedHist(loc,current.datasets_ttBar_);
+         else nominal_ttbar = current.hists_.getHistogram(loc,sample);
+         continue;
+      }
+      
+      if (sample == ""){      //Option to get shift for individual sample
+         tempSys = current.hists_.getSummedHist(loc,current.datasets_);
+      }   
+      else if (std::find(current.datasets_.begin(), current.datasets_.end(), sample) !=  current.datasets_.end()){
+         tempSys=current.hists_.getHistogram(loc,sample);
+      }
+      else tempSys = nominal_ttbar;
+            
+      if (current.altSampleType) tempShift= phys::getSystShift(*nominal_ttbar,*tempSys);  // Choose correct reference
+      else tempShift= phys::getSystShift(*nominal,*tempSys);
+      
       for (int i=0; i<=tempShift.GetNbinsX(); i++){
          float content = tempShift.GetBinContent(i);
          if (content>0) hist_shiftUP->SetBinContent(i,hist_shiftUP->GetBinContent(i)+content*content);
@@ -173,11 +214,11 @@ std::pair<TH1F*,TH1F*> getTotalSyst(TH1F* const nominal, std::vector<systHists> 
    hist::sqrtHist(*hist_shiftUP);
    hist::sqrtHist(*hist_shiftDOWN);
    
-   return std::make_pair(hist_shiftUP,hist_shiftDOWN);
+   return std::make_pair(hist_shiftDOWN,hist_shiftUP);
 }
 
 // get graph with asym. errors from three histograms (shift=true if only shift and not shift+nominal is given)
-TGraphAsymmErrors getErrorGraph(TH1F* const eUP, TH1F* const eDOWN, TH1F* const nominal, bool const shift){
+TGraphAsymmErrors getErrorGraph(TH1F* const eDOWN, TH1F* const eUP, TH1F* const nominal, bool const shift){
    TGraphAsymmErrors asymmerrors(nominal);
    if (shift) {
       for (int i=0; i<=eUP->GetNbinsX(); i++){
@@ -193,6 +234,79 @@ TGraphAsymmErrors getErrorGraph(TH1F* const eUP, TH1F* const eDOWN, TH1F* const 
    }
    return asymmerrors;
 }
+
+void printUnc(TString name, const float &down, const float &up, const float &nominal){
+   TString out = TString::Format(" %s & $%.1f(%.1f)$ & $%.1f(%.1f)$\\\\\n",name.ReplaceAll("_","\\_").Data(),down,down/nominal*100,up,up/nominal*100);
+   std::cout<<out;
+}
+
+// print total yields per contribution
+void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists> &systHists_vec, const std::vector<TString> &mcSamples_merged){
+   std::vector<TString> outputSamples(mcSamples_merged);
+   std::reverse(outputSamples.begin(),outputSamples.end());
+   outputSamples.push_back("MC");
+   outputSamples.push_back("data");
+   for (TString cat:{"ee","emu","mumu"}){    //Get the number of events per category
+      TH1F* mc_total=hs->getHistogram("cutflow/"+cat,"MC");
+      std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,systHists_vec,"cutflow/"+cat);
+      std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
+      float mcYield = mc_total->GetBinContent(6);
+      float mcYield_down = syst.first->GetBinContent(6);
+      float mcYield_up = syst.second->GetBinContent(6);
+      for (TString sample:outputSamples){
+         TH1F* temp_hist=hs->getHistogram("cutflow/"+cat,sample);
+         float sampleYield = temp_hist->GetBinContent(6);
+         std::cout<<std::fixed<<sample<<"&"<<sampleYield<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
+         if (sample=="MC") std::cout<<mcYield_down<<"   "<<mcYield_up<<std::endl;
+         if (sample=="MC") std::cout<<mcYield_down/mcYield*100<<"   "<<mcYield_up/mcYield*100<<std::endl;
+      }
+   }
+}
+
+// print brackdown of syst uncertainties
+void printUncBreakDown(hist::Histograms<TH1F>* hs, std::vector<systHists> &systHists_vec, const std::vector<TString> &mcSamples) {
+   std::cout<<std::endl<<"-----------------Uncertainties-------------------"<<std::endl;
+   for (TString cat:{"ee","emu","mumu"}){
+      std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
+      TH1F* mc_total=hs->getHistogram("cutflow/"+cat,"MC");
+      for (int i=1; i<(systHists_vec.size()); i++){
+         if ((i+1)<systHists_vec.size()){    // check if still room for up and down shift
+            if (systHists_vec[i].systematic_.type_str()==systHists_vec[i+1].systematic_.type_str()){     // check if up and down shift
+               std::vector<systHists> tempVec = {systHists_vec[0],systHists_vec[i],systHists_vec[i+1]};
+               std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat);
+               printUnc(systHists_vec[i].systematic_.type_str(),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
+               i++;
+               continue;
+            }
+         }
+         std::vector<systHists> tempVec = {systHists_vec[0],systHists_vec[i]};   // print unc. without up and down shift
+         std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat);
+         printUnc(systHists_vec[i].systematic_.type_str(),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
+      }
+      std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,systHists_vec,"cutflow/"+cat);     // print total uncertainty
+      std::cout<<"\\hline"<<std::endl;
+      printUnc("TOTAL",syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
+   }
+}
+
+// print uncertainty shift for individual samples
+void printShiftBySample(hist::Histograms<TH1F>* hs, std::vector<systHists> &systHists_vec, const std::vector<TString> &mcSamples){
+   std::cout<<std::endl<<"-----------------Uncertainties per sample-------------------"<<std::endl;
+   for (TString cat:{"ee","emu","mumu"}){
+      std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
+      TH1F* mc_total=hs->getHistogram("cutflow/"+cat,"MC");
+      float mcYield = mc_total->GetBinContent(6);
+      for (TString sample:mcSamples){
+         TH1F* temp_hist=hs->getHistogram("cutflow/"+cat,sample);
+         std::pair<TH1F*,TH1F*> syst = getTotalSyst(temp_hist,systHists_vec,"cutflow/"+cat,sample);
+         float sampleYield = temp_hist->GetBinContent(6);
+         float sampleYield_down = syst.first->GetBinContent(6);
+         float sampleYield_up = syst.second->GetBinContent(6);
+         std::cout<<sample<<"   "<<sampleYield_down<<"   "<<sampleYield_up<<std::endl;
+         std::cout<<sample<<"   "<<sampleYield_down/mcYield*100<<"   "<<sampleYield_up/mcYield*100<<std::endl;
+      }
+   }
+}
    
 extern "C"
 void run()
@@ -201,10 +315,12 @@ void run()
    
    std::vector<TString> mcSamples={};
    std::vector<TString> dataSamples={};
+   std::vector<TString> ttbarSamples={};
    switch(cfg.year_int){
       case(3): //2018
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttZ","ttW"};
+      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","EGamma","MuonEG","SingleMuon"};
+      ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       break;
       case(2): //2017
       mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttZ","ttW"};
@@ -217,8 +333,11 @@ void run()
    }
    std::vector<TString> samplesToPlot = util::addVectors(mcSamples,dataSamples);
    
-   std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN"};
-   // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","TOP_PT"};
+   // ~std::vector<TString> systToPlot = {"Nominal","UNCLUSTERED_UP","UNCLUSTERED_DOWN","TOP_PT"};
+   std::vector<TString> systToPlot = {"Nominal","MTOP175p5"};
+   // ~std::vector<TString> systToPlot = {"Nominal"};
    
    // 1D plots
    std::map<TString,std::vector<TString>> msPresel_vVars={
@@ -228,89 +347,91 @@ void run()
    for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          msPresel_vVars.insert(std::pair<TString,std::vector<TString>>(selection+channel,
-         {"MET"
-         ,"PuppiMET"
-         ,"DNN_MET_pT"
-         ,"DNN_MET_dPhi_nextLep"
-         ,"met1000"
-         ,"mLL"
-         ,"Lep1_pt"
-         ,"Lep2_pt"
-         ,"pTsumlep"
-         ,"sumpTlep"
-         ,"pTbJet"
-         ,"Jet1_pt"
-         ,"Jet2_pt"
-         ,"dPhiMETnearJet"
-         ,"dPhiMETleadJet"
-         ,"dPhiMETlead2Jet"
-         ,"dphi_metNearLep"
-         ,"dphi_metNearLep_puppi"
-         ,"COSdphi_metNearLep"
-         ,"SINdphi_metNearLep"
-         ,"dPhiMETbJet"
-         ,"dPhiLep1bJet"
-         ,"dR_bJetLep1"
-         ,"dphi_bJetLep2"
-         ,"dphi_bJetnearLep"
-         ,"dphi_b1b2"
-         ,"dR_b1b2"
-         ,"dphi_metLep1"
-         ,"dphi_metLep2"
-         ,"dphi_metLepsum"
-         ,"dPhiLep1Lep2"
-         ,"dR_Lep1Lep2"
-         ,"nJets"
-         ,"nBjets"
-         ,"MT2"
-         ,"MT"
-         ,"mt_MetLep2"
-         ,"mt_MetNextLep"
-         ,"conMt_Lep1Lep2"
-         ,"ST"
-         ,"HT"
-         ,"sum_STHT"
-         ,"sum_mlb"
-         ,"METunc_Puppi"
-         ,"n_Interactions"
-         ,"Lep1_flavor"
-         ,"Lep2_flavor"
-         ,"Lep1_phi"
-         ,"Lep2_phi"
-         ,"Lep1_eta"
-         ,"Lep2_eta"
-         ,"Lep1_E"
-         ,"Lep2_E"
-         ,"Jet1_phi"
-         ,"Jet2_phi"
-         ,"Jet1_eta"
-         ,"Jet2_eta"
-         ,"Jet1_E"
-         ,"Jet2_E"
-         ,"dPhiMETfarJet"
-         ,"dPhiJet1Jet2"
-         ,"METsig"
-         ,"MHT"
-         ,"looseLeptonVeto"
-         ,"dPhiMETnearJet_Puppi"
-         ,"dPhiMETfarJet_Puppi"
-         ,"dPhiMETleadJet_Puppi"
-         ,"dPhiMETlead2Jet_Puppi"
-         ,"dPhiMETbJet_Puppi"
-         ,"dPhiLep1Jet1"
-         ,"PFMET_phi"
-         ,"PuppiMET_phi"
-         ,"CaloMET"
-         ,"CaloMET_phi"
-         ,"vecsum_pT_allJet"
-         ,"vecsum_pT_l1l2_allJet"
-         ,"mass_l1l2_allJet"
-         ,"ratio_vecsumpTlep_vecsumpTjet"
-         ,"mjj"
-         ,"C_em_W_p"
-         ,"C_em_W_m"
-         }));
-         // ~{"Jet1_pt","looseLeptonVeto"}));
+         // ~{"MET"
+         // ~,"PuppiMET"
+         // ~,"DNN_MET_pT"
+         // ~,"DNN_MET_dPhi_nextLep"
+         // ~,"met1000"
+         // ~,"mLL"
+         // ~,"Lep1_pt"
+         // ~,"Lep2_pt"
+         // ~,"pTsumlep"
+         // ~,"sumpTlep"
+         // ~,"pTbJet"
+         // ~,"Jet1_pt"
+         // ~,"Jet2_pt"
+         // ~,"dPhiMETnearJet"
+         // ~,"dPhiMETleadJet"
+         // ~,"dPhiMETlead2Jet"
+         // ~,"dphi_metNearLep"
+         // ~,"dphi_metNearLep_puppi"
+         // ~,"COSdphi_metNearLep"
+         // ~,"SINdphi_metNearLep"
+         // ~,"dPhiMETbJet"
+         // ~,"dPhiLep1bJet"
+         // ~,"dR_bJetLep1"
+         // ~,"dphi_bJetLep2"
+         // ~,"dphi_bJetnearLep"
+         // ~,"dphi_b1b2"
+         // ~,"dR_b1b2"
+         // ~,"dphi_metLep1"
+         // ~,"dphi_metLep2"
+         // ~,"dphi_metLepsum"
+         // ~,"dPhiLep1Lep2"
+         // ~,"dR_Lep1Lep2"
+         // ~,"nJets"
+         // ~,"nBjets"
+         // ~,"MT2"
+         // ~,"MT"
+         // ~,"mt_MetLep2"
+         // ~,"mt_MetNextLep"
+         // ~,"conMt_Lep1Lep2"
+         // ~,"ST"
+         // ~,"HT"
+         // ~,"sum_STHT"
+         // ~,"sum_mlb"
+         // ~,"METunc_Puppi"
+         // ~,"n_Interactions"
+         // ~,"Lep1_flavor"
+         // ~,"Lep2_flavor"
+         // ~,"Lep1_phi"
+         // ~,"Lep2_phi"
+         // ~,"Lep1_eta"
+         // ~,"Lep2_eta"
+         // ~,"Lep1_E"
+         // ~,"Lep2_E"
+         // ~,"Jet1_phi"
+         // ~,"Jet2_phi"
+         // ~,"Jet1_eta"
+         // ~,"Jet2_eta"
+         // ~,"Jet1_E"
+         // ~,"Jet2_E"
+         // ~,"dPhiMETfarJet"
+         // ~,"dPhiJet1Jet2"
+         // ~,"METsig"
+         // ~,"MHT"
+         // ~,"looseLeptonVeto"
+         // ~,"dPhiMETnearJet_Puppi"
+         // ~,"dPhiMETfarJet_Puppi"
+         // ~,"dPhiMETleadJet_Puppi"
+         // ~,"dPhiMETlead2Jet_Puppi"
+         // ~,"dPhiMETbJet_Puppi"
+         // ~,"dPhiLep1Jet1"
+         // ~,"PFMET_phi"
+         // ~,"PuppiMET_phi"
+         // ~,"CaloMET"
+         // ~,"CaloMET_phi"
+         // ~,"vecsum_pT_allJet"
+         // ~,"vecsum_pT_l1l2_allJet"
+         // ~,"mass_l1l2_allJet"
+         // ~,"ratio_vecsumpTlep_vecsumpTjet"
+         // ~,"mjj"
+         // ~,"C_em_W_p"
+         // ~,"C_em_W_m"
+         // ~}));
+         {}));
+         // ~{"Lep_e_pt","Lep_mu_pt","Lep1_pt","Lep2_pt"}));
+         // ~{"Lep1_pt","Lep2_pt"}));
       }
    }
    
@@ -328,7 +449,7 @@ void run()
    // Setup systematics
    std::vector<systHists> systHists_vec;
    for (TString syst : systToPlot){
-      systHists temp(syst,TString::Format("multiHists/%s/histograms_merged_%s.root",syst.Data(),cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),(syst=="Nominal")? samplesToPlot : mcSamples);
+      systHists temp(syst,TString::Format("multiHists/%s/histograms_merged_%s.root",syst.Data(),cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),(syst=="Nominal")? samplesToPlot : mcSamples, ttbarSamples);
       systHists_vec.push_back(temp);
    }
    
@@ -336,7 +457,7 @@ void run()
    importHists1D(systHists_vec,samplesToPlot,mcSamples,msPresel_vVars);
    
    // Import 2D hists
-   importHists2D(systHists_vec,samplesToPlot,mcSamples,msPresel_vVars_2D);
+   // ~importHists2D(systHists_vec,samplesToPlot,mcSamples,msPresel_vVars_2D);
    
    // Define hist collection for nominal
    hist::Histograms<TH1F>* hs;
@@ -369,31 +490,32 @@ void run()
    
    // combine different samples to improve readability
    hs->combineSamples("Diboson",{"WW","WZ","ZZ"});
+   hs->combineSamples("DrellYan_comb",{"DrellYan","DrellYan_M10to50"});
+   hs->combineSamples("ttZ",{"ttZ_2L","ttZ_QQ"});
    hs->combineSamples("ttW/Z",{"ttW","ttZ"});
    hs->combineSamples("tt other",{"TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"});
-   std::vector<TString> MCsamples={};
+   std::vector<TString> mcSamples_merged={};
    switch(cfg.year_int){
       case(3): //2018
-      MCsamples = {"ttW/Z","WJetsToLNu","Diboson","DrellYan","SingleTop","tt other","TTbar_diLepton"};
+      mcSamples_merged = {"ttW/Z","WJetsToLNu","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
       hs->combineSamples("data",{"DoubleMuon","EGamma","MuonEG","SingleMuon"});
-      hs->combineSamples("MC",MCsamples);
-      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttZ","ttW"});
+      hs->combineSamples("MC",mcSamples_merged);
+      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
       break;
       case(2): //2017
-      MCsamples = {"ttW/Z","WJetsToLNu","Diboson","DrellYan","SingleTop","tt other","TTbar_diLepton"};
+      mcSamples_merged = {"ttW/Z","WJetsToLNu","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
       hs->combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
-      hs->combineSamples("MC",MCsamples);
-      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttZ","ttW"});
+      hs->combineSamples("MC",mcSamples_merged);
+      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
       break;
       case(1): //2016
-      MCsamples = {"ttW/Z","WJetsToLNu","Diboson","DrellYan_NLO","SingleTop","tt other","TTbar_diLepton"};
+      mcSamples_merged = {"ttW/Z","WJetsToLNu","Diboson","DrellYan_NLO","SingleTop","tt other","TTbar_diLepton"};
       hs->combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
-      hs->combineSamples("MC",MCsamples);
+      hs->combineSamples("MC",mcSamples_merged);
       hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_NLO","ttZ","ttW"});
       break;
    }
-   std::map<const TString,Color_t> colormap = {{"Diboson",kCyan-8},{"ttW/Z",kGreen-7},{"tt other",kRed-9}};
-   
+   std::map<const TString,Color_t> colormap = {{"TTbar_diLepton",kRed-6},{"Diboson",kCyan-8},{"ttW/Z",kGreen-7},{"tt other",kRed-9}};
    // start 1D plotting
    TCanvas can;
    can.SetLogy();
@@ -406,7 +528,7 @@ void run()
          sp_can.pU_.cd();
          TString loc;
          loc=sPresel+sVar;
-         THStack st_mc=hs->getStack(loc,MCsamples,colormap);
+         THStack st_mc=hs->getStack(loc,mcSamples_merged,colormap);
          gfx::LegendEntries le=hs->getLegendEntries();
          
          //systematics
@@ -584,25 +706,16 @@ void run()
       }
    }
    
-
-   std::vector<TString> outputSamples(MCsamples);
-   std::reverse(outputSamples.begin(),outputSamples.end());
-   outputSamples.push_back("MC");
-   outputSamples.push_back("data");
-   for (TString cat:{"ee","emu","mumu"}){    //Get the number of events per category
-      TH1F* mc_total=hs->getHistogram("baseline/"+cat+"/looseLeptonVeto","MC");
-      std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,systHists_vec,"baseline/"+cat+"/looseLeptonVeto");
-      std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
-      // ~for (TString sample:{"TTbar_diLepton","tt other","Diboson","SingleTop","WJetsToLNu","DrellYan","ttW/Z","MC","data"}){
-      for (TString sample:outputSamples){
-         TH1F* temp_hist=hs->getHistogram("baseline/"+cat+"/looseLeptonVeto",sample);
-         std::cout<<std::fixed<<sample<<"&"<<temp_hist->Integral()<<"&"<<std::setprecision(1)<<temp_hist->Integral()/mc_total->Integral()*100<<"\\\\"<<std::endl;
-         // ~std::cout<<sample<<"   "<<temp_hist->Integral()<<"   "<<temp_hist->Integral()/mc_total->Integral()*100<<std::endl;
-         if (sample=="MC") std::cout<<syst.first->Integral()<<"   "<<syst.second->Integral()<<std::endl;
-         if (sample=="MC") std::cout<<syst.first->Integral()/temp_hist->Integral()*100<<"   "<<syst.second->Integral()/temp_hist->Integral()*100<<std::endl;
-      }
-   }
+   // Print total yields
+   printTotalYields(hs,systHists_vec,mcSamples_merged);
    
+   // Print uncertainties
+   printUncBreakDown(hs,systHists_vec,mcSamples);
+      
+   // Print shift per sample
+   printShiftBySample(hs,systHists_vec,mcSamples);
+   
+   /*
    //Plot 2D SignalRegion Plot (reco level)
    for (auto &sPresel_vVars:msPresel_vVars_2D){
       TString const &sPresel=sPresel_vVars.first;
@@ -672,4 +785,5 @@ void run()
          saver.save(can,loc,true,false,true);
       }
    }
+   */
 }

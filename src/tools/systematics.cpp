@@ -26,17 +26,10 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("mH130")) return mH130;
     if(type.BeginsWith("mH135")) return mH135;
     if(type.BeginsWith("mH140")) return mH140;
-    if(type.BeginsWith("mTop166")) return mTop166;
-    if(type.BeginsWith("mTop169")) return mTop169;
-    if(type.BeginsWith("mTop171")) return mTop171;
-    if(type.BeginsWith("mTop173")) return mTop173;
-    if(type.BeginsWith("mTop175")) return mTop175;
-    if(type.BeginsWith("mTop178")) return mTop178;
+    if(type.BeginsWith("MTOP169p5")) return mTop169p5;
+    if(type.BeginsWith("MTOP175p5")) return mTop175p5;
     if(type.BeginsWith("LEPT")) return lept;
-    if(type.BeginsWith("ELECTRON_SCALE_SYST")) return eleScaleSyst;
-    if(type.BeginsWith("ELECTRON_SCALE_ET")) return eleScaleEt;
-    if(type.BeginsWith("ELECTRON_SCALE_GAIN")) return eleScaleGain;
-    if(type.BeginsWith("ELECTRON_SCALE_STAT")) return eleScaleStat;
+    if(type.BeginsWith("ELECTRON_SCALE")) return eleScale;
     if(type.BeginsWith("ELECTRON_SCALESMEARING")) return eleScaleSmearing;
     if(type.BeginsWith("ELECTRON_SMEARING_PHI")) return eleSmearingPhi;
     if(type.BeginsWith("ELECTRON_SMEARING_RHO")) return eleSmearingRho;
@@ -171,8 +164,6 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("XSEC_W")) return xsec_w;
     if(type.BeginsWith("XSEC_Z")) return xsec_z;
     if(type.BeginsWith("TOP_PT_THEORY")) return topPtTheory;
-    if(type.BeginsWith("TOP_PT_FITPARAM0")) return topPtFitparam0;
-    if(type.BeginsWith("TOP_PT_FITPARAM1")) return topPtFitparam1;
     if(type.BeginsWith("TOP_PT")) return topPt;
     if(type.BeginsWith("MASS")) return mass;
     if(type.BeginsWith("MATCH_TTBB"))    return match_ttbb;
@@ -181,8 +172,8 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("MATCH_TTCC"))    return match_ttcc;
     if(type.BeginsWith("MATCH_TTOTHER")) return match_ttother;
     if(type.BeginsWith("MATCH")) return match;
-    if(type.BeginsWith("GLUONMOVETUNE")) return gluonmovetune;
-    if(type.BeginsWith("ERDONRETUNE")) return erdonretune;
+    if(type.BeginsWith("CR1")) return CR1;
+    if(type.BeginsWith("CR2")) return CR2;
     if(type.BeginsWith("ERDON")) return erdon;
     if(type.BeginsWith("DS")) return tw_ds;
     if(type.BeginsWith("MESCALE_TTBB")) return meScale_ttbb;
@@ -310,12 +301,8 @@ TString Systematic::convertType(const Type& type)
     if(type == mH130) return "mH130";
     if(type == mH135) return "mH135";
     if(type == mH140) return "mH140";
-    if(type == mTop166) return "mTop166";
-    if(type == mTop169) return "mTop169";
-    if(type == mTop171) return "mTop171";
-    if(type == mTop173) return "mTop173";
-    if(type == mTop175) return "mTop175";
-    if(type == mTop178) return "mTop178";
+    if(type == mTop169p5) return "MTOP169p5";
+    if(type == mTop175p5) return "MTOP175p5";
     if(type == lept) return "LEPT";
     if(type == ele) return "ELE";
     if(type == eleID) return "ELECTRON_ID";
@@ -324,10 +311,7 @@ TString Systematic::convertType(const Type& type)
     if(type == eleReco) return "ELECTRON_RECO";
     if(type == eleRecoSyst) return "ELECTRON_RECO_SYST";
     if(type == eleRecoStat) return "ELECTRON_RECO_STAT";
-    if(type == eleScaleSyst) return "ELECTRON_SCALE_SYST";
-    if(type == eleScaleStat) return "ELECTRON_SCALE_STAT";
-    if(type == eleScaleGain) return "ELECTRON_SCALE_GAIN";
-    if(type == eleScaleEt) return "ELECTRON_SCALE_ET";
+    if(type == eleScale) return "ELECTRON_SCALE";
     if(type == eleScaleSmearing) return "ELECTRON_SCALESMEARING";
     if(type == eleSmearingRho) return "ELECTRON_SMEARING_RHO";
     if(type == eleSmearingPhi) return "ELECTRON_SMEARING_PHI";
@@ -454,8 +438,6 @@ TString Systematic::convertType(const Type& type)
     if(type == xsec_w) return "XSEC_W";
     if(type == xsec_z) return "XSEC_Z";
     if(type == topPtTheory) return "TOP_PT_THEORY";
-    if(type == topPtFitparam0) return "TOP_PT_FITPARAM0";
-    if(type == topPtFitparam1) return "TOP_PT_FITPARAM1";
     if(type == topPt) return "TOP_PT";
     if(type == mass) return "MASS";
     if(type == match_ttbb)    return "MATCH_TTBB";
@@ -464,8 +446,8 @@ TString Systematic::convertType(const Type& type)
     if(type == match_ttcc)    return "MATCH_TTCC";
     if(type == match_ttother) return "MATCH_TTOTHER";
     if(type == match) return "MATCH";
-    if(type == gluonmovetune) return "GLUONMOVETUNE";
-    if(type == erdonretune) return "ERDONRETUNE";
+    if(type == CR1) return "CR1";
+    if(type == CR2) return "CR2";
     if(type == erdon) return "ERDON";
     if(type == tw_ds) return "DS";
     if(type == meScale_ttbb) return "MESCALE_TTBB";
@@ -697,7 +679,7 @@ void Systematic::isValid(const Type& type, const Variation& variation, const int
             exit(7);
         }
     }
-
+    
     // Check validity of variation
     if(variation == undefinedVariation) return;
     else if(variation==up || variation==down){
@@ -784,9 +766,92 @@ Systematic::Systematic Systematic::undefinedSystematic()
     return Systematic(undefinedType, undefinedVariation);
 }
 
+TString Systematic::puWeightName(const Systematic & systematic){
+    std::cout<<"--- Beginning preparation of pileup weight\n";
+    const Type type = systematic.type();
+    TString weightName = "pu_weight";
+    if(type==pu){
+        std::cout<<"Use systematic of type: "<<convertType(type)<<"\n";
+        if(systematic.variation() == up) {
+            std::cout<<"Apply systematic variation: up\n";
+            weightName = "pu_weight_up";
+        }
+        else if(systematic.variation() == down) {
+            std::cout<<"Apply systematic variation: down\n";
+            weightName = "pu_weight_down";
+        }
+        else {
+            std::cerr << "ERROR in constructor of pileup weights! Systematic variation is invalid: "
+                  << convertVariation(systematic.variation()) << "\n...break\n\n";
+            exit(98);
+      }
+   }
+   else std::cout<<"Do not apply systematic variation\n";
+   
+   std::cout<<"=== Finishing preparation of pileup weights\n";
+   return weightName;
+}
 
+TString Systematic::metNameAddition(const Systematic & systematic){
+    std::cout<<"--- Beginning preparation of unclustered energy shift\n";
+    const Type type = systematic.type();
+    TString nameAddition = "";
+    if(type==unclustered){
+        std::cout<<"Use systematic of type: "<<convertType(type)<<"\n";
+        if(systematic.variation() == up) {
+            std::cout<<"Apply systematic variation: up\n";
+            nameAddition = "_UnclE_up";
+        }
+        else if(systematic.variation() == down) {
+            std::cout<<"Apply systematic variation: down\n";
+            nameAddition = "_UnclE_down";
+        }
+        else {
+            std::cerr << "ERROR in constructor of unclustered energy shift! Systematic variation is invalid: "
+                  << convertVariation(systematic.variation()) << "\n...break\n\n";
+            exit(98);
+      }
+   }
+   else std::cout<<"Do not apply systematic variation\n";
+   
+   std::cout<<"=== Finishing preparation of unclustered energy shift\n";
+   return nameAddition;
+}
 
+void Systematic::checkAlternativeSample(const Systematic & systematic, const TString &dsSyst, const TString &dsName){
+    std::cout<<"--- Beginning check of alternative samples\n";
+    const Type type = systematic.type();
+    if(std::find(altSampleTypes.begin(), altSampleTypes.end(), type) != altSampleTypes.end()){
+        if (systematic.name() == dsSyst){
+            std::cout<<"Use systematic: "<<dsSyst<<"\n";
+        }
+        else {
+            std::cerr << "ERROR in check of alternativ samples! Systematic variation is not valid for sample: "
+                    << dsName <<"\n...break\n\n";
+            exit(150);
+        }
+    }
+    else if(dsSyst != "Nominal"){
+        std::cerr << "ERROR in check of alternativ samples! Alternative sample does not match selected systematic: "
+            << dsName <<"\n...break\n\n";
+        exit(151);
+    }
+}
 
+bool Systematic::checkTopPTreweighting(const Systematic & systematic){
+    std::cout<<"--- Beginning preparation of top PT reweighting\n";
+    const Type type = systematic.type();
+    bool apply = true;
+    if(type==topPt){
+        std::cout<<"Use systematic of type: "<<convertType(type)<<"\n";
+        std::cout<<"Top PT reweighting will not be applied\n";
+        apply = false;
+    }
+    else std::cout<<"Do not apply systematic variation\n";
+    
+    return apply;
+}
+    
 // --------------------- Methods of class Systematic in namespace Systematic -------------------------
 
 

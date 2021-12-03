@@ -21,12 +21,8 @@ namespace Systematic{
         mH130,              // Higgs mass of 130 GeV
         mH135,              // Higgs mass of 135 GeV
         mH140,              // Higgs mass of 140 GeV
-        mTop166,            // top quark mass of 166 GeV
-        mTop169,            // top quark mass of 169 GeV
-        mTop171,            // top quark mass of 171 GeV
-        mTop173,            // top quark mass of 173 GeV
-        mTop175,            // top quark mass of 175 GeV
-        mTop178,            // top quark mass of 178 GeV
+        mTop169p5,          // top quark mass of 169.5 GeV
+        mTop175p5,          // top quark mass of 175.5 GeV
         lept,               // scale lepton ID/ISO data-to-MC scale factors
         ele,                // scale electron ID/ISO data-to-MC scale factors
         eleID,              // scale electron ID/ISO data-to-MC scale factors
@@ -42,10 +38,7 @@ namespace Systematic{
         muonIso,            // scale muon ID/ISO data-to-MC scale factors
         muonIsoStat,        // scale muon ID/ISO data-to-MC scale factors
         muonIsoSyst,        // scale muon ID/ISO data-to-MC scale factors
-        eleScaleSyst,       // electron scale correction
-        eleScaleGain,       // electron scale correction
-        eleScaleStat,       // electron scale correction
-        eleScaleEt,         // electron scale correction
+        eleScale,           // electron scale correction
         eleSmearingPhi,     // electron smearing correction
         eleSmearingRho,     // electron smearing correction
         eleScaleSmearing,   // electron scale+smearing enevlope
@@ -153,9 +146,7 @@ namespace Systematic{
         xsec_t,             // cross-section uncertainty of single top process
         xsec_ttDM,          // cross-section uncertainty of tt+DM process
         topPtTheory,        // scale top pt as predicted in theoretical ttbar differential cross-section calculations
-        topPtFitparam0,     // scale top pt as estimated in ttbar differential cross-section measurements, uncertainty via decorrelated fit parameter p0prime
-        topPtFitparam1,     // scale top pt as estimated in ttbar differential cross-section measurements, uncertainty via decorrelated fit parameter p1prime
-        topPt,              // scale top pt as estimated in ttbar differential cross-section measurements, uncertainty via switching off and applying twice
+        topPt,              // scale top pt as estimated in ttbar differential cross-section measurements, uncertainty via switching off and on
         mass,               // variations of masses used in process generation (here top quark mass)
         match,              // matching uncertainty in process generation, associated to powheg-pythia hdamp parameter
         match_ttbb,         // matching uncertainty in process generation, associated to powheg-pythia hdamp parameter per ttbar+XX
@@ -164,8 +155,8 @@ namespace Systematic{
         match_ttcc,         // matching uncertainty in process generation, associated to powheg-pythia hdamp parameter per ttbar+XX
         match_ttother,      // matching uncertainty in process generation, associated to powheg-pythia hdamp parameter per ttbar+XX
         erdon,
-        erdonretune,
-        gluonmovetune,
+        CR1,
+        CR2,
         tw_ds,
         meScale,            // Q2 scale uncertainty in process generation on Matrix Element only
         meScale_ttbb,       // Q2 scale uncertainty in process generation on Matrix Element only (ttbb process)
@@ -331,7 +322,7 @@ namespace Systematic{
         lept, trig, trigEta, pu,
         ele, eleID, eleIDSyst, eleIDStat, eleReco, eleRecoSyst, eleRecoStat,
         muon, muonID, muonIDSyst, muonIDStat, muonIso, muonIsoSyst, muonIsoStat,
-        eleScaleSyst, eleScaleGain, eleScaleStat, eleScaleEt, eleSmearingPhi, eleSmearingRho,
+        eleScale, eleSmearingPhi, eleSmearingRho,
         muonScaleEwk, muonScaleStat, muonScaleZpt, muonScaleDeltaM, muonScaleEwk2,
         eleScaleSmearing, muonScale,
         dy, bg, kin,
@@ -358,7 +349,6 @@ namespace Systematic{
         xsec_ttH, xsec_ttZ, xsec_ttW, xsec_ttG, xsec_ttV, xsec_tt, xsec_t,
         xsec_v, xsec_vv,
         xsec_w, xsec_z,
-        topPtTheory, topPtFitparam0, topPtFitparam1, topPt,
         mass,
         match,
         match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
@@ -378,7 +368,7 @@ namespace Systematic{
         scale,
         //scale_ttbb, scale_ttb, scale_tt2b, scale_ttcc, scale_ttother,
         bFrag, bSemilep,bFrag_Peterson,
-        erdon, erdonretune, gluonmovetune, tw_ds,
+        erdon, CR1, CR2, tw_ds,
         ueTune,
         ueTune_ttbb, ueTune_ttb, ueTune_tt2b, ueTune_ttbb, ueTune_ttcc, ueTune_ttother,
         alphasPdf,l1prefiring,
@@ -422,7 +412,7 @@ namespace Systematic{
     
     /// Define lepton scale and resolution systematics
     const std::vector<Type> leptonScaleResTypes{
-        eleScaleEt,eleScaleStat,eleSmearingPhi,eleSmearingRho,eleScaleSmearing,
+        eleScale,eleSmearingPhi,eleSmearingRho,eleScaleSmearing,
         muonScaleStat,muonScaleZpt,muonScaleEwk,muonScaleDeltaM,muonScaleEwk2,muonScale
     };
 
@@ -442,11 +432,11 @@ namespace Systematic{
 
     /// Define ttbar systematics, i.e. variations of the ttbar sample (e.g. mass or scale variations)
     const std::vector<Type> ttbarTypes{
-        topPtTheory, topPtFitparam0, topPtFitparam1, topPt,
+        topPtTheory, topPt,
         mass,
         match,
         //match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
-        erdon, erdonretune, gluonmovetune,
+        erdon, CR1, CR2,
         meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother,
         meFacScale, meFacScale_ttbb, meFacScale_ttb, meFacScale_tt2b, meFacScale_ttcc, meFacScale_ttother,
         meRenScale, meRenScale_ttbb, meRenScale_ttb, meRenScale_tt2b, meRenScale_ttcc, meRenScale_ttother,
@@ -498,9 +488,22 @@ namespace Systematic{
         muonID,muonIDStat,muonIDSyst,muonIso,muonIsoStat,muonIsoSyst,
         jetPileupIDapplied,jetLooseCleaningApplied,
         trig,
+        pu,
         
-        eleScaleEt,eleScaleStat,eleSmearingPhi,eleSmearingRho,eleScaleSmearing,
+        eleScale,eleSmearingPhi,eleSmearingRho,eleScaleSmearing,
         muonScaleStat,muonScaleZpt,muonScaleEwk,muonScaleDeltaM,muonScaleEwk2,muonScale
+    };
+    
+    ///Define systematics that are applied by varying the nominal MC weight
+    const std::vector<Type> mcWeightTypes{
+        meFacScale,meRenScale
+
+    };
+    
+    ///Define systematics that are applied by using an alternative sample
+    const std::vector<Type> altSampleTypes{
+        erdon,CR1,CR2,ueTune,match,mTop169p5,mTop175p5
+
     };
 
     const std::vector<Type> uncorrelatedTypes{
@@ -557,6 +560,18 @@ namespace Systematic{
 
     /// Set up undefined systematic
     Systematic undefinedSystematic();
+    
+    /// Get correct pileup weight name
+    TString puWeightName(const Systematic & systematic);
+    
+    /// Get correct met name (to derive unc. due to unclustered Energy)
+    TString metNameAddition(const Systematic & systematic);
+    
+    /// Check if alternative sample and selected systematic match
+    void checkAlternativeSample(const Systematic & systematic, const TString &dsSyst, const TString &dsName);
+    
+    ///Check if top pT reweighting should be applied based on current systematic;
+    bool checkTopPTreweighting(const Systematic & systematic);
 }
 
 #endif

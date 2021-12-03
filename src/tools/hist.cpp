@@ -319,6 +319,18 @@ HIST* hist::Histograms<HIST>::getSummedHist(TString const &varName,bool divideBy
 }
 
 template <class HIST>
+HIST* hist::Histograms<HIST>::getSummedHist(TString const &varName,std::vector<TString> const &samples,bool divideByBinWidth)
+{
+   HIST *h=(HIST*)mmH_[varName][samples[0]].Clone();
+   h->Reset();
+   for (TString const &s: samples){
+      h->Add(&mmH_[varName][s]);
+      if (divideByBinWidth) hist::divideByBinWidth(*h);
+   }
+   return h;
+}
+
+template <class HIST>
 float hist::Histograms<HIST>::getCount(TString const &varName, TString const &sample)
 {
    return mCount_[varName][sample];

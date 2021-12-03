@@ -44,6 +44,7 @@ namespace io
       RootFileReader(TString rootFileName,TString internalPath="",bool standardOutputDirectory=true);
       ~RootFileReader();
       template <class T> T* read(TString name) const;
+      void closeFile() const;
    private:
       TFile *file_;
       TString fName_,fPath_,intPath_;

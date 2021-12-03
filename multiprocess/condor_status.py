@@ -40,10 +40,14 @@ def getMachineFromOut(outName):
     return machine
     
 def resubmitJob(outName):
-    value = input("For resubmitting "+getNameFromOutFile(outName)+" enter 1:\n")
+    value = input("For resubmitting "+getNameFromOutFile(outName)+" enter 1. For showing .out, .log and .error enter 2:\n")
     if value==1:
         print "Resubmitting..."
         sp.call(["condor_submit", outName.replace(".out",".submit")])
+    if value==2:
+        sp.call(["cat", outName])
+        sp.call(["cat", outName.replace(".out",".log")])
+        sp.call(["cat", outName.replace(".out",".error")])
 
 def getProgressFromOut(outName,checkCompleted=False):
     processing = False
@@ -68,7 +72,7 @@ def getProgressFromOut(outName,checkCompleted=False):
 
 def getStatusFromOut(outName,running):
     finished = False
-    if os.path.exists(outName) == False or len(open(outName).readlines(  ))<=2:
+    if os.path.exists(outName) == False or len(open(outName).readlines(  ))<=10:
         if running:
             color = "blue"
             print colored(getNameFromOutFile(outName)+" no output yet",color)
@@ -110,7 +114,7 @@ def checkStatusFromLog(logPath,runningLogs):
                     allFinished = False
     return allFinished
 
-def checkStatusFromQueue(printOutput=True):
+def checkStatusFromQueue(printOutput=True,checkSuspended=False):
     jobs = getInfos()
     jobs = sorted(jobs, key=lambda l: l["JobStatus"]+l["ClusterId"])
     susJobs = []
@@ -136,7 +140,7 @@ def checkStatusFromQueue(printOutput=True):
             susTime = (time.time()-int(job["LastSuspensionTime"]))/60.
             print colored("\033[1m"+name+"    "+job["RemoteHost"]+"       suspended since {:.2f} min".format(susTime)+"         "+job["RemoteHost"]+"\033[0m","red")
             getProgressFromOut(job["Out"])
-            if susTime > 10 :
+            if susTime > 10 and checkSuspended :
                 value = input("Job suspended for more than 10 Minutes, please enter 1 to kill job and start again or 0 to continue:\n")
                 if value==1:
                     print "resubmitting job"
@@ -159,9 +163,10 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",'--checkCompleted', type=str, default="", help="Checks status of all jobs in given log folder")
+    parser.add_argument('--checkSuspended', action='store_true', help="Checks if jobs are suspended for more than 10 minutes, and offers resubmit")
     args = parser.parse_args()
     
-    runningLogs = checkStatusFromQueue(args.checkCompleted == "")
+    runningLogs = checkStatusFromQueue(args.checkCompleted == "",args.checkSuspended)
     
     if(args.checkCompleted != ""):
         if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list

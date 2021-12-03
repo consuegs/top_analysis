@@ -20,7 +20,10 @@
 
 Config const &cfg=Config::get();
 
-std::vector<float> Edges={20,40,60,80,100,150,200};
+// ~std::vector<float> const &Edges_ee_mumu={20,40,60,80,100,150,200};
+// ~std::vector<float> const &Edges_emu={20,40,60,80,100,150,200};
+std::vector<float> const &Edges_ee_mumu={20,50,90,200};
+std::vector<float> const &Edges_emu={20,50,80,120,200};
 
 // Function to plot 2D eff or SF
 void plot2D(TH2 &hist, TString const &cat, TString const &savePath, io::RootFileSaver const &saver, float const &zMin=0.85, float const &zMax=1.0){
@@ -32,6 +35,7 @@ void plot2D(TH2 &hist, TString const &cat, TString const &savePath, io::RootFile
    hist.SetMaximum(zMax);
    hist.SetMinimum(zMin);
    hist.SetMarkerSize(1.2);
+   hist.SetStats(0);
    hist.Draw("colz text e");
    TLatex label=gfx::cornerLabel(cat,1);
    label.Draw();
@@ -54,17 +58,28 @@ std::pair<float,float> getRelUncRange(TH2 const &hist){
    }
    std::pair<float,float> result{minUnc*100,maxUnc*100};
    return result;
-}  
+}
+
+// Function to print line for LaTex table to file
+TString printUncRange(TH2F const &histUp,TH2F const &histDown, TString const name){
+   std::pair<float,float> uncRangeUp = getRelUncRange(histUp);
+   std::pair<float,float> uncRangeDown = getRelUncRange(histDown);
+   TString out = TString::Format(" & %s & $%.2f-%.2f$ & $%.2f-%.2f$\\\\\n",name.Data(),uncRangeDown.first,uncRangeDown.second,uncRangeUp.first,uncRangeUp.second);
+   return out;
+}
    
    
 
 // Function to derive and plot eff. for data and MC in 1D
 void eff1D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, TString const &dataName, TString const &mcName){
    TCanvas can;
-   for(TString selection:{"baselineTrigger"}){
-      for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+   for(TString selection:{"baselineTrigger","nJets2","nJets3+","nPV30-","nPF30+","MET150-","MET150+"}){
+      // ~for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+      for(TString trigg:{"analysisTrigg"}){
          for(TString channel:{"ee","mumu","emu"}){
-            for(TString var:{"pTl1","pTl2","etal1","etal2"}){
+            std::vector<TString> varVector = {"pTl1","pTl2","etal1","etal2"};
+            if (channel=="emu") varVector = {"pTle","pTlmu","etale","etalmu"};
+            for(TString var:varVector){
                // Read needed histograms
                TH1F* base_data=histReader.read<TH1F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+dataName);
                TH1F* data=histReader.read<TH1F>(selection+"/"+trigg+"/"+channel+"/"+var+"/"+dataName);
@@ -116,8 +131,9 @@ void eff1D(io::RootFileReader const &histReader, io::RootFileSaver const &saver,
 // Function to derive and plot eff. and SF for data and MC in 2D
 void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, io::RootFileSaver const &saverHist, TString const &dataName, TString const &mcName){
    TCanvas can;
-   for(TString selection:{"baselineTrigger"}){
-      for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+   for(TString selection:{"baselineTrigger","nJets2","nJets3+","nPV30-","nPF30+","MET150-","MET150+"}){
+      // ~for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+      for(TString trigg:{"analysisTrigg"}){
          for(TString channel:{"ee","mumu","emu"}){
             TString var=(channel!="emu")? "pTl1_pTl2":"pTlmu_pTle";
             TH2F* base_data=histReader.read<TH2F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+dataName);
@@ -125,6 +141,7 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
             TH2F* base_MC=histReader.read<TH2F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+mcName);
             TH2F* MC=histReader.read<TH2F>(selection+"/"+trigg+"/"+channel+"/"+var+"/"+mcName);
             
+            std::vector<float> Edges = (channel!="emu")? Edges_emu:Edges_ee_mumu;
             *base_data=hist::rebinned(*base_data,Edges,Edges);
             *data=hist::rebinned(*data,Edges,Edges);
             *base_MC=hist::rebinned(*base_MC,Edges,Edges);
@@ -181,6 +198,7 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
             for (auto tempHist : histVec){
                can.Clear();
                plot2D(*tempHist,cat+","+nameVec[i],selection+"/"+trigg+"/"+channel+"/"+var+nameVec[i],saver);
+               saverHist.save(*tempHist,selection+"/"+trigg+"/"+channel+"/"+var+nameVec[i]);
                i++;
             }
             
@@ -192,7 +210,8 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
 // Function to derive correlation between dilepton and baseline triggers
 void alpha(io::RootFileReader const &histReader, io::RootFileSaver const &saver, io::RootFileSaver const &saverHist, TString const &mcName){
    TCanvas can;
-   for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+   // ~for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+   for(TString trigg:{"analysisTrigg"}){
       for(TString channel:{"ee","mumu","emu"}){
          TString var=(channel!="emu")? "pTl1_pTl2":"pTlmu_pTle";
          TH2F* base_MC=histReader.read<TH2F>("noTrigger/baselineTrigger/"+channel+"/"+var+"/"+mcName);
@@ -200,6 +219,7 @@ void alpha(io::RootFileReader const &histReader, io::RootFileSaver const &saver,
          TH2F* diLepton_MC=histReader.read<TH2F>("noTrigger/"+trigg+"/"+channel+"/"+var+"/"+mcName);
          TH2F* both_MC=histReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"/"+mcName);
          
+         std::vector<float> Edges = (channel!="emu")? Edges_emu:Edges_ee_mumu;
          *all_MC=hist::rebinned(*all_MC,Edges,Edges);
          *base_MC=hist::rebinned(*base_MC,Edges,Edges);
          *diLepton_MC=hist::rebinned(*diLepton_MC,Edges,Edges);
@@ -252,12 +272,13 @@ void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver cons
    
    TCanvas can;
    for(TString selection:{"baselineTrigger"}){
-      for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+      // ~for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+      for(TString trigg:{"analysisTrigg"}){
          for(TString channel:{"ee","mumu","emu"}){
             TString var=(channel!="emu")? "pTl1_pTl2":"pTlmu_pTle";
             int i = 0;
-            std::vector<float> Edges2={20,40,60,80,100,150,200};
-            TH2F lumiWeightSF("","",Edges2.size(),&Edges2[0],Edges2.size(),&Edges2[0]);
+            std::vector<float> Edges = (channel!="emu")? Edges_emu:Edges_ee_mumu;
+            TH2F lumiWeightSF("","",Edges.size()-1,&Edges[0],Edges.size()-1,&Edges[0]);
             for (auto dsName: cfg.datasets.getDatasubsetNames({datasetName})){
                TH2F* base_data=histReader.read<TH2F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+dsName);
                TH2F* data=histReader.read<TH2F>(selection+"/"+trigg+"/"+channel+"/"+var+"/"+dsName);
@@ -315,10 +336,44 @@ void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver cons
    }
 }
 
+void phaseSpaceUnc(io::RootFileReader const &sFReader, io::RootFileSaver const &saverHist){
+      TCanvas can;
+   // ~for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+   for(TString trigg:{"analysisTrigg"}){
+      for(TString channel:{"ee","mumu","emu"}){
+         TString var=(channel!="emu")? "pTl1_pTl2":"pTlmu_pTle";
+         std::vector<float> Edges = (channel!="emu")? Edges_emu:Edges_ee_mumu;
+         TH2F maxDiff("","",Edges.size()-1,&Edges[0],Edges.size()-1,&Edges[0]);
+         
+         TH2F* nominalSF=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statUp");
+         
+         for(TString selection:{"nJets2","nJets3+","nPV30-","nPF30+","MET150-","MET150+"}){     //loop over different phase spaces to derive largest difference
+            TH2F* phaseSpaceSF=sFReader.read<TH2F>(selection+"/"+trigg+"/"+channel+"/"+var+"_SF_statUp");
+            
+            for(int i=0; i<=phaseSpaceSF->GetNbinsX();i++){
+               for(int j=0; j<=phaseSpaceSF->GetNbinsY();j++){
+                  float tempDiff = abs(nominalSF->GetBinContent(i,j)-phaseSpaceSF->GetBinContent(i,j));
+                  if (tempDiff>maxDiff.GetBinError(i,j)) maxDiff.SetBinError(i,j,tempDiff);     //if difference larger as before, store in unc.
+               }
+            }
+         }
+         
+         for(int i=0; i<=nominalSF->GetNbinsX();i++){       // Set nominal SF (unc. already derived before)
+            for(int j=0; j<=nominalSF->GetNbinsY();j++){
+               maxDiff.SetBinContent(i,j,nominalSF->GetBinContent(i,j));
+            }
+         }
+            
+         saverHist.save(maxDiff,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_systPhaseSpace");
+      }
+   }
+}
+
 void finalSFunc(io::RootFileReader const &sFReader, io::RootFileSaver const &saver, io::RootFileSaver const &saverHist, io::RootFileSaver const &saverSF){
    std::ofstream uncFile;
    uncFile.open(cfg.outputDirectory+"/triggerEff/triggerUnc.txt");
-   for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+   // ~for(TString trigg:{"analysisTrigg","doubleTrigg_DZ","doubleTrigg","singleTrigg"}){
+   for(TString trigg:{"analysisTrigg"}){
       for(TString channel:{"ee","mumu","emu"}){
          TString var=(channel!="emu")? "pTl1_pTl2":"pTlmu_pTle";
          TH2F* alpha=sFReader.read<TH2F>("alpha/"+trigg+"/"+channel+"/"+var+"_alpha");
@@ -356,10 +411,17 @@ void finalSFunc(io::RootFileReader const &sFReader, io::RootFileSaver const &sav
          saverHist.save(*nominalSF_lumiWeight,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_systLumiWeight");
          if(isAnalysisTrigg) saverSF.save(*nominalSF_lumiWeight,channel+"_SF_systLumiWeight");
          
+         //Save phaseSpace unc.
+         TH2F* nominalSF_phaseSpace=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_systPhaseSpace");
+         if(isAnalysisTrigg) saverSF.save(*nominalSF_phaseSpace,channel+"_SF_systPhaseSpace");
+         plot2D(*nominalSF_phaseSpace,cat+",_SF_systPhaseSpace","baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_systPhaseSpace",saver);
+         
          //Derive total syst unc.
          for(int i=0; i<=alpha->GetNbinsX();i++){
             for(int j=0; j<=alpha->GetNbinsY();j++){
-               nominalSF_totalSyst->SetBinError(i,j,sqrt(pow(nominalSF_alpha->GetBinError(i,j),2)+pow(nominalSF_lumiWeight->GetBinError(i,j),2)));
+               nominalSF_totalSyst->SetBinError(i,j,sqrt(pow(nominalSF_alpha->GetBinError(i,j),2)
+                                                         +pow(nominalSF_lumiWeight->GetBinError(i,j),2)
+                                                         +pow(nominalSF_phaseSpace->GetBinError(i,j),2)));
             }
          }
          saverHist.save(*nominalSF_totalSyst,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_systTotal");
@@ -385,16 +447,13 @@ void finalSFunc(io::RootFileReader const &sFReader, io::RootFileSaver const &sav
          //Store min max unc. in File
          if(isAnalysisTrigg){
             uncFile<<cat<<std::endl;
-            uncFile<<std::setprecision(3);
-            uncFile<<"statUp: "<<getRelUncRange(*statUp).first<<"   "<<getRelUncRange(*statUp).second<<std::endl;
-            uncFile<<"statDown: "<<getRelUncRange(*statDown).first<<"   "<<getRelUncRange(*statDown).second<<std::endl;
-            uncFile<<"systLumWeight: "<<getRelUncRange(*nominalSF_lumiWeight).first<<"   "<<getRelUncRange(*nominalSF_lumiWeight).second<<std::endl;
-            uncFile<<"systAlpha: "<<getRelUncRange(*nominalSF_alpha).first<<"   "<<getRelUncRange(*nominalSF_alpha).second<<std::endl;
-            uncFile<<"systTotal: "<<getRelUncRange(*nominalSF_totalSyst).first<<"   "<<getRelUncRange(*nominalSF_totalSyst).second<<std::endl;
-            uncFile<<"totalUp: "<<getRelUncRange(*totalUp).first<<"   "<<getRelUncRange(*totalUp).second<<std::endl;
-            uncFile<<"totalDown: "<<getRelUncRange(*totalDown).first<<"   "<<getRelUncRange(*totalDown).second<<std::endl;
-            uncFile<<std::endl;
-            
+            uncFile<<printUncRange(*statUp,*statDown,"stat");
+            uncFile<<printUncRange(*nominalSF_lumiWeight,*nominalSF_lumiWeight,"syst Era");
+            uncFile<<printUncRange(*nominalSF_alpha,*nominalSF_alpha,"syst Alpha");
+            uncFile<<printUncRange(*nominalSF_phaseSpace,*nominalSF_phaseSpace,"syst PhaseSpace");
+            uncFile<<printUncRange(*nominalSF_totalSyst,*nominalSF_totalSyst,"syst Total");
+            uncFile<<printUncRange(*totalUp,*totalDown,"Total");
+            uncFile<<std::endl;            
          }
       }
    }
@@ -413,7 +472,8 @@ void run()
    io::RootFileReader histReader(inputLoc,TString::Format("triggerEff%.1f",cfg.processFraction*100));
    io::RootFileSaver saver(TString::Format("triggerEff/plots_triggerEff%.1f.root",cfg.processFraction*100),"plot_triggerEff");
    io::RootFileSaver saverHist(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
-   io::RootFileSaver saverSF(TString::Format("data/TriggerSF_%s.root",cfg.year.Data()),"");
+   // ~io::RootFileSaver saverSF(TString::Format("data/TriggerSF_%s.root",cfg.year.Data()),"");
+   io::RootFileSaver saverSF(TString::Format("data/TriggerSF_broad_%s.root",cfg.year.Data()),"");
 
    
    //Plot 1D efficiencies
@@ -428,10 +488,19 @@ void run()
    // Derive SF per era and compare to nominal
    lumiWeightedSF(histReader,saver,saverHist,"MET","TTbar_diLepton");
    
-   // Derive final uncertainties (new saver needed, since sfReader uses same file)
+   //Derive unc. based on phaseSpace (new saver needed, since sfReader uses same file)
    saverHist.closeFile();
    io::RootFileSaver saverHist2(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
    io::RootFileReader sfReader(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
-   finalSFunc(sfReader,saver,saverHist2,saverSF);
+   phaseSpaceUnc(sfReader,saverHist2);
+   
+   // Derive final uncertainties (new saver needed, since sfReader uses same file)
+   saverHist2.closeFile();
+   sfReader.closeFile();
+   io::RootFileSaver saverHist3(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
+   io::RootFileReader sfReader2(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
+   finalSFunc(sfReader2,saver,saverHist3,saverSF);
+   
+   std::cout<<"!!!!!!!!!!!!!!!Derived TriggerSF are saved in TriggerSF_broad_ and are therefore not used in other modules!!!!!!!!!!!!!!!!"<<std::endl;
 
 }
