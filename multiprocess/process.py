@@ -7,6 +7,40 @@ import subprocess
 import sys
 import configparser
 
+bTagEff_sample_syst_dict = {
+      "Nominal" : "TTbar_diLepton",
+      "JESTotal_UP" : "TTbar_diLepton",
+      "JESTotal_DOWN" : "TTbar_diLepton",
+      "JER_UP" : "TTbar_diLepton",
+      "JER_DOWN" : "TTbar_diLepton",
+      "UETUNE_UP" : "TTbar_diLepton_UETUNE_UP",
+      "UETUNE_DOWN" : "TTbar_diLepton_UETUNE_DOWN",
+      "MATCH_UP" : "TTbar_diLepton_MATCH_UP",
+      "MATCH_DOWN" : "TTbar_diLepton_MATCH_DOWN",
+      "ERDON" : "TTbar_diLepton_ERDON",
+      "CR1" : "TTbar_diLepton_CR1",
+      "CR2" : "TTbar_diLepton_CR2",
+      "MTOP169p5" : "TTbar_diLepton_MTOP169p5",
+      "MTOP175p5" : "TTbar_diLepton_MTOP175p5",
+      "TOP_PT" : "TTbar_diLepton",
+      "MESCALE_UP" : "TTbar_diLepton",
+      "MESCALE_DOWN" : "TTbar_diLepton",
+      "MERENSCALE_UP" : "TTbar_diLepton",
+      "MERENSCALE_DOWN" : "TTbar_diLepton",
+      "MEFACSCALE_UP" : "TTbar_diLepton",
+      "MEFACSCALE_DOWN" : "TTbar_diLepton",
+      "PSISRSCALE_UP" : "TTbar_diLepton",
+      "PSISRSCALE_DOWN" : "TTbar_diLepton",
+      "PSFSRSCALE_UP" : "TTbar_diLepton",
+      "PSFSRSCALE_DOWN" : "TTbar_diLepton",
+      "BFRAG_UP" : "TTbar_diLepton",
+      "BFRAG_DOWN" : "TTbar_diLepton",
+      "BSEMILEP_UP" : "TTbar_diLepton",
+      "BSEMILEP_DOWN" : "TTbar_diLepton",
+      "PDF_ALPHAS_UP" : "TTbar_diLepton",
+      "PDF_ALPHAS_DOWN" : "TTbar_diLepton",
+   }
+
 class Range(object):
     def __init__(self, start, end):
         self.start = start
@@ -29,57 +63,21 @@ def get_dataBasePath_dCache(year):      #return dataBasePath on dCache for given
    config.read("../config"+year+".ini")
    #  ~return "root://xrootd-cms.infn.it///store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
    return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
-
-if __name__ == "__main__":
    
-   #############################################
-   # Select datasets to process
-   #############################################
-   #  ~toProcess_mc=["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
-   #  ~toProcess_mc=["TTbar_diLepton"]
-   #  ~toProcess_mc=["TTbar_diLepton_UETUNE_UP"]
-   #  ~toProcess_mc=["TTbar_diLepton_UETUNE_DOWN"]
-   #  ~toProcess_mc=["TTbar_diLepton_MATCH_UP"]
-   #  ~toProcess_mc=["TTbar_diLepton_MATCH_DOWN"]
-   #  ~toProcess_mc=["TTbar_diLepton_ERDON"]
-   #  ~toProcess_mc=["TTbar_diLepton_CR1"]
-   #  ~toProcess_mc=["TTbar_diLepton_CR2"]
-   #  ~toProcess_mc=["TTbar_diLepton_MTOP169p5"]
-   #  ~toProcess_mc=["TTbar_diLepton_MTOP175p5"]
-   #  ~toProcess_mc=["TTbar_diLepton_UETUNE_UP","TTbar_diLepton_tau_UETUNE_UP","TTbar_singleLepton_UETUNE_UP","TTbar_hadronic_UETUNE_UP"]
-   #  ~toProcess_mc=["TTbar_diLepton_UETUNE_DOWN","TTbar_diLepton_tau_UETUNE_DOWN","TTbar_singleLepton_UETUNE_DOWN","TTbar_hadronic_UETUNE_DOWN"]
-   #  ~toProcess_mc=["TTbar_diLepton_MATCH_UP","TTbar_diLepton_tau_MATCH_UP","TTbar_singleLepton_MATCH_UP","TTbar_hadronic_MATCH_UP"]
-   #  ~toProcess_mc=["TTbar_diLepton_MATCH_DOWN","TTbar_diLepton_tau_MATCH_DOWN","TTbar_singleLepton_MATCH_DOWN","TTbar_hadronic_MATCH_DOWN"]
-   #  ~toProcess_mc=["TTbar_diLepton_ERDON","TTbar_diLepton_tau_ERDON","TTbar_singleLepton_ERDON","TTbar_hadronic_ERDON"]
-   #  ~toProcess_mc=["TTbar_diLepton_CR1","TTbar_diLepton_tau_CR1","TTbar_singleLepton_CR1","TTbar_hadronic_CR1"]
-   #  ~toProcess_mc=["TTbar_diLepton_CR2","TTbar_diLepton_tau_CR2","TTbar_singleLepton_CR2","TTbar_hadronic_CR2"]
-   #  ~toProcess_mc=["TTbar_diLepton_MTOP169p5","TTbar_diLepton_tau_MTOP169p5","TTbar_singleLepton_MTOP169p5","TTbar_hadronic_MTOP169p5"]
-   toProcess_mc=["TTbar_diLepton_MTOP175p5","TTbar_diLepton_tau_MTOP175p5","TTbar_singleLepton_MTOP175p5","TTbar_hadronic_MTOP175p5"]
-   
-   #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
-   #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
-   #  ~toProcess_data=["MET"]      
-   toProcess_data=[]
-         
-   #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
-   #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10"]
-   #  ~toProcess_signal=["T1tttt_1200_800"]
-   toProcess_signal=[]
-
-   # define command line arguments
-   parser = argparse.ArgumentParser()
-   parser.add_argument('-m', type=str, default="distributions", help="module, default is distributions")
-   parser.add_argument('-f', type=float, choices=[Range(0.0, 1.0)], default=1.0, help="process fraction")
-   parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",required=True)
-   parser.add_argument('-s', type=str, default="Nominal", help="systematic shift")
-   parser.add_argument('--scratchInput', action='store_true', default=False, help="Use nTuple stored on scratch, otherwise dCache Input is used.")
-   parser.add_argument('--SingleSubmit', action='store_true' )
-
-   args = parser.parse_args()
-
+def submit(args,toProcess_mc,toProcess_data,toProcess_signal):
    print "Running "+args.m
+   print "Systematic: "+args.s
 
    print "Process "+str(args.f*100)+"% of events"
+   
+   # get correct sample for bTagEff
+   if (args.m == "bTagEff"):
+      toProcess_mc = [bTagEff_sample_syst_dict[args.s]]
+      toProcess_data = []
+      toProcess_signal = []
+      if (any("TTbar_diLepton" in s for s in toProcess_mc)==False or len(toProcess_mc)>1 or toProcess_data or toProcess_signal):
+         print "Error: bTagEff should only be submitted with TTbar_dilepton"
+         sys.exit(1)
 
    print toProcess_mc
    print toProcess_data
@@ -96,7 +94,7 @@ if __name__ == "__main__":
    correctSamples = input("If you want to continue with the selected setting, enter 1:\n")
    if (correctSamples != 1):
       print "Abort Submission"
-      exit(97)
+      return
 
    # For single submit check if only one dataset is selected and then ask for file nr
    if (args.SingleSubmit and ((len(toProcess_mc)+len(toProcess_data)+len(toProcess_signal))==1)):
@@ -106,15 +104,9 @@ if __name__ == "__main__":
       exit(98)
 
    # not data processing if systematic shift is choosen
-   if (toProcess_data and args.s!="Nominal"):
+   if (toProcess_data and args.s!="Nominal" and args.s!="met40Cut"):
       toProcess_data=[]
       print "!!!!!!!!!!!!!!!!Data is not processed with systematic shift!!!!!!!!!!!!!!!!!!!!"
-   
-   # bTagEff only submitted with TTbar_dilepton
-   if (args.m == "bTagEff"):
-      if (any("TTbar_diLepton" in s for s in toProcess_mc)==False or len(toProcess_mc)>1 or toProcess_data or toProcess_signal):
-         print "Error: bTagEff should only be submitted with TTbar_dilepton"
-         sys.exit(1)
    
    # triggerEff only submitted with TTbar_dilepton and MET
    if (args.m == "triggerEff"):
@@ -171,3 +163,58 @@ Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.
 Queue
 """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else ""),)
                   subprocess.call(["condor_submit", submitFile])
+
+
+if __name__ == "__main__":
+   
+   #############################################
+   # Select datasets to process
+   #############################################
+   toProcess_mc=["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
+   #  ~toProcess_mc=["DrellYan_NLO"]
+   #  ~toProcess_mc=["TTbar_diLepton"]
+   #  ~toProcess_mc=["TTbar_diLepton_tau_MATCH_DOWN"]
+   #  ~toProcess_mc=["TTbar_diLepton_UETUNE_UP","TTbar_diLepton_tau_UETUNE_UP","TTbar_singleLepton_UETUNE_UP","TTbar_hadronic_UETUNE_UP"]
+   #  ~toProcess_mc=["TTbar_diLepton_UETUNE_DOWN","TTbar_diLepton_tau_UETUNE_DOWN","TTbar_singleLepton_UETUNE_DOWN","TTbar_hadronic_UETUNE_DOWN"]
+   #  ~toProcess_mc=["TTbar_diLepton_MATCH_UP","TTbar_diLepton_tau_MATCH_UP","TTbar_singleLepton_MATCH_UP","TTbar_hadronic_MATCH_UP"]
+   #  ~toProcess_mc=["TTbar_diLepton_MATCH_DOWN","TTbar_diLepton_tau_MATCH_DOWN","TTbar_singleLepton_MATCH_DOWN","TTbar_hadronic_MATCH_DOWN"]
+   #  ~toProcess_mc=["TTbar_diLepton_ERDON","TTbar_diLepton_tau_ERDON","TTbar_singleLepton_ERDON","TTbar_hadronic_ERDON"]
+   #  ~toProcess_mc=["TTbar_diLepton_CR1","TTbar_diLepton_tau_CR1","TTbar_singleLepton_CR1","TTbar_hadronic_CR1"]
+   #  ~toProcess_mc=["TTbar_diLepton_CR2","TTbar_diLepton_tau_CR2","TTbar_singleLepton_CR2","TTbar_hadronic_CR2"]
+   #  ~toProcess_mc=["TTbar_diLepton_MTOP169p5","TTbar_diLepton_tau_MTOP169p5","TTbar_singleLepton_MTOP169p5","TTbar_hadronic_MTOP169p5"]
+   #  ~toProcess_mc=["TTbar_diLepton_MTOP175p5","TTbar_diLepton_tau_MTOP175p5","TTbar_singleLepton_MTOP175p5","TTbar_hadronic_MTOP175p5"]
+   #  ~toProcess_mc=[]
+   
+   #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
+   #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
+   #  ~toProcess_data=["MET"]      
+   toProcess_data=[]
+         
+   #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
+   #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10"]
+   #  ~toProcess_signal=["T1tttt_1200_800"]
+   toProcess_signal=[]
+
+   # define command line arguments
+   parser = argparse.ArgumentParser()
+   parser.add_argument('-m', type=str, default="distributions", help="module, default is distributions")
+   parser.add_argument('-f', type=float, choices=[Range(0.0, 1.0)], default=1.0, help="process fraction")
+   parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",required=True)
+   parser.add_argument('-s', type=str, default="Nominal", help="systematic shift")
+   parser.add_argument('--scratchInput', action='store_true', default=False, help="Use nTuple stored on scratch, otherwise dCache Input is used.")
+   parser.add_argument('--copyDCache', action='store_true', default=False, help="Copy nTuples stored on DCache to node before running the code.")
+   parser.add_argument('--SingleSubmit', action='store_true' )
+   parser.add_argument('--bTagEff_complete', action='store_true', default=False, help="Submits bTagEff jobs with all relevant systematics (use with care!)")
+
+   args = parser.parse_args()
+   
+   if (args.bTagEff_complete == False):
+      submit(args,toProcess_mc,toProcess_data,toProcess_signal)
+   else:
+      if (args.m == "bTagEff"):
+         for syst in bTagEff_sample_syst_dict.keys():
+            args.s = syst
+            submit(args,toProcess_mc,toProcess_data,toProcess_signal)
+      else:
+         print "bTagEff_complete can also be used if bTagEff is selected as module!"
+         exit(98)

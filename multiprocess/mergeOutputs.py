@@ -102,12 +102,12 @@ def getDatasetList(logPath):    # get list of dataset, where jobs have been subm
     return datasets
     
 def getTreePath(logPath):       # get correct treePath from logPath
-    info = getInfoFromLogPath(args.logPath)
+    info = getInfoFromLogPath(logPath)
     treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/minTrees/{}/{}/".format(info["year"],getNTupleVersion(info["year"]),str(float(info["fraction"])*100),info["syst"])
     return treePath
 
 def getHistPath(logPath):       # get correct histPath from logPath
-    info = getInfoFromLogPath(args.logPath)
+    info = getInfoFromLogPath(logPath)
     treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/output_framework/multiHists/{}/".format(info["year"],getNTupleVersion(info["year"]),info["syst"])
     return treePath
     
@@ -115,6 +115,15 @@ def getHistPath_module(logPath):       # get correct histPath from logPath for m
     info = getInfoFromLogPath(args.logPath)
     treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/output_framework/{}/{}/".format(info["year"],getNTupleVersion(info["year"]),info["module"],info["syst"])
     return treePath
+    
+def mergeRequired(logPath):       # check of there are more recent individual minTrees than a merged one
+    fileList = glob.glob(getTreePath(logPath)+"/*")
+    latestPath = max(fileList, key=os.path.getctime)
+    if latestPath.find("merged")>0:
+        return False
+    else:
+        return True
+    
 
 if __name__ == "__main__":
     
