@@ -16,7 +16,7 @@
  * - `files`: the files belonging to this dataset
  * - `xsec`: list of cross sections in pb ({0} for data files)
  */
-Dataset::Dataset(std::string name,std::string label,std::string color,std::vector<std::string> files,std::vector<float> xsecs,float syst_unc,TString dataBasePath,bool isData,bool isSignal,bool isTTbar2L,std::string systName)
+Dataset::Dataset(std::string name,std::string label,std::string color,std::vector<std::string> files,std::vector<float> xsecs,float syst_unc,TString dataBasePath,bool isData,bool isSignal,bool isTTbar2L,bool isMadGraph,bool isPythiaOnly,std::string systName)
    : name(name)
    , label(label)
    , color(gROOT->ProcessLine((color+";").c_str()))
@@ -24,11 +24,13 @@ Dataset::Dataset(std::string name,std::string label,std::string color,std::vecto
    , isData(isData)
    , isSignal(isSignal)
    , isTTbar2L(isTTbar2L)
+   , isMadGraph(isMadGraph)
+   , isPythiaOnly(isPythiaOnly)
    , systName(systName)
 {
    subsets.clear();
    for (uint i=0;i<files.size();i++){
-      subsets.push_back(Datasubset(files[i],xsecs[i],dataBasePath,name,isData,isSignal,isTTbar2L));
+      subsets.push_back(Datasubset(files[i],xsecs[i],dataBasePath,name,isData,isSignal,isTTbar2L,isMadGraph,isPythiaOnly));
    }
 }
 
@@ -46,12 +48,14 @@ std::vector<TString> Dataset::getSubsetNames() const
  * - `filename`: the filename of this datasubset
  * - `xsec`: cross section in pb (0 for data)
  */
-Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std::string datasetName,bool isData,bool isSignal,bool isTTbar2L)
+Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std::string datasetName,bool isData,bool isSignal,bool isTTbar2L,bool isMadGraph,bool isPythiaOnly)
    : filename(filename)
    , xsec(xsec)
    , isData(isData)
    , isSignal(isSignal)
    , isTTbar2L(isTTbar2L)
+   , isMadGraph(isMadGraph)
+   , isPythiaOnly(isPythiaOnly)
    , datasetName(datasetName)
 {
    std::vector<std::string> splitString;
@@ -61,14 +65,16 @@ Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std:
    
    TFile* f = TFile::Open(dataBasePath+filename);
    if (!f->IsZombie()){
-      TH1F*  h=(TH1F*)f->Get("TreeWriter/hCutFlow");
+      TH1D*  h=(TH1D*)f->Get("TreeWriter/hCutFlow");
       TTree* t=(TTree*)f->Get("TreeWriter/eventTree");
       if (!h || !t) {
          debug_io<<TString::Format("%s is broken!",filename.c_str());
          Ngen=0;
          entries=0;
+         Ngen_woWeight=0;
       } else {
          Ngen=h->GetBinContent(2);
+         Ngen_woWeight=h->GetBinContent(1);
          entries=t->GetEntries();
       }
       f->Close();
@@ -80,6 +86,79 @@ Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std:
 /* return the full path to the file */
 TString Datasubset::getPath() const{
    return Config::get().dataBasePath+filename;
+}
+
+
+// get sum of MC weight from Hist if Hist exists
+double Datasubset::readNgenFromHist(const TString &histName, const int binNr) const
+{
+   TFile* f = TFile::Open(this->getPath());
+   TH1D*  h=(TH1D*)f->Get("TreeWriter/"+histName);
+   if (!h) {
+      debug_io<<TString::Format("%s is broken! Can not read correct sum of mcWeights",histName.Data());
+      exit(200);
+   }
+   else {
+      return h->GetBinContent(binNr);
+   }
+}
+
+
+// get correct sum of MC weights
+double Datasubset::getNgen_syst(const Systematic::Systematic& systematic) const
+{
+   const Systematic::Type type = systematic.type();
+   // if not mcWeight systematic return nominal Ngen
+   if (std::find(Systematic::lumiRescalingTypes.begin(), Systematic::lumiRescalingTypes.end(), type) == Systematic::lumiRescalingTypes.end()){
+      return Ngen;
+   }
+   else {
+      // Check which variations is used
+      bool upVariation = true;
+      if(systematic.variation() == Systematic::down) upVariation = false;
+      
+      // BinID for facscaleUp, facScaleDown, renScaleUp, renScaleDown, scaleUp, scaleDown (differs between powheg and madgraph)
+      std::vector<int> meScaleBins = {2,3,4,7,5,9};
+      if(isMadGraph) meScaleBins = {4,7,2,3,5,9};
+      
+      switch(type){
+         case Systematic::meFacScale:
+            if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
+            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? meScaleBins[0] : meScaleBins[1]);
+            break;
+         case Systematic::meRenScale:
+            if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
+            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? meScaleBins[2] : meScaleBins[3]);
+            break;
+         case Systematic::meScale:
+            if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
+            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? meScaleBins[4] : meScaleBins[5]);
+            break;
+         case Systematic::alphasPdf:
+            if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
+            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? 112 : 111);
+            break;
+         case Systematic::psISRScale:
+            return this->readNgenFromHist("hSystMCweight_PS_",(upVariation)? 27 : 26);
+            break;
+         case Systematic::psFSRScale:
+            return this->readNgenFromHist("hSystMCweight_PS_",(upVariation)? 5 : 4);
+            break;
+         case Systematic::bFrag:
+            return this->readNgenFromHist("hSystMCweight_bFrag_",(upVariation)? 1 : 3);
+            break;
+         case Systematic::bSemilep:
+            return this->readNgenFromHist("hSystMCweight_bFrag_",(upVariation)? 5 : 6);
+            break;
+         case Systematic::pu:
+            return this->readNgenFromHist("hSystMCweight_PU_",(upVariation)? 2 : 3);
+            break;
+         default:
+            std::cout<<"getNgen_syst: Correct normalization for "<<Systematic::convertType(type)<<" not found"<<std::endl;
+            exit(200);
+            break;
+      }
+   }
 }
 
 
@@ -135,10 +214,12 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
       else systName="Nominal";
       
       boost::optional<bool> s_isTTbar2L = pt.get_optional<bool>(sDs+".isTTbar2L");     // Check if ttbar2l sample
+      boost::optional<bool> s_isMadGraph = pt.get_optional<bool>(sDs+".isMadGraph");     // Check if madgraph sample
+      boost::optional<bool> s_isPythiaOnly = pt.get_optional<bool>(sDs+".isPythiaOnly");     // Check if pythiaOnly sample
       
       label=pt.get<std::string>(sDs+".label", sDs); // use Dataset name if no explicit label given
       syst_unc=pt.get<float>(sDs+".syst_unc", 1e6); // default is something huge, so set it if you want to use it!
-      mc_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,false,s_isTTbar2L,systName));
+      mc_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,false,s_isTTbar2L,s_isMadGraph,s_isPythiaOnly,systName));
    }
    for (std::string sDs: util::to_vector<std::string>(pt.get<std::string>("input.mc_alternative_datasets"))){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
@@ -166,10 +247,12 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
       else systName="Nominal";
       
       boost::optional<bool> s_isTTbar2L = pt.get_optional<bool>(sDs+".isTTbar2L");     // Check if ttbar2l sample
+      boost::optional<bool> s_isMadGraph = pt.get_optional<bool>(sDs+".isMadGraph");     // Check if madgraph sample
+      boost::optional<bool> s_isPythiaOnly = pt.get_optional<bool>(sDs+".isPythiaOnly");     // Check if pythiaOnly sample
 
       label=pt.get<std::string>(sDs+".label", sDs); // use Dataset name if no explicit label given
       syst_unc=pt.get<float>(sDs+".syst_unc", 1e6); // default is something huge, so set it if you want to use it!
-      mc_alternative_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,false,s_isTTbar2L,systName));
+      mc_alternative_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,false,s_isTTbar2L,s_isMadGraph,s_isPythiaOnly,systName));
    }
    // Signals
    std::vector<std::string> signalDataset = util::to_vector<std::string>(pt.get<std::string>("input.signals"));
@@ -212,7 +295,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
       
       label=pt.get<std::string>(sDs+".label", sDs); // use Dataset name if no explicit label given
       syst_unc=pt.get<float>(sDs+".syst_unc", 1e6); // default is something huge, so set it if you want to use it!
-      signal_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,true,false,systName));
+      signal_datasets_.push_back(Dataset(sDs,label,pt.get<std::string>(sDs+".color"),filenames,xsecs,syst_unc,dataBasePath,false,true,false,false,false,systName));
    }
    // Data
    std::vector<std::string> dataDataset = util::to_vector<std::string>(pt.get<std::string>("input.data_streams"));

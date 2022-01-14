@@ -28,9 +28,10 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("mH140")) return mH140;
     if(type.BeginsWith("MTOP169p5")) return mTop169p5;
     if(type.BeginsWith("MTOP175p5")) return mTop175p5;
+    if(type.BeginsWith("MTOP")) return mtop;
     if(type.BeginsWith("LEPT")) return lept;
-    if(type.BeginsWith("ELECTRON_SCALE")) return eleScale;
     if(type.BeginsWith("ELECTRON_SCALESMEARING")) return eleScaleSmearing;
+    if(type.BeginsWith("ELECTRON_SCALE")) return eleScale;
     if(type.BeginsWith("ELECTRON_SMEARING_PHI")) return eleSmearingPhi;
     if(type.BeginsWith("ELECTRON_SMEARING_RHO")) return eleSmearingRho;
     if(type.BeginsWith("ELECTRON_ID_STAT")) return eleIDStat;
@@ -174,6 +175,8 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("MATCH")) return match;
     if(type.BeginsWith("CR1")) return CR1;
     if(type.BeginsWith("CR2")) return CR2;
+    if(type.BeginsWith("CR_ENVELOPE")) return CR_envelope;
+    if(type.BeginsWith("CR_ENVELOPE_IND")) return CR_envelope_ind;
     if(type.BeginsWith("ERDON")) return erdon;
     if(type.BeginsWith("DS")) return tw_ds;
     if(type.BeginsWith("MESCALE_TTBB")) return meScale_ttbb;
@@ -283,6 +286,7 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("all")) return all;
     if(type.BeginsWith("jetPileupIDapplied")) return jetPileupIDapplied;
     if(type.BeginsWith("jetLooseCleaningApplied")) return jetLooseCleaningApplied;
+    if(type.BeginsWith("met40Cut")) return met40Cut;
     std::cout<<"Warning in Systematic::convertType()! Following conversion is not implemented: "
              <<type<<std::endl<<std::endl;
     return undefinedType;
@@ -303,6 +307,7 @@ TString Systematic::convertType(const Type& type)
     if(type == mH140) return "mH140";
     if(type == mTop169p5) return "MTOP169p5";
     if(type == mTop175p5) return "MTOP175p5";
+    if(type == mtop) return "MTOP";
     if(type == lept) return "LEPT";
     if(type == ele) return "ELE";
     if(type == eleID) return "ELECTRON_ID";
@@ -448,6 +453,8 @@ TString Systematic::convertType(const Type& type)
     if(type == match) return "MATCH";
     if(type == CR1) return "CR1";
     if(type == CR2) return "CR2";
+    if(type == CR_envelope) return "CR_ENVELOPE";
+    if(type == CR_envelope_ind) return "CR_ENVELOPE_IND";
     if(type == erdon) return "ERDON";
     if(type == tw_ds) return "DS";
     if(type == meScale_ttbb) return "MESCALE_TTBB";
@@ -559,6 +566,7 @@ TString Systematic::convertType(const Type& type)
     
     if(type == jetPileupIDapplied) return "jetPileupIDapplied";
     if(type == jetLooseCleaningApplied) return "jetLooseCleaningApplied";
+    if(type == met40Cut) return "met40Cut";
     
     std::cerr<<"Error in Systematic::convertType()! Conversion is not implemented\n...break\n"<<std::endl;
     exit(99);
@@ -788,7 +796,6 @@ TString Systematic::puWeightName(const Systematic & systematic){
    }
    else std::cout<<"Do not apply systematic variation\n";
    
-   std::cout<<"=== Finishing preparation of pileup weights\n";
    return weightName;
 }
 
@@ -814,7 +821,6 @@ TString Systematic::metNameAddition(const Systematic & systematic){
    }
    else std::cout<<"Do not apply systematic variation\n";
    
-   std::cout<<"=== Finishing preparation of unclustered energy shift\n";
    return nameAddition;
 }
 
@@ -850,6 +856,17 @@ bool Systematic::checkTopPTreweighting(const Systematic & systematic){
     else std::cout<<"Do not apply systematic variation\n";
     
     return apply;
+}
+
+int Systematic::numberOfWeightTypes(){
+    int count = 0;
+    for (const Type type : weightTypes){
+        if (std::find(upDownTypes.begin(), upDownTypes.end(), type) != upDownTypes.end()){
+            count +=2;
+        }
+        else count++;
+    }
+    return count;
 }
     
 // --------------------- Methods of class Systematic in namespace Systematic -------------------------

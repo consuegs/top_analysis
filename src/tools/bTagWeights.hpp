@@ -18,6 +18,11 @@ class BTagEffMapFunctor
       BTagEffMapFunctor(const std::string& bTagEffPath,const std::string& tagger, const BTagEntry::OperatingPoint& WP, const Systematic::Systematic& systematic);
       const float getEff(const int& flavor, const double& pt, const double& eta, const int& channel);
       enum Channel { ee, mumu, emu};
+      
+      /// Copy constrcutor needed for using vector of BTagWeights
+      BTagEffMapFunctor(const BTagEffMapFunctor & effMap);
+            
+      ~BTagEffMapFunctor(){};
   
    private:
       void readBTagEffHistos();
@@ -40,12 +45,14 @@ class BTagEffMapFunctor
       TH2F bEfficiencies_emu_;
       TH2F cEfficiencies_emu_;
       TH2F lightEfficiencies_emu_;
+
 };
 
 //////////////////////////////////// btag Weights //////////////////////////////////////////////////////
 class BTagWeights
 {
    public:
+      
       BTagWeights(const std::string& bTagSFFile, const std::string& bTagEffPath, const std::string& tagger, const BTagEntry::OperatingPoint& WP, const float& WPcut, const Systematic::Systematic& systematic);
       
       /// Get bTag event weight
@@ -53,6 +60,8 @@ class BTagWeights
       
       /// Map to find correct bTag unc names
       static const std::map<TString, std::vector<std::string> > BTagSourcesMap;
+      
+      ~BTagWeights(){};
    
    private:
       /// Current systematic

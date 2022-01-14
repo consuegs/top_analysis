@@ -20,7 +20,7 @@ class Datasubset;
 class Dataset
 {
 public:
-   Dataset(std::string name,std::string label,std::string color,std::vector<std::string> files,std::vector<float> xsecs,float syst_unc,TString dataBasePath,bool isData=false,bool isSignal=false,bool isTTbar2L=false,std::string systName="Nominal");
+   Dataset(std::string name,std::string label,std::string color,std::vector<std::string> files,std::vector<float> xsecs,float syst_unc,TString dataBasePath,bool isData=false,bool isSignal=false,bool isTTbar2L=false,bool isMadGraph=false,bool isPythiaOnly=false,std::string systName="Nominal");
    std::vector<TString> getSubsetNames() const;
    std::string name;
    TString label;
@@ -30,6 +30,8 @@ public:
    bool isData;
    bool isSignal;
    bool isTTbar2L;
+   bool isMadGraph;
+   bool isPythiaOnly;
    std::string systName;
    std::vector<Datasubset> subsets;
 };
@@ -38,15 +40,25 @@ public:
 class Datasubset
 {
 public:
-   Datasubset(std::string filename,float xsec,TString dataBasePath,std::string datasetName,bool isData,bool isSignal,bool isTTbar2L);
+   Datasubset(){};
+   Datasubset(std::string filename,float xsec,TString dataBasePath,std::string datasetName,bool isData,bool isSignal,bool isTTbar2L,bool isMadGraph,bool isPythiaOnly);
    TString getPath() const;
    std::string filename,name;
    float xsec;
-   int entries,Ngen;
+   int entries;
+   int Ngen_woWeight;
+   double Ngen;
    bool isData;
    bool isSignal;
    bool isTTbar2L;
+   bool isMadGraph;
+   bool isPythiaOnly;
    std::string const datasetName;
+   
+   double getNgen_syst(const Systematic::Systematic& systematic) const;
+
+private:
+   double readNgenFromHist(const TString &histName, const int binNr) const;
 };
 
 /* Container to store datasets */

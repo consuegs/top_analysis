@@ -155,7 +155,7 @@ void run()
          TTreeReaderValue<UInt_t> runNo(reader, "runNo");
          TTreeReaderValue<UInt_t> lumNo(reader, "lumNo");
          TTreeReaderValue<ULong64_t> evtNo(reader, "evtNo");
-         TTreeReaderValue<Char_t> w_mc(reader, "mc_weight");
+         TTreeReaderValue<float> w_mc(reader, "mc_weight");
          TTreeReaderValue<std::vector<float>> w_pdf(reader, "pdf_weights");
          TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
          TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");

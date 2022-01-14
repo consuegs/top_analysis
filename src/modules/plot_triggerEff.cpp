@@ -472,8 +472,7 @@ void run()
    io::RootFileReader histReader(inputLoc,TString::Format("triggerEff%.1f",cfg.processFraction*100));
    io::RootFileSaver saver(TString::Format("triggerEff/plots_triggerEff%.1f.root",cfg.processFraction*100),"plot_triggerEff");
    io::RootFileSaver saverHist(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
-   // ~io::RootFileSaver saverSF(TString::Format("data/TriggerSF_%s.root",cfg.year.Data()),"");
-   io::RootFileSaver saverSF(TString::Format("data/TriggerSF_broad_%s.root",cfg.year.Data()),"");
+   io::RootFileSaver saverSF(TString::Format("data/TriggerSF_%s.root",cfg.year.Data()),"");
 
    
    //Plot 1D efficiencies
@@ -501,6 +500,4 @@ void run()
    io::RootFileReader sfReader2(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
    finalSFunc(sfReader2,saver,saverHist3,saverSF);
    
-   std::cout<<"!!!!!!!!!!!!!!!Derived TriggerSF are saved in TriggerSF_broad_ and are therefore not used in other modules!!!!!!!!!!!!!!!!"<<std::endl;
-
 }

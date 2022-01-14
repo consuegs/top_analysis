@@ -7,6 +7,7 @@
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TStyle.h>
+#include <TList.h>
 
 #include <stdio.h>
 #include <assert.h>
@@ -139,6 +140,13 @@ io::RootFileReader::RootFileReader(TString rootFileName,TString internalPath,boo
    }
 }
 
+std::vector<TString> io::RootFileReader::listPaths(bool lastFolder) const
+{
+   std::vector<TString> output = {};
+   listAllObjectPaths(file_,intPath_,output,lastFolder);
+   return output;
+}
+
 void io::RootFileReader::closeFile() const
 {
    file_->Close();
@@ -198,4 +206,22 @@ bool io::fileExists(const std::string& name)
 {
   struct stat buffer;   
   return (stat (name.c_str(), &buffer) == 0); 
+}
+
+std::vector<TString> io::listAllObjectPaths(TFile* tf, const TString &path, std::vector<TString> &output, bool lastFolder)
+{
+   tf->cd(path);
+   for (auto key : *(gDirectory->GetListOfKeys())){
+      if(key->IsFolder()){
+         listAllObjectPaths(tf,path+"/"+key->GetName(),output,lastFolder);
+      }
+      else{
+         if(lastFolder){
+            output.push_back(path);
+            break;
+         }
+         else output.push_back(path+"/"+key->GetName());
+      }
+   }
+   return output;
 }

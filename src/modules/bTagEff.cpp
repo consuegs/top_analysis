@@ -26,6 +26,7 @@
 #include "tools/leptonSF.hpp"
 #include "tools/leptonCorrections.hpp"
 #include "tools/triggerSF.hpp"
+#include "tools/mcWeights.hpp"
 
 Config const &cfg=Config::get();
 
@@ -53,6 +54,9 @@ void run()
    
    //Configure topPT reweighting
    bool applytopPTreweighting = checkTopPTreweighting(currentSystematic);
+   
+   //Configure mcWeights (should be also powheg samples in this script!!)
+   mcWeights mcWeighter = mcWeights(currentSystematic,false);
    
    TString dssName_multi="";
    
@@ -106,8 +110,16 @@ void run()
       TTreeReaderValue<UInt_t> runNo(reader, "runNo");
       TTreeReaderValue<UInt_t> lumNo(reader, "lumNo");
       TTreeReaderValue<ULong64_t> evtNo(reader, "evtNo");
-      TTreeReaderValue<Char_t> w_mc(reader, "mc_weight");
+      TTreeReaderValue<float> w_mc(reader, "mc_weight");
+      TTreeReaderValue<std::vector<float>> w_pdf(reader, "pdf_weights");
+      TTreeReaderValue<std::vector<float>> w_ps(reader, "ps_weights");
       TTreeReaderValue<float> w_topPT(reader, "topPTweight");
+      TTreeReaderValue<float> fragUpWeight(reader, "weightFragUp");
+      TTreeReaderValue<float> fragCentralWeight(reader, "weightFragCentral");
+      TTreeReaderValue<float> fragDownWeight(reader, "weightFragDown");
+      TTreeReaderValue<float> fragPetersonWeight(reader, "weightFragPeterson");
+      TTreeReaderValue<float> semilepbrUpWeight(reader, "weightSemilepbrUp");
+      TTreeReaderValue<float> semilepbrDownWeight(reader, "weightSemilepbrDown");
       TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
       TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
       TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
@@ -195,7 +207,8 @@ void run()
          else if (channel[2]) channelID = 3;
          float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2);
          // ~float triggerSF = triggerSFcalc.getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);    //Not used since bTagEff needed in triggerSF calc.
-         float fEventWeight=*w_pu * *w_mc;     //Set event weight 
+         float mcWeight = mcWeighter.getMCweight(*w_mc,*w_pdf,*w_ps,{*fragUpWeight,*fragCentralWeight,*fragDownWeight,*fragPetersonWeight,*semilepbrUpWeight,*semilepbrDownWeight});
+         float fEventWeight=*w_pu * mcWeight;     //Set event weight 
          float SFWeight=leptonSFweight * *w_topPT;     //Set combined SF weight
          hs2d.setFillWeight(fEventWeight*SFWeight);
          

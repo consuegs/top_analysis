@@ -16,6 +16,8 @@ set(SRCS
   leptonSF.cpp
   leptonCorrections.cpp
   triggerSF.cpp
+  mcWeights.cpp
+  minTreeReader.cpp
   )
 
 add_library(tools SHARED ${SRCS})

@@ -5,6 +5,7 @@
 #include "tools/util.hpp"
 
 #include <TMath.h>
+#include <iomanip> 
 
 static Config const &cfg=Config::get();
 
@@ -147,12 +148,12 @@ void hist::Histograms<HIST>::count(TString const &varName)
 }
 
 template <class HIST>
-void hist::Histograms<HIST>::scaleLumi()
+void hist::Histograms<HIST>::scaleLumi(const Systematic::Systematic& systematic)
 {
    Datasubset curS=datasets.getDatasubset(sCurrentSample_);
    if (curS.isData) return; // don't scale data
    // Lumi weight
-   float w=curS.xsec/float(curS.Ngen)*cfg.lumi;
+   float w=curS.xsec/curS.getNgen_syst(systematic)*cfg.lumi;
    for (auto &mH:mmH_){
       mH.second[sCurrentSample_].Scale(w);
    }
@@ -394,6 +395,17 @@ std::vector<double> hist::getBinVector(std::vector<float> edges, std::vector<flo
    return xbins;
 }
 
+std::vector<double> hist::getBinVector(const double Xmin, const double Xmax, const int nBins)
+{
+   
+   std::vector<double> xbins={Xmin};
+   float binWidth = (Xmax-Xmin)/(1.0*nBins);
+   for (uint i=1; i<=nBins; i++){
+      xbins.push_back(xbins[i-1]+binWidth);
+   }
+   return xbins;
+}
+
 TH1F hist::fromWidths(const char *name, const char *title,std::vector<float> edges, std::vector<float> widths)
 {
    std::vector<double> xbins=getBinVector(edges, widths);
@@ -423,9 +435,32 @@ std::vector<float> hist::getWidths(std::vector<float> const &bins){
    return widths;
 }
 
+bool checkRebinningConistency(const TAxis* axis, std::vector<double> const &newBinning)
+{
+   int nBins_old = axis->GetNbins();
+   std::vector<double> oldBinning;
+   for(int binId = 0; binId <= nBins_old; ++binId) {
+     oldBinning.push_back(round( axis->GetBinLowEdge(binId+1) * 1000.0 ) / 1000.0);
+   }
+   
+   for(auto binEdge : newBinning){
+      binEdge = round( binEdge * 1000.0 ) / 1000.0;
+      if (std::find(oldBinning.begin(), oldBinning.end(), binEdge) == oldBinning.end()){
+         return false;
+      }
+   }
+   return true;
+}
+
 TH1F hist::rebinned(TH1F const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow,bool mergeUnderflow)
 {
    std::vector<double> binedges=getBinVector(edges, widths);
+   return rebinned(h,binedges,mergeOverflow,mergeUnderflow);
+}
+
+TH1F hist::rebinned(TH1F const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow,bool mergeUnderflow)
+{
+   std::vector<double> binedges=getBinVector(Xmin, Xmax, nBins);
    return rebinned(h,binedges,mergeOverflow,mergeUnderflow);
 }
 
@@ -434,12 +469,16 @@ TH1F hist::rebinned(TH1F const &h, std::vector<double> const &binedges,bool merg
    TH1F hClone(h);
    std::string name(hClone.GetName());
    name+="_rebinned";
+   if (checkRebinningConistency(h.GetXaxis(),binedges)==false){
+      std::cout<<"Warning: Binning used for rebinning is not compatible:"<<hClone.GetXaxis()->GetTitle()<<std::endl;
+   }
    TH1F *hnew=(TH1F*)hClone.Rebin(binedges.size()-1,name.c_str(),&binedges[0]);
    if (mergeOverflow) hist::mergeOverflow(*hnew,mergeUnderflow);
    TString yTitle=hClone.GetYaxis()->GetTitle();
-   yTitle.ReplaceAll("BIN"," / bin");
+   // ~yTitle.ReplaceAll("BIN"," / bin");
    hnew->GetYaxis()->SetTitle(yTitle);
    return *hnew;
+   // ~return h;
 }
 
 TH2F hist::rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::vector<float> const &binedges_y,bool mergeOverflow,bool mergeUnderflow)
@@ -752,4 +791,19 @@ THStack hist::stackPrepend(THStack const& stOld, TH1F &h, Option_t *option){
       st.Add((TH1*)stOld.GetHists()->At(i),option);
    }
    return st;
+}
+
+std::pair<TH1F*,TH1F*> hist::getEnvelope(const TH1F* nominal, const std::vector<TH1F*> shifts){
+   TH1F* hist_envelopeUP = (TH1F*)nominal->Clone();
+   TH1F* hist_envelopeDOWN = (TH1F*)nominal->Clone();
+   
+   for (const TH1F* tempShift : shifts){
+      for (int i=0; i<=tempShift->GetNbinsX(); i++){
+         float content_shift = tempShift->GetBinContent(i);
+         if (content_shift>hist_envelopeUP->GetBinContent(i)) hist_envelopeUP->SetBinContent(i,content_shift);
+         else if (content_shift<hist_envelopeDOWN->GetBinContent(i)) hist_envelopeDOWN->SetBinContent(i,abs(content_shift));
+      }
+   }
+   
+   return std::make_pair(hist_envelopeDOWN,hist_envelopeUP);
 }

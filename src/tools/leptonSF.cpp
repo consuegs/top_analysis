@@ -69,8 +69,6 @@ uncFactor_muon_ID_(0.)
    h2_muon_ISO_histo_ = this->prepareSF(muonFileNameISO, muonHistNameISO);
    if(h2_muon_ISO_histo_) std::cout<<"Iso scale factors found - will be used\n";
 
-   std::cout<<"=== Finishing preparation of lepton scale factors\n";
-
 }
 
 TH2* LeptonScaleFactors::prepareSF(const std::string& sfInputFileName,

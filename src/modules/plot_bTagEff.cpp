@@ -21,7 +21,11 @@ extern "C"
 void run()
 {
    std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","UETUNE_UP","UETUNE_DOWN",
-                                       "MATCH_UP","MATCH_DOWN","ERDON","CR1","CR2","MTOP169p5","MTOP175p5","TOP_PT"};
+                                       "MATCH_UP","MATCH_DOWN","ERDON","CR1","CR2","MTOP169p5","MTOP175p5","TOP_PT",
+                                       "MESCALE_UP","MESCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN",
+                                       "PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN",
+                                       "BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN",
+                                       };
    // ~std::vector<TString> systToPlot = {"Nominal"};
    
    for (TString systName : systToPlot){

@@ -11,9 +11,30 @@ BTagEffMapFunctor::BTagEffMapFunctor(const std::string& bTagEffPath,const std::s
    WP_(WP)
 {
    std::cout << "--- Beginning preparation of bTag Eff\n";
-   
+      
    //Check if alternative eff should be used
    const Systematic::Type type = systematic.type();
+   if(std::find(Systematic::noBtagEffTypes.begin(), Systematic::noBtagEffTypes.end(), type) == Systematic::noBtagEffTypes.end()){
+      nominalEff_ = false;
+      std::cout<<"Use systematic of type: "<<Systematic::convertType(type)<<" for bTag Eff\n";
+   }
+   else{
+      nominalEff_ = true;
+      std::cout<<"Use nominal bTag Eff\n";
+   }
+   this->readBTagEffHistos();
+}
+
+BTagEffMapFunctor::BTagEffMapFunctor(const BTagEffMapFunctor & effMap) :
+   systematic_(effMap.systematic_),
+   bTagEffPath_(effMap.bTagEffPath_),
+   tagger_(effMap.tagger_),
+   WP_(effMap.WP_)
+{
+   std::cout << "--- Beginning preparation of bTag Eff\n";
+      
+   //Check if alternative eff should be used
+   const Systematic::Type type = systematic_.type();
    if(std::find(Systematic::noBtagEffTypes.begin(), Systematic::noBtagEffTypes.end(), type) == Systematic::noBtagEffTypes.end()){
       nominalEff_ = false;
       std::cout<<"Use systematic of type: "<<Systematic::convertType(type)<<" for bTag Eff\n";
@@ -147,7 +168,7 @@ const float BTagWeights::getEventWeight(const std::vector<tree::Jet>& jets, cons
    for(size_t iJet=0; iJet<jets.size(); ++iJet){
       float SF = getJetSF(jets.at(iJet).hadronFlavour, jets.at(iJet).p.Eta(), jets.at(iJet).p.Pt());
       float eff = bTagEff_.getEff(jets.at(iJet).hadronFlavour, jets.at(iJet).p.Pt(), jets.at(iJet).p.Eta(), channel);
-      
+            
       float bTagValue = (isDeepJet_)? jets.at(iJet).bTagDeepJet : jets.at(iJet).bTagDeepCSV;
       
       if(bTagValue > WPcut_){

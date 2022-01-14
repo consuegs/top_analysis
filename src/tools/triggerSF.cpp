@@ -41,8 +41,6 @@ systematic_(systematic)
       h2_emu_ = this->prepareSF(fileName, "emu_SF_totalDown");
    }
 
-   std::cout<<"=== Finishing preparation of trigger scale factors\n";
-
 }
 
 TH2* TriggerScaleFactors::prepareSF(const std::string& sfInputFileName,

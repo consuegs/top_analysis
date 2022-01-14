@@ -5,6 +5,7 @@
 #include "Dataset.hpp"
 #include "tools/gfx.hpp"
 #include "tools/io.hpp"
+#include "tools/systematics.hpp"
 
 #include <map>
 
@@ -53,7 +54,7 @@ namespace hist
       void fillbin(TString const &varName,TString const &binName);
       void fillbinFake(TString const &varName,TString const &binName);
       void count(TString const &varName);
-      void scaleLumi(); // scales MC with lumi weight and trigger efficiency. Data is ignored.
+      void scaleLumi(const Systematic::Systematic& systematic =  Systematic::Systematic("Nominal")); // scales MC with lumi weight and trigger efficiency. Data is ignored.
       void normHists(); // normalizes Hists to unity
       void mergeOverflow(bool includeUnderflow=true); // add the overflow to the last bin (and underflow to first)
       void combineFromSubsamples(std::vector<TString> const &samples);
@@ -114,12 +115,15 @@ namespace hist
    //~ void Histograms<TH2F>::mergeOverflow(bool)=delete;
 
    std::vector<double> getBinVector(std::vector<float> edges, std::vector<float> widths);
+   std::vector<double> getBinVector(const double Xmin, const double Xmax, const int nBins);
    TH1F fromWidths(const char *name, const char *title,std::vector<float> edges, std::vector<float> widths);
    TH2F fromWidths_2d(const char *name, const char *title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y);
    TProfile2D ProfilefromWidths_2d(const char *name, const char *title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y);
    std::vector<float> getWidths(std::vector<float> const &bins);
 
+   bool checkRebinningConistency(const TAxis* axis, std::vector<float> const &newBinning);
    TH1F rebinned(TH1F const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow=true,bool mergeUnderflow=true);
+   TH1F rebinned(TH1F const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow=true,bool mergeUnderflow=true);
    TH1F rebinned(TH1F const &h, std::vector<double> const &binedges,bool mergeOverflow=true,bool mergeUnderflow=true);
    TH2F rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::vector<float> const &binedges_y,bool mergeOverflow=true,bool mergeUnderflow=true);
    void divideByBinWidth(TH1& h,bool divideLastBin=true);
@@ -143,6 +147,8 @@ namespace hist
    TGraphErrors getRatioGraph(THStack &h1,THStack &h2,TString title="ratio",ErrorType et=COMB);
 
    THStack stackPrepend(THStack const& stOld, TH1F &h, Option_t *option="");
+   
+   std::pair<TH1F*,TH1F*> getEnvelope(const TH1F* nominal, const std::vector<TH1F*> shifts);
 }
 
 #endif /* HIST_HPP__ */

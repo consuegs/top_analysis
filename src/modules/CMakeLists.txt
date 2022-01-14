@@ -58,6 +58,8 @@ set(MODULES
   plot_bTagEff
   # ~distributions_KITsync
   # ~plot_yearComparisonsSebastian
+  cr_envelope
+  # ~analyze_minTrees
   )
 
 foreach(MODULE ${MODULES})

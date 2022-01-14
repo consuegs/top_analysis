@@ -21,6 +21,8 @@ namespace io
    void ensurePathForFile(TString fileName);
    
    bool fileExists(const std::string&);
+   
+   std::vector<TString> listAllObjectPaths(TFile* tf, const TString &internal_path, std::vector<TString> &output, bool lastFolder=false);
 
    /* class for saving Objects (e.g. Canvases) to a root file */
    class RootFileSaver
@@ -44,6 +46,7 @@ namespace io
       RootFileReader(TString rootFileName,TString internalPath="",bool standardOutputDirectory=true);
       ~RootFileReader();
       template <class T> T* read(TString name) const;
+      std::vector<TString> listPaths(bool lastFolder=false) const;
       void closeFile() const;
    private:
       TFile *file_;

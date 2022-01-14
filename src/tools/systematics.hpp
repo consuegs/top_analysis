@@ -23,6 +23,7 @@ namespace Systematic{
         mH140,              // Higgs mass of 140 GeV
         mTop169p5,          // top quark mass of 169.5 GeV
         mTop175p5,          // top quark mass of 175.5 GeV
+        mtop,               // top quark mass scaled by +/- 1 GeV using samples with 169.5 and 175.5 GeV
         lept,               // scale lepton ID/ISO data-to-MC scale factors
         ele,                // scale electron ID/ISO data-to-MC scale factors
         eleID,              // scale electron ID/ISO data-to-MC scale factors
@@ -157,6 +158,8 @@ namespace Systematic{
         erdon,
         CR1,
         CR2,
+        CR_envelope,         // envelope for color reconnection uncertainty if enevelope is taken for sum of ttbar samples
+        CR_envelope_ind,    // envelope for color reconnection uncertainty if enevelope is taken for each ttbar sample individually
         tw_ds,
         meScale,            // Q2 scale uncertainty in process generation on Matrix Element only
         meScale_ttbb,       // Q2 scale uncertainty in process generation on Matrix Element only (ttbb process)
@@ -272,7 +275,8 @@ namespace Systematic{
         undefinedType,       // No systematic defined (also not nominal)
         
         jetPileupIDapplied,             // Check impact of jetPileupID
-        jetLooseCleaningApplied        // Check impact of loose cleaning
+        jetLooseCleaningApplied,        // Check impact of loose cleaning
+        met40Cut                        // Check impact of MET>40GeV in emu channel
         
     };
 
@@ -368,7 +372,8 @@ namespace Systematic{
         scale,
         //scale_ttbb, scale_ttb, scale_tt2b, scale_ttcc, scale_ttother,
         bFrag, bSemilep,bFrag_Peterson,
-        erdon, CR1, CR2, tw_ds,
+        erdon, CR1, CR2, tw_ds, CR_envelope, CR_envelope_ind,
+        mtop,
         ueTune,
         ueTune_ttbb, ueTune_ttb, ueTune_tt2b, ueTune_ttbb, ueTune_ttcc, ueTune_ttother,
         alphasPdf,l1prefiring,
@@ -436,7 +441,7 @@ namespace Systematic{
         mass,
         match,
         //match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
-        erdon, CR1, CR2,
+        erdon, CR1, CR2, CR_envelope, CR_envelope_ind,
         meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother,
         meFacScale, meFacScale_ttbb, meFacScale_ttb, meFacScale_tt2b, meFacScale_ttcc, meFacScale_ttother,
         meRenScale, meRenScale_ttbb, meRenScale_ttb, meRenScale_tt2b, meRenScale_ttcc, meRenScale_ttother,
@@ -486,24 +491,58 @@ namespace Systematic{
         btagLcorr,btagLuncorr,
         eleID,eleReco,
         muonID,muonIDStat,muonIDSyst,muonIso,muonIsoStat,muonIsoSyst,
-        jetPileupIDapplied,jetLooseCleaningApplied,
+        jetPileupIDapplied,jetLooseCleaningApplied,met40Cut,
         trig,
         pu,
-        
+                
         eleScale,eleSmearingPhi,eleSmearingRho,eleScaleSmearing,
-        muonScaleStat,muonScaleZpt,muonScaleEwk,muonScaleDeltaM,muonScaleEwk2,muonScale
+        muonScaleStat,muonScaleZpt,muonScaleEwk,muonScaleDeltaM,muonScaleEwk2,muonScale,
+        unclustered
     };
     
     ///Define systematics that are applied by varying the nominal MC weight
     const std::vector<Type> mcWeightTypes{
-        meFacScale,meRenScale
+        meScale,meFacScale,meRenScale,
+        psISRScale,psFSRScale,
+        bFrag,bSemilep,
+        alphasPdf,
+    };
+    
+    ///Define systematics that require rescaling of lumi weight
+    const std::vector<Type> lumiRescalingTypes{
+        meScale,meFacScale,meRenScale,
+        psISRScale,psFSRScale,
+        bFrag,bSemilep,
+        alphasPdf,
+        pu
 
     };
     
     ///Define systematics that are applied by using an alternative sample
     const std::vector<Type> altSampleTypes{
-        erdon,CR1,CR2,ueTune,match,mTop169p5,mTop175p5
+        erdon,CR1,CR2,CR_envelope,CR_envelope_ind,ueTune,match,mTop169p5,mTop175p5,mtop
 
+    };
+    
+    ///Define systematic that only change the event weight, not the kinematics (same events as in nominal are selected!)
+    //!!!!!!!!!!!!!!!If order is changed, order of weights in minTree production (distributions.cpp) has to be changes as well!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    const std::vector<Type> weightTypes{
+        eleID,eleReco,
+        muonID,muonIDStat,muonIDSyst,muonIso,muonIsoStat,muonIsoSyst,
+        
+        btagBC,btagL,
+        // ~btagBCcorr,btagBCuncorr,
+        // ~btagLcorr,btagLuncorr,
+        
+        trig,
+        
+        meScale,meFacScale,meRenScale,
+        psISRScale,psFSRScale,
+        bFrag,bSemilep,
+        alphasPdf,
+        pu,
+        topPt,
+        lumi
     };
 
     const std::vector<Type> uncorrelatedTypes{
@@ -572,6 +611,10 @@ namespace Systematic{
     
     ///Check if top pT reweighting should be applied based on current systematic;
     bool checkTopPTreweighting(const Systematic & systematic);
+    
+    ///Check the number of weights types systematics taking into accout that up down types require two weights
+    int numberOfWeightTypes();
+    
 }
 
 #endif
