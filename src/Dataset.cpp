@@ -139,10 +139,10 @@ double Datasubset::getNgen_syst(const Systematic::Systematic& systematic) const
             else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? 112 : 111);
             break;
          case Systematic::psISRScale:
-            return this->readNgenFromHist("hSystMCweight_PS_",(upVariation)? 27 : 26);
+            return this->readNgenFromHist("hSystMCweight_PS_",(upVariation)? 28 : 27);
             break;
          case Systematic::psFSRScale:
-            return this->readNgenFromHist("hSystMCweight_PS_",(upVariation)? 5 : 4);
+            return this->readNgenFromHist("hSystMCweight_PS_",(upVariation)? 6 : 5);
             break;
          case Systematic::bFrag:
             return this->readNgenFromHist("hSystMCweight_bFrag_",(upVariation)? 1 : 3);

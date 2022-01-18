@@ -65,10 +65,10 @@ const float mcWeights::getMCweight(const float &nominalWeight, const std::vector
             else return w_pdf[(upVariation)? 112-1 : 111-1]*nominalWeight;
             break;
          case Systematic::psISRScale:
-            return w_ps[(upVariation)? 27-1 : 26-1]*nominalWeight;
+            return w_ps[(upVariation)? 28-1 : 27-1]*nominalWeight;
             break;
          case Systematic::psFSRScale:
-            return w_ps[(upVariation)? 5-1 : 4-1]*nominalWeight;
+            return w_ps[(upVariation)? 6-1 : 5-1]*nominalWeight;
             break;
          case Systematic::bFrag:
             return w_bFrag[(upVariation)? 1-1 : 3-1]*nominalWeight;
