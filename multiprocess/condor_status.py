@@ -155,7 +155,7 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
         if jStatus == "1":
             print colored("\033[1m"+name+"    "+job["ClusterId"]+"       idle"+"\033[0m","yellow")
         elif jStatus == "2":
-            print colored("\033[1m"+name+"    "+job["RemoteHost"]+"       running"+"\033[0m","green")
+            print colored("\033[1m"+name+"    "+job["RemoteHost"]+"   "+job["ClusterId"]+"       running"+"\033[0m","green")
             getProgressFromOut(job["Out"])
         elif jStatus == "5":
             print colored("\033[1m"+name+"    "+job["ClusterId"]+"       held"+"\033[0m","red")

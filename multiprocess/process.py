@@ -58,11 +58,13 @@ def get_fileName(dataset,year,fileNR):      #checks config for name of file
    config.read("../config"+year+".ini")
    return config[dataset]["files"].split(",")[fileNR]
 
-def get_dataBasePath_dCache(year):      #return dataBasePath on dCache for given year
+def get_dataBasePath_dCache(year,dcap=False):      #return dataBasePath on dCache for given year
    config = configparser.ConfigParser()
    config.read("../config"+year+".ini")
-   #  ~return "root://xrootd-cms.infn.it///store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
-   return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
+   if dcap:
+      return "dcap://grid-dcap-extern.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
+   else:
+      return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
    
 def submit(args,toProcess_mc,toProcess_data,toProcess_signal):
    print "Running "+args.m
@@ -84,11 +86,15 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal):
    print toProcess_signal
    
    # set dataBasePath depending on dCache options
-   dataBasePath = "-d"+get_dataBasePath_dCache(args.y) if args.scratchInput==False else ""
-   if args.scratchInput:
-      print "Use scratch input"
+   if args.scratchInput==False and args.copyDCache==False:
+      print "Use dCache input"
+      dataBasePath = "-d"+get_dataBasePath_dCache(args.y)
+   elif args.copyDCache:
+      print "Copy input from dCache to condor node"
+      dataBasePath = "-d$TMP/"
    else:
-       print "Use dCache input"
+      print "Use scratch input"
+      dataBasePath = ""
    
    # Ask if selected settings are correct
    correctSamples = input("If you want to continue with the selected setting, enter 1:\n")
@@ -148,20 +154,26 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal):
                         os.remove(logFile)
                   
                   submitFile = logpath+"/"+args.m+"_"+x+"_"+str(fileNR+1)+".submit"    #define submit file
+                  
+                  if args.copyDCache:     #set path to dCache input in case of copying to condor node
+                     inputPath = get_dataBasePath_dCache(args.y,True)+get_fileName(x,args.y,fileNR)
+                     inputPath = inputPath.replace(" ", "")
+                  else:
+                     inputPath = ""
                                     
                   with open(submitFile,"w") as f:   # write condor submit
                      f.write("""
 Universe                = vanilla
 Executable              = run.sh
-Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {8}
+Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {8} {9}
 Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
 Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
 Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
 use_x509userproxy       = true
 Request_Memory          = {4} Mb
-Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {9}
+Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {10}
 Queue
-""".format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else ""),)
+""".format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else ""),)
                   subprocess.call(["condor_submit", submitFile])
 
 
@@ -171,6 +183,7 @@ if __name__ == "__main__":
    # Select datasets to process
    #############################################
    toProcess_mc=["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
+   #  ~toProcess_mc=["ZZ"]
    #  ~toProcess_mc=["DrellYan_NLO"]
    #  ~toProcess_mc=["TTbar_diLepton"]
    #  ~toProcess_mc=["TTbar_diLepton_tau_MATCH_DOWN"]
@@ -202,7 +215,7 @@ if __name__ == "__main__":
    parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",required=True)
    parser.add_argument('-s', type=str, default="Nominal", help="systematic shift")
    parser.add_argument('--scratchInput', action='store_true', default=False, help="Use nTuple stored on scratch, otherwise dCache Input is used.")
-   parser.add_argument('--copyDCache', action='store_true', default=False, help="Copy nTuples stored on DCache to node before running the code.")
+   parser.add_argument('--copyDCache', action='store_true', default=True, help="Copy nTuples stored on DCache to node before running the code.")
    parser.add_argument('--SingleSubmit', action='store_true' )
    parser.add_argument('--bTagEff_complete', action='store_true', default=False, help="Submits bTagEff jobs with all relevant systematics (use with care!)")
 
