@@ -28,6 +28,7 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("mH140")) return mH140;
     if(type.BeginsWith("MTOP169p5")) return mTop169p5;
     if(type.BeginsWith("MTOP175p5")) return mTop175p5;
+    if(type.BeginsWith("MTOP_IND")) return mtop_ind;
     if(type.BeginsWith("MTOP")) return mtop;
     if(type.BeginsWith("LEPT")) return lept;
     if(type.BeginsWith("ELECTRON_SCALESMEARING")) return eleScaleSmearing;
@@ -175,8 +176,8 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("MATCH")) return match;
     if(type.BeginsWith("CR1")) return CR1;
     if(type.BeginsWith("CR2")) return CR2;
-    if(type.BeginsWith("CR_ENVELOPE")) return CR_envelope;
     if(type.BeginsWith("CR_ENVELOPE_IND")) return CR_envelope_ind;
+    if(type.BeginsWith("CR_ENVELOPE")) return CR_envelope;
     if(type.BeginsWith("ERDON")) return erdon;
     if(type.BeginsWith("DS")) return tw_ds;
     if(type.BeginsWith("MESCALE_TTBB")) return meScale_ttbb;
@@ -307,6 +308,7 @@ TString Systematic::convertType(const Type& type)
     if(type == mH140) return "mH140";
     if(type == mTop169p5) return "MTOP169p5";
     if(type == mTop175p5) return "MTOP175p5";
+    if(type == mtop_ind) return "MTOP_IND";
     if(type == mtop) return "MTOP";
     if(type == lept) return "LEPT";
     if(type == ele) return "ELE";
@@ -453,8 +455,8 @@ TString Systematic::convertType(const Type& type)
     if(type == match) return "MATCH";
     if(type == CR1) return "CR1";
     if(type == CR2) return "CR2";
-    if(type == CR_envelope) return "CR_ENVELOPE";
     if(type == CR_envelope_ind) return "CR_ENVELOPE_IND";
+    if(type == CR_envelope) return "CR_ENVELOPE";
     if(type == erdon) return "ERDON";
     if(type == tw_ds) return "DS";
     if(type == meScale_ttbb) return "MESCALE_TTBB";

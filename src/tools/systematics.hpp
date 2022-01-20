@@ -23,7 +23,8 @@ namespace Systematic{
         mH140,              // Higgs mass of 140 GeV
         mTop169p5,          // top quark mass of 169.5 GeV
         mTop175p5,          // top quark mass of 175.5 GeV
-        mtop,               // top quark mass scaled by +/- 1 GeV using samples with 169.5 and 175.5 GeV
+        mtop,               // top quark mass scaled by +/- 1 GeV using samples with 169.5 and 175.5 GeV combining all ttbar processes
+        mtop_ind,           // top quark mass scaled by +/- 1 GeV using samples with 169.5 and 175.5 GeV individually for ttbar processes
         lept,               // scale lepton ID/ISO data-to-MC scale factors
         ele,                // scale electron ID/ISO data-to-MC scale factors
         eleID,              // scale electron ID/ISO data-to-MC scale factors
@@ -373,7 +374,7 @@ namespace Systematic{
         //scale_ttbb, scale_ttb, scale_tt2b, scale_ttcc, scale_ttother,
         bFrag, bSemilep,bFrag_Peterson,
         erdon, CR1, CR2, tw_ds, CR_envelope, CR_envelope_ind,
-        mtop,
+        mtop,mtop_ind,
         ueTune,
         ueTune_ttbb, ueTune_ttb, ueTune_tt2b, ueTune_ttbb, ueTune_ttcc, ueTune_ttother,
         alphasPdf,l1prefiring,
@@ -520,7 +521,7 @@ namespace Systematic{
     
     ///Define systematics that are applied by using an alternative sample
     const std::vector<Type> altSampleTypes{
-        erdon,CR1,CR2,CR_envelope,CR_envelope_ind,ueTune,match,mTop169p5,mTop175p5,mtop
+        erdon,CR1,CR2,CR_envelope,CR_envelope_ind,ueTune,match,mTop169p5,mTop175p5,mtop,mtop_ind
 
     };
     

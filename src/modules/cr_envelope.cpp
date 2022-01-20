@@ -36,7 +36,7 @@ void produce_cr_envelope()
       
       path.ReplaceAll("/distr","distr");
       histSaver_ind_down.save(*(envelopes.first),path+"_CR_ENVELOPE_IND_DOWN");
-      histSaver_ind_down.save(*(envelopes.second),path+"_CR_ENVELOPE_IND_UP");
+      histSaver_ind_up.save(*(envelopes.second),path+"_CR_ENVELOPE_IND_UP");
    }
    
    // Store envelope for ttbar sum (will be saved in signal sample due to plotting reasons)
@@ -60,11 +60,52 @@ void produce_cr_envelope()
       histSaver_up.save(*(envelopes.second),path+"/TTbar_diLepton_CR_ENVELOPE_UP");
       
    }
+   
+   histReader_nom.closeFile();
+   histReader_CR1.closeFile();
+   histReader_CR2.closeFile();
+   histReader_ERDON.closeFile();
+   histSaver_down.closeFile();
+   histSaver_up.closeFile();
+   histSaver_ind_down.closeFile();
+   histSaver_ind_up.closeFile();
   
 }
 
 void produce_topmass()
 {
+   io::RootFileReader histReader_nom_ind(TString::Format("multiHists/%s/histograms_merged_%s.root","Nominal",cfg.treeVersion.Data()));
+   io::RootFileReader histReader_low_ind(TString::Format("multiHists/%s/histograms_merged_%s.root","MTOP169p5",cfg.treeVersion.Data()));
+   io::RootFileReader histReader_high_ind(TString::Format("multiHists/%s/histograms_merged_%s.root","MTOP175p5",cfg.treeVersion.Data()));
+   
+   io::RootFileSaver histSaver_ind_down(TString::Format("multiHists/%s/histograms_merged_%s.root","MTOP_IND_DOWN",cfg.treeVersion.Data()),"");
+   io::RootFileSaver histSaver_ind_up(TString::Format("multiHists/%s/histograms_merged_%s.root","MTOP_IND_UP",cfg.treeVersion.Data()),"");
+   
+   // Store shift per sample
+   for (auto path : histReader_low_ind.listPaths()){
+      TH1F* hist_low = (TH1F*)histReader_low_ind.read<TH1F>(path);
+      TH1F* hist_high = (TH1F*)histReader_high_ind.read<TH1F>(path.ReplaceAll("_MTOP169p5","_MTOP175p5"));
+      TH1F* hist_nom = (TH1F*)histReader_nom_ind.read<TH1F>(path.ReplaceAll("_MTOP175p5",""));
+      
+      hist_low->Add(hist_nom,-1.);
+      hist_low->Scale(1/3.);
+      hist_low->Add(hist_nom);
+      
+      hist_high->Add(hist_nom,-1.);
+      hist_high->Scale(1/3.);
+      hist_high->Add(hist_nom);
+      
+      path.ReplaceAll("/distr","distr");
+      histSaver_ind_down.save(*hist_low,path+"_MTOP_IND_DOWN");
+      histSaver_ind_up.save(*hist_high,path+"_MTOP_IND_UP");
+   }
+   
+   histReader_nom_ind.closeFile();
+   histReader_low_ind.closeFile();
+   histReader_high_ind.closeFile();
+   histSaver_ind_down.closeFile();
+   histSaver_ind_up.closeFile();
+   
    io::RootFileReader histReader_nom(TString::Format("multiHists/%s/histograms_merged_%s.root","Nominal",cfg.treeVersion.Data()));
    io::RootFileReader histReader_low(TString::Format("multiHists/%s/histograms_merged_%s.root","MTOP169p5",cfg.treeVersion.Data()));
    io::RootFileReader histReader_high(TString::Format("multiHists/%s/histograms_merged_%s.root","MTOP175p5",cfg.treeVersion.Data()));
@@ -72,15 +113,13 @@ void produce_topmass()
    io::RootFileSaver histSaver_down(TString::Format("multiHists/%s/histograms_merged_%s.root","MTOP_DOWN",cfg.treeVersion.Data()),"");
    io::RootFileSaver histSaver_up(TString::Format("multiHists/%s/histograms_merged_%s.root","MTOP_UP",cfg.treeVersion.Data()),"");
    
-   io::RootFileSaver histSaver_ind_down(TString::Format("multiHists/%s/histograms_merged_%s.root","MTOP_IND_DOWN",cfg.treeVersion.Data()),"");
-   io::RootFileSaver histSaver_ind_up(TString::Format("multiHists/%s/histograms_merged_%s.root","MTOP_IND_UP",cfg.treeVersion.Data()),"");
    
    // Store shift for ttbar sum (will be saved in signal sample due to plotting reasons)
    for (auto path : histReader_low.listPaths(true)){
       TH1F* hist_low = histReader_low.read<TH1F>(path+"/TTbar_diLepton_MTOP169p5");
       TH1F* hist_high = histReader_high.read<TH1F>(path+"/TTbar_diLepton_MTOP175p5");
       TH1F* hist_nom = histReader_nom.read<TH1F>(path+"/TTbar_diLepton");
-      
+            
       for(const TString sample : {"TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"}){
          hist_low->Add(histReader_low.read<TH1F>(path+"/"+sample+"_MTOP169p5"));
          hist_high->Add(histReader_high.read<TH1F>(path+"/"+sample+"_MTOP175p5"));
@@ -94,12 +133,18 @@ void produce_topmass()
       hist_high->Add(hist_nom,-1.);
       hist_high->Scale(1/3.);
       hist_high->Add(hist_nom);
-      
+            
       path.ReplaceAll("/distr","distr");
       histSaver_down.save(*hist_low,path+"/TTbar_diLepton_MTOP_DOWN");
       histSaver_up.save(*hist_high,path+"/TTbar_diLepton_MTOP_UP");
       
    }
+   
+   histReader_nom.closeFile();
+   histReader_low.closeFile();
+   histReader_high.closeFile();
+   histSaver_down.closeFile();
+   histSaver_up.closeFile();
    
 }
    
