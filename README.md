@@ -18,18 +18,33 @@ On lx-cluster:
 Execute `run.x` (created in the build directory).
 Meaningful modules can be chosen as arguments:
 
-    $ run.x --help
+    $ ./run.x --help
+    Running on year 2018 (to change set ANALYSIS_YEAR_CONFIG variable)
     Usage: ./run.x module1[ module2[...]] [options]
     Allowed options:
-      -h [ --help ]              produce help message
-      -f [ --fraction ] arg (=1) Fraction of events to process
-      --mc_dataset arg           Single MC dataset to be processed, if empty 
-                                 datasets are taken from config.ini
-      --data_dataset arg         Single data dataset to be processed, if empty 
-                                 datasets are taken from config.ini
-      --signal_dataset arg       Single signal dataset to be processed, if empty 
-                                 datasets are taken from config.ini
-      --release                  Release mode (don't draw version labels)
+      -h [ --help ]                         produce help message
+      -f [ --fraction ] arg (=1)            Fraction of events to process
+      --mc_dataset arg                      Single MC dataset to be processed, if 
+                                            empty datasets are taken from 
+                                            config.ini
+      --data_dataset arg                    Single data dataset to be processed, if
+                                            empty datasets are taken from 
+                                            config.ini
+      --signal_dataset arg                  Single signal dataset to be processed, 
+                                            if empty datasets are taken from 
+                                            config.ini
+      --fileNR arg (=0)                     FileNR to be processed, if zero all 
+                                            files are processed (filelist defined 
+                                            in .ini)
+      -s [ --systematic ] arg (=Nominal)    Systematic uncertainty to be applied 
+                                            (only for distributions)
+      -d [ --dataBasePath ] arg (=/net/data_cms1b/user/dmeuser/top_analysis/2018/v06/nTuple/)
+                                            Alternative dataBasePath, which can be 
+                                            used for condor submission with 
+                                            inputFileTransfer
+      --release                             Release mode (don't draw version 
+                                            labels)
+
 
 ## Output ##
 Plots are stored as canvases in a root file.
