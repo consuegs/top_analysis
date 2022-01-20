@@ -8,7 +8,11 @@ import configparser
 import glob
 import os
 import sys
+import shutil
 import shlex
+import ROOT
+from ROOT import *
+import utilities
 
 def getNTupleVersion(year):    # checks config for number of files for given dataset
    config = configparser.ConfigParser()
@@ -37,6 +41,14 @@ def getSplitSamples(dataset,logPath):   # extracts sample names from finished.tx
     data = file.read()
     pattern = dataset+"_\d+"
     return re.findall(pattern,data)
+
+def listAllObjectPaths(file_,output,path=""):
+    file_.cd(path)
+    for key in gDirectory.GetListOfKeys():
+        if key.IsFolder():
+            listAllObjectPaths(file_,output,path+"/"+key.GetName())
+        else:
+            output.append(path+"/"+key.GetName())
 
 def mergeTree(dataset,logPath,treePath):    # merges minTrees of given dataset
     splitSamples = []
@@ -67,6 +79,56 @@ def mergeHist(dataset,logPath,histPath):    # merges histograms of given dataset
         os.remove(outfile)
     if sp.call(["hadd","-f",outfile]+splitSamples,stdout=open(os.devnull, 'wb')):
         sys.exit(1)
+    print "Created",outfile
+    os.chdir(runDir)
+    
+def mergeHists_forSamples(logPath,histPath,datasetList,samplesToMerge,outputName):        # merges histograms for different samples (mainly needed for datacard production)
+    
+    for sample in samplesToMerge:
+        if sample not in datasetList:
+            print "No merging for:",samplesToMerge
+            return
+    
+    nTupleVersion = getNTupleVersion(getInfoFromLogPath(logPath)["year"])
+    fileStart = "histograms_" if getInfoFromLogPath(logPath)["module"] == "distributions" else ""
+    outfile = fileStart+outputName+"_merged_"+nTupleVersion+".root"
+    inputSamples = [fileStart+x+"_merged_"+nTupleVersion+".root" for x in samplesToMerge]
+    tempSamples = []
+    
+    if os.path.exists(histPath+"/temp/") == False:      #create temp folder for files with renamed hists
+        os.mkdir(histPath+"/temp/")
+    runDir = os.getcwd()
+    os.chdir(histPath)
+    for file_ in inputSamples:  #loop over inputSamples
+        f = TFile(file_,"READ")
+        hists = {}
+        histNames = []
+        listAllObjectPaths(f,histNames)     # get all paths in root file
+        for histName in histNames:
+            hist = f.Get(histName)
+            hists[histName] = hist
+        f_out = TFile(histPath+"/temp/"+file_,"RECREATE")
+        tempSamples.append(histPath+"/temp/"+file_)
+        f_out.cd()
+        for histName in hists.keys():
+            folderName = histName.rsplit("/",1)[0]
+            folderName = folderName[1:] 
+            with utilities.Quiet(kError + 1):   # avoid spaming from root
+                if f_out.cd(folderName) == False:
+                    f_out.mkdir(folderName)
+                    f_out.cd(folderName)
+            hists[histName].Write(outputName)
+        f_out.Close()
+        f.Close()
+    
+    if os.path.exists(outfile):
+        os.remove(outfile)
+    if sp.call(["hadd","-f",outfile]+tempSamples,stdout=open(os.devnull, 'wb')):    # combine temp hists with hadd
+        sys.exit(1)
+    if os.path.exists(histPath+"/temp/"):   # cleaning
+        shutil.rmtree(histPath+"/temp/")
+    
+    datasetList.append(outputName)      # add merged samples to datasetList
     print "Created",outfile
     os.chdir(runDir)
 
@@ -112,12 +174,15 @@ def getHistPath(logPath):       # get correct histPath from logPath
     return treePath
     
 def getHistPath_module(logPath):       # get correct histPath from logPath for modules other than distributions
-    info = getInfoFromLogPath(args.logPath)
+    info = getInfoFromLogPath(logPath)
     treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/output_framework/{}/{}/".format(info["year"],getNTupleVersion(info["year"]),info["module"],info["syst"])
     return treePath
     
-def mergeRequired(logPath):       # check of there are more recent individual minTrees than a merged one
-    fileList = glob.glob(getTreePath(logPath)+"/*")
+def mergeRequired(logPath,useTrees=True):       # check of there are more recent individual minTrees than a merged one
+    if useTrees:
+        fileList = glob.glob(getTreePath(logPath)+"/*")
+    else:
+        fileList = glob.glob(getHistPath_module(logPath)+"/*")
     latestPath = max(fileList, key=os.path.getctime)
     if latestPath.find("merged")>0:
         return False
@@ -145,7 +210,7 @@ if __name__ == "__main__":
     
     treePath = getTreePath(args.logPath)
     histPath = getHistPath(args.logPath)
-    
+        
     if(isDistributions == False):
         histPath = getHistPath_module(args.logPath)
     
@@ -159,12 +224,12 @@ if __name__ == "__main__":
         else:
             print "Error: Selected sample not in logPath"
             sys.exit(1)
-    
+        
     for dataset in datasetList:     # check if all datasets, which are intended for merging, are finished
             if isComplete(args.logPath,dataset) == False:
                 print "Error:",dataset,"is not complete"
                 sys.exit(1)
-    
+        
     for dataset in datasetList:
             if isComplete(args.logPath,dataset):
                 print "-------------Start merging", dataset, "----------------------"
@@ -172,6 +237,9 @@ if __name__ == "__main__":
                     mergeTree(dataset,args.logPath,treePath)
                 if args.onlyTrees == False:
                     mergeHist(dataset,args.logPath,histPath)
+    
+    mergeHists_forSamples(args.logPath,histPath,datasetList,["DrellYan_M10to50","DrellYan_NLO"],"DrellYan_comb")    # merge samples for datacards
+    mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","EGamma","MuonEG","SingleMuon"],"data_obs")    # merge samples for datacards
     
     if args.mergeAllHists and (isDistributions or isTriggerEff):
         print "-------------Start merging all datasets to one histFile----------------------"

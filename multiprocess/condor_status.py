@@ -43,6 +43,15 @@ def getMachineFromOut(outName):
                 machine = machine.split("&")[0]
     return machine
     
+def getCopyTimeFromError(outName):
+    logName = outName.replace(".out",".error")
+    with open(logName,"r") as f:
+        for line in f:
+            if line.find("seconds") >= 0:
+                time = line.split("in")[-1]
+                time = time.split("seconds")[0]
+    return time
+    
 def resubmitJob(outName,automaticResubmit=False):
     if automaticResubmit: value = 1
     else :
@@ -104,13 +113,14 @@ def getStatusFromOut(outName,running,printStatus=True,resubmit=False):
                     if line.find("took")>=0:
                         finished = True
                         color = "green"
-                        if printStatus: print colored(datasetName+" is finished, "+line.split(")")[-1].replace("=","").replace("\n","")+" on "+getMachineFromOut(outName),color)
+                        if printStatus: print colored(datasetName+" is finished, copy took "+getCopyTimeFromError(outName).strip()+"s, script"+line.split(")")[-1].replace("=","").replace("\n","")+" on "+getMachineFromOut(outName),color)
         if finished == False and running:
             getProgressFromOut(outName,True,printStatus,resubmit) 
         elif finished == False and running == False:
             color = "red"
             if printStatus:
                 print colored(getNameFromOutFile(outName)+" failed"+" on "+getMachineFromOut(outName),color)
+                resubmitJob(outName,resubmit)
             if resubmit:
                 resubmitJob(outName,resubmit)
     
@@ -208,6 +218,9 @@ def summaryDistributionJobs(year,runningLogs,resubmit,mergeAll):
                 print colored("-----Running:{}/{}".format(status[1][1]-nIdle,status[1][0]),"blue")
                 print colored("-----Failed:{}/{}".format(nFailed,status[1][0]),"red")
                 print colored("-----Finished:{}/{}".format(status[1][2],status[1][0]),"green")
+
+def isDistributions(logPath):
+    return logPath.find("distributions")>0
     
     
 
@@ -234,8 +247,10 @@ if __name__ == "__main__":
     if(args.checkCompleted != ""):
         if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list
             if checkStatusFromLog(args.checkCompleted,runningLogs.keys(),True,args.resubmit)[0]:
-                if mergeOutputs.mergeRequired(args.checkCompleted):
+                if mergeOutputs.mergeRequired(args.checkCompleted,isDistributions(args.checkCompleted)):
                     merge(args.checkCompleted)
+                else:
+                    print "No merge required"
         else:
             print "Wrong Path"
 
