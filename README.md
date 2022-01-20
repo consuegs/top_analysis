@@ -4,15 +4,23 @@
 - CMake >= 2.8 (lx-cluster: cmake28 executable)
 - Boost
 
+## Setup CMSSW Environmet ##
+    cmsrel CMSSW_10_5_0
+    cd CMSSW_10_5_0/src/
+    cmsenv
+    # Following lines enable use of CombineHarvester in framework
+    git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+    cd $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit
+    git fetch origin
+    git checkout v8.2.0
+    cd $CMSSW_BASE/src/
+    git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
+    scram b -j7
+
 ## Build ##
     mkdir build; cd build
     cmake ..
     make
-
-On lx-cluster:
-
-- use `CMSSW_10_5_X`
-- use `cmake28` instead of `cmake`
 
 ## Run ##
 Execute `run.x` (created in the build directory).
@@ -45,19 +53,13 @@ Meaningful modules can be chosen as arguments:
       --release                             Release mode (don't draw version 
                                             labels)
 
-
-## Output ##
-Plots are stored as canvases in a root file.
-
 ## Adding new modules ##
 To add a new module, create a new `<module>.cpp` file in `src/modules`.
 The entry function has to be `extern "C" void run() {...}`.
 Add `<module>` to the list in `src/modules/CMakeLists.txt`
 
 ## Running on condor ##
-The distributions module can be executed in multiple condor jobs.
-One job corresponds to one sample (defined in `config.ini`).
-The scripts for submitting the jobs can be found in `multiprocess/`.
-Attention: The output hists are saved in an additional folder `output/multiHists/`
-and have to be combined before plotting.  
+The `distributions`, `bTagEff` and `triggerEff` modules can be executed in multiple condor jobs. One job corresponds to one sample (defined in `config.ini`). The scripts for submitting the jobs can be found in `multiprocess/`. 
+Attention: The output hists are saved in an additional folder `output/multiHists/` (in case of the distributions module)
+and have to be merged before plotting.  
 ...

@@ -40,6 +40,9 @@ set(BOOST_INCLUDEDIR "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/boost/1.67.0
 set(Boost_LIBRARY_DIR "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/boost/1.67.0/lib/")
 find_package(Boost 1.67 COMPONENTS program_options REQUIRED)
 
+# add CombineHarvester
+FIND_PACKAGE( CombineHarvester )
+
 ### c++17
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 #~ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

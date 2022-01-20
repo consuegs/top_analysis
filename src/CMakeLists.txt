@@ -19,6 +19,7 @@ set(EXTLIBS
   -lRooFit
   ${Boost_LIBRARIES}
   ${CMAKE_DL_LIBS}
+  ${CombineTools_LIBRARIES}
   )
 
 add_executable(run.x ${SRCS})
