@@ -481,6 +481,17 @@ TH1F hist::rebinned(TH1F const &h, std::vector<double> const &binedges,bool merg
    // ~return h;
 }
 
+TH2F hist::rebinned(TH2F const &h, float const &Xmin, float const &Xmax, int const &nBinsX, float const &Ymin, float const &Ymax, int const &nBinsY, bool mergeOverflow,bool mergeUnderflow)
+{
+   std::vector<double> binedgesX_d = getBinVector(Xmin, Xmax, nBinsX);
+   std::vector<double> binedgesY_d = getBinVector(Ymin, Ymax, nBinsY);
+   
+   std::vector<float> binedgesX(binedgesX_d.begin(),binedgesX_d.end());
+   std::vector<float> binedgesY(binedgesY_d.begin(),binedgesY_d.end());
+   
+   return rebinned(h,binedgesX,binedgesY,mergeOverflow,mergeUnderflow);
+}
+
 TH2F hist::rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::vector<float> const &binedges_y,bool mergeOverflow,bool mergeUnderflow)
 {
    TH2F hClone(h);
@@ -514,6 +525,35 @@ TH2F hist::rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::ve
    hnew.SetEntries(entries);
    return hnew;
 }
+
+TH1F hist::histTrafo_2D(TH2F* const &hist2D){      
+   
+   int numBins_x = hist2D->GetNbinsX();
+   int numBins_y = hist2D->GetNbinsY();
+   int numBins = numBins_x*numBins_y;
+   const TArrayD* binedges_x = hist2D->GetXaxis()->GetXbins();
+   double binedges_1d[numBins+1];
+	binedges_1d[0]=0;
+   int phi_bin = 0;
+   for (int i=0; i<(numBins); i++)   {
+      binedges_1d[i+1] = binedges_x->GetAt(i%numBins_x+1)+phi_bin*binedges_x->GetAt(numBins_x);
+      if (i%numBins_x==numBins_x-1) phi_bin++;
+   }
+   
+   
+   TH1F* tempHist= new TH1F("", "", numBins_x*numBins_y, binedges_1d);
+   int binNew = 1;
+   for (int j=1; j<=numBins_y; j++){
+      for (int i=1; i<=numBins_x; i++){
+         tempHist->SetBinContent(binNew, hist2D->GetBinContent(i,j));
+         tempHist->SetBinError(binNew, hist2D->GetBinError(i,j));
+         binNew++;
+      }
+   }
+   
+	return *tempHist;
+}
+
 
 void hist::divideByBinWidth(TH1& h,bool divideLastBin)
 {

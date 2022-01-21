@@ -29,6 +29,20 @@ struct distr {
    float xMin;
    float xMax;
    int nBins;
+   std::vector<double> binEdges = {};
+};
+
+struct distr2D {
+   TString path;
+   TString name;
+   float xMin;
+   float xMax;
+   int nBinsX;
+   float yMin;
+   float yMax;
+   int nBinsY;
+   std::vector<float> binEdgesX = {};
+   std::vector<float> binEdgesY = {};
 };
 
 // small class for connecting syst., reader and histograms
@@ -87,38 +101,9 @@ class systHists
       bool onlyTTbar = false;
 };
 
-// transform 2D hist to 1D hist
-TH1F HistTrafo_2D(TH2F* const &hist2D, std::vector<float> binedges_x, std::vector<float> binedges_y){   
-   *hist2D=hist::rebinned(*hist2D, binedges_x, binedges_y);
-   
-   int numBins_x=binedges_x.size()-1;
-   int numBins_y=binedges_y.size()-1;
-   int numBins=numBins_x*numBins_y;
-   double binedges_1d[numBins+1];
-	binedges_1d[0]=0;
-   int phi_bin = 0;
-   for (int i=0; i<(numBins); i++)   {
-      binedges_1d[i+1] = binedges_x[i%numBins_x+1]+phi_bin*binedges_x[numBins_x];
-      if (i%numBins_x==numBins_x-1) phi_bin++;
-   }
-   
-   
-   TH1F* tempHist= new TH1F("", "", numBins_x*numBins_y, binedges_1d);
-   int binNew = 1;
-   for (int j=1; j<=numBins_y; j++){
-      for (int i=1; i<=numBins_x; i++){
-         tempHist->SetBinContent(binNew, hist2D->GetBinContent(i,j));
-         tempHist->SetBinError(binNew, hist2D->GetBinError(i,j));
-         binNew++;
-      }
-   }
-   
-	return *tempHist;
-}
-
-//Import 1D hists for Nominal and systematics
-void importHists1D(std::vector<systHists*> &systHists_vec, std::vector<TString> const &samplesToPlot, std::vector<TString> const &mcSamples,
-                     std::vector<distr> const &vecDistr) {
+//Import hists for Nominal and systematics
+void importHists(std::vector<systHists*> &systHists_vec, std::vector<TString> const &samplesToPlot, std::vector<TString> const &mcSamples,
+                     std::vector<distr> const &vecDistr, std::vector<distr2D> const &vecDistr2D) {
    for (systHists* &current : systHists_vec){
       std::cout<<"Importing "<<current->systematicName_<<std::endl;
       std::vector<TString> inputSamples = current->datasets_;
@@ -128,23 +113,51 @@ void importHists1D(std::vector<systHists*> &systHists_vec, std::vector<TString> 
          current->hists_.setCurrentSample(sSample);
          TString sSample_alt = sSample;
          if (current->altSampleType) sSample_alt = sSample+"_"+current->systematicName_;    // get correct Sample name if alternative Sample Type
+         //import 1D Hists
          for (auto const &distr_:vecDistr){
             TString loc;
             loc=distr_.path+distr_.name;
             TH1F* tempHist=current->histReader_->read<TH1F>(loc+"/"+sSample_alt);
-            // ~if (tempHist->GetNbinsX()>25) tempHist->Rebin(2);
-            // ~if (distr_.name=="dphi_metNearLep" or distr_.name=="dphi_metNearLep_puppi") tempHist->Rebin(4);
-            TH1F rebinHist = hist::rebinned(*tempHist,distr_.xMin,distr_.xMax,distr_.nBins);
+            
+            TH1F rebinHist;   //rebin hist
+            if (distr_.binEdges.empty()) {   // use same bin width
+               rebinHist = hist::rebinned(*tempHist,distr_.xMin,distr_.xMax,distr_.nBins);
+            }
+            else{
+               rebinHist = hist::rebinned(*tempHist,distr_.binEdges);
+            }
+            
             if (!current->hasRootFile_) rebinHist.Scale(current->sf_);
             current->hists_.addFilledHist(loc,sSample,rebinHist);
+         }
+         //import 2D Hists
+         for (auto const &distr_:vecDistr2D){
+            TString loc;
+            loc=distr_.path+distr_.name;
+            TH2F* tempHist=current->histReader_->read<TH2F>(loc+"/"+sSample_alt);
+            
+            TH2F rebinHist;   //rebin hist
+            if (distr_.binEdgesX.empty()) {   // use same bin width
+               rebinHist = hist::rebinned(*tempHist,distr_.xMin,distr_.xMax,distr_.nBinsX,distr_.yMin,distr_.yMax,distr_.nBinsY);
+            }
+            else{
+               rebinHist = hist::rebinned(*tempHist,distr_.binEdgesX,distr_.binEdgesY);
+            }
+            
+            TH1F trafoHist = hist::histTrafo_2D(&rebinHist);
+            
+            if (!current->hasRootFile_) trafoHist.Scale(current->sf_);
+            current->hists_.addFilledHist(loc,sSample,trafoHist);
          }
          // ~auto stop = high_resolution_clock::now();
          // ~auto duration = duration_cast<milliseconds>(stop - start);
          // ~std::cout<<sSample<<"   "<<duration.count()<<std::endl;
       }
+     current->histReader_->closeFile();
    }
 }
 
+/*
 //Import 2D hists for Nominal and systematics (onyl signal variable currently)
 void importHists2D(std::vector<systHists*> &systHists_vec, std::vector<TString> const &samplesToPlot, std::vector<TString> const &mcSamples,
                      std::map<TString,std::vector<TString>> const &msPresel_vVars) {
@@ -175,6 +188,7 @@ void importHists2D(std::vector<systHists*> &systHists_vec, std::vector<TString> 
       }
    }
 }
+*/
 
 void add_Categories(TString const path, io::RootFileReader const &reader_hist, TH1F &out_hist) {   //Function to add the three different categories
    TH1F *hist;
@@ -186,7 +200,7 @@ void add_Categories(TString const path, io::RootFileReader const &reader_hist, T
 }
 
 // get up and down shift for set of systematics
-std::pair<TH1F*,TH1F*> getTotalSyst(TH1F* const &nominal, std::vector<systHists*> &systHists_vec, TString const loc, TString const sample="", bool envelope=false){
+std::pair<TH1F*,TH1F*> getTotalSyst(TH1F* const &nominal, std::vector<systHists*> const &systHists_vec, TString const loc, TString const sample="", bool envelope=false){
    TH1F* hist_shiftUP = (TH1F*)nominal->Clone();
    TH1F* hist_shiftDOWN = (TH1F*)nominal->Clone();
    hist_shiftUP->Reset();
@@ -282,7 +296,7 @@ void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systH
    }
 }
 
-// print brackdown of syst uncertainties
+// print breakdown of syst uncertainties
 void printUncBreakDown(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systHists_vec, const std::vector<TString> &mcSamples) {
    std::cout<<std::endl<<"-----------------Uncertainties-------------------"<<std::endl;
    for (TString cat:{"ee","emu","mumu"}){
@@ -326,6 +340,233 @@ void printShiftBySample(hist::Histograms<TH1F>* hs, std::vector<systHists*> &sys
       }
    }
 }
+
+void fixAxis2D(TAxis* axis){     // currently only works for 2D SR with 6x11 bins
+   axis->SetNdivisions(12);
+   axis->ChangeLabel(13,-1,-1,-1,-1,-1," ");
+   for (int i=0; i<3; i++){
+      axis->ChangeLabel(i*4+1,-1,-1,-1,-1,-1,"  ");
+      axis->ChangeLabel(i*4+2,-1,-1,-1,-1,-1,"100");
+      axis->ChangeLabel(i*4+3,-1,-1,-1,-1,-1," ");
+      axis->ChangeLabel(i*4+4,-1,-1,-1,-1,-1,"300");
+   }
+}
+
+void drawVertLines2D(float const &lowerEnd, float const &upperEnd,bool text){
+   TLine * aline = new TLine();
+   TLatex * atext = new TLatex();
+   atext->SetTextSize(0.03);
+   aline->SetLineWidth(2);
+   for (int i=1; i<3; i++){
+      aline->DrawLine(i*400,lowerEnd,i*400,upperEnd);
+   }
+   if (text){
+      atext->DrawLatex(100,0.2*upperEnd,"|#Delta#phi|<0.35");
+      atext->DrawLatex(475,0.2*upperEnd,"0.7<|#Delta#phi|<1.4");
+      atext->DrawLatex(875,0.2*upperEnd,"1.4<|#Delta#phi|");
+      // ~atext->DrawLatex(1275,0.2*upperEnd,"1.05<|#Delta#phi|<1.4");
+      // ~atext->DrawLatex(1675,0.2*upperEnd,"1.4<|#Delta#phi|<2.27");
+      // ~atext->DrawLatex(2075,0.2*upperEnd,"2.27<|#Delta#phi|");
+   }
+}
+
+void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histograms<TH1F>* const &hs, std::vector<TString> const &mcSamples_merged, 
+                     std::map<const TString,Color_t> const & colormap, std::vector<systHists*> const &systHists_vec, io::RootFileSaver const &saver, bool is2D=false){
+   TCanvas can;
+   can.SetLogy();
+   gfx::SplitCan sp_can;
+   sp_can.pU_.SetLogy();
+   sp_can.pU_.cd();
+   TString loc;
+   loc=sPresel+sVar;
+   THStack st_mc=hs->getStack(loc,mcSamples_merged,colormap);
+   gfx::LegendEntries le=hs->getLegendEntries();
+   
+   //systematics
+   TH1F* hist_mc = hs->getHistogram(loc,{"MC"});
+   std::pair<TH1F*,TH1F*> syst = getTotalSyst(hist_mc,systHists_vec,loc);
+   TGraphAsymmErrors systGraph = getErrorGraph(syst.first,syst.second,hist_mc,true);
+   
+   TString cat;   // set channel label
+   if (loc.Contains("ee")) cat="ee";
+   else if (loc.Contains("emu")) cat="e#mu";
+   else if (loc.Contains("mumu")) cat="#mu#mu";
+   else if (loc.Contains("all")) cat="all";
+   if (sPresel.Contains("Met200")) cat+="  p_{T}^{miss}>200 GeV";
+   TLatex label=gfx::cornerLabel(cat,1);
+   
+   if (sVar.Contains("phi")){    // set plotting ranges
+      st_mc.SetMinimum(1);
+      st_mc.SetMaximum(1e6);
+   }
+   st_mc.SetMinimum(1);
+   if (is2D) st_mc.SetMaximum(5e3*st_mc.GetMaximum());
+   else st_mc.SetMaximum(1e3*st_mc.GetMaximum());
+   st_mc.Draw();     // draw stack
+   if(sPresel.Contains("cutflow")) st_mc.GetXaxis()->SetRangeUser(0.5,6.5);
+   
+   systGraph.SetFillStyle(3001);
+   systGraph.Draw("same 2");    // draw syst.
+   
+   if (is2D){
+      fixAxis2D(st_mc.GetXaxis());
+      drawVertLines2D(st_mc.GetHistogram()->GetMinimum(),st_mc.GetHistogram()->GetMaximum(),true);
+   }
+   
+   // data plotting part
+   auto hist_data = hs->getHistogram(loc,{"data"});
+   hist_data->SetLineColor(kBlack);
+   hist_data->SetMarkerSize(0.5);
+   bool plotData = false;
+   if(!(sVar.Contains("MET") || sVar.Contains("met1000")|| sVar.Contains("dphi_metNearLep")|| sVar.Contains("C_em")|| sVar.Contains("Met"))) {
+      hist_data->Draw("same");
+      le.append(*hist_data,"data","lep");
+      plotData = true;
+   }
+   
+   auto hists_BSM=hs->getHistograms(loc,{"TTbar_diLepton"});     //placeholder
+   auto BSM_legend=hs->getLegendEntries();    //placeholder
+   if (cfg.year_int==1){    //Plot BSM in 2016
+      hists_BSM=hs->getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
+      for (auto const &h: hists_BSM) {
+         h->Draw("same hist");
+         // ~h->SetLineWidth(4);
+      }
+      le+=hs->getLegendEntries();
+      BSM_legend=hs->getLegendEntries();
+   }
+   
+   // redraw axis, draw label and legend
+   auto hists_SM=hs->getHistograms(loc,{"TTbar_diLepton"});
+   TH1F axis=*(hists_SM[0]);
+   axis.SetStats(0);
+   axis.Draw("same axis");
+   TLegend leg=le.buildLegend(.42,.7,1-(gPad->GetRightMargin()+0.02),-1,2);
+   leg.Draw();
+   label.Draw();
+   
+   // ratio part
+   sp_can.pL_.cd();
+   TH1F ratio = hist::getRatio(*hist_data,st_mc,"data/MC",hist::ONLY1);
+   TH1F ratio_mc = hist::getRatio(st_mc,st_mc,"data/MC",hist::ONLY1);
+   
+   // syst unc.
+   TH1F* hist_mc_sysDown = (TH1F*)hist_mc->Clone();
+   TH1F* hist_mc_sysUp = (TH1F*)hist_mc->Clone();
+   hist_mc_sysDown->Add(syst.second,-1.);
+   hist_mc_sysUp->Add(syst.first);
+            
+   TH1F ratio_mc_systDown = hist::getRatio(*hist_mc_sysDown,*hist_mc,"data/MC",hist::ONLY1);
+   TH1F ratio_mc_systUp = hist::getRatio(*hist_mc_sysUp,*hist_mc,"data/MC",hist::ONLY1);
+   
+   TGraphAsymmErrors systGraphRatio = getErrorGraph(&ratio_mc_systUp,&ratio_mc_systDown,&ratio_mc,false);
+   
+   // total unc.
+   TH1F* hist_mc_totalDown = (TH1F*)syst.second->Clone();
+   TH1F* hist_mc_totalUp = (TH1F*)syst.first->Clone();
+   
+   for (int i=0; i<=hist_mc_totalUp->GetNbinsX(); i++){
+      float stat2 = hist_mc->GetBinError(i)*hist_mc->GetBinError(i);
+      float down2 = hist_mc_totalDown->GetBinContent(i)*hist_mc_totalDown->GetBinContent(i);
+      float up2 = hist_mc_totalUp->GetBinContent(i)*hist_mc_totalUp->GetBinContent(i);
+      hist_mc_totalDown->SetBinContent(i,sqrt(stat2+down2));
+      hist_mc_totalUp->SetBinContent(i,sqrt(stat2+up2));
+   }
+   
+   hist_mc_totalDown->Add(hist_mc,-1.);
+   hist_mc_totalDown->Scale(-1.);
+   hist_mc_totalUp->Add(hist_mc);
+            
+   TH1F ratio_mc_totalDown = hist::getRatio(*hist_mc_totalDown,*hist_mc,"data/MC",hist::ONLY1);
+   TH1F ratio_mc_totalUp = hist::getRatio(*hist_mc_totalUp,*hist_mc,"data/MC",hist::ONLY1);
+   
+   TGraphAsymmErrors totalUncGraphRatio = getErrorGraph(&ratio_mc_totalUp,&ratio_mc_totalDown,&ratio_mc,false);
+   
+   if(sPresel.Contains("cutflow")){    // set cutflow specific axis labels
+      ratio_mc.GetXaxis()->SetBinLabel(1,"DiLepton");
+      ratio_mc.GetXaxis()->SetBinLabel(2,"mll");
+      ratio_mc.GetXaxis()->SetBinLabel(3,"jets");
+      ratio_mc.GetXaxis()->SetBinLabel(4,"met");
+      ratio_mc.GetXaxis()->SetBinLabel(5,"btag");
+      ratio_mc.GetXaxis()->SetBinLabel(6,"ScaleFactors");
+      // ~ratio_mc.GetXaxis()->SetBinLabel(7,"(addLepton veto)");
+      ratio_mc.GetXaxis()->SetRangeUser(0.5,6.5);
+   }
+   
+   ratio_mc.GetYaxis()->SetTitleOffset(0.45);
+   ratio_mc.SetStats(0);
+   ratio.SetLineColor(kBlack);
+   // ~ratio_mc.SetMaximum(1.04);
+   // ~ratio_mc.SetMinimum(0.9);
+   ratio_mc.SetMaximum(1.35);
+   ratio_mc.SetMinimum(0.65);
+   totalUncGraphRatio.SetFillColor(kGray);
+   systGraphRatio.SetFillColor(kGray+3);
+   systGraphRatio.SetFillStyle(3004);
+   systGraphRatio.SetLineWidth(0);
+   systGraphRatio.SetMarkerSize(0);
+   ratio_mc.SetMarkerSize(0);
+   ratio_mc.Draw("e2");    // only for axis
+   totalUncGraphRatio.Draw("same e2");
+   systGraphRatio.Draw("same e2");
+   ratio_mc.Draw("axis same");
+   // ~ratio.SetMarkerSize(4);
+   if(plotData) ratio.Draw("pe1 same");
+   
+   if(is2D){
+      fixAxis2D(ratio_mc.GetXaxis());
+      drawVertLines2D(ratio_mc.GetMinimum(),ratio_mc.GetMaximum(),false);
+   }
+   
+   gfx::LegendEntries le_low;
+   le_low.append(totalUncGraphRatio,"#sigma_{tot.}","f");
+   le_low.append(systGraphRatio,"#sigma_{syst.}","f");
+   TLegend leg_low=le_low.buildLegend(.2,.8,0.5,0.95,2);
+   leg_low.Draw();
+   
+   saver.save(sp_can,loc,false,true);
+   //normalized distributions
+   /*
+   can.cd();
+   auto ttbar_hist=hs->getHistogram(loc,"TTbar_diLepton");
+   ttbar_hist->Scale(1.0/(ttbar_hist->Integral()));
+   ttbar_hist->SetFillColor(ttbar_hist->GetLineColor());
+   // ~ttbar_hist->SetFillStyle(1001);
+   auto SMbkg_hist=hs->getHistogram(loc,"SM bkg.");
+   SMbkg_hist->Scale(1.0/(SMbkg_hist->Integral()));
+   SMbkg_hist->SetFillColor(kGray);
+   // ~SMbkg_hist->SetFillStyle(1001);
+   THStack st_norm;
+   st_norm.Add(SMbkg_hist);
+   st_norm.Add(ttbar_hist);
+   axis.SetStats(0);
+   axis.SetMaximum(1.0);
+   axis.SetMinimum(1e-3);
+   axis.GetYaxis()->SetTitle("normalized distribution");
+   axis.Draw("axis");
+   // ~st_norm.Draw("hist same");
+   ttbar_hist->SetMarkerSize(0);
+   SMbkg_hist->SetMarkerSize(0);
+   ttbar_hist->Draw("hist e same");
+   SMbkg_hist->Draw("hist e same");
+   if (cfg.year_int==1){    //Plot BSM in 2016
+      for (auto const &h: hists_BSM) {
+         h->Scale(1.0/(h->Integral()));
+         h->SetMarkerSize(0);
+         h->Draw("same hist e");
+      }
+   }
+   axis.Draw("axis same");
+   le.clear();
+   le.prepend(*ttbar_hist,"tt ll","l");
+   le.append(*SMbkg_hist,"SM bkg.","l");
+   if (cfg.year_int==1) le+=BSM_legend;
+   TLegend leg2=le.buildLegend(.42,.7,1-(gPad->GetRightMargin()+0.02),-1,2);
+   leg2.Draw();
+   label.Draw();
+   saver.save(can,"normalized/"+loc,true,false,true);
+   */
+}
    
 extern "C"
 void run()
@@ -338,8 +579,8 @@ void run()
    std::vector<TString> signalSamples={};
    switch(cfg.year_int){
       case(3): //2018
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
-      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","EGamma","MuonEG","SingleMuon"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
@@ -357,17 +598,27 @@ void run()
    }
    std::vector<TString> samplesToPlot = util::addVectors(mcSamples,dataSamples);
    
-   // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP_UP","MTOP_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN",};
-   std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP_UP","MTOP_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN",};
+   std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","CR_ENVELOPE_IND_UP","CR_ENVELOPE_IND_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN",};
    // ~std::vector<TString> systToPlot = {"Nominal","ELECTRON_ID_UP","ELECTRON_ID_DOWN","MUON_ID_UP","MUON_ID_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","PU_UP","PU_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","PU_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","PU_UP"};
    // ~std::vector<TString> systToPlot = {"Nominal","MERENSCALE_UP","MERENSCALE_DOWN",};
-   // ~std::vector<TString> systToPlot = {"Nominal","PSISRSCALE_UP"};
-   // ~std::vector<TString> systToPlot = {"Nominal","PSISRSCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PSFSRSCALE_UP"};
-   // ~std::vector<TString> systToPlot = {"Nominal","PSISRSCALE_DOWN","PSFSRSCALE_DOWN"};
-   // ~std::vector<TString> systToPlot = {"Nominal","PSISRSCALE_UP","PSFSRSCALE_UP"};
+   // ~std::vector<TString> systToPlot = {"Nominal","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","PSFSRSCALE_UP","PSFSRSCALE_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","PSISRSCALE_UP","PSISRSCALE_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","PSFSRSCALE_UP"};
+   // ~std::vector<TString> systToPlot = {"Nominal","PSFSRSCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","BFRAG_UP","BFRAG_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","CR_ENVELOPE_IND_UP","CR_ENVELOPE_IND_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","CR1","CR2","ERDON"};
+   // ~std::vector<TString> systToPlot = {"Nominal","MTOP_UP","MTOP_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","MTOP_IND_UP","MTOP_IND_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","MTOP_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","MTOP_IND_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MATCH_UP","MATCH_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MATCH_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MERENSCALE_DOWN"};
@@ -382,24 +633,24 @@ void run()
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          // ~vecDistr.push_back({selection+channel,"Lep_e_pt",0.,600.,50});
          // ~vecDistr.push_back({selection+channel,"Lep_mu_pt",0.,600.,50});
-         vecDistr.push_back({selection+channel,"Lep1_pt",0.,480.,40});
-         vecDistr.push_back({selection+channel,"Lep2_pt",0.,480.,40});
+         // ~vecDistr.push_back({selection+channel,"Lep1_pt",0.,480.,40});
+         // ~vecDistr.push_back({selection+channel,"Lep2_pt",0.,480.,40});
          // ~vecDistr.push_back({selection+channel,"MET",0.,500.,50});
-         // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,50});
+         vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,40,70,110,170,260,370,500}});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,40});
          // ~vecDistr.push_back({selection+channel,"met1000",0.,1000.,50});
-         vecDistr.push_back({selection+channel,"mLL",0.,600.,30});
+         // ~vecDistr.push_back({selection+channel,"mLL",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"pTsumlep",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"sumpTlep",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"pTbJet",0.,600.,30});
-         vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,30});
-         vecDistr.push_back({selection+channel,"Jet2_pt",0.,600.,30});
+         // ~vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,30});
+         // ~vecDistr.push_back({selection+channel,"Jet2_pt",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"dPhiMETnearJet",0.,3.2,32});
          // ~vecDistr.push_back({selection+channel,"dPhiMETleadJet",0.,3.2,32});
          // ~vecDistr.push_back({selection+channel,"dPhiMETlead2Jet",0.,3.2,32});
          // ~vecDistr.push_back({selection+channel,"dphi_metNearLep",0.,3.2,32});
-         // ~vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi",0.,3.2,32});
+         vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi",0.,3.2,8});
          // ~vecDistr.push_back({selection+channel,"COSdphi_metNearLep",-1.,1,50});
          // ~vecDistr.push_back({selection+channel,"SINdphi_metNearLep",0.,1,50});
          // ~vecDistr.push_back({selection+channel,"dPhiMETbJet",0.,3.2,32});
@@ -413,8 +664,8 @@ void run()
          // ~vecDistr.push_back({selection+channel,"dphi_metLepsum",0.,3.2,50});
          // ~vecDistr.push_back({selection+channel,"dPhiLep1Lep2",0.,3.2,50});
          // ~vecDistr.push_back({selection+channel,"dR_Lep1Lep2",0.,5.,100});
-         vecDistr.push_back({selection+channel,"nJets",-0.5,10.5,11});
-         vecDistr.push_back({selection+channel,"nBjets",-0.5,4.5,5});
+         // ~vecDistr.push_back({selection+channel,"nJets",-0.5,10.5,11});
+         // ~vecDistr.push_back({selection+channel,"nBjets",-0.5,4.5,5});
          // ~vecDistr.push_back({selection+channel,"MT2",0.,200.,50});
          // ~vecDistr.push_back({selection+channel,"MT",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"mt_MetLep2",0.,600.,30});
@@ -430,14 +681,14 @@ void run()
          // ~vecDistr.push_back({selection+channel,"Lep2_flavor",0.5,2.5,2});
          // ~vecDistr.push_back({selection+channel,"Lep1_phi",-3.2,3.2,50});
          // ~vecDistr.push_back({selection+channel,"Lep2_phi",-3.2,3.2,50});
-         vecDistr.push_back({selection+channel,"Lep1_eta",-2.5,2.5,50});
-         vecDistr.push_back({selection+channel,"Lep2_eta",-2.5,2.5,50});
+         // ~vecDistr.push_back({selection+channel,"Lep1_eta",-2.5,2.5,50});
+         // ~vecDistr.push_back({selection+channel,"Lep2_eta",-2.5,2.5,50});
          // ~vecDistr.push_back({selection+channel,"Lep1_E",0.,600.,50});
          // ~vecDistr.push_back({selection+channel,"Lep2_E",0.,600.,50});
          // ~vecDistr.push_back({selection+channel,"Jet1_phi",-3.2,3.2,50});
          // ~vecDistr.push_back({selection+channel,"Jet2_phi",-3.2,3.2,50});
-         vecDistr.push_back({selection+channel,"Jet1_eta",-2.5,2.5,50});
-         vecDistr.push_back({selection+channel,"Jet2_eta",-2.5,2.5,50});
+         // ~vecDistr.push_back({selection+channel,"Jet1_eta",-2.5,2.5,50});
+         // ~vecDistr.push_back({selection+channel,"Jet2_eta",-2.5,2.5,50});
          // ~vecDistr.push_back({selection+channel,"Jet1_E",0.,2000.,50});
          // ~vecDistr.push_back({selection+channel,"Jet2_E",0.,2000.,50});
          // ~vecDistr.push_back({selection+channel,"dPhiMETfarJet",0.,3.2,50});
@@ -464,13 +715,11 @@ void run()
    }
    
    // 2D plots
-   std::map<TString,std::vector<TString>> msPresel_vVars_2D;
-      for(TString selection:{"baseline"}){
+   std::vector<distr2D> vecDistr2D;
+   for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
-         msPresel_vVars_2D.insert(std::pair<TString,std::vector<TString>>(selection+channel,
-         {"2d_MetVSdPhiMetNearLep_Puppi",
-         "2d_MetVSdPhiMetNearLep_DNN",
-         }));
+         vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,40,80,120,160,230,400},{0,0.7,1.4,3.14}});
+         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,10,0.,3.2,8});
       }
    }
    
@@ -481,11 +730,8 @@ void run()
       systHists_vec.push_back(temp);
    }
    
-   // Import 1D hists
-   importHists1D(systHists_vec,samplesToPlot,mcSamples,vecDistr);
-   
-   // Import 2D hists
-   // ~importHists2D(systHists_vec,samplesToPlot,mcSamples,msPresel_vVars_2D);
+   // Import hists
+   importHists(systHists_vec,samplesToPlot,mcSamples,vecDistr,vecDistr2D);
    
    // Define hist collection for nominal
    hist::Histograms<TH1F>* hs;
@@ -518,8 +764,8 @@ void run()
    
    // combine different samples to improve readability
    hs->combineSamples("Diboson",{"WW","WZ","ZZ"});
-   hs->combineSamples("DrellYan_comb",{"DrellYan","DrellYan_M10to50"});
-   // ~hs->combineSamples("DrellYan_comb",{"DrellYan_NLO","DrellYan_M10to50"});
+   // ~hs->combineSamples("DrellYan_comb",{"DrellYan","DrellYan_M10to50"});
+   hs->combineSamples("DrellYan_comb",{"DrellYan_NLO","DrellYan_M10to50"});
    hs->combineSamples("ttZ",{"ttZ_2L","ttZ_QQ"});
    hs->combineSamples("ttW/Z",{"ttW","ttZ"});
    hs->combineSamples("tt other",{"TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"});
@@ -545,195 +791,18 @@ void run()
       break;
    }
    std::map<const TString,Color_t> colormap = {{"TTbar_diLepton",kRed-6},{"Diboson",kCyan-8},{"ttW/Z",kGreen-7},{"tt other",kRed-9}};
-   // start 1D plotting
-   TCanvas can;
-   can.SetLogy();
-   gfx::SplitCan sp_can;
-   sp_can.pU_.SetLogy();
-   for (auto &distr_:vecDistr){    // loop over all histograms defined above
-      TString const &sPresel=distr_.path;
-      TString const &sVar=distr_.name;
-      sp_can.pU_.cd();
-      TString loc;
-      loc=sPresel+sVar;
-      THStack st_mc=hs->getStack(loc,mcSamples_merged,colormap);
-      gfx::LegendEntries le=hs->getLegendEntries();
-      
-      //systematics
-      TH1F* hist_mc = hs->getHistogram(loc,{"MC"});
-      std::pair<TH1F*,TH1F*> syst = getTotalSyst(hist_mc,systHists_vec,loc);
-      TGraphAsymmErrors systGraph = getErrorGraph(syst.first,syst.second,hist_mc,true);
-      
-      TString cat;   // set channel label
-      if (loc.Contains("ee")) cat="ee";
-      else if (loc.Contains("emu")) cat="e#mu";
-      else if (loc.Contains("mumu")) cat="#mu#mu";
-      else if (loc.Contains("all")) cat="all";
-      if (sPresel.Contains("Met200")) cat+="  p_{T}^{miss}>200 GeV";
-      TLatex label=gfx::cornerLabel(cat,1);
-      
-      if (sVar.Contains("phi")){    // set plotting ranges
-         st_mc.SetMinimum(1);
-         st_mc.SetMaximum(1e6);
-      }
-      st_mc.SetMinimum(1);
-      st_mc.SetMaximum(1e3*st_mc.GetMaximum());
-      st_mc.Draw();     // draw stack
-      if(sPresel.Contains("cutflow")) st_mc.GetXaxis()->SetRangeUser(0.5,6.5);
-      
-      systGraph.SetFillStyle(3001);
-      systGraph.Draw("same 2");    // draw syst.
-      
-      // data plotting part
-      auto hist_data = hs->getHistogram(loc,{"data"});
-      hist_data->SetLineColor(kBlack);
-      hist_data->SetMarkerSize(0.5);
-      if(!(sVar.Contains("MET") || sVar.Contains("met1000")|| sVar.Contains("dphi_metNearLep")|| sVar.Contains("C_em"))) {
-         hist_data->Draw("same");
-         le.append(*hist_data,"data","lep");
-      }
-      
-      auto hists_BSM=hs->getHistograms(loc,{"TTbar_diLepton"});     //placeholder
-      auto BSM_legend=hs->getLegendEntries();    //placeholder
-      if (cfg.year_int==1){    //Plot BSM in 2016
-         hists_BSM=hs->getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
-         for (auto const &h: hists_BSM) {
-            h->Draw("same hist");
-            // ~h->SetLineWidth(4);
-         }
-         le+=hs->getLegendEntries();
-         BSM_legend=hs->getLegendEntries();
-      }
-      
-      // redraw axis, draw label and legend
-      auto hists_SM=hs->getHistograms(loc,{"TTbar_diLepton"});
-      TH1F axis=*(hists_SM[0]);
-      axis.SetStats(0);
-      axis.Draw("same axis");
-      TLegend leg=le.buildLegend(.42,.7,1-(gPad->GetRightMargin()+0.02),-1,2);
-      leg.Draw();
-      label.Draw();
-      
-      // ratio part
-      sp_can.pL_.cd();
-      TH1F ratio = hist::getRatio(*hist_data,st_mc,"data/MC",hist::ONLY1);
-      TH1F ratio_mc = hist::getRatio(st_mc,st_mc,"data/MC",hist::ONLY1);
-      
-      // syst unc.
-      TH1F* hist_mc_sysDown = (TH1F*)hist_mc->Clone();
-      TH1F* hist_mc_sysUp = (TH1F*)hist_mc->Clone();
-      hist_mc_sysDown->Add(syst.second,-1.);
-      hist_mc_sysUp->Add(syst.first);
-               
-      TH1F ratio_mc_systDown = hist::getRatio(*hist_mc_sysDown,*hist_mc,"data/MC",hist::ONLY1);
-      TH1F ratio_mc_systUp = hist::getRatio(*hist_mc_sysUp,*hist_mc,"data/MC",hist::ONLY1);
-      
-      TGraphAsymmErrors systGraphRatio = getErrorGraph(&ratio_mc_systUp,&ratio_mc_systDown,&ratio_mc,false);
-      
-      // total unc.
-      TH1F* hist_mc_totalDown = (TH1F*)syst.second->Clone();
-      TH1F* hist_mc_totalUp = (TH1F*)syst.first->Clone();
-      
-      for (int i=0; i<=hist_mc_totalUp->GetNbinsX(); i++){
-         float stat2 = hist_mc->GetBinError(i)*hist_mc->GetBinError(i);
-         float down2 = hist_mc_totalDown->GetBinContent(i)*hist_mc_totalDown->GetBinContent(i);
-         float up2 = hist_mc_totalUp->GetBinContent(i)*hist_mc_totalUp->GetBinContent(i);
-         hist_mc_totalDown->SetBinContent(i,sqrt(stat2+down2));
-         hist_mc_totalUp->SetBinContent(i,sqrt(stat2+up2));
-      }
-      
-      hist_mc_totalDown->Add(hist_mc,-1.);
-      hist_mc_totalDown->Scale(-1.);
-      hist_mc_totalUp->Add(hist_mc);
-               
-      TH1F ratio_mc_totalDown = hist::getRatio(*hist_mc_totalDown,*hist_mc,"data/MC",hist::ONLY1);
-      TH1F ratio_mc_totalUp = hist::getRatio(*hist_mc_totalUp,*hist_mc,"data/MC",hist::ONLY1);
-      
-      TGraphAsymmErrors totalUncGraphRatio = getErrorGraph(&ratio_mc_totalUp,&ratio_mc_totalDown,&ratio_mc,false);
-      
-      if(sPresel.Contains("cutflow")){    // set cutflow specific axis labels
-         ratio_mc.GetXaxis()->SetBinLabel(1,"DiLepton");
-         ratio_mc.GetXaxis()->SetBinLabel(2,"mll");
-         ratio_mc.GetXaxis()->SetBinLabel(3,"jets");
-         ratio_mc.GetXaxis()->SetBinLabel(4,"met");
-         ratio_mc.GetXaxis()->SetBinLabel(5,"btag");
-         ratio_mc.GetXaxis()->SetBinLabel(6,"ScaleFactors");
-         // ~ratio_mc.GetXaxis()->SetBinLabel(7,"(addLepton veto)");
-         ratio_mc.GetXaxis()->SetRangeUser(0.5,6.5);
-      }
-      ratio_mc.GetYaxis()->SetTitleOffset(0.45);
-      ratio_mc.SetStats(0);
-      ratio.SetLineColor(kBlack);
-      // ~ratio_mc.SetMaximum(1.04);
-      // ~ratio_mc.SetMinimum(0.9);
-      ratio_mc.SetMaximum(1.25);
-      ratio_mc.SetMinimum(0.75);
-      totalUncGraphRatio.SetFillColor(kGray);
-      systGraphRatio.SetFillColor(kGray+3);
-      systGraphRatio.SetFillStyle(3004);
-      systGraphRatio.SetLineWidth(0);
-      systGraphRatio.SetMarkerSize(0);
-      ratio_mc.SetMarkerSize(0);
-      ratio_mc.Draw("e2");    // only for axis
-      totalUncGraphRatio.Draw("same e2");
-      systGraphRatio.Draw("same e2");
-      ratio_mc.Draw("axis same");
-      // ~ratio.SetMarkerSize(4);
-      if(!(sVar.Contains("MET") || sVar.Contains("met1000")|| sVar.Contains("dphi_metNearLep")|| sVar.Contains("C_em"))) ratio.Draw("pe1 same");
-      
-      gfx::LegendEntries le_low;
-      le_low.append(totalUncGraphRatio,"#sigma_{tot.}","f");
-      le_low.append(systGraphRatio,"#sigma_{syst.}","f");
-      TLegend leg_low=le_low.buildLegend(.2,.8,0.5,0.95,2);
-      leg_low.Draw();
-      
-      saver.save(sp_can,loc,false,true);
-      // ~saver.save(can,loc);
-      
-      
-      //normalized distributions
-      /*
-      can.cd();
-      auto ttbar_hist=hs->getHistogram(loc,"TTbar_diLepton");
-      ttbar_hist->Scale(1.0/(ttbar_hist->Integral()));
-      ttbar_hist->SetFillColor(ttbar_hist->GetLineColor());
-      // ~ttbar_hist->SetFillStyle(1001);
-      auto SMbkg_hist=hs->getHistogram(loc,"SM bkg.");
-      SMbkg_hist->Scale(1.0/(SMbkg_hist->Integral()));
-      SMbkg_hist->SetFillColor(kGray);
-      // ~SMbkg_hist->SetFillStyle(1001);
-      THStack st_norm;
-      st_norm.Add(SMbkg_hist);
-      st_norm.Add(ttbar_hist);
-      axis.SetStats(0);
-      axis.SetMaximum(1.0);
-      axis.SetMinimum(1e-3);
-      axis.GetYaxis()->SetTitle("normalized distribution");
-      axis.Draw("axis");
-      // ~st_norm.Draw("hist same");
-      ttbar_hist->SetMarkerSize(0);
-      SMbkg_hist->SetMarkerSize(0);
-      ttbar_hist->Draw("hist e same");
-      SMbkg_hist->Draw("hist e same");
-      if (cfg.year_int==1){    //Plot BSM in 2016
-         for (auto const &h: hists_BSM) {
-            h->Scale(1.0/(h->Integral()));
-            h->SetMarkerSize(0);
-            h->Draw("same hist e");
-         }
-      }
-      axis.Draw("axis same");
-      le.clear();
-      le.prepend(*ttbar_hist,"tt ll","l");
-      le.append(*SMbkg_hist,"SM bkg.","l");
-      if (cfg.year_int==1) le+=BSM_legend;
-      TLegend leg2=le.buildLegend(.42,.7,1-(gPad->GetRightMargin()+0.02),-1,2);
-      leg2.Draw();
-      label.Draw();
-      saver.save(can,"normalized/"+loc,true,false,true);
-      */
-         
+   
+   // 1D plotting
+   for (auto &distr_:vecDistr){
+      plotHistograms(distr_.path,distr_.name,hs,mcSamples_merged,colormap,systHists_vec,saver);
    }
+   
+   // 2D plotting
+   for (auto &distr_:vecDistr2D){
+      plotHistograms(distr_.path,distr_.name,hs,mcSamples_merged,colormap,systHists_vec,saver,true);
+   }
+         
+   // ~}
    
    // Print total yields
    printTotalYields(hs,systHists_vec,mcSamples_merged);
