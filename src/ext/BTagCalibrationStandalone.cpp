@@ -61,7 +61,7 @@ throw std::exception();
     vec[2].erase(remove(vec[2].begin(),vec[2].end(),chars[i]),vec[2].end());
     vec[10].erase(remove(vec[10].begin(),vec[10].end(),chars[i]),vec[10].end());
   }
-
+  
   // make formula
   formula = vec[10];
   TF1 f1("", formula.c_str());  // compile formula to check validity
@@ -72,8 +72,12 @@ std::cerr << "ERROR in BTagCalibration: "
 throw std::exception();
   }
 
-  // make parameters
-  unsigned op = stoi(vec[0]);
+  // make parameters (wp adapted to new naming scheme)
+  unsigned op = 4;
+  if (vec[0]=="L") op = 0;
+  else if (vec[0]=="M") op = 1;
+  else if (vec[0]=="T") op = 2;
+  else if (vec[0]==3) op = 3;
   if (op > 3) {
 std::cerr << "ERROR in BTagCalibration: "
           << "Invalid csv line; OperatingPoint > 3: "
@@ -81,9 +85,9 @@ std::cerr << "ERROR in BTagCalibration: "
 throw std::exception();
   }
   unsigned jf = stoi(vec[3]);
-  if (jf > 2) {
+  if (jf > 5) {
 std::cerr << "ERROR in BTagCalibration: "
-          << "Invalid csv line; JetFlavor > 2: "
+          << "Invalid csv line; JetFlavor > 5: "
           << csvLine;
 throw std::exception();
   }
@@ -422,7 +426,7 @@ BTagCalibrationReader::BTagCalibrationReaderImpl::BTagCalibrationReaderImpl(
                                              const std::vector<std::string> & otherSysTypes):
   op_(op),
   sysType_(sysType),
-  tmpData_(3),
+  tmpData_(6),
   useAbsEta_(3, true)
 {
   for (const std::string & ost : otherSysTypes) {
