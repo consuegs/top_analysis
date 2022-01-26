@@ -41,6 +41,64 @@ bTagEff_sample_syst_dict = {
       "PDF_ALPHAS_DOWN" : "TTbar_diLepton",
    }
 
+allMC = ["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
+
+allData2018 = ["DoubleMuon","MuonEG","SingleMuon","EGamma"] 
+
+sample_allSyst_dict = {
+      "JESTotal_UP" : allMC,
+      "JESTotal_DOWN" : allMC,
+      "JER_UP" : allMC,
+      "JER_DOWN" : allMC,
+      "BTAGBC_UP" : allMC,
+      "BTAGBC_DOWN" : allMC,
+      "BTAGL_UP" : allMC,
+      "BTAGL_DOWN" : allMC,
+      "ELECTRON_ID_UP" : allMC,
+      "ELECTRON_ID_DOWN" : allMC,
+      "ELECTRON_RECO_UP" : allMC,
+      "ELECTRON_RECO_DOWN" : allMC,
+      "ELECTRON_SCALESMEARING_UP" : allMC,
+      "ELECTRON_SCALESMEARING_DOWN" : allMC,
+      "MUON_ID_UP" : allMC,
+      "MUON_ID_DOWN" : allMC,
+      "MUON_ISO_UP" : allMC,
+      "MUON_ISO_DOWN" : allMC,
+      "MUON_SCALE_UP" : allMC,
+      "MUON_SCALE_DOWN" : allMC,
+      "PU_UP" : allMC,
+      "PU_DOWN" : allMC,
+      "UNCLUSTERED_UP" : allMC,
+      "UNCLUSTERED_DOWN" : allMC,
+      "UETUNE_UP" : ["TTbar_diLepton_UETUNE_UP","TTbar_diLepton_tau_UETUNE_UP","TTbar_singleLepton_UETUNE_UP","TTbar_hadronic_UETUNE_UP"],
+      "UETUNE_DOWN" : ["TTbar_diLepton_UETUNE_DOWN","TTbar_diLepton_tau_UETUNE_DOWN","TTbar_singleLepton_UETUNE_DOWN","TTbar_hadronic_UETUNE_DOWN"],
+      "MATCH_UP" : ["TTbar_diLepton_MATCH_UP","TTbar_diLepton_tau_MATCH_UP","TTbar_singleLepton_MATCH_UP","TTbar_hadronic_MATCH_UP"],
+      "MATCH_DOWN" : ["TTbar_diLepton_MATCH_DOWN","TTbar_diLepton_tau_MATCH_DOWN","TTbar_singleLepton_MATCH_DOWN","TTbar_hadronic_MATCH_DOWN"],
+      "MTOP169p5" : ["TTbar_diLepton_MTOP169p5","TTbar_diLepton_tau_MTOP169p5","TTbar_singleLepton_MTOP169p5","TTbar_hadronic_MTOP169p5"],
+      "MTOP175p5" : ["TTbar_diLepton_MTOP175p5","TTbar_diLepton_tau_MTOP175p5","TTbar_singleLepton_MTOP175p5","TTbar_hadronic_MTOP175p5"],
+      "CR1" : ["TTbar_diLepton_CR1","TTbar_diLepton_tau_CR1","TTbar_singleLepton_CR1","TTbar_hadronic_CR1"],
+      "CR2" : ["TTbar_diLepton_CR2","TTbar_diLepton_tau_CR2","TTbar_singleLepton_CR2","TTbar_hadronic_CR2"],
+      "ERDON" : ["TTbar_diLepton_ERDON","TTbar_diLepton_tau_ERDON","TTbar_singleLepton_ERDON","TTbar_hadronic_ERDON"],
+      "TRIG_UP" : allMC,
+      "TRIG_DOWN" : allMC,
+      "MERENSCALE_UP" : allMC,
+      "MERENSCALE_DOWN" : allMC,
+      "MEFACSCALE_UP" : allMC,
+      "MEFACSCALE_DOWN" : allMC,
+      "PSISRSCALE_UP" : allMC,
+      "PSISRSCALE_DOWN" : allMC,
+      "PSFSRSCALE_UP" : allMC,
+      "PSFSRSCALE_DOWN" : allMC,
+      "BFRAG_UP" : allMC,
+      "BFRAG_DOWN" : allMC,
+      "BSEMILEP_UP" : allMC,
+      "BSEMILEP_DOWN" : allMC,
+      "PDF_ALPHAS_UP" : allMC,
+      "PDF_ALPHAS_DOWN" : allMC,
+      "TOP_PT" : allMC
+}
+
+
 class Range(object):
     def __init__(self, start, end):
         self.start = start
@@ -218,16 +276,28 @@ if __name__ == "__main__":
    parser.add_argument('--copyDCache', action='store_true', default=True, help="Copy nTuples stored on DCache to node before running the code.")
    parser.add_argument('--SingleSubmit', action='store_true' )
    parser.add_argument('--bTagEff_complete', action='store_true', default=False, help="Submits bTagEff jobs with all relevant systematics (use with care!)")
+   parser.add_argument('--distributions_complete', action='store_true', default=False, help="Submits distributions jobs with all relevant systematics (use with care!)")
 
    args = parser.parse_args()
    
-   if (args.bTagEff_complete == False):
+   if (args.bTagEff_complete == False and args.distributions_complete==False):
       submit(args,toProcess_mc,toProcess_data,toProcess_signal)
-   else:
+   elif (args.bTagEff_complete):
       if (args.m == "bTagEff"):
          for syst in bTagEff_sample_syst_dict.keys():
             args.s = syst
             submit(args,toProcess_mc,toProcess_data,toProcess_signal)
       else:
-         print "bTagEff_complete can also be used if bTagEff is selected as module!"
+         print "bTagEff_complete can only be used if bTagEff is selected as module!"
          exit(98)
+   elif (args.distributions_complete):
+      if (args.m == "" or args.m == "distributions"):
+         print "Submit nominal"
+         submit(args,allMC,allData2018,[])
+         for syst in sample_allSyst_dict.keys():
+            args.s = syst
+            submit(args,sample_allSyst_dict[syst],[],[])
+      else:
+         print "distributions_complete can only be used if distributions is selected as module!"
+         exit(98)
+   

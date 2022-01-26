@@ -178,9 +178,11 @@ def getHistPath_module(logPath):       # get correct histPath from logPath for m
     treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/output_framework/{}/{}/".format(info["year"],getNTupleVersion(info["year"]),info["module"],info["syst"])
     return treePath
     
-def mergeRequired(logPath,useTrees=True):       # check of there are more recent individual minTrees than a merged one
-    if useTrees:
+def mergeRequired(logPath,isDistributions=True,useTrees=True):       # check if there are more recent individual outputs than the merged one
+    if useTrees and isDistributions:
         fileList = glob.glob(getTreePath(logPath)+"/*")
+    elif isDistributions:
+        fileList = glob.glob(getHistPath(logPath)+"/*")
     else:
         fileList = glob.glob(getHistPath_module(logPath)+"/*")
     latestPath = max(fileList, key=os.path.getctime)
@@ -188,16 +190,75 @@ def mergeRequired(logPath,useTrees=True):       # check of there are more recent
         return False
     else:
         return True
+
+def getSytNameCombine(systName):    # correct syst name for comine (needs "Up" and "Down")
+    if systName=="Nominal" :
+        return ""
+    elif systName.find("UP")>0 :
+        return "_"+systName.replace("_UP","Up")
+    elif systName.find("DOWN")>0 :
+        return "_"+systName.replace("_DOWN","Down")
+    else:
+        return "_"+systName
+
+def mergeForCombine(logPath,histPath):
+    info = getInfoFromLogPath(logPath)
+    nTupleVersion = getNTupleVersion(info["year"])
+    outputDir = histPath+"../combine/"
+    outfile = "{}combineInput_{}.root".format(outputDir,nTupleVersion)
+    
+    filesToMerge = []    # keep track of files to merge
+    
+    if os.path.exists(outputDir) == False:      #create combine folder for output files
+        os.mkdir(outputDir)
+    
+    for systPath in glob.glob("logs/"+info["year"]+"/*"):   # loop for renaming histograms
+        distrLogPath = systPath+"/1.0/distributions/"
+        if(os.path.exists(distrLogPath)):
+            info_syst = getInfoFromLogPath(distrLogPath)
+            systNameCombine = getSytNameCombine(info_syst["syst"])  # get correct name of systematic for combine
+            print "-------Renaming {}---------------".format(info_syst["syst"])
+            mergedHistPath = getHistPath(distrLogPath)+"histograms_merged_{}.root".format(nTupleVersion)
+            f = TFile(mergedHistPath,"READ")
+            hists = {}
+            histNames = []
+            listAllObjectPaths(f,histNames)     # get all paths in root file
+            for histName in histNames:
+                hist = f.Get(histName)
+                hists[histName] = hist
+            f_out = TFile(outputDir+info_syst["syst"]+".root","RECREATE")
+            filesToMerge.append(outputDir+info_syst["syst"]+".root")
+            f_out.cd()
+            for histName in hists.keys():
+                folderName = histName.rsplit("/",1)[0]
+                folderName = folderName[1:]
+                sampleName = histName.split("/")[-1]
+                with utilities.Quiet(kError + 1):   # avoid spaming from root
+                    if f_out.cd(folderName) == False:
+                        f_out.mkdir(folderName)
+                        f_out.cd(folderName)
+                hists[histName].Write("{}{}".format(sampleName,systNameCombine))     # add syst name to histName
+            f_out.Close()
+            f.Close()
+    
+    print "-------Merging renamed histograms---------------"
+    if os.path.exists(outfile):
+        os.remove(outfile)
+    if sp.call(["hadd","-f",outfile]+filesToMerge,stdout=open(os.devnull, 'wb')):    # combine temp hists with hadd
+        sys.exit(1)
+    if sp.call(["chmod","a+rx",outfile],stdout=open(os.devnull, 'wb')):     # set rights for other to excess output file
+        sys.exit(1)
     
 
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("logPath", type=str, help='<Required> Path to log directory of jobs to merge')
+    parser.add_argument("logPath", type=str, nargs='?', default="logs/2018/Nominal/1.0/distributions/", help='<Required> Path to log directory of jobs to merge')
     parser.add_argument("--onlyTrees", action='store_true', help="Only minTrees are merged")
     parser.add_argument("--onlyHists", action='store_true', help="Only histograms are merged")
     parser.add_argument('--singleDataset', type=str, default="", help="Defines single dataset to merge (otherwise all samples are merged)")
     parser.add_argument("--mergeAllHists", action='store_true', default=True, help="Merge all hist of different datasets to one file")
+    parser.add_argument("--mergeForCombine", action='store_true', default=False, help="Merge all hist of different datasets and systematics for combine input")
     args = parser.parse_args()
     
     isDistributions = (args.logPath.find("distributions") > 0)
@@ -229,18 +290,21 @@ if __name__ == "__main__":
             if isComplete(args.logPath,dataset) == False:
                 print "Error:",dataset,"is not complete"
                 sys.exit(1)
+    
+    if (args.mergeForCombine==False):
+        for dataset in datasetList:
+                if isComplete(args.logPath,dataset):
+                    print "-------------Start merging", dataset, "----------------------"
+                    if args.onlyHists == False:
+                        mergeTree(dataset,args.logPath,treePath)
+                    if args.onlyTrees == False:
+                        mergeHist(dataset,args.logPath,histPath)
         
-    for dataset in datasetList:
-            if isComplete(args.logPath,dataset):
-                print "-------------Start merging", dataset, "----------------------"
-                if args.onlyHists == False:
-                    mergeTree(dataset,args.logPath,treePath)
-                if args.onlyTrees == False:
-                    mergeHist(dataset,args.logPath,histPath)
-    
-    mergeHists_forSamples(args.logPath,histPath,datasetList,["DrellYan_M10to50","DrellYan_NLO"],"DrellYan_comb")    # merge samples for datacards
-    mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","EGamma","MuonEG","SingleMuon"],"data_obs")    # merge samples for datacards
-    
-    if args.mergeAllHists and (isDistributions or isTriggerEff):
-        print "-------------Start merging all datasets to one histFile----------------------"
-        mergeAllHists(datasetList,args.logPath,histPath)
+        mergeHists_forSamples(args.logPath,histPath,datasetList,["DrellYan_M10to50","DrellYan_NLO"],"DrellYan_comb")    # merge samples for datacards
+        mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","EGamma","MuonEG","SingleMuon"],"data_obs")    # merge samples for datacards
+        
+        if args.mergeAllHists and (isDistributions or isTriggerEff):
+            print "-------------Start merging all datasets to one histFile----------------------"
+            mergeAllHists(datasetList,args.logPath,histPath)
+    elif(args.mergeForCombine):
+        mergeForCombine(args.logPath,histPath)

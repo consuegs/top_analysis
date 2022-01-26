@@ -190,13 +190,17 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
     
     return runningLogs
     
-def merge(distrLogPath,mergeAll=False):
+def merge(distrLogPath,mergeAll=False,onlyHist=True):
     if mergeAll:
         value = 1
     else: value = input("All jobs finished succesfully. For merging the outputs enter 1:\n")
     if value==1:
         print "merging output for "+distrLogPath
-        sp.call(["python","mergeOutputs.py",distrLogPath])
+        if onlyHist:
+            print "merging only hists"
+            sp.call(["python","mergeOutputs.py",distrLogPath,"--onlyHists"])
+        else:
+            sp.call(["python","mergeOutputs.py",distrLogPath])
     
 
 def summaryDistributionJobs(year,runningLogs,resubmit,mergeAll):
@@ -206,7 +210,7 @@ def summaryDistributionJobs(year,runningLogs,resubmit,mergeAll):
             status = checkStatusFromLog(distrLogPath,runningLogs.keys(),False,resubmit)
             if status[0]:
                 print colored(distrLogPath,"green",attrs=['bold'])
-                if mergeOutputs.mergeRequired(distrLogPath):
+                if mergeOutputs.mergeRequired(distrLogPath,True,False) and resubmit==False:
                     merge(distrLogPath,mergeAll)
             else:
                 systName = getSystFromOutFile(distrLogPath)
@@ -247,7 +251,7 @@ if __name__ == "__main__":
     if(args.checkCompleted != ""):
         if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list
             if checkStatusFromLog(args.checkCompleted,runningLogs.keys(),True,args.resubmit)[0]:
-                if mergeOutputs.mergeRequired(args.checkCompleted,isDistributions(args.checkCompleted)):
+                if mergeOutputs.mergeRequired(args.checkCompleted,isDistributions(args.checkCompleted),False):
                     merge(args.checkCompleted)
                 else:
                     print "No merge required"
