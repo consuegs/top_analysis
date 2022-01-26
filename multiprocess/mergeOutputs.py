@@ -192,14 +192,37 @@ def mergeRequired(logPath,isDistributions=True,useTrees=True):       # check if 
         return True
 
 def getSytNameCombine(systName):    # correct syst name for comine (needs "Up" and "Down")
+    
+    # fix naming for syst with own samples
     if systName=="Nominal" :
         return ""
     elif systName.find("UP")>0 :
         return "_"+systName.replace("_UP","Up")
     elif systName.find("DOWN")>0 :
         return "_"+systName.replace("_DOWN","Down")
+    elif systName in ["CR1","CR2","ERDON","MTOP169p5","MTOP175p5"]:
+        return ""
     else:
         return "_"+systName
+        
+
+def getSampleNameCombine(sampleName):
+    if sampleName.find("UETUNE")>0 :
+        if sampleName.find("UP")>0 :
+            return sampleName.replace("_UETUNE_UP","")
+        else:
+            return sampleName.replace("_UETUNE_DOWN","")
+    elif sampleName.find("MATCH")>0 :
+        if sampleName.find("UP")>0 :
+            return sampleName.replace("_MATCH_UP","")
+        else:
+            return sampleName.replace("_MATCH_DOWN","")
+    elif sampleName.find("MTOP169p5")>0 :
+        return sampleName.replace("MTOP169p5","")+"MTOPDown"
+    elif sampleName.find("MTOP175p5")>0 :
+        return sampleName.replace("MTOP175p5","")+"MTOPUp"
+    else:
+        return sampleName
 
 def mergeForCombine(logPath,histPath):
     info = getInfoFromLogPath(logPath)
@@ -226,8 +249,9 @@ def mergeForCombine(logPath,histPath):
             for histName in histNames:
                 hist = f.Get(histName)
                 hists[histName] = hist
-            f_out = TFile(outputDir+info_syst["syst"]+".root","RECREATE")
-            filesToMerge.append(outputDir+info_syst["syst"]+".root")
+            tempFileName = outputDir+info_syst["syst"]+".root"
+            f_out = TFile(tempFileName,"RECREATE")
+            filesToMerge.append(tempFileName)
             f_out.cd()
             for histName in hists.keys():
                 folderName = histName.rsplit("/",1)[0]
@@ -237,7 +261,7 @@ def mergeForCombine(logPath,histPath):
                     if f_out.cd(folderName) == False:
                         f_out.mkdir(folderName)
                         f_out.cd(folderName)
-                hists[histName].Write("{}{}".format(sampleName,systNameCombine))     # add syst name to histName
+                hists[histName].Write("{}{}".format(getSampleNameCombine(sampleName),systNameCombine))     # add syst name to histName
             f_out.Close()
             f.Close()
     
