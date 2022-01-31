@@ -124,7 +124,7 @@ def get_dataBasePath_dCache(year,dcap=False):      #return dataBasePath on dCach
    else:
       return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
    
-def submit(args,toProcess_mc,toProcess_data,toProcess_signal):
+def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=False):
    print "Running "+args.m
    print "Systematic: "+args.s
 
@@ -155,10 +155,11 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal):
       dataBasePath = ""
    
    # Ask if selected settings are correct
-   correctSamples = input("If you want to continue with the selected setting, enter 1:\n")
-   if (correctSamples != 1):
-      print "Abort Submission"
-      return
+   if disableConfirm==False:
+      correctSamples = input("If you want to continue with the selected setting, enter 1:\n")
+      if (correctSamples != 1):
+         print "Abort Submission"
+         return
 
    # For single submit check if only one dataset is selected and then ask for file nr
    if (args.SingleSubmit and ((len(toProcess_mc)+len(toProcess_data)+len(toProcess_signal))==1)):
@@ -277,10 +278,12 @@ if __name__ == "__main__":
    parser.add_argument('--SingleSubmit', action='store_true' )
    parser.add_argument('--bTagEff_complete', action='store_true', default=False, help="Submits bTagEff jobs with all relevant systematics (use with care!)")
    parser.add_argument('--distributions_complete', action='store_true', default=False, help="Submits distributions jobs with all relevant systematics (use with care!)")
+   parser.add_argument('--pdf_complete', action='store_true', default=False, help="Submits distributions jobs with all pdf shifts (use with care!)")
+   parser.add_argument('--noConfirmation', action='store_true', default=False, help="Disables keyboard input befor submission")
 
    args = parser.parse_args()
    
-   if (args.bTagEff_complete == False and args.distributions_complete==False):
+   if (args.bTagEff_complete == False and args.distributions_complete==False and args.pdf_complete==False):
       submit(args,toProcess_mc,toProcess_data,toProcess_signal)
    elif (args.bTagEff_complete):
       if (args.m == "bTagEff"):
@@ -300,4 +303,14 @@ if __name__ == "__main__":
       else:
          print "distributions_complete can only be used if distributions is selected as module!"
          exit(98)
+   elif (args.pdf_complete):
+      if (args.m == "" or args.m == "distributions"):
+         for varNumber in xrange(1,51):
+            for var in ["UP","DOWN"]:
+               args.s = "PDF_{}_{}".format(varNumber,var)
+               submit(args,["TTbar_diLepton"],[],[],args.noConfirmation)
+      else:
+         print "pdf_complete can only be used if distributions is selected as module!"
+         exit(98)
+      
    

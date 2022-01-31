@@ -154,6 +154,8 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
     runningLogs = {}
 
     for job in jobs:
+        if job["Args"]=="0":
+            continue
         if job["Cmd"].split("/")[-1]=="run.sh":
             name = getNameFromFile(job["Args"])
         else:
