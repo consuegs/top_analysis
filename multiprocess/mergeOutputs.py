@@ -191,7 +191,7 @@ def mergeRequired(logPath,isDistributions=True,useTrees=True):       # check if 
     else:
         return True
 
-def getSytNameCombine(systName):    # correct syst name for comine (needs "Up" and "Down")
+def getSytNameCombine(systName):    # correct syst name for combine (needs "Up" and "Down")
     
     # fix naming for syst with own samples
     if systName=="Nominal" :
@@ -202,11 +202,13 @@ def getSytNameCombine(systName):    # correct syst name for comine (needs "Up" a
         return "_"+systName.replace("_DOWN","Down")
     elif systName in ["CR1","CR2","ERDON","MTOP169p5","MTOP175p5"]:
         return ""
+    elif systName=="TOP_PT":
+        return "_"+systName+"Up"
     else:
         return "_"+systName
         
 
-def getSampleNameCombine(sampleName):
+def getSampleNameCombine(sampleName):       # needed to correctly handle SampleNames of alternative Samples for combine
     if sampleName.find("UETUNE")>0 :
         if sampleName.find("UP")>0 :
             return sampleName.replace("_UETUNE_UP","")
@@ -221,6 +223,8 @@ def getSampleNameCombine(sampleName):
         return sampleName.replace("MTOP169p5","")+"MTOPDown"
     elif sampleName.find("MTOP175p5")>0 :
         return sampleName.replace("MTOP175p5","")+"MTOPUp"
+    elif any(x in sampleName for x in["CR1","CR2","ERDON"]):    # one sided uncertainties have Up=Shift and Down=Nominal
+        return sampleName+"Up"
     else:
         return sampleName
 
@@ -239,7 +243,6 @@ def mergeForCombine(logPath,histPath):
         distrLogPath = systPath+"/1.0/distributions/"
         if(os.path.exists(distrLogPath)):
             info_syst = getInfoFromLogPath(distrLogPath)
-            systNameCombine = getSytNameCombine(info_syst["syst"])  # get correct name of systematic for combine
             print "-------Renaming {}---------------".format(info_syst["syst"])
             mergedHistPath = getHistPath(distrLogPath)+"histograms_merged_{}.root".format(nTupleVersion)
             f = TFile(mergedHistPath,"READ")
@@ -249,20 +252,33 @@ def mergeForCombine(logPath,histPath):
             for histName in histNames:
                 hist = f.Get(histName)
                 hists[histName] = hist
-            tempFileName = outputDir+info_syst["syst"]+".root"
-            f_out = TFile(tempFileName,"RECREATE")
-            filesToMerge.append(tempFileName)
-            f_out.cd()
-            for histName in hists.keys():
-                folderName = histName.rsplit("/",1)[0]
-                folderName = folderName[1:]
-                sampleName = histName.split("/")[-1]
-                with utilities.Quiet(kError + 1):   # avoid spaming from root
-                    if f_out.cd(folderName) == False:
-                        f_out.mkdir(folderName)
-                        f_out.cd(folderName)
-                hists[histName].Write("{}{}".format(getSampleNameCombine(sampleName),systNameCombine))     # add syst name to histName
-            f_out.Close()
+            
+            tempFileNames = {}
+            tempFileNames[info_syst["syst"]] = outputDir+info_syst["syst"]+".root"
+            if (info_syst["syst"]=="Nominal"):      # one sided syst need Down=Nominal
+                tempFileNames[info_syst["syst"]] = outputDir+info_syst["syst"]+".root"
+                for syst in ["CR1","CR2","ERDON","TOP_PT"]:
+                    tempFileNames[syst] = outputDir+syst+"_DOWN.root"
+            
+            for syst,tempFileName in tempFileNames.items():
+                if (info_syst["syst"]!=syst):   # for one sided down shift
+                    systNameCombine = "_"+syst+"Down"
+                else:
+                    systNameCombine = getSytNameCombine(info_syst["syst"])  # get correct name of systematic for combine
+                f_out = TFile(tempFileName,"RECREATE")
+                filesToMerge.append(tempFileName)
+                f_out.cd()
+                for histName in hists.keys():
+                    folderName = histName.rsplit("/",1)[0]
+                    folderName = folderName[1:]
+                    sampleName = histName.split("/")[-1]
+                    with utilities.Quiet(kError + 1):   # avoid spaming from root
+                        if f_out.cd(folderName) == False:
+                            f_out.mkdir(folderName)
+                            f_out.cd(folderName)
+                    hists[histName].Write("{}{}".format(getSampleNameCombine(sampleName),systNameCombine))     # add syst name to histName
+                f_out.Close()
+            
             f.Close()
     
     print "-------Merging renamed histograms---------------"
