@@ -863,10 +863,15 @@ bool Systematic::checkTopPTreweighting(const Systematic & systematic){
 int Systematic::numberOfWeightTypes(){
     int count = 0;
     for (const Type type : weightTypes){
-        if (std::find(upDownTypes.begin(), upDownTypes.end(), type) != upDownTypes.end()){
-            count +=2;
+        if (type == pdf){
+            count +=100;
         }
-        else count++;
+        else{
+            if (std::find(upDownTypes.begin(), upDownTypes.end(), type) != upDownTypes.end()){
+                count +=2;
+            }
+            else count++;
+        }
     }
     return count;
 }

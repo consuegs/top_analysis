@@ -498,7 +498,9 @@ namespace Systematic{
                 
         eleScale,eleSmearingPhi,eleSmearingRho,eleScaleSmearing,
         muonScaleStat,muonScaleZpt,muonScaleEwk,muonScaleDeltaM,muonScaleEwk2,muonScale,
-        unclustered
+        unclustered,
+        
+        pdf
     };
     
     ///Define systematics that are applied by varying the nominal MC weight
@@ -506,7 +508,7 @@ namespace Systematic{
         meScale,meFacScale,meRenScale,
         psISRScale,psFSRScale,
         bFrag,bSemilep,
-        alphasPdf,
+        alphasPdf,pdf
     };
     
     ///Define systematics that require rescaling of lumi weight
@@ -540,7 +542,7 @@ namespace Systematic{
         meScale,meFacScale,meRenScale,
         psISRScale,psFSRScale,
         bFrag,bSemilep,
-        alphasPdf,
+        alphasPdf,pdf,
         pu,
         topPt,
         lumi

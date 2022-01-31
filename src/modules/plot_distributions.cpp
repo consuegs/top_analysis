@@ -49,12 +49,13 @@ struct distr2D {
 class systHists
 {
    public:
-      systHists(TString const &systematicName, TString filePath, TString const &histPath, std::vector<TString> const &datasets, std::vector<TString> const &datasets_ttBar):
+      systHists(TString const &systematicName, TString filePath, TString const &histPath, std::vector<TString> const &datasets, std::vector<TString> const &datasets_ttBar, std::vector<TString> const &datasets_ttBar2L):
       systematic_(Systematic::Systematic(systematicName)),
       hists_(hist::Histograms<TH1F>(datasets)),
       systematicName_(systematicName),
       datasets_(datasets),
-      datasets_ttBar_(datasets_ttBar)
+      datasets_ttBar_(datasets_ttBar),
+      datasets_ttBar2L_(datasets_ttBar2L)
       {
          const std::vector<Systematic::Type> typeVec = Systematic::fileIndependentTypes;
          if (std::find(typeVec.begin(), typeVec.end(), systematic_.type()) == typeVec.end()){
@@ -87,6 +88,13 @@ class systHists
             datasets_ = datasets_ttBar;
          }
          
+         // Adapt datasets for pdf unc. since only ttbar_dilepton is used
+         if (systematic_.type() == Systematic::pdf){
+            datasets_ = datasets_ttBar2L_;
+            datasets_ttBar_ = datasets_ttBar2L_;
+            onlyTTbar2L = true;
+         }
+         
       }
       
       Systematic::Systematic systematic_;
@@ -94,11 +102,13 @@ class systHists
       hist::Histograms<TH1F> hists_;
       std::vector<TString> datasets_;
       std::vector<TString> datasets_ttBar_;
+      std::vector<TString> datasets_ttBar2L_;
       TString const systematicName_;
       float sf_ = 1.0;
       bool hasRootFile_ = true;
       bool altSampleType = false;
       bool onlyTTbar = false;
+      bool onlyTTbar2L = false;
 };
 
 //Import hists for Nominal and systematics
@@ -208,13 +218,21 @@ std::pair<TH1F*,TH1F*> getTotalSyst(TH1F* const &nominal, std::vector<systHists*
    TH1F* tempSys;
    TH1F tempShift;
    TH1F* nominal_ttbar;
+   TH1F* nominal_ttbar2L;
    for (auto &current : systHists_vec){
       if (current->systematic_.type() == Systematic::nominal || current->systematic_.type() == Systematic::met40Cut){  //Store sum of ttBar for syst. with alt. samples
-         if (sample == "") nominal_ttbar = current->hists_.getSummedHist(loc,current->datasets_ttBar_);
-         else nominal_ttbar = current->hists_.getHistogram(loc,sample);
+         if (sample == "") {
+            nominal_ttbar = current->hists_.getSummedHist(loc,current->datasets_ttBar_);
+            nominal_ttbar2L = current->hists_.getSummedHist(loc,current->datasets_ttBar2L_);   //for PDF unc.
+         }
+         else {
+            nominal_ttbar = current->hists_.getHistogram(loc,sample);
+            nominal_ttbar2L = current->hists_.getHistogram(loc,sample);
+         }
          continue;
+         
       }
-      
+            
       if (sample == ""){      //Option to get shift for individual sample
          tempSys = current->hists_.getSummedHist(loc,current->datasets_);
       }   
@@ -224,6 +242,7 @@ std::pair<TH1F*,TH1F*> getTotalSyst(TH1F* const &nominal, std::vector<systHists*
       else tempSys = nominal_ttbar;
             
       if (current->altSampleType || current->onlyTTbar) tempShift= phys::getSystShift(*nominal_ttbar,*tempSys);  // Choose correct reference
+      else if (current->onlyTTbar2L) tempShift= phys::getSystShift(*nominal_ttbar2L,*tempSys);  // for PDF unc.
       else tempShift= phys::getSystShift(*nominal,*tempSys);
       
       if(envelope){
@@ -350,28 +369,44 @@ void fixAxis2D(TAxis* axis){     // currently only works for 2D SR with 6x11 bin
       axis->ChangeLabel(i*4+3,-1,-1,-1,-1,-1," ");
       axis->ChangeLabel(i*4+4,-1,-1,-1,-1,-1,"300");
    }
+   // ~axis->SetNdivisions(24);
+   // ~axis->ChangeLabel(25,-1,-1,-1,-1,-1," ");
+   // ~for (int i=0; i<6; i++){
+      // ~axis->ChangeLabel(i*4+1,-1,-1,-1,-1,-1,"  ");
+      // ~axis->ChangeLabel(i*4+2,-1,-1,-1,-1,-1,"100");
+      // ~axis->ChangeLabel(i*4+3,-1,-1,-1,-1,-1," ");
+      // ~axis->ChangeLabel(i*4+4,-1,-1,-1,-1,-1,"300");
+   // ~}
 }
 
 void drawVertLines2D(float const &lowerEnd, float const &upperEnd,bool text){
    TLine * aline = new TLine();
    TLatex * atext = new TLatex();
-   atext->SetTextSize(0.03);
+   atext->SetTextSize(0.025);
    aline->SetLineWidth(2);
    for (int i=1; i<3; i++){
       aline->DrawLine(i*400,lowerEnd,i*400,upperEnd);
    }
    if (text){
-      atext->DrawLatex(100,0.2*upperEnd,"|#Delta#phi|<0.35");
-      atext->DrawLatex(475,0.2*upperEnd,"0.7<|#Delta#phi|<1.4");
-      atext->DrawLatex(875,0.2*upperEnd,"1.4<|#Delta#phi|");
-      // ~atext->DrawLatex(1275,0.2*upperEnd,"1.05<|#Delta#phi|<1.4");
-      // ~atext->DrawLatex(1675,0.2*upperEnd,"1.4<|#Delta#phi|<2.27");
-      // ~atext->DrawLatex(2075,0.2*upperEnd,"2.27<|#Delta#phi|");
+      atext->DrawLatex(150,1.7*lowerEnd,"|#Delta#phi|<0.35");
+      atext->DrawLatex(500,1.7*lowerEnd,"0.7<|#Delta#phi|<1.4");
+      atext->DrawLatex(900,1.7*lowerEnd,"1.4<|#Delta#phi|");
    }
+   // ~for (int i=1; i<6; i++){
+      // ~aline->DrawLine(i*400,lowerEnd,i*400,upperEnd);
+   // ~}
+   // ~if (text){
+      // ~atext->DrawLatex(100,1.7*lowerEnd,"|#Delta#phi|<0.35");
+      // ~atext->DrawLatex(450,1.7*lowerEnd,"0.35<|#Delta#phi|<0.7");
+      // ~atext->DrawLatex(850,1.7*lowerEnd,"0.7<|#Delta#phi|<1.05");
+      // ~atext->DrawLatex(1250,1.7*lowerEnd,"1.05<|#Delta#phi|<1.4");
+      // ~atext->DrawLatex(1650,1.7*lowerEnd,"1.4<|#Delta#phi|<2.27");
+      // ~atext->DrawLatex(2050,1.7*lowerEnd,"2.27<|#Delta#phi|");
+   // ~}
 }
 
 void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histograms<TH1F>* const &hs, std::vector<TString> const &mcSamples_merged, 
-                     std::map<const TString,Color_t> const & colormap, std::vector<systHists*> const &systHists_vec, io::RootFileSaver const &saver, bool is2D=false){
+                     std::map<const TString,Color_t> const & colormap, std::vector<systHists*> const &systHists_vec, io::RootFileSaver const &saver, bool plotStatUncExpData=false, bool is2D=false){
    TCanvas can;
    can.SetLogy();
    gfx::SplitCan sp_can;
@@ -465,12 +500,21 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    TH1F* hist_mc_totalDown = (TH1F*)syst.second->Clone();
    TH1F* hist_mc_totalUp = (TH1F*)syst.first->Clone();
    
+   TH1F* hist_mc_expDataStatDown = (TH1F*)hist_mc->Clone();
+   TH1F* hist_mc_expDataStatUp = (TH1F*)hist_mc->Clone();
+   
    for (int i=0; i<=hist_mc_totalUp->GetNbinsX(); i++){
       float stat2 = hist_mc->GetBinError(i)*hist_mc->GetBinError(i);
       float down2 = hist_mc_totalDown->GetBinContent(i)*hist_mc_totalDown->GetBinContent(i);
       float up2 = hist_mc_totalUp->GetBinContent(i)*hist_mc_totalUp->GetBinContent(i);
       hist_mc_totalDown->SetBinContent(i,sqrt(stat2+down2));
       hist_mc_totalUp->SetBinContent(i,sqrt(stat2+up2));
+      
+      if (plotStatUncExpData) {
+         float binContent = hist_mc->GetBinContent(i);
+         hist_mc_expDataStatDown->SetBinContent(i,binContent-sqrt(binContent));
+         hist_mc_expDataStatUp->SetBinContent(i,binContent+sqrt(binContent));
+      }
    }
    
    hist_mc_totalDown->Add(hist_mc,-1.);
@@ -480,7 +524,12 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    TH1F ratio_mc_totalDown = hist::getRatio(*hist_mc_totalDown,*hist_mc,"data/MC",hist::ONLY1);
    TH1F ratio_mc_totalUp = hist::getRatio(*hist_mc_totalUp,*hist_mc,"data/MC",hist::ONLY1);
    
+   TH1F ratio_mc_expDataStatDown = hist::getRatio(*hist_mc_expDataStatDown,*hist_mc,"data/MC",hist::ONLY1);
+   TH1F ratio_mc_expDataStatUp = hist::getRatio(*hist_mc_expDataStatUp,*hist_mc,"data/MC",hist::ONLY1);
+   
    TGraphAsymmErrors totalUncGraphRatio = getErrorGraph(&ratio_mc_totalUp,&ratio_mc_totalDown,&ratio_mc,false);
+   
+   TGraphAsymmErrors expDataStatRatio = getErrorGraph(&ratio_mc_expDataStatUp,&ratio_mc_expDataStatDown,&ratio_mc,false);
    
    if(sPresel.Contains("cutflow")){    // set cutflow specific axis labels
       ratio_mc.GetXaxis()->SetBinLabel(1,"DiLepton");
@@ -501,14 +550,18 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    ratio_mc.SetMaximum(1.35);
    ratio_mc.SetMinimum(0.65);
    totalUncGraphRatio.SetFillColor(kGray);
+   expDataStatRatio.SetFillColor(kBlue);
    systGraphRatio.SetFillColor(kGray+3);
    systGraphRatio.SetFillStyle(3004);
+   expDataStatRatio.SetFillStyle(3005);
+   expDataStatRatio.SetLineWidth(0);
    systGraphRatio.SetLineWidth(0);
    systGraphRatio.SetMarkerSize(0);
    ratio_mc.SetMarkerSize(0);
    ratio_mc.Draw("e2");    // only for axis
    totalUncGraphRatio.Draw("same e2");
    systGraphRatio.Draw("same e2");
+   if(plotStatUncExpData) expDataStatRatio.Draw("same e2");
    ratio_mc.Draw("axis same");
    // ~ratio.SetMarkerSize(4);
    if(plotData) ratio.Draw("pe1 same");
@@ -521,6 +574,7 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    gfx::LegendEntries le_low;
    le_low.append(totalUncGraphRatio,"#sigma_{tot.}","f");
    le_low.append(systGraphRatio,"#sigma_{syst.}","f");
+   if(plotStatUncExpData) le_low.append(expDataStatRatio,"#sigma_{stat.(exp. data)}","f");
    TLegend leg_low=le_low.buildLegend(.2,.8,0.5,0.95,2);
    leg_low.Draw();
    
@@ -598,7 +652,7 @@ void run()
    }
    std::vector<TString> samplesToPlot = util::addVectors(mcSamples,dataSamples);
    
-   std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","CR_ENVELOPE_IND_UP","CR_ENVELOPE_IND_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN",};
+   // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","CR_ENVELOPE_IND_UP","CR_ENVELOPE_IND_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT"};
    // ~std::vector<TString> systToPlot = {"Nominal","ELECTRON_ID_UP","ELECTRON_ID_DOWN","MUON_ID_UP","MUON_ID_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PU_UP","PU_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PU_DOWN"};
@@ -621,7 +675,7 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","MTOP_IND_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MATCH_UP","MATCH_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MATCH_DOWN"};
-   // ~std::vector<TString> systToPlot = {"Nominal","MERENSCALE_DOWN"};
+   std::vector<TString> systToPlot = {"Nominal","PDF_1_UP"};
    // ~std::vector<TString> systToPlot = {"Nominal"};
    
    // 1D plots
@@ -636,7 +690,8 @@ void run()
          // ~vecDistr.push_back({selection+channel,"Lep1_pt",0.,480.,40});
          // ~vecDistr.push_back({selection+channel,"Lep2_pt",0.,480.,40});
          // ~vecDistr.push_back({selection+channel,"MET",0.,500.,50});
-         vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,40,70,110,170,260,370,500}});
+         // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,40,70,110,170,260,370,500}});
+         vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,20,40,55,70,90,110,140,170,215,260,315,370,435,500}});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,40});
          // ~vecDistr.push_back({selection+channel,"met1000",0.,1000.,50});
@@ -650,7 +705,8 @@ void run()
          // ~vecDistr.push_back({selection+channel,"dPhiMETleadJet",0.,3.2,32});
          // ~vecDistr.push_back({selection+channel,"dPhiMETlead2Jet",0.,3.2,32});
          // ~vecDistr.push_back({selection+channel,"dphi_metNearLep",0.,3.2,32});
-         vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi",0.,3.2,8});
+         // ~vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi",0.,3.2,8});
+         vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi",0.,3.2,16});
          // ~vecDistr.push_back({selection+channel,"COSdphi_metNearLep",-1.,1,50});
          // ~vecDistr.push_back({selection+channel,"SINdphi_metNearLep",0.,1,50});
          // ~vecDistr.push_back({selection+channel,"dPhiMETbJet",0.,3.2,32});
@@ -719,6 +775,7 @@ void run()
    for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,40,80,120,160,230,400},{0,0.7,1.4,3.14}});
+         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,20,40,60,80,100,120,140,160,195,230,400},{0,0.35,0.7,1.05,1.4,2.27,3.14}});
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,10,0.,3.2,8});
       }
    }
@@ -726,7 +783,7 @@ void run()
    // Setup systematics
    std::vector<systHists*> systHists_vec;
    for (TString syst : systToPlot){
-      systHists* temp = new systHists(syst,TString::Format("multiHists/%s/histograms_merged_%s.root",syst.Data(),cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),(syst=="Nominal" || syst=="met40Cut")? samplesToPlot : mcSamples,(syst=="CR_ENVELOPE_UP" || syst=="CR_ENVELOPE_DOWN" || syst=="MTOP_DOWN" || syst=="MTOP_UP")? signalSamples : ttbarSamples);
+      systHists* temp = new systHists(syst,TString::Format("multiHists/%s/histograms_merged_%s.root",syst.Data(),cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),(syst=="Nominal" || syst=="met40Cut")? samplesToPlot : mcSamples,(syst=="CR_ENVELOPE_UP" || syst=="CR_ENVELOPE_DOWN" || syst=="MTOP_DOWN" || syst=="MTOP_UP")? signalSamples : ttbarSamples, signalSamples);
       systHists_vec.push_back(temp);
    }
    
@@ -794,12 +851,12 @@ void run()
    
    // 1D plotting
    for (auto &distr_:vecDistr){
-      plotHistograms(distr_.path,distr_.name,hs,mcSamples_merged,colormap,systHists_vec,saver);
+      plotHistograms(distr_.path,distr_.name,hs,mcSamples_merged,colormap,systHists_vec,saver,true,false);
    }
    
    // 2D plotting
    for (auto &distr_:vecDistr2D){
-      plotHistograms(distr_.path,distr_.name,hs,mcSamples_merged,colormap,systHists_vec,saver,true);
+      plotHistograms(distr_.path,distr_.name,hs,mcSamples_merged,colormap,systHists_vec,saver,true,true);
    }
          
    // ~}
