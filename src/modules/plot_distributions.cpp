@@ -89,7 +89,7 @@ class systHists
          }
          
          // Adapt datasets for pdf unc. since only ttbar_dilepton is used
-         if (systematic_.type() == Systematic::pdf){
+         if (systematic_.type() == Systematic::pdf || systematic_.type() == Systematic::pdf_envelope){
             datasets_ = datasets_ttBar2L_;
             datasets_ttBar_ = datasets_ttBar2L_;
             onlyTTbar2L = true;
@@ -326,7 +326,8 @@ void printUncBreakDown(hist::Histograms<TH1F>* hs, std::vector<systHists*> &syst
             if (systHists_vec[i]->systematic_.type_str()==systHists_vec[i+1]->systematic_.type_str()){     // check if up and down shift
                std::vector<systHists*> tempVec = {systHists_vec[0],systHists_vec[i],systHists_vec[i+1]};
                std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat);
-               printUnc(systHists_vec[i]->systematic_.type_str(),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
+               // ~printUnc(systHists_vec[i]->systematic_.type_str(),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
+               printUnc(systHists_vec[i]->systematic_.type_str()+std::to_string(systHists_vec[i]->systematic_.variationNumber()),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
                i++;
                continue;
             }
@@ -675,8 +676,14 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","MTOP_IND_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MATCH_UP","MATCH_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MATCH_DOWN"};
-   std::vector<TString> systToPlot = {"Nominal","PDF_1_UP"};
+   // ~std::vector<TString> systToPlot = {"Nominal","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN"};
+   std::vector<TString> systToPlot = {"Nominal","PDF_50_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal"};
+   
+   // ~for (int i=1; i<=50; i++){
+      // ~systToPlot.push_back("PDF_"+std::to_string(i)+"_UP");
+      // ~systToPlot.push_back("PDF_"+std::to_string(i)+"_DOWN");
+   // ~}
    
    // 1D plots
    std::vector<distr> vecDistr;

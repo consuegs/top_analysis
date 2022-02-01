@@ -9,6 +9,7 @@
 
 #include <TFile.h>
 #include <TF1.h>
+#include <memory>
 
 Config const &cfg=Config::get();
 
@@ -147,12 +148,58 @@ void produce_topmass()
    histSaver_up.closeFile();
    
 }
+
+void produce_PDF_envelope(){
+   
+   std::vector<std::unique_ptr<io::RootFileReader>> readerVec;
+   
+   for (int i=1; i<=50; i++){    // create reader for each shift
+      // ~io::RootFileReader* tempReader_up = new io::RootFileReader(TString::Format("multiHists/PDF_%i_UP/histograms_merged_%s.root",i,cfg.treeVersion.Data()));
+      // ~io::RootFileReader* tempReader_down = new io::RootFileReader(TString::Format("multiHists/PDF_%i_UP/histograms_merged_%s.root",i,cfg.treeVersion.Data()));
+      
+      // ~readerVec.push_back(tempReader_up);
+      // ~readerVec.push_back(tempReader_down);
+      readerVec.push_back(std::make_unique<io::RootFileReader>(TString::Format("multiHists/PDF_%i_UP/histograms_merged_%s.root",i,cfg.treeVersion.Data())));
+      readerVec.push_back(std::make_unique<io::RootFileReader>(TString::Format("multiHists/PDF_%i_DOWN/histograms_merged_%s.root",i,cfg.treeVersion.Data())));
+   }
+   
+   io::RootFileReader histReader_nom(TString::Format("multiHists/%s/histograms_merged_%s.root","Nominal",cfg.treeVersion.Data()));
+   
+   io::RootFileSaver histSaver_down(TString::Format("multiHists/%s/histograms_merged_%s.root","PDF_ENVELOPE_DOWN",cfg.treeVersion.Data()),"");
+   io::RootFileSaver histSaver_up(TString::Format("multiHists/%s/histograms_merged_%s.root","PDF_ENVELOPE_UP",cfg.treeVersion.Data()),"");
+   
+   for (auto path : readerVec[0]->listPaths(true)){   // loop over all histograms
+      TH1F* hist_nom = histReader_nom.read<TH1F>(path+"/TTbar_diLepton");
+      std::vector<TH1F*> vecShiftHist;
+      
+      for (int i=0; i<readerVec.size(); i++){    // read histograms for pdf shifts
+         vecShiftHist.push_back(readerVec[i]->read<TH1F>(path+"/TTbar_diLepton"));
+      }
+      
+      std::pair<TH1F*,TH1F*> envelopes = hist::getEnvelope(hist_nom,vecShiftHist);
+      
+      path.ReplaceAll("/distr","distr");
+      histSaver_down.save(*(envelopes.first),path+"/TTbar_diLepton");
+      histSaver_up.save(*(envelopes.second),path+"/TTbar_diLepton");
+      
+   }
+   
+   //close Files
+   // ~histReader_nom.closeFile();
+   // ~histSaver_down.closeFile();
+   // ~histSaver_up.closeFile();
+   // ~for (int i=0; i<readerVec.size(); i++){
+      // ~delete readerVec[i];
+   // ~}
+}
+   
    
 
 extern "C"
 void run()
 {   
-   produce_cr_envelope();
-   produce_topmass();
+   // ~produce_cr_envelope();
+   // ~produce_topmass();
+   produce_PDF_envelope();
   
 }

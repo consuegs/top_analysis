@@ -140,7 +140,7 @@ double Datasubset::getNgen_syst(const Systematic::Systematic& systematic) const
             break;
          case Systematic::pdf:
             if (isPythiaOnly) return Ngen;  //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? 10+(2*systematic.variationNumber()) : 11+(2*systematic.variationNumber()));
+            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? 9+(2*systematic.variationNumber()) : 10+(2*systematic.variationNumber()));
             break;
          case Systematic::psISRScale:
             return this->readNgenFromHist("hSystMCweight_PS_",(upVariation)? 28 : 27);

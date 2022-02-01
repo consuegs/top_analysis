@@ -67,7 +67,7 @@ const float mcWeights::getMCweight(const float &nominalWeight, const std::vector
             break;
          case Systematic::pdf:
             if (isPythiaOnly_) return nominalWeight;  //no PDF weights available for pythiaOnly
-            else return w_pdf[(upVariation)? 10+(2*systematic_.variationNumber())-1 : 11+(2*systematic_.variationNumber())-1]*nominalWeight;
+            else return w_pdf[(upVariation)? 9+(2*systematic_.variationNumber())-1 : 10+(2*systematic_.variationNumber())-1]*nominalWeight;
             break;
          case Systematic::psISRScale:
             return w_ps[(upVariation)? 28-1 : 27-1]*nominalWeight;
