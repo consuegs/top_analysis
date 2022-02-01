@@ -228,10 +228,11 @@ def getSampleNameCombine(sampleName):       # needed to correctly handle SampleN
     else:
         return sampleName
 
-def mergeForCombine(logPath,histPath):
+def mergeForCombine(logPath,histPath,sampleList):
     info = getInfoFromLogPath(logPath)
     nTupleVersion = getNTupleVersion(info["year"])
-    outputDir = histPath+"../combine/"
+    #  ~outputDir = histPath+"../combine/"
+    outputDir = histPath+"../combine_test/"
     outfile = "{}combineInput_{}.root".format(outputDir,nTupleVersion)
     
     filesToMerge = []    # keep track of files to merge
@@ -239,7 +240,7 @@ def mergeForCombine(logPath,histPath):
     if os.path.exists(outputDir) == False:      #create combine folder for output files
         os.mkdir(outputDir)
     
-    for systPath in glob.glob("logs/"+info["year"]+"/*"):   # loop for renaming histograms
+    for systPath in glob.glob("logs/"+info["year"]+"/*"):   # loop for renaming and merging histograms
         distrLogPath = systPath+"/1.0/distributions/"
         if(os.path.exists(distrLogPath)):
             info_syst = getInfoFromLogPath(distrLogPath)
@@ -250,8 +251,16 @@ def mergeForCombine(logPath,histPath):
             histNames = []
             listAllObjectPaths(f,histNames)     # get all paths in root file
             for histName in histNames:
-                hist = f.Get(histName)
-                hists[histName] = hist
+                histNameSplitted = histName.split("/")
+                if histNameSplitted[1] != "distributions100.0" or histNameSplitted[2] != "baseline":     # only store relevant histograms with full stat.
+                    continue
+                sampleName = histName.split("/")[-1]
+                strippedSampleName = sampleName.replace("_"+info_syst["syst"],"")   # only store processes needed for combine
+                if strippedSampleName not in sampleList:
+                    continue
+                else:
+                    hist = f.Get(histName)
+                    hists[histName] = hist
             
             tempFileNames = {}
             tempFileNames[info_syst["syst"]] = outputDir+info_syst["syst"]+".root"
@@ -272,11 +281,13 @@ def mergeForCombine(logPath,histPath):
                     folderName = histName.rsplit("/",1)[0]
                     folderName = folderName[1:]
                     sampleName = histName.split("/")[-1]
+                    outputHistName = "{}{}".format(getSampleNameCombine(sampleName),systNameCombine)     # add syst name to histName
+                    
                     with utilities.Quiet(kError + 1):   # avoid spaming from root
                         if f_out.cd(folderName) == False:
                             f_out.mkdir(folderName)
                             f_out.cd(folderName)
-                    hists[histName].Write("{}{}".format(getSampleNameCombine(sampleName),systNameCombine))     # add syst name to histName
+                    hists[histName].Write(outputHistName)
                 f_out.Close()
             
             f.Close()
@@ -340,11 +351,19 @@ if __name__ == "__main__":
                     if args.onlyTrees == False:
                         mergeHist(dataset,args.logPath,histPath)
         
+        
         mergeHists_forSamples(args.logPath,histPath,datasetList,["DrellYan_M10to50","DrellYan_NLO"],"DrellYan_comb")    # merge samples for datacards
-        mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","EGamma","MuonEG","SingleMuon"],"data_obs")    # merge samples for datacards
+        mergeHists_forSamples(args.logPath,histPath,datasetList,["TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"],"TTbar_other")
+        mergeHists_forSamples(args.logPath,histPath,datasetList,["WJetsToLNu","WW","WZ","ZZ","ttZ_QQ","ttZ_2L","ttW"],"otherBKG")
+        mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","EGamma","MuonEG","SingleMuon"],"data_obs")
+        
+        altSampleNames = ["CR1","CR2","ERDON","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5"]    # handle alt. sample for datacards
+        if any(x in args.logPath for x in altSampleNames):
+            info = getInfoFromLogPath(args.logPath)
+            mergeHists_forSamples(args.logPath,histPath,datasetList,["TTbar_diLepton_tau_"+info["syst"],"TTbar_singleLepton_"+info["syst"],"TTbar_hadronic_"+info["syst"]],"TTbar_other_"+info["syst"])
         
         if args.mergeAllHists and (isDistributions or isTriggerEff):
             print "-------------Start merging all datasets to one histFile----------------------"
             mergeAllHists(datasetList,args.logPath,histPath)
     elif(args.mergeForCombine):
-        mergeForCombine(args.logPath,histPath)
+        mergeForCombine(args.logPath,histPath,["TTbar_diLepton","DrellYan_comb","TTbar_other","otherBKG","SingleTop"])
