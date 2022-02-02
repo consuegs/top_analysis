@@ -847,3 +847,18 @@ std::pair<TH1F*,TH1F*> hist::getEnvelope(const TH1F* nominal, const std::vector<
    
    return std::make_pair(hist_envelopeDOWN,hist_envelopeUP);
 }
+
+std::pair<TH1F*,TH1F*> hist::getEnvelope(const TH1F* nominal, const std::vector<TH1F> &shifts){
+   TH1F* hist_envelopeUP = (TH1F*)nominal->Clone();
+   TH1F* hist_envelopeDOWN = (TH1F*)nominal->Clone();
+   
+   for (const TH1F tempShift : shifts){
+      for (int i=0; i<=tempShift.GetNbinsX(); i++){
+         float content_shift = tempShift.GetBinContent(i);
+         if (content_shift>hist_envelopeUP->GetBinContent(i)) hist_envelopeUP->SetBinContent(i,content_shift);
+         else if (content_shift<hist_envelopeDOWN->GetBinContent(i)) hist_envelopeDOWN->SetBinContent(i,abs(content_shift));
+      }
+   }
+   
+   return std::make_pair(hist_envelopeDOWN,hist_envelopeUP);
+}

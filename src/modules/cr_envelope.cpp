@@ -149,48 +149,38 @@ void produce_topmass()
    
 }
 
-void produce_PDF_envelope(){
-   
-   std::vector<std::unique_ptr<io::RootFileReader>> readerVec;
+void produce_PDF_envelope(){  //currently only for 1D hists
+      
+   std::map<TString,std::vector<TH1F>> histMap;
    
    for (int i=1; i<=50; i++){    // create reader for each shift
-      // ~io::RootFileReader* tempReader_up = new io::RootFileReader(TString::Format("multiHists/PDF_%i_UP/histograms_merged_%s.root",i,cfg.treeVersion.Data()));
-      // ~io::RootFileReader* tempReader_down = new io::RootFileReader(TString::Format("multiHists/PDF_%i_UP/histograms_merged_%s.root",i,cfg.treeVersion.Data()));
-      
-      // ~readerVec.push_back(tempReader_up);
-      // ~readerVec.push_back(tempReader_down);
-      readerVec.push_back(std::make_unique<io::RootFileReader>(TString::Format("multiHists/PDF_%i_UP/histograms_merged_%s.root",i,cfg.treeVersion.Data())));
-      readerVec.push_back(std::make_unique<io::RootFileReader>(TString::Format("multiHists/PDF_%i_DOWN/histograms_merged_%s.root",i,cfg.treeVersion.Data())));
+      std::cout<<"Reading PDF variation "+std::to_string(i)<<std::endl;
+      io::RootFileReader histReader_up(TString::Format("multiHists/PDF_%i_UP/histograms_merged_%s.root",i,cfg.treeVersion.Data()));
+      io::RootFileReader histReader_down(TString::Format("multiHists/PDF_%i_DOWN/histograms_merged_%s.root",i,cfg.treeVersion.Data()));
+      for (auto path : histReader_up.listPaths(true)){
+         if(path.Contains("2d")) continue;
+          histMap[path].push_back(*(histReader_up.read<TH1F>(path+"/TTbar_diLepton")));
+          histMap[path].push_back(*(histReader_down.read<TH1F>(path+"/TTbar_diLepton")));
+      }
    }
    
    io::RootFileReader histReader_nom(TString::Format("multiHists/%s/histograms_merged_%s.root","Nominal",cfg.treeVersion.Data()));
+   io::RootFileReader histReader_Paths(TString::Format("multiHists/PDF_1_UP/histograms_merged_%s.root",cfg.treeVersion.Data()));
    
    io::RootFileSaver histSaver_down(TString::Format("multiHists/%s/histograms_merged_%s.root","PDF_ENVELOPE_DOWN",cfg.treeVersion.Data()),"");
    io::RootFileSaver histSaver_up(TString::Format("multiHists/%s/histograms_merged_%s.root","PDF_ENVELOPE_UP",cfg.treeVersion.Data()),"");
    
-   for (auto path : readerVec[0]->listPaths(true)){   // loop over all histograms
+   for (auto path : histReader_Paths.listPaths(true)){   // loop over all histograms
+      if(path.Contains("2d")) continue;
       TH1F* hist_nom = histReader_nom.read<TH1F>(path+"/TTbar_diLepton");
-      std::vector<TH1F*> vecShiftHist;
-      
-      for (int i=0; i<readerVec.size(); i++){    // read histograms for pdf shifts
-         vecShiftHist.push_back(readerVec[i]->read<TH1F>(path+"/TTbar_diLepton"));
-      }
-      
-      std::pair<TH1F*,TH1F*> envelopes = hist::getEnvelope(hist_nom,vecShiftHist);
+
+      std::pair<TH1F*,TH1F*> envelopes = hist::getEnvelope(hist_nom,histMap[path]);
       
       path.ReplaceAll("/distr","distr");
       histSaver_down.save(*(envelopes.first),path+"/TTbar_diLepton");
       histSaver_up.save(*(envelopes.second),path+"/TTbar_diLepton");
       
    }
-   
-   //close Files
-   // ~histReader_nom.closeFile();
-   // ~histSaver_down.closeFile();
-   // ~histSaver_up.closeFile();
-   // ~for (int i=0; i<readerVec.size(); i++){
-      // ~delete readerVec[i];
-   // ~}
 }
    
    

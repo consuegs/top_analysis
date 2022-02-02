@@ -151,6 +151,7 @@ namespace hist
    THStack stackPrepend(THStack const& stOld, TH1F &h, Option_t *option="");
    
    std::pair<TH1F*,TH1F*> getEnvelope(const TH1F* nominal, const std::vector<TH1F*> shifts);
+   std::pair<TH1F*,TH1F*> getEnvelope(const TH1F* nominal, const std::vector<TH1F> &shifts);
 }
 
 #endif /* HIST_HPP__ */
