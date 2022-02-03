@@ -41,9 +41,9 @@ void run(){
   string histLoc = "/net/data_cms1b/user/dmeuser/top_analysis/" + string("2018") + "/v06/output_framework/multiHists/";
 
   // ~vector<string> test_variables = {"nJets", "Lep1_pt"};
-  // ~vector<string> test_variables = {"Lep1_pt"};
+  vector<string> test_variables = {"Lep1_pt"};
   // ~vector<string> test_variables = {"n_Interactions"};
-  vector<string> test_variables = {"Lep1_phi"};
+  // ~vector<string> test_variables = {"Lep1_phi"};
   
   for (auto test_variable : test_variables) {
     // Create an empty CombineHarvester instance that will hold all of the
@@ -66,10 +66,12 @@ void run(){
     cb.AddObservations({"*"}, {"ttbar"}, {"2018"}, {""}, cats);
     
     //Add backgrounds
-    vector<string> bkg_procs = {"DrellYan_comb", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic", "SingleTop", "WJetsToLNu", "WW", "WZ", "ZZ", "ttZ_QQ", "ttZ_2L", "ttW"};
+    // ~vector<string> bkg_procs = {"DrellYan_comb", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic", "SingleTop", "WJetsToLNu", "WW", "WZ", "ZZ", "ttZ_QQ", "ttZ_2L", "ttW"};
+    vector<string> bkg_procs = {"DrellYan_comb", "TTbar_other", "SingleTop", "otherBKG"};
     cb.AddProcesses({"*"}, {"ttbar"}, {"2018"}, {""}, bkg_procs, cats, false);
     
     //Add signals
+    // ~vector<string> sig_procs = {"TTbar_diLepton"};
     vector<string> sig_procs = {"TTbar_diLepton"};
     cb.AddProcesses({"*"}, {"ttbar"}, {"2018"}, {""}, sig_procs, cats, true);
 
@@ -87,30 +89,36 @@ void run(){
     // Uncertainties, that are applied only to ttbar processes:
     vector<string> shapeUncTTbarOnly = {"BFRAG", "BSEMILEP", "CR1", "CR2", "ERDON", "MTOP"};
     for (auto systNameTTbar : shapeUncTTbarOnly) {
-      cb.cp().process({"TTbar_diLepton", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
+      cb.cp().process({"TTbar_diLepton", "TTbar_other"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
+      // ~cb.cp().process({"TTbar_diLepton", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
     }
     
     // "MATCH" and "UETUNE" have counts of 0.0 in ttbar_hadronic for nJets in the ee channel; prevents combine from functioning
-    cb.cp().bin({"emu", "mumu"}).process({"TTbar_diLepton", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic"}).AddSyst(cb, "MATCH", "shape", SystMap<>::init(1.00));
-    cb.cp().bin({"emu", "mumu"}).process({"TTbar_diLepton", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic"}).AddSyst(cb, "UETUNE", "shape", SystMap<>::init(1.00));
+    cb.cp().bin({"emu", "mumu"}).process({"TTbar_diLepton", "TTbar_other"}).AddSyst(cb, "MATCH", "shape", SystMap<>::init(1.00));
+    cb.cp().bin({"emu", "mumu"}).process({"TTbar_diLepton", "TTbar_other"}).AddSyst(cb, "UETUNE", "shape", SystMap<>::init(1.00));
+    // ~cb.cp().bin({"emu", "mumu"}).process({"TTbar_diLepton", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic"}).AddSyst(cb, "MATCH", "shape", SystMap<>::init(1.00));
+    // ~cb.cp().bin({"emu", "mumu"}).process({"TTbar_diLepton", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic"}).AddSyst(cb, "UETUNE", "shape", SystMap<>::init(1.00));
     
     
     // Extract shapes and create datacards for all variables in test_variables
     cb.cp().ExtractShapes(
         histLoc + "combine/combineInput_v06.root",
+        // ~histLoc + "combine/combineInput_v06_old.root",
         "distributions100.0/baseline/$BIN/"+string(test_variable)+"/$PROCESS",
         "distributions100.0/baseline/$BIN/"+string(test_variable)+"/$PROCESS_$SYSTEMATIC"
         );
     
     std::cout << "rebin: " << endl;
     // ~cb.VariableRebin(linspace(-3.2, 3.2, 51));
-    cb.VariableRebin(linspace(-3.2, 3.2, 26));
+    // ~cb.VariableRebin(linspace(-3.2, 3.2, 26));
     // ~cb.VariableRebin(linspace(0, 80, 41));
-    // ~cb.VariableRebin(linspace(0, 420, int(420/30+1)));
+    cb.VariableRebin(linspace(0, 420, int(420/30+1))); //pt
     
     ch::SetStandardBinNames(cb, "$BIN");
 
     set<string> bins = cb.bin_set();
+    
+    cb.AddDatacardLineAtEnd("* autoMCStats 10 1 1");
     
     TFile output(string("/net/data_cms1b/user/nattland/top_analyse/DNNinputs_Datacards/ttbar_dc_1d/ttbar_"+test_variable+"_1d.input.root").c_str(), "RECREATE");
     // ~TFile output(string("/net/data_cms1b/user/nattland/top_analyse/DNNinputs_Datacards/ttbar_final_"+test_variable+"_datacard_inp.input.root").c_str(), "RECREATE");
