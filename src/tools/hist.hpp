@@ -152,6 +152,8 @@ namespace hist
    
    std::pair<TH1F*,TH1F*> getEnvelope(const TH1F* nominal, const std::vector<TH1F*> shifts);
    std::pair<TH1F*,TH1F*> getEnvelope(const TH1F* nominal, const std::vector<TH1F> &shifts);
+   std::pair<TH2F*,TH2F*> getEnvelope(const TH2F* nominal, const std::vector<TH2F*> shifts);
+   std::pair<TH2F*,TH2F*> getEnvelope(const TH2F* nominal, const std::vector<TH2F> &shifts);
 }
 
 #endif /* HIST_HPP__ */
