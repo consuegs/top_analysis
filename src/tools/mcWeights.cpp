@@ -14,6 +14,7 @@ isPythiaOnly_(isPythiaOnly)
    if(std::find(Systematic::mcWeightTypes.begin(), Systematic::mcWeightTypes.end(), type) != Systematic::mcWeightTypes.end()){
       useNominal = false;
       std::cout<<"Use systematic of type: "<<Systematic::convertType(type)<<"\n";
+      if(type == Systematic::pdf)  std::cout<<"Use variation number: "<<systematic_.variationNumber()<<"\n";
       if(systematic.variation() == Systematic::up) upVariation = true;
       else if(systematic.variation() == Systematic::down) upVariation = false;
       else{
@@ -63,6 +64,10 @@ const float mcWeights::getMCweight(const float &nominalWeight, const std::vector
          case Systematic::alphasPdf:
             if (isPythiaOnly_) return nominalWeight;  //no PDF weights available for pythiaOnly
             else return w_pdf[(upVariation)? 112-1 : 111-1]*nominalWeight;
+            break;
+         case Systematic::pdf:
+            if (isPythiaOnly_) return nominalWeight;  //no PDF weights available for pythiaOnly
+            else return w_pdf[(upVariation)? 9+(2*systematic_.variationNumber())-1 : 10+(2*systematic_.variationNumber())-1]*nominalWeight;
             break;
          case Systematic::psISRScale:
             return w_ps[(upVariation)? 28-1 : 27-1]*nominalWeight;

@@ -154,6 +154,8 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
     runningLogs = {}
 
     for job in jobs:
+        if job["Args"]=="0":
+            continue
         if job["Cmd"].split("/")[-1]=="run.sh":
             name = getNameFromFile(job["Args"])
         else:
@@ -203,15 +205,18 @@ def merge(distrLogPath,mergeAll=False,onlyHist=True):
             sp.call(["python","mergeOutputs.py",distrLogPath])
     
 
-def summaryDistributionJobs(year,runningLogs,resubmit,mergeAll):
+def summaryDistributionJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF):
     for systPath in glob.glob("logs/"+year+"/*"):
+        if ignorePDF:
+            if systPath.find("PDF")>0 and systPath.find("PDF_ALPHAS")<0:
+                continue
         distrLogPath = systPath+"/1.0/distributions/"
         if(os.path.exists(distrLogPath)):
             status = checkStatusFromLog(distrLogPath,runningLogs.keys(),False,resubmit)
             if status[0]:
                 print colored(distrLogPath,"green",attrs=['bold'])
-                if mergeOutputs.mergeRequired(distrLogPath,True,False) and resubmit==False:
-                    merge(distrLogPath,mergeAll)
+                if (mergeOutputs.mergeRequired(distrLogPath,True,False) or forceMergeAll) and resubmit==False:
+                    merge(distrLogPath,(mergeAll or forceMergeAll))
             else:
                 systName = getSystFromOutFile(distrLogPath)
                 idleCheck = [value for key, value in runningLogs.iteritems() if key.find(systName)>0]
@@ -236,6 +241,8 @@ if __name__ == "__main__":
     parser.add_argument('--distributions', action='store_true', help="Shows summary for distribution jobs per systematic")
     parser.add_argument('--resubmit', action='store_true', help="Automatic resubmit, avoids asking if job should be resubmitted for every single failed job")
     parser.add_argument('--mergeAll', action='store_true', help="Automatic merge, avoids asking if jobs should be merged")
+    parser.add_argument('--forceMergeAll', action='store_true', help="Forces merge, even if not necessary due to updated input")
+    parser.add_argument('--ignorePDF', action='store_true', help="Ignores all PDF jobs")
     args = parser.parse_args()
     
     if(args.checkCompleted == "" and args.distributions==False):  # print running jobs only on nominal mode
@@ -246,7 +253,7 @@ if __name__ == "__main__":
     runningLogs = checkStatusFromQueue(printRunningJobs,args.checkSuspended)
     
     if(args.distributions):
-        summaryDistributionJobs("2018",runningLogs,args.resubmit,args.mergeAll)
+        summaryDistributionJobs("2018",runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF)
     
     if(args.checkCompleted != ""):
         if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list

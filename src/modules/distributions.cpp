@@ -106,7 +106,7 @@ void run()
          hs.addHist(selection+channel+"/MET*sind(PFMET_phi)"          ,";PF p_{y}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
          hs.addHist(selection+channel+"/HT*cos(HT_phi)"               ,";H_{x} (GeV);EventsBIN"                                ,80,-400,400);
          hs.addHist(selection+channel+"/HT*sin(HT_phi)"               ,";H_{y} (GeV);EventsBIN"                                ,80,-400,400);
-         hs.addHist(selection+channel+"/nJets"                        ,";N_{jets} ;EventsBIN"                                  ,10,1.5,12.5);
+         hs.addHist(selection+channel+"/nJets"                        ,";N_{jets} ;EventsBIN"                                  ,11,1.5,12.5);
          hs.addHist(selection+channel+"/n_Interactions"               ,";N_{interactions} ;EventsBIN"                          ,50,0,100);
          hs.addHist(selection+channel+"/Lep1_flavor"                  ,";Flavor_{l1} ;EventsBIN"                               ,2,0.5,2.5);
          hs.addHist(selection+channel+"/Lep2_flavor"                  ,";Flavor_{l2} ;EventsBIN"                               ,2,0.5,2.5);
@@ -315,10 +315,20 @@ void run()
          for (const Systematic::Type type : Systematic::weightTypes){
             if (std::find(Systematic::mcWeightTypes.begin(), Systematic::mcWeightTypes.end(), type) != Systematic::mcWeightTypes.end()){
                std::cout.setstate(std::ios_base::failbit);     //avoid spaming cout
-               mcWeighter_vec.push_back(mcWeights(Systematic::Systematic(Systematic::convertType(type)+"_UP"),dss.isMadGraph,dss.isPythiaOnly));
-               mcWeighter_vec.back().prepareLumiWeight(dss,cfg.lumi);
-               mcWeighter_vec.push_back(mcWeights(Systematic::Systematic(Systematic::convertType(type)+"_DOWN"),dss.isMadGraph,dss.isPythiaOnly));
-               mcWeighter_vec.back().prepareLumiWeight(dss,cfg.lumi);
+               if (type == Systematic::pdf){       // include all PDF variations
+                  for (int i=1; i<=50; i++){
+                     mcWeighter_vec.push_back(mcWeights(Systematic::Systematic("PDF_"+std::to_string(i)+"_UP"),dss.isMadGraph,dss.isPythiaOnly));
+                     mcWeighter_vec.back().prepareLumiWeight(dss,cfg.lumi);
+                     mcWeighter_vec.push_back(mcWeights(Systematic::Systematic("PDF_"+std::to_string(i)+"_DOWN"),dss.isMadGraph,dss.isPythiaOnly));
+                     mcWeighter_vec.back().prepareLumiWeight(dss,cfg.lumi);
+                  }
+               }
+               else{
+                  mcWeighter_vec.push_back(mcWeights(Systematic::Systematic(Systematic::convertType(type)+"_UP"),dss.isMadGraph,dss.isPythiaOnly));
+                  mcWeighter_vec.back().prepareLumiWeight(dss,cfg.lumi);
+                  mcWeighter_vec.push_back(mcWeights(Systematic::Systematic(Systematic::convertType(type)+"_DOWN"),dss.isMadGraph,dss.isPythiaOnly));
+                  mcWeighter_vec.back().prepareLumiWeight(dss,cfg.lumi);
+               }
                std::cout.clear();
             }
          }
@@ -510,10 +520,20 @@ void run()
             for (const Systematic::Type type : Systematic::weightTypes){
                TString systName = convertType(type);
                if (std::find(Systematic::upDownTypes.begin(), Systematic::upDownTypes.end(), type) != Systematic::upDownTypes.end()){
-                  ttbar_res.Branch("weight_"+systName+"_UP",&(minTree_systWeights[weightCounter]),"weight_"+systName+"_UP/f");
-                  weightCounter++;
-                  ttbar_res.Branch("weight_"+systName+"_DOWN",&(minTree_systWeights[weightCounter]),"weight_"+systName+"_DOWN/f");
-                  weightCounter++;
+                  if (type == Systematic::pdf){    //Store all pdf shifts
+                     for (int i=1; i<=50; i++){
+                        ttbar_res.Branch("weight_"+systName+"_"+std::to_string(i)+"_UP",&(minTree_systWeights[weightCounter]),"weight_"+systName+"_"+std::to_string(i)+"_UP/f");
+                        weightCounter++;
+                        ttbar_res.Branch("weight_"+systName+"_"+std::to_string(i)+"_DOWN",&(minTree_systWeights[weightCounter]),"weight_"+systName+"_"+std::to_string(i)+"_DOWN/f");
+                        weightCounter++;
+                     }
+                  }
+                  else{
+                     ttbar_res.Branch("weight_"+systName+"_UP",&(minTree_systWeights[weightCounter]),"weight_"+systName+"_UP/f");
+                     weightCounter++;
+                     ttbar_res.Branch("weight_"+systName+"_DOWN",&(minTree_systWeights[weightCounter]),"weight_"+systName+"_DOWN/f");
+                     weightCounter++;
+                  }
                }
                else{
                   ttbar_res.Branch("weight_"+systName,&(minTree_systWeights[weightCounter]),"weight_"+systName+"/f");
@@ -1557,7 +1577,8 @@ void run()
    
    // Save histograms
    TString loc=TString::Format("hists/histograms_%s%s.root",cfg.treeVersion.Data(),("_"+currentSystematic.name()).Data());
-   if(cfg.multi) loc=TString::Format("multiHists/%shistograms_%s%s_%s.root",(currentSystematic.name()+"/").Data(),dssName_multi.Data(),(cfg.fileNR==0)?TString("").Data():TString("_"+std::to_string(cfg.fileNR)).Data(),cfg.treeVersion.Data());
+   if(cfg.multi && cfg.processFraction<1) loc=TString::Format("multiHists/test/%shistograms_%s%s_%s.root",(currentSystematic.name()+"/").Data(),dssName_multi.Data(),(cfg.fileNR==0)?TString("").Data():TString("_"+std::to_string(cfg.fileNR)).Data(),cfg.treeVersion.Data());
+   else if (cfg.multi) loc=TString::Format("multiHists/%shistograms_%s%s_%s.root",(currentSystematic.name()+"/").Data(),dssName_multi.Data(),(cfg.fileNR==0)?TString("").Data():TString("_"+std::to_string(cfg.fileNR)).Data(),cfg.treeVersion.Data());
    io::RootFileSaver saver_hist(loc,TString::Format("distributions%.1f",cfg.processFraction*100),false);
    hs.saveHistograms(saver_hist,samplesToCombine);
    hs_cutflow.saveHistograms(saver_hist,samplesToCombine);

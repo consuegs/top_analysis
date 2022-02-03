@@ -280,6 +280,7 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("NORMPDFTTH")) return normPdfTth;
     if(type.BeginsWith("PDF_PCA_1")) return pdf_pca_1;
     if(type.BeginsWith("PDF_PCA_2")) return pdf_pca_2;
+    if(type.BeginsWith("PDF_ENVELOPE")) return pdf_envelope;
     if(type.BeginsWith("PDF")) return pdf;
     if(type.BeginsWith("UNCLUSTERED")) return unclustered;
     if(type.BeginsWith("closure")) return closure;
@@ -559,6 +560,7 @@ TString Systematic::convertType(const Type& type)
     if(type == normPdfTth) return "NORMPDFTTH";
     if(type == pdf_pca_1) return "PDF_PCA_1";
     if(type == pdf_pca_2) return "PDF_PCA_2";
+    if(type == pdf_envelope) return "PDF_ENVELOPE";
     if(type == pdf) return "PDF";
     if(type == unclustered) return "UNCLUSTERED";
     if(type == closure) return "closure";
@@ -863,10 +865,15 @@ bool Systematic::checkTopPTreweighting(const Systematic & systematic){
 int Systematic::numberOfWeightTypes(){
     int count = 0;
     for (const Type type : weightTypes){
-        if (std::find(upDownTypes.begin(), upDownTypes.end(), type) != upDownTypes.end()){
-            count +=2;
+        if (type == pdf){
+            count +=100;
         }
-        else count++;
+        else{
+            if (std::find(upDownTypes.begin(), upDownTypes.end(), type) != upDownTypes.end()){
+                count +=2;
+            }
+            else count++;
+        }
     }
     return count;
 }

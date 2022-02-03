@@ -264,6 +264,7 @@ namespace Systematic{
         pdf_pca_1,          // PDF variation from PCA decomposition
         pdf_pca_2,          // PDF variation from PCA decomposition
         pdf,                // PDF variations
+        pdf_envelope,       // Envelope of PDF variations
         xsec_vv,            // cross-section uncertainty of diboson process
         xsec_v,             // cross-section uncertainty of single boson process (if w+jets and z+jets grouped)
         xsec_w,             // cross-section uncertainty of w+jets process
@@ -379,7 +380,7 @@ namespace Systematic{
         ueTune_ttbb, ueTune_ttb, ueTune_tt2b, ueTune_ttbb, ueTune_ttcc, ueTune_ttother,
         alphasPdf,l1prefiring,
         normPdfGg, normPdfGq, normPdfQq, normPdfTth,
-        pdf_pca_1, pdf_pca_2, pdf, psScaleWeight,
+        pdf_pca_1, pdf_pca_2, pdf_envelope, pdf, psScaleWeight,
         unclustered
     };
 
@@ -456,7 +457,7 @@ namespace Systematic{
         ueTune,
         ueTune_ttbb, ueTune_ttb, ueTune_tt2b, ueTune_ttcc, ueTune_ttother,
         powhegv2, powheg, powhegv2Herwig, powhegHerwig, powhegHelac, powhegOpenloops, amcatnlofxfx, mcatnlo, madgraphmlm, cp5, perugia11, perugia11NoCR,
-        alphasPdf, pdf, psScaleWeight,
+        alphasPdf, pdf, pdf_envelope, psScaleWeight,
         closure,
     };
 
@@ -498,7 +499,9 @@ namespace Systematic{
                 
         eleScale,eleSmearingPhi,eleSmearingRho,eleScaleSmearing,
         muonScaleStat,muonScaleZpt,muonScaleEwk,muonScaleDeltaM,muonScaleEwk2,muonScale,
-        unclustered
+        unclustered,
+        
+        pdf
     };
     
     ///Define systematics that are applied by varying the nominal MC weight
@@ -506,7 +509,7 @@ namespace Systematic{
         meScale,meFacScale,meRenScale,
         psISRScale,psFSRScale,
         bFrag,bSemilep,
-        alphasPdf,
+        alphasPdf,pdf
     };
     
     ///Define systematics that require rescaling of lumi weight
@@ -540,7 +543,7 @@ namespace Systematic{
         meScale,meFacScale,meRenScale,
         psISRScale,psFSRScale,
         bFrag,bSemilep,
-        alphasPdf,
+        alphasPdf,pdf,
         pu,
         topPt,
         lumi
