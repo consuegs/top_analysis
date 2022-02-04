@@ -134,19 +134,10 @@ namespace Systematic{
         frac_tthf,          // correction factor for the fraction of tt+HF events from the template fit
         frac_ttother,       // correction factor for the fraction of tt+Other events from the template fit
         lumi,               // luminosity uncertainty
-        xsec_ttbb,          // cross-section uncertainty of ttbb process
-        xsec_ttb,           // cross-section uncertainty of ttb process
-        xsec_tt2b,          // cross-section uncertainty of tt2b process
-        xsec_ttcc,          // cross-section uncertainty of ttcc process
-        xsec_ttother,       // cross-section uncertainty of tt+light jets process
-        xsec_ttZ,           // cross-section uncertainty of ttZ process
-        xsec_ttW,           // cross-section uncertainty of ttW process
-        xsec_ttH,           // cross-section uncertainty of ttH process
-        xsec_ttG,           // cross-section uncertainty of ttG process
-        xsec_ttV,           // cross-section uncertainty of ttV process
-        xsec_tt,            // cross-section uncertainty of ttbar process
-        xsec_t,             // cross-section uncertainty of single top process
-        xsec_ttDM,          // cross-section uncertainty of tt+DM process
+        xsec_ttother,       // cross-section uncertainty of tt bkg. process
+        xsec_dy,            // cross-section uncertainty of Drell-Yan process
+        xsec_st,            // cross-section uncertainty of SingleTop process
+        xsec_other,         // cross-section uncertainty of other bkg. process
         topPtTheory,        // scale top pt as predicted in theoretical ttbar differential cross-section calculations
         topPt,              // scale top pt as estimated in ttbar differential cross-section measurements, uncertainty via switching off and on
         mass,               // variations of masses used in process generation (here top quark mass)
@@ -265,10 +256,6 @@ namespace Systematic{
         pdf_pca_2,          // PDF variation from PCA decomposition
         pdf,                // PDF variations
         pdf_envelope,       // Envelope of PDF variations
-        xsec_vv,            // cross-section uncertainty of diboson process
-        xsec_v,             // cross-section uncertainty of single boson process (if w+jets and z+jets grouped)
-        xsec_w,             // cross-section uncertainty of w+jets process
-        xsec_z,             // cross-section uncertainty of z+jets process
         unclustered,        // unclustered energy variation in the MET
         uncorrelatedType,   // Variations that aren't correlated between the FullRunII datasets
         closure,            // Closure test
@@ -351,10 +338,7 @@ namespace Systematic{
         jesUserDefinedHEM1516,
         frac_tthf, frac_ttother,
         lumi,
-        xsec_ttbb, xsec_ttb, xsec_tt2b, xsec_ttcc, xsec_ttother,
-        xsec_ttH, xsec_ttZ, xsec_ttW, xsec_ttG, xsec_ttV, xsec_tt, xsec_t,
-        xsec_v, xsec_vv,
-        xsec_w, xsec_z,
+        xsec_ttother,xsec_dy,xsec_st,xsec_other,
         mass,
         match,
         match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
@@ -463,9 +447,7 @@ namespace Systematic{
 
     /// Define cross-section uncertainty systematics, which use nominal samples, and change only the scaling
     const std::vector<Type> crossSectionTypes{
-        xsec_ttbb, xsec_ttb, xsec_tt2b, xsec_ttcc, xsec_ttother,
-        xsec_ttH, xsec_ttZ, xsec_ttW, xsec_ttG, xsec_ttV, xsec_tt, xsec_t,
-        xsec_v, xsec_vv, xsec_w, xsec_z
+        xsec_ttother,xsec_dy,xsec_st,xsec_other,
     };
 
     /// Define uncertainties due to tt+HF fraction scale factor from the fit, which use nominal samples, and change only the scaling
@@ -475,10 +457,7 @@ namespace Systematic{
 
     /// Define systematics that do not require dedicated root files
     const std::vector<Type> fileIndependentTypes{
-        xsec_ttbb, xsec_ttb, xsec_tt2b, xsec_ttcc, xsec_ttother,
-        xsec_ttH, xsec_ttZ, xsec_ttW, xsec_ttV, xsec_tt, xsec_t,
-        xsec_v, xsec_vv,
-        xsec_w, xsec_z,
+        xsec_ttother,xsec_dy,xsec_st,xsec_other,
         dynorm,
         frac_tthf, frac_ttother,
         lumi,
@@ -501,7 +480,8 @@ namespace Systematic{
         muonScaleStat,muonScaleZpt,muonScaleEwk,muonScaleDeltaM,muonScaleEwk2,muonScale,
         unclustered,
         
-        pdf
+        pdf,
+        xsec_ttother,xsec_dy,xsec_st,xsec_other
     };
     
     ///Define systematics that are applied by varying the nominal MC weight

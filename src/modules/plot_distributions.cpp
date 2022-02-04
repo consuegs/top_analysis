@@ -66,8 +66,9 @@ class systHists
             filePath.ReplaceAll(systematic_.name(),"Nominal");
             histReader_ = new io::RootFileReader(filePath,histPath);
             if(cfg.systUncFactor.find(systematic_.type_str()) != cfg.systUncFactor.end()){
-               float unc = cfg.systUncFactor.at(systematic_.type_str());
+               float unc = cfg.systUncFactor.at(systematic_.type_str()).first;
                sf_ = (systematic_.variation() == Systematic::up)? 1.0+unc : 1.0-unc;
+               datasets_SF = cfg.systUncFactor.at(systematic_.type_str()).second;
             }
             else{
                std::cout<<"Error: Factor for "<<systematic_.type_str()<<" not found in config"<<std::endl;
@@ -105,6 +106,7 @@ class systHists
       std::vector<TString> datasets_ttBar2L_;
       TString const systematicName_;
       float sf_ = 1.0;
+      std::vector<std::string> datasets_SF;   //datasets for which the SF is applied when using the syst.
       bool hasRootFile_ = true;
       bool altSampleType = false;
       bool onlyTTbar = false;
@@ -136,8 +138,12 @@ void importHists(std::vector<systHists*> &systHists_vec, std::vector<TString> co
             else{
                rebinHist = hist::rebinned(*tempHist,distr_.binEdges);
             }
-            
-            if (!current->hasRootFile_) rebinHist.Scale(current->sf_);
+                        
+            if (!current->hasRootFile_){     //rescale only if dataset is affected
+               if (std::find(current->datasets_SF.begin(),current->datasets_SF.end(),sSample) != current->datasets_SF.end()){
+                  rebinHist.Scale(current->sf_);
+               }
+            }
             current->hists_.addFilledHist(loc,sSample,rebinHist);
          }
          //import 2D Hists
@@ -288,6 +294,7 @@ TGraphAsymmErrors getErrorGraph(TH1F* const eDOWN, TH1F* const eUP, TH1F* const 
 }
 
 void printUnc(TString name, const float &down, const float &up, const float &nominal){
+   name = name.ReplaceAll("ELECTRON_SCALESMEARING","EL_SCALESMEARING");
    TString out = TString::Format(" %s & $%.1f(%.1f)$ & $%.1f(%.1f)$\\\\\n",name.ReplaceAll("_","\\_").Data(),down,down/nominal*100,up,up/nominal*100);
    std::cout<<out;
 }
@@ -326,8 +333,7 @@ void printUncBreakDown(hist::Histograms<TH1F>* hs, std::vector<systHists*> &syst
             if (systHists_vec[i]->systematic_.type_str()==systHists_vec[i+1]->systematic_.type_str()){     // check if up and down shift
                std::vector<systHists*> tempVec = {systHists_vec[0],systHists_vec[i],systHists_vec[i+1]};
                std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat);
-               // ~printUnc(systHists_vec[i]->systematic_.type_str(),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
-               printUnc(systHists_vec[i]->systematic_.type_str()+std::to_string(systHists_vec[i]->systematic_.variationNumber()),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
+               printUnc(systHists_vec[i]->systematic_.type_str(),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
                i++;
                continue;
             }
@@ -356,7 +362,7 @@ void printShiftBySample(hist::Histograms<TH1F>* hs, std::vector<systHists*> &sys
          float sampleYield_down = syst.first->GetBinContent(6);
          float sampleYield_up = syst.second->GetBinContent(6);
          std::cout<<sample<<"   "<<sampleYield_down<<"   "<<sampleYield_up<<std::endl;
-         std::cout<<sample<<"   "<<sampleYield_down/mcYield*100<<"   "<<sampleYield_up/mcYield*100<<std::endl;
+         std::cout<<sample<<"   "<<sampleYield_down/sampleYield*100<<"   "<<sampleYield_up/sampleYield*100<<std::endl;
       }
    }
 }
@@ -653,11 +659,14 @@ void run()
    }
    std::vector<TString> samplesToPlot = util::addVectors(mcSamples,dataSamples);
    
-   // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","CR_ENVELOPE_IND_UP","CR_ENVELOPE_IND_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT"};
+   // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","CR_ENVELOPE_IND_UP","CR_ENVELOPE_IND_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","ELECTRON_ID_UP","ELECTRON_ID_DOWN","MUON_ID_UP","MUON_ID_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PU_UP","PU_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PU_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PU_UP"};
+   // ~std::vector<TString> systToPlot = {"Nominal","UNCLUSTERED_UP","UNCLUSTERED_DOWN",};
+   // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN",};
+   // ~std::vector<TString> systToPlot = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN",};
    // ~std::vector<TString> systToPlot = {"Nominal","MERENSCALE_UP","MERENSCALE_DOWN",};
    // ~std::vector<TString> systToPlot = {"Nominal","PSFSRSCALE_UP"};
    // ~std::vector<TString> systToPlot = {"Nominal","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN"};
@@ -677,13 +686,9 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","MATCH_UP","MATCH_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MATCH_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN"};
-   std::vector<TString> systToPlot = {"Nominal","PDF_50_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","PDF_50_DOWN"};
+   std::vector<TString> systToPlot = {"Nominal","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal"};
-   
-   // ~for (int i=1; i<=50; i++){
-      // ~systToPlot.push_back("PDF_"+std::to_string(i)+"_UP");
-      // ~systToPlot.push_back("PDF_"+std::to_string(i)+"_DOWN");
-   // ~}
    
    // 1D plots
    std::vector<distr> vecDistr;
@@ -698,7 +703,7 @@ void run()
          // ~vecDistr.push_back({selection+channel,"Lep2_pt",0.,480.,40});
          // ~vecDistr.push_back({selection+channel,"MET",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,40,70,110,170,260,370,500}});
-         vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,20,40,55,70,90,110,140,170,215,260,315,370,435,500}});
+         // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,20,40,55,70,90,110,140,170,215,260,315,370,435,500}});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,40});
          // ~vecDistr.push_back({selection+channel,"met1000",0.,1000.,50});
@@ -713,7 +718,7 @@ void run()
          // ~vecDistr.push_back({selection+channel,"dPhiMETlead2Jet",0.,3.2,32});
          // ~vecDistr.push_back({selection+channel,"dphi_metNearLep",0.,3.2,32});
          // ~vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi",0.,3.2,8});
-         vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi",0.,3.2,16});
+         // ~vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi",0.,3.2,16});
          // ~vecDistr.push_back({selection+channel,"COSdphi_metNearLep",-1.,1,50});
          // ~vecDistr.push_back({selection+channel,"SINdphi_metNearLep",0.,1,50});
          // ~vecDistr.push_back({selection+channel,"dPhiMETbJet",0.,3.2,32});
@@ -774,6 +779,8 @@ void run()
          // ~vecDistr.push_back({selection+channel,"mass_l1l2_allJet",0.,3000.,50});
          // ~vecDistr.push_back({selection+channel,"ratio_vecsumpTlep_vecsumpTjet",0.,20.,50});
          // ~vecDistr.push_back({selection+channel,"mjj",0.,2000.,50});
+         
+         vecDistr.push_back({selection+channel,"Lep1_pt*cos(Lep1_phi)",-250,250,25});
       }
    }
    

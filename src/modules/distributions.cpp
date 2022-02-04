@@ -342,7 +342,7 @@ void run()
          float lumi_weight_puUp=dss.xsec/dss.getNgen_syst(Systematic::Systematic("PU_UP"))*cfg.lumi;
          float lumi_weight_puDown=dss.xsec/dss.getNgen_syst(Systematic::Systematic("PU_DOWN"))*cfg.lumi;
          float lumi_weight_topPT=dss.xsec/dss.getNgen_syst(Systematic::Systematic("TOP_PT"))*cfg.lumi;
-         float lumi_unc = cfg.systUncFactor.at("LUMI");
+         float lumi_unc = cfg.systUncFactor.at("LUMI").first;
                   
          //Save number of gen events for efficiency
          Ngen[dss.datasetName]=dss.Ngen_woWeight;

@@ -88,7 +88,7 @@ public:
    bool multi=false;
    std::string systematic;
    
-   std::map<TString,float> systUncFactor;
+   std::map<TString,std::pair<float,std::vector<std::string>>> systUncFactor;
 
    std::vector<std::string> modules;
 

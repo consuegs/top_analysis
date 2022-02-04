@@ -94,7 +94,12 @@ Config::Config()
    sqrtsText=pt.get<std::string>("general.sqrtsText");
    extraText=pt.get<std::string>("general.extraText");
    
-   systUncFactor["LUMI"] = pt.get<float>("SystUnc.lumiUnc");
+   systUncFactor["LUMI"] = std::pair<float,std::vector<std::string>> (pt.get<float>("SystUnc.lumiUnc"),util::to_vector<std::string>(pt.get<std::string>("SystUnc.lumi_samples")));
+   systUncFactor["XSEC_TTOTHER"] = std::pair<float,std::vector<std::string>> (pt.get<float>("SystUnc.xsec_ttother_unc"),util::to_vector<std::string>(pt.get<std::string>("SystUnc.xsec_ttother_samples")));
+   systUncFactor["XSEC_DY"] = std::pair<float,std::vector<std::string>> (pt.get<float>("SystUnc.xsec_dy_unc"),util::to_vector<std::string>(pt.get<std::string>("SystUnc.xsec_dy_samples")));
+   systUncFactor["XSEC_ST"] = std::pair<float,std::vector<std::string>> (pt.get<float>("SystUnc.xsec_st_unc"),util::to_vector<std::string>(pt.get<std::string>("SystUnc.xsec_st_samples")));
+   systUncFactor["XSEC_OTHER"] = std::pair<float,std::vector<std::string>> (pt.get<float>("SystUnc.xsec_other_unc"),util::to_vector<std::string>(pt.get<std::string>("SystUnc.xsec_other_samples")));
+   
 
    outputDirectory=pt.get<std::string>("output.directory")+treeVersion+"/output_framework";
    datasets=DatasetCollection(pt,dataBasePath);
