@@ -8,6 +8,8 @@ import re
 import glob
 from functools import partial
 import subprocess as sp
+import configparser
+
 
 def getTargets(inputFile):
     datasetName = re.findall("TTTo2\w+_13TeV",inputFile)
@@ -58,32 +60,76 @@ def getMergingScheme(localfiles, maxMergeSize=10):
             currentSize = fileSize
     scheme[len(scheme)+1]=currentList
     return scheme
+    
+def getAllSamples(year):
+    config = configparser.ConfigParser()
+    config.read("../config"+year+".ini")
+    dataBasePath = config["input"]["dataBasePath"]+config["input"]["version"]
+    samples = []
+    for sampleFile in glob.glob(dataBasePath+"/nTuple/*"):
+        if sampleFile.find(".root")>0:
+            continue
+        if sampleFile.find("TTTo2L2Nu")>0:
+            samples.append(sampleFile)
+    return samples
+    
+
+def getInputFiles(sample):
+    if sample.find(".root")>0:
+        print "Error: Please enter sample name, not file name (without .root and _1)"
+        exit(98)
+    files = []
+    for f in glob.glob(sample+"*root"):
+        if f.find("tau") == -1:
+            files.append(f)
+    
+    return files
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     #  ~parser.add_argument("inputFiles")
-    parser.add_argument("inputFiles", nargs='+', help='<Required> List of input files')
+    #  ~parser.add_argument("inputFiles", nargs='+', help='<Required> List of input files')
+    #  ~parser.add_argument("inputSamples", nargs='+', help='<Required> List of input samples')
+    parser.add_argument("year", type=str, help='<Required> Year for which samples should be processed')
+    parser.add_argument("--singleSample", type=str, default="", help='Option to run on a single sample, instead of all samples of a year')
     args = parser.parse_args()
-    
-    targetFolder = getTargets(args.inputFiles[0])[1]
-    
-    # Create target folder
-    if not os.path.exists(targetFolder):
-        print "create "+targetFolder
-        os.makedirs(targetFolder)
         
-    # Separate tau events
-    p = multiprocessing.Pool(7)
-    for _ in tqdm.tqdm(p.imap_unordered(partial(createTauOutput),args.inputFiles), total=len(args.inputFiles)):
-        pass
+    if args.singleSample == "":
+        inputSamples = getAllSamples(args.year)
+    else:
+        inputSamples = [args.singleSample]
     
-    # Merge to given size
-    localFiles = [f for f in glob.glob("{}/*root".format(targetFolder))]
-    mergingScheme = getMergingScheme(localFiles)
-    for outputNr in mergingScheme:
-        outputFile = args.inputFiles[0].split("_1.root")[0]
-        if sp.call(["hadd","-f",outputFile+"_tau_"+str(outputNr)+".root"]+mergingScheme[outputNr]):
-            sys.exit(1)
+    i = 0
+    for sample in inputSamples:
+        i+=1
+        print "-----------------Starting with sample({}/{}) ".format(i,len(inputSamples))+sample.split("/")[-1]+"-------------------------"
+        
+        inputFiles = getInputFiles(sample)
+        targetFolder = getTargets(inputFiles[0])[1]
+        
+        if os.path.exists(targetFolder):
+            runAnyway = input("Already found tau samples connected to {}\n If you still want to continue, input 1 :\n".format(sample))
+            if runAnyway!= "1":
+                continue
+            
+        # Create target folder
+        if not os.path.exists(targetFolder):
+            print "create "+targetFolder
+            os.makedirs(targetFolder)
+            
+        # Separate tau events
+        p = multiprocessing.Pool(7)
+        for _ in tqdm.tqdm(p.imap_unordered(partial(createTauOutput),inputFiles), total=len(inputFiles)):
+            pass
+        
+        # Merge to given size
+        localFiles = [f for f in glob.glob("{}/*root".format(targetFolder))]
+        mergingScheme = getMergingScheme(localFiles)
+        for outputNr in mergingScheme:
+            outputFile = inputFiles[0].split("_1.root")[0]
+            if sp.call(["hadd","-f",outputFile+"_tau_"+str(outputNr)+".root"]+mergingScheme[outputNr]):
+                sys.exit(1)
     
 
 
