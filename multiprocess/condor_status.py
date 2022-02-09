@@ -205,12 +205,12 @@ def merge(distrLogPath,mergeAll=False,onlyHist=True):
             sp.call(["python","mergeOutputs.py",distrLogPath])
     
 
-def summaryDistributionJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF):
+def summaryJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF,module="distributions"):
     for systPath in glob.glob("logs/"+year+"/*"):
         if ignorePDF:
             if systPath.find("PDF")>0 and systPath.find("PDF_ALPHAS")<0:
                 continue
-        distrLogPath = systPath+"/1.0/distributions/"
+        distrLogPath = systPath+"/1.0/"+module+"/"
         if(os.path.exists(distrLogPath)):
             status = checkStatusFromLog(distrLogPath,runningLogs.keys(),False,resubmit)
             if status[0]:
@@ -237,15 +237,17 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",'--checkCompleted', type=str, default="", help="Checks status of all jobs in given log folder")
+    parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",default="2018")
     parser.add_argument('--checkSuspended', action='store_true', help="Checks if jobs are suspended for more than 10 minutes, and offers resubmit")
     parser.add_argument('--distributions', action='store_true', help="Shows summary for distribution jobs per systematic")
+    parser.add_argument('--bTagEff', action='store_true', help="Shows summary for bTaggEff jobs per systematic")
     parser.add_argument('--resubmit', action='store_true', help="Automatic resubmit, avoids asking if job should be resubmitted for every single failed job")
     parser.add_argument('--mergeAll', action='store_true', help="Automatic merge, avoids asking if jobs should be merged")
     parser.add_argument('--forceMergeAll', action='store_true', help="Forces merge, even if not necessary due to updated input")
     parser.add_argument('--ignorePDF', action='store_true', help="Ignores all PDF jobs")
     args = parser.parse_args()
     
-    if(args.checkCompleted == "" and args.distributions==False):  # print running jobs only on nominal mode
+    if(args.checkCompleted == "" and args.distributions==False and args.bTagEff==False):  # print running jobs only on nominal mode
         printRunningJobs = True
     else:
         printRunningJobs = False
@@ -253,7 +255,9 @@ if __name__ == "__main__":
     runningLogs = checkStatusFromQueue(printRunningJobs,args.checkSuspended)
     
     if(args.distributions):
-        summaryDistributionJobs("2018",runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF)
+        summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF)
+    elif(args.bTagEff):
+        summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF,"bTagEff")
     
     if(args.checkCompleted != ""):
         if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list
