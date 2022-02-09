@@ -215,7 +215,7 @@ def summaryJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF,modul
             status = checkStatusFromLog(distrLogPath,runningLogs.keys(),False,resubmit)
             if status[0]:
                 print colored(distrLogPath,"green",attrs=['bold'])
-                if (mergeOutputs.mergeRequired(distrLogPath,True,False) or forceMergeAll) and resubmit==False:
+                if (mergeOutputs.mergeRequired(distrLogPath,module=="distributions",False) or forceMergeAll) and resubmit==False:
                     merge(distrLogPath,(mergeAll or forceMergeAll))
             else:
                 systName = getSystFromOutFile(distrLogPath)
