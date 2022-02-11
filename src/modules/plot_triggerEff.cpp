@@ -140,13 +140,20 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
             TH2F* data=histReader.read<TH2F>(selection+"/"+trigg+"/"+channel+"/"+var+"/"+dataName);
             TH2F* base_MC=histReader.read<TH2F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+mcName);
             TH2F* MC=histReader.read<TH2F>(selection+"/"+trigg+"/"+channel+"/"+var+"/"+mcName);
-            
             std::vector<float> Edges = (channel!="emu")? Edges_emu:Edges_ee_mumu;
             *base_data=hist::rebinned(*base_data,Edges,Edges);
             *data=hist::rebinned(*data,Edges,Edges);
             *base_MC=hist::rebinned(*base_MC,Edges,Edges);
             *MC=hist::rebinned(*MC,Edges,Edges);
-
+            
+            for(int i=0; i<=MC->GetNbinsX();i++){
+               for(int j=0; j<=MC->GetNbinsY();j++){
+                  if (MC->GetBinContent(i,j) > base_MC->GetBinContent(i,j)){
+                     MC->SetBinContent(i,j,base_MC->GetBinContent(i,j));
+                  }
+               }
+            }
+                        
             TEfficiency eff_data(*data,*base_data);
             TH2* eff_data_hist_eUp = eff_data.CreateHistogram();
             TH2* eff_data_hist_eDown = eff_data.CreateHistogram();
@@ -158,7 +165,7 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
             eff_MC.SetUseWeightedEvents(false);
             eff_data.SetStatisticOption(TEfficiency::kFCP);
             eff_MC.SetStatisticOption(TEfficiency::kFCP);
-            
+            std::cout << eff_MC_hist_eUp << std::endl;
             for(int i=0; i<=eff_MC_hist_eUp->GetNbinsX();i++){
                for(int j=0; j<=eff_MC_hist_eUp->GetNbinsY();j++){
                   eff_MC_hist_eUp->SetBinError(i,j,eff_MC.GetEfficiencyErrorUp(eff_MC.GetGlobalBin(i,j)));
@@ -173,7 +180,6 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
             else if (channel.Contains("emu")) cat="e#mu";
             else if (channel.Contains("mumu")) cat="#mu#mu";
             TLatex label=gfx::cornerLabel(cat,1);
-            
             gPad->SetRightMargin(0.2);
             gPad->SetLeftMargin(0.13);
             
@@ -185,7 +191,6 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
                plot2D(*tempHist,cat+","+nameVec[i],selection+"/"+trigg+"/"+channel+"/"+var+nameVec[i],saver);
                i++;
             }
-            
             // Derive SF
             eff_data_hist_eUp->Divide(eff_MC_hist_eUp);
             eff_data_hist_eDown->Divide(eff_MC_hist_eDown);
@@ -264,11 +269,16 @@ void alpha(io::RootFileReader const &histReader, io::RootFileSaver const &saver,
 
 void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver const &saver, io::RootFileSaver const &saverHist, TString const &datasetName, TString const &mcName){
    std::map<int,std::map<TString,float>> lumiFractionsPerEra = {
+                                                            {0,{{"B",0.295},{"C",0.132},{"D",0.217},{"E",0.206},{"F",0.150}}},   //2016B,2016C,2016D,2016E,2016F preVFP
+                                                            {1,{{"F",0.036},{"G",0.450},{"H",0.514}}},   //2016F,2016G,2016H postVFP
                                                             {2,{{"B",0.116},{"C",0.233},{"D",0.102},{"E",0.223},{"F",0.326}}},   //2017B,2017C,2017D,2017E,2017F
                                                             {3,{{"A",0.233},{"B",0.118},{"C",0.116},{"D",0.532}}}};        //2018A,2018B,2018C,2018D
    std::map<int,std::vector<TString>> eraNames = {
+                                                            {0,{"B","C","D","E","F"}},   //2016B,2016C,2016D,2016E,2016F preVFP
+                                                            {1,{"F","G","H"}},   //2016F,2016G,2016H postVFP
                                                             {2,{"B","C","D","E","F"}},   //2017B,2017C,2017D,2017E,2017F
                                                             {3,{"A","B","C","D"}}};        //2018A,2018B,2018C,2018D
+   
    
    TCanvas can;
    for(TString selection:{"baselineTrigger"}){
@@ -279,7 +289,9 @@ void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver cons
             int i = 0;
             std::vector<float> Edges = (channel!="emu")? Edges_emu:Edges_ee_mumu;
             TH2F lumiWeightSF("","",Edges.size()-1,&Edges[0],Edges.size()-1,&Edges[0]);
-            for (auto dsName: cfg.datasets.getDatasubsetNames({datasetName})){
+            std::cout << "\033[1;31m" << datasetName << "\033[0m" << std::endl; 
+            for (auto dsName: cfg.datasets.getDatasubsetNames({datasetName})){      
+                      
                TH2F* base_data=histReader.read<TH2F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+dsName);
                TH2F* data=histReader.read<TH2F>(selection+"/"+trigg+"/"+channel+"/"+var+"/"+dsName);
                TH2F* base_MC=histReader.read<TH2F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+mcName);
@@ -322,6 +334,7 @@ void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver cons
                plot2D(*eff_data_hist,cat+", Era"+eraNames[cfg.year_int][i],selection+"/"+trigg+"/"+channel+"/Era"+eraNames[cfg.year_int][i]+"/"+var+"_SF",saver);
                
                // Store for lumi weighted sum
+               
                eff_data_hist->Scale(lumiFractionsPerEra[cfg.year_int][eraNames[cfg.year_int][i]]);
                lumiWeightSF.Add(eff_data_hist);
                if((i+1)==eraNames[cfg.year_int].size()){  //store if last era is reached
