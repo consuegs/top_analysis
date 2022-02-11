@@ -166,47 +166,33 @@ void plot_correlation(TH2F* corrMatrix, TString name, io::RootFileSaver* saver){
 extern "C"
 void run()
 {
-   // unfolded sample
-   // ~TString sample="MadGraph";
-   TString sample="TTbar_diLepton";
-   // ~TString sample="";
-   
-   // response sample
-   // ~TString sample_response="MadGraph";
-   TString sample_response="TTbar_diLepton";
-   // ~TString sample_response="";
+   TString sample = cfg.tunfold_InputSamples[0];
+   TString sample_response = cfg.tunfold_ResponseSample;
    
    // Use pT reweighted
-   bool withPTreweight = false;
-   // ~bool withPTreweight = true;
-   TString scale="0.001";
+   bool withPTreweight = cfg.tunfold_withPTreweight;
+   TString scale = cfg.tunfold_scalePTreweight;
    
    // Use DNN instead of pfMET
-   // ~bool withDNN = false;
-   bool withDNN = true;
+   bool withDNN = cfg.tunfold_withDNN;
    
    // Use puppi instead of pfMET
    bool withPuppi = !withDNN;
    
    // Use same bin numbers for gen/true
-   bool withSameBins = false;
-   // ~bool withSameBins = true;
+   bool withSameBins = cfg.tunfold_withSameBins;
    
    // include signal to pseudo data
-   // ~bool withBSM = true;
-   bool withBSM = false;
+   bool withBSM = cfg.tunfold_withBSM;
    
    //Use scale factor
-   bool withScaleFactor = false;
-   // ~bool withScaleFactor = true;
+   bool withScaleFactor = cfg.tunfold_withScaleFactor;
    
    //Plot comparison
-   // ~bool plotComparison = false;
-   bool plotComparison = true;
+   bool plotComparison = cfg.tunfold_plotComparison;
    
    //Plot toy studies
-   bool plotToyStudies = false;
-   // ~bool plotToyStudies = true;
+   bool plotToyStudies = cfg.tunfold_plotToyStudies;
    
    //==============================================
    // step 1 : open output file
@@ -214,8 +200,7 @@ void run()
 
    //==============================================
    // step 2 : read binning schemes and input histograms
-   io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100));
-   // ~io::RootFileReader histReader(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold/TUnfold%.1f.root" : "TUnfold/TUnfold_SF91_%.1f.root",cfg.processFraction*100));
    TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
    TString input_loc_result="TUnfold_results_"+sample+"_"+sample_response;
    if (withBSM) {

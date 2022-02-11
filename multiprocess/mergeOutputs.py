@@ -231,8 +231,7 @@ def getSampleNameCombine(sampleName):       # needed to correctly handle SampleN
 def mergeForCombine(logPath,histPath,sampleList):
     info = getInfoFromLogPath(logPath)
     nTupleVersion = getNTupleVersion(info["year"])
-    #  ~outputDir = histPath+"../combine/"
-    outputDir = histPath+"../combine_test/"
+    outputDir = histPath+"../combine/"
     outfile = "{}combineInput_{}.root".format(outputDir,nTupleVersion)
     
     filesToMerge = []    # keep track of files to merge
@@ -366,4 +365,4 @@ if __name__ == "__main__":
             print "-------------Start merging all datasets to one histFile----------------------"
             mergeAllHists(datasetList,args.logPath,histPath)
     elif(args.mergeForCombine):
-        mergeForCombine(args.logPath,histPath,["TTbar_diLepton","DrellYan_comb","TTbar_other","otherBKG","SingleTop"])
+        mergeForCombine(args.logPath,histPath,["TTbar_diLepton","DrellYan_comb","TTbar_other","otherBKG","SingleTop","data_obs"])

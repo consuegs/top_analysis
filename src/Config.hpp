@@ -76,6 +76,7 @@ public:
    TString treeName;
    TString gitHash;
    std::string dataBasePath;
+   TString minTreePath;
 
    TString outputDirectory;
 
@@ -89,6 +90,19 @@ public:
    std::string systematic;
    
    std::map<TString,std::pair<float,std::vector<std::string>>> systUncFactor;
+   
+   std::vector<std::string> tunfold_InputSamples;
+   TString tunfold_ResponseSample;
+   std::vector<std::string> tunfold_bkgSamples_ttbar;
+   std::vector<std::string> tunfold_bkgSamples_other;
+   bool tunfold_withPTreweight;
+   TString tunfold_scalePTreweight;
+   bool tunfold_withDNN;
+   bool tunfold_withSameBins;
+   bool tunfold_withBSM;
+   bool tunfold_withScaleFactor;
+   bool tunfold_plotComparison;
+   bool tunfold_plotToyStudies;
 
    std::vector<std::string> modules;
 
@@ -101,6 +115,8 @@ public:
    
    //manipulate
    void setOutput(const std::string);
+   
+   int getTotalFileNR(std::string const) const;
 private:
    Config();
 };

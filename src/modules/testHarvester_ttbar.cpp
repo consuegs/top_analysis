@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include <cstdlib>
+#include <boost/filesystem.hpp>
 
 #include <CombineHarvester/CombineTools/interface/CombineHarvester.h>
 #include <CombineHarvester/CombineTools/interface/Observation.h>
@@ -41,9 +42,10 @@ void run(){
   string histLoc = "/net/data_cms1b/user/dmeuser/top_analysis/" + string("2018") + "/v06/output_framework/multiHists/";
 
   // ~vector<string> test_variables = {"nJets", "Lep1_pt"};
-  vector<string> test_variables = {"Lep1_pt"};
+  // ~vector<string> test_variables = {"Lep1_pt"};
   // ~vector<string> test_variables = {"n_Interactions"};
   // ~vector<string> test_variables = {"Lep1_phi"};
+  vector<string> test_variables = {"Lep1_pt*cos(Lep1_phi)"};
   
   for (auto test_variable : test_variables) {
     // Create an empty CombineHarvester instance that will hold all of the
@@ -77,13 +79,27 @@ void run(){
 
     // Read in Uncertainties:
     // Lumi:
-    float lumiUnc = cfg.systUncFactor.at("LUMI");
+    float lumiUnc = cfg.systUncFactor.at("LUMI").first;
     cb.cp().process(ch::JoinStr({sig_procs, bkg_procs})).AddSyst(cb, "lumi", "lnN", SystMap<>::init(1+lumiUnc));
     
+    // Add xsec unceratinties
+    cb.cp().process({"DrellYan_comb"}).AddSyst(cb, "DY_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_DY").first));
+    cb.cp().process({"TTbar_other"}).AddSyst(cb, "TTother_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_TTOTHER").first));
+    cb.cp().process({"SingleTop"}).AddSyst(cb, "ST_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_ST").first));
+    cb.cp().process({"otherBKG"}).AddSyst(cb, "other_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_OTHER").first));
+    
     // Uncertainties, that are applied to all processes:
-    vector<string> shapeUncAllMC = {"BTAGBC", "BTAGL", "ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "JER", "JESTotal", "MEFACSCALE", "MERENSCALE", "MUON_ID", "MUON_ISO", "MUON_SCALE", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "TRIG", "UNCLUSTERED"}; 
+    // ~vector<string> shapeUncAllMC = {"BTAGBC", "BTAGL", "ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "JER", "JESTotal", "MEFACSCALE", "MERENSCALE", "MUON_ID", "MUON_ISO", "MUON_SCALE", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "TRIG", "UNCLUSTERED"}; 
+    vector<string> shapeUncAllMC = {"BTAGBC", "BTAGL", "ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "JER", "JESTotal", "MUON_ID", "MUON_ISO", "MUON_SCALE", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "TRIG", "UNCLUSTERED"}; 
     for (auto systNameAll : shapeUncAllMC) {
       cb.cp().process(ch::JoinStr({sig_procs, bkg_procs})).AddSyst(cb, systNameAll, "shape", SystMap<>::init(1.00));
+    }
+    
+    // Uncertainties, that are not applied to DY processes:
+    vector<string> shapeUncNoDY = {"MEFACSCALE", "MERENSCALE"};
+    for (auto systNameTTbar : shapeUncNoDY) {
+      cb.cp().process({"TTbar_diLepton", "TTbar_other", "SingleTop", "otherBKG"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
+      // ~cb.cp().process({"TTbar_diLepton", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
     }
     
     // Uncertainties, that are applied only to ttbar processes:
@@ -112,7 +128,8 @@ void run(){
     // ~cb.VariableRebin(linspace(-3.2, 3.2, 51));
     // ~cb.VariableRebin(linspace(-3.2, 3.2, 26));
     // ~cb.VariableRebin(linspace(0, 80, 41));
-    cb.VariableRebin(linspace(0, 420, int(420/30+1))); //pt
+    // ~cb.VariableRebin(linspace(0, 420, int(420/30+1))); //pt
+    cb.VariableRebin(linspace(-250, 250, 26)); //pt
     
     ch::SetStandardBinNames(cb, "$BIN");
 
@@ -120,12 +137,13 @@ void run(){
     
     cb.AddDatacardLineAtEnd("* autoMCStats 10 1 1");
     
-    TFile output(string("/net/data_cms1b/user/nattland/top_analyse/DNNinputs_Datacards/ttbar_dc_1d/ttbar_"+test_variable+"_1d.input.root").c_str(), "RECREATE");
-    // ~TFile output(string("/net/data_cms1b/user/nattland/top_analyse/DNNinputs_Datacards/ttbar_final_"+test_variable+"_datacard_inp.input.root").c_str(), "RECREATE");
+    if (test_variable=="Lep1_pt*cos(Lep1_phi)") test_variable ="Lep1_pX";
+    
+    boost::filesystem::create_directories((cfg.outputDirectory+"/datacards/").Data());
+    TFile output(string(cfg.outputDirectory+"/datacards/ttbar_"+test_variable+"_1d.input.root").c_str(), "RECREATE");
     for (auto m : masses) {
       cout << ">> Writing datacard for variable: " << test_variable << "\n";
-      cb.cp().mass({m, "*"}).WriteDatacard(
-          "/net/data_cms1b/user/nattland/top_analyse/DNNinputs_Datacards/ttbar_dc_1d/ttbar_" + test_variable + "_1d.txt", output);
+      cb.cp().mass({m, "*"}).WriteDatacard((cfg.outputDirectory+"/datacards/ttbar_" + test_variable + "_1d.txt").Data(), output);
     }
   }
 }

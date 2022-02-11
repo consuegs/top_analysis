@@ -19,9 +19,9 @@ set(MODULES
   # ~compare_pseudoGen
   # ~diff_dPhiResolution
   # ~plot_dPhiResolution
-  # ~TUnfold_binning
-  # ~TUnfold_unfolding
-  # ~TUnfold_plotting
+  TUnfold_binning
+  TUnfold_unfolding
+  TUnfold_plotting
   # ~TUnfold_minimalTest
   # ~RooUnfold_test
   # ~plot_metSF
@@ -61,6 +61,7 @@ set(MODULES
   cr_envelope
   # ~analyze_minTrees
   testHarvester
+  testHarvester_ttbar
   )
 
 foreach(MODULE ${MODULES})
