@@ -126,43 +126,34 @@ Config const &cfg=Config::get();
 extern "C"
 void run()
 {
-   // unfolded sample
-   // ~TString sample="MadGraph";
-   TString sample="TTbar_diLepton";
-   // ~TString sample="";
+   //Read systematic from command line
+   Systematic::Systematic currentSystematic(cfg.systematic);
+   bool isNominal = (currentSystematic.type()==Systematic::nominal);
    
-   // response sample
-   // ~TString sample_response="MadGraph";
-   TString sample_response="TTbar_diLepton";
-   // ~TString sample_response="";
+   TString sample = cfg.tunfold_InputSamples[0];
+   TString sample_response = cfg.tunfold_ResponseSample;
    
    // Use pT reweighted
-   bool withPTreweight = false;
-   // ~bool withPTreweight = true;
-   TString scale="0.001";
+   bool withPTreweight = cfg.tunfold_withPTreweight;
+   TString scale = cfg.tunfold_scalePTreweight;
    
    // Use DNN instead of pfMET
-   // ~bool withDNN = false;
-   bool withDNN = true;
+   bool withDNN = cfg.tunfold_withDNN;
    
    // Use puppi instead of pfMET
    bool withPuppi = !withDNN;
    
    // Use same bin numbers for gen/true
-   bool withSameBins = false;
-   // ~bool withSameBins = true;
+   bool withSameBins = cfg.tunfold_withSameBins;
    
    // include signal to pseudo data
-   // ~bool withBSM = true;
-   bool withBSM = false;
+   bool withBSM = cfg.tunfold_withBSM;
    
    //Use scale factor
-   bool withScaleFactor = false;
-   // ~bool withScaleFactor = true;
+   bool withScaleFactor = cfg.tunfold_withScaleFactor;
    
    // perform toys studies?
-   bool toy_studies=false;
-   // ~bool toy_studies=true;
+   bool toy_studies = cfg.tunfold_plotToyStudies;
    int MAXTOY=3000;
    
    // switch on histogram errors
@@ -176,13 +167,12 @@ void run()
    if (withDNN) save_path+="_DNN";
    if (withSameBins) save_path+="_SameBins";
    if (withPTreweight) save_path+="_PTreweight"+scale;
-   io::RootFileSaver saver(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
-   // ~io::RootFileSaver saver(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100),save_path);
+   io::RootFileSaver saver(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root",currentSystematic.name().Data(),cfg.processFraction*100),save_path);
 
    //==============================================
    // step 2 : read binning schemes and input histograms
-   io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold%.1f.root" : "TUnfold_SF91_%.1f.root",cfg.processFraction*100));
-   // ~io::RootFileReader histReader(TString::Format("TUnfold_SF91_%.1f.root",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root","Nominal",cfg.processFraction*100));
+   io::RootFileReader histReader_syst(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root",currentSystematic.name().Data(),cfg.processFraction*100));
    TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
    if (withBSM) input_loc+="_BSM";
    if (withPuppi) input_loc+="_Puppi";
@@ -203,16 +193,20 @@ void run()
    TH1 *histDataReco_coarse=histReader.read<TH1>(input_loc+"/histDataReco_coarse");
    TH1 *histDataReco_coarse_unscaled=(TH1*)histDataReco_coarse->Clone();
    TH1 *histDataTruth=histReader.read<TH1>(input_loc+"/histDataTruth");
-   TH1 *histSignalFraction=histReader.read<TH1>(input_loc+"/hist_SignalFraction");
-   TH1 *histSignalFraction_coarse=histReader.read<TH1>(input_loc+"/hist_SignalFraction_coarse");
-   // ~TH1 *histSignalFraction=histReader.read<TH1>("TUnfold_binning_MadGraph_MadGraph/hist_SignalFraction");
-   // ~TH1 *histSignalFraction=histReader.read<TH1>("TUnfold_binning_dilepton_/hist_SignalFraction");
-   TH2 *histMCGenRec=histReader.read<TH2>(input_loc+"/histMCGenRec");
-   TH2 *histMCGenRec_sameBins=histReader.read<TH2>(input_loc+"/histMCGenRec_sameBins");
+   TH1 *histSignalFraction=histReader_syst.read<TH1>(input_loc+"/hist_SignalFraction");
+   TH1 *histMCRec_bkg=histReader_syst.read<TH1>(input_loc+"/histMCRec_bkg");
+   TH1 *histMCRec_bkg_coarse=histReader_syst.read<TH1>(input_loc+"/histMCRec_bkg_coarse");
+   TH1 *histSignalFraction_coarse=histReader_syst.read<TH1>(input_loc+"/hist_SignalFraction_coarse");
+   TH2 *histMCGenRec=histReader_syst.read<TH2>(input_loc+"/histMCGenRec");
+   TH2 *histMCGenRec_sameBins=histReader_syst.read<TH2>(input_loc+"/histMCGenRec_sameBins");
 
    if((!histDataReco)||(!histDataTruth)||(!histMCGenRec)) {
       cout<<"problem to read input histograms\n";
    }
+   
+   // substract non-ttbar background
+   histDataReco->Add(histMCRec_bkg,-1);
+   histDataReco_coarse->Add(histMCRec_bkg_coarse,-1);
    
    // remove fakes in reco by applying signal fraction
    histDataReco->Multiply(histSignalFraction);

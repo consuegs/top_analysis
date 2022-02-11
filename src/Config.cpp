@@ -37,6 +37,7 @@ Config::Config()
    year_int=pt.get<int>("input.year_int");
    treeName=pt.get<std::string>("input.treeName");
    dataBasePath=pt.get<std::string>("input.dataBasePath")+treeVersion+"/nTuple/";
+   minTreePath=pt.get<std::string>("input.dataBasePath")+treeVersion+"/minTrees/";
    gitHash=io::shellOutput("git log -1 --pretty=format:%h");
    if (TString(io::shellOutput("git status")).Contains("modified")) gitHash+="*";
    lumi=pt.get<float>("general.lumi");
@@ -100,6 +101,18 @@ Config::Config()
    systUncFactor["XSEC_ST"] = std::pair<float,std::vector<std::string>> (pt.get<float>("SystUnc.xsec_st_unc"),util::to_vector<std::string>(pt.get<std::string>("SystUnc.xsec_st_samples")));
    systUncFactor["XSEC_OTHER"] = std::pair<float,std::vector<std::string>> (pt.get<float>("SystUnc.xsec_other_unc"),util::to_vector<std::string>(pt.get<std::string>("SystUnc.xsec_other_samples")));
    
+   tunfold_InputSamples = util::to_vector<std::string>(pt.get<std::string>("TUnfold.inputSamples"));
+   tunfold_ResponseSample = pt.get<std::string>("TUnfold.responseSample");
+   tunfold_bkgSamples_ttbar = util::to_vector<std::string>(pt.get<std::string>("TUnfold.bkgSamples_ttbar"));
+   tunfold_bkgSamples_other = util::to_vector<std::string>(pt.get<std::string>("TUnfold.bkgSamples_other"));
+   tunfold_withPTreweight = pt.get<bool>("TUnfold.withPTreweight");
+   tunfold_scalePTreweight = pt.get<std::string>("TUnfold.scalePTreweight");
+   tunfold_withDNN = pt.get<bool>("TUnfold.withDNN");
+   tunfold_withSameBins = pt.get<bool>("TUnfold.withSameBins");
+   tunfold_withBSM = pt.get<bool>("TUnfold.withBSM");
+   tunfold_withScaleFactor = pt.get<bool>("TUnfold.withScaleFactor");
+   tunfold_plotComparison = pt.get<bool>("TUnfold.plotComparison");
+   tunfold_plotToyStudies = pt.get<bool>("TUnfold.plotToyStudies");
 
    outputDirectory=pt.get<std::string>("output.directory")+treeVersion+"/output_framework";
    datasets=DatasetCollection(pt,dataBasePath);
@@ -121,6 +134,11 @@ TString Config::getJESPath(const int run_era, const bool isPuppi=false) const{
       std::cerr<<"ERROR in selection for JES file, run_era does not match! "<<std::endl;
       exit(98);
    }
+}
+
+int Config::getTotalFileNR(std::string const sample) const{
+   std::vector<std::string> tempVec = util::to_vector<std::string>(pt.get<std::string>(sample+".files"));
+   return tempVec.size();
 }
 
 // static
