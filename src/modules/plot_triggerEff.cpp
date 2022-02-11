@@ -165,7 +165,6 @@ void SF2D(io::RootFileReader const &histReader, io::RootFileSaver const &saver, 
             eff_MC.SetUseWeightedEvents(false);
             eff_data.SetStatisticOption(TEfficiency::kFCP);
             eff_MC.SetStatisticOption(TEfficiency::kFCP);
-            std::cout << eff_MC_hist_eUp << std::endl;
             for(int i=0; i<=eff_MC_hist_eUp->GetNbinsX();i++){
                for(int j=0; j<=eff_MC_hist_eUp->GetNbinsY();j++){
                   eff_MC_hist_eUp->SetBinError(i,j,eff_MC.GetEfficiencyErrorUp(eff_MC.GetGlobalBin(i,j)));
@@ -289,7 +288,6 @@ void lumiWeightedSF(io::RootFileReader const &histReader, io::RootFileSaver cons
             int i = 0;
             std::vector<float> Edges = (channel!="emu")? Edges_emu:Edges_ee_mumu;
             TH2F lumiWeightSF("","",Edges.size()-1,&Edges[0],Edges.size()-1,&Edges[0]);
-            std::cout << "\033[1;31m" << datasetName << "\033[0m" << std::endl; 
             for (auto dsName: cfg.datasets.getDatasubsetNames({datasetName})){      
                       
                TH2F* base_data=histReader.read<TH2F>(selection+"/baselineTrigger/"+channel+"/"+var+"/"+dsName);
