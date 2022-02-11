@@ -83,10 +83,10 @@ void run(){
     cb.cp().process(ch::JoinStr({sig_procs, bkg_procs})).AddSyst(cb, "lumi", "lnN", SystMap<>::init(1+lumiUnc));
     
     // Add xsec unceratinties
-    cb.cp().process({"DrellYan_comb"}).AddSyst(cb, "DY_xsec", "lnN", SystMap<>::init(cfg.systUncFactor.at("XSEC_DY").first));
-    cb.cp().process({"TTbar_other"}).AddSyst(cb, "TTother_xsec", "lnN", SystMap<>::init(cfg.systUncFactor.at("XSEC_TTOTHER").first));
-    cb.cp().process({"SingleTop"}).AddSyst(cb, "ST_xsec", "lnN", SystMap<>::init(cfg.systUncFactor.at("XSEC_ST").first));
-    cb.cp().process({"otherBKG"}).AddSyst(cb, "other_xsec", "lnN", SystMap<>::init(cfg.systUncFactor.at("XSEC_OTHER").first));
+    cb.cp().process({"DrellYan_comb"}).AddSyst(cb, "DY_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_DY").first));
+    cb.cp().process({"TTbar_other"}).AddSyst(cb, "TTother_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_TTOTHER").first));
+    cb.cp().process({"SingleTop"}).AddSyst(cb, "ST_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_ST").first));
+    cb.cp().process({"otherBKG"}).AddSyst(cb, "other_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_OTHER").first));
     
     // Uncertainties, that are applied to all processes:
     // ~vector<string> shapeUncAllMC = {"BTAGBC", "BTAGL", "ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "JER", "JESTotal", "MEFACSCALE", "MERENSCALE", "MUON_ID", "MUON_ISO", "MUON_SCALE", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "TRIG", "UNCLUSTERED"}; 
