@@ -14,6 +14,7 @@
 #include <TH2F.h>
 #include <THStack.h>
 #include <TProfile2D.h>
+#include <TGraphAsymmErrors.h>
 
 namespace hist
 {
@@ -154,6 +155,8 @@ namespace hist
    std::pair<TH1F*,TH1F*> getEnvelope(const TH1F* nominal, const std::vector<TH1F> &shifts);
    std::pair<TH2F*,TH2F*> getEnvelope(const TH2F* nominal, const std::vector<TH2F*> shifts);
    std::pair<TH2F*,TH2F*> getEnvelope(const TH2F* nominal, const std::vector<TH2F> &shifts);
+   
+   TGraphAsymmErrors getErrorGraph(TH1F* const eDOWN, TH1F* const eUP, TH1F* const nominal, bool const shift);
 }
 
 #endif /* HIST_HPP__ */

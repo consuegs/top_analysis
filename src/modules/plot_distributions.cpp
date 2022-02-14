@@ -275,24 +275,6 @@ std::pair<TH1F*,TH1F*> getTotalSyst(TH1F* const &nominal, std::vector<systHists*
    return std::make_pair(hist_shiftDOWN,hist_shiftUP);
 }
 
-// get graph with asym. errors from three histograms (shift=true if only shift and not shift+nominal is given)
-TGraphAsymmErrors getErrorGraph(TH1F* const eDOWN, TH1F* const eUP, TH1F* const nominal, bool const shift){
-   TGraphAsymmErrors asymmerrors(nominal);
-   if (shift) {
-      for (int i=0; i<=eUP->GetNbinsX(); i++){
-         asymmerrors.SetPointEYhigh(i,eUP->GetBinContent(i+1));
-         asymmerrors.SetPointEYlow(i,eDOWN->GetBinContent(i+1));
-      }
-   }
-   else {
-      for (int i=0; i<=eUP->GetNbinsX(); i++){
-         asymmerrors.SetPointEYhigh(i,abs(eUP->GetBinContent(i+1)-nominal->GetBinContent(i+1)));
-         asymmerrors.SetPointEYlow(i,abs(eDOWN->GetBinContent(i+1)-nominal->GetBinContent(i+1)));
-      }
-   }
-   return asymmerrors;
-}
-
 void printUnc(TString name, const float &down, const float &up, const float &nominal){
    name = name.ReplaceAll("ELECTRON_SCALESMEARING","EL_SCALESMEARING");
    TString out = TString::Format(" %s & $%.1f(%.1f)$ & $%.1f(%.1f)$\\\\\n",name.ReplaceAll("_","\\_").Data(),down,down/nominal*100,up,up/nominal*100);
@@ -312,12 +294,21 @@ void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systH
       float mcYield = mc_total->GetBinContent(6);
       float mcYield_down = syst.first->GetBinContent(6);
       float mcYield_up = syst.second->GetBinContent(6);
+      bool isMCtotal = false;
       for (TString sample:outputSamples){
+         isMCtotal = (sample=="MC");
          TH1F* temp_hist=hs->getHistogram("cutflow/"+cat,sample);
          float sampleYield = temp_hist->GetBinContent(6);
-         std::cout<<std::fixed<<sample<<"&"<<sampleYield<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
-         if (sample=="MC") std::cout<<mcYield_down<<"   "<<mcYield_up<<std::endl;
-         if (sample=="MC") std::cout<<mcYield_down/mcYield*100<<"   "<<mcYield_up/mcYield*100<<std::endl;
+         if(!isMCtotal){
+            std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<sampleYield<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
+         }
+         else{
+            TString yieldUnc = TString::Format("$%.1f^{+%.1f}_{-%.1f}$",sampleYield,mcYield_up,mcYield_down);
+            std::cout<<"\\hline"<<std::endl;
+            std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<yieldUnc<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
+         }
+         // ~if (sample=="MC") std::cout<<mcYield_down<<"   "<<mcYield_up<<std::endl;
+         // ~if (sample=="MC") std::cout<<mcYield_down/mcYield*100<<"   "<<mcYield_up/mcYield*100<<std::endl;
       }
    }
 }
@@ -427,7 +418,7 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    //systematics
    TH1F* hist_mc = hs->getHistogram(loc,{"MC"});
    std::pair<TH1F*,TH1F*> syst = getTotalSyst(hist_mc,systHists_vec,loc);
-   TGraphAsymmErrors systGraph = getErrorGraph(syst.first,syst.second,hist_mc,true);
+   TGraphAsymmErrors systGraph = hist::getErrorGraph(syst.first,syst.second,hist_mc,true);
    
    TString cat;   // set channel label
    if (loc.Contains("ee")) cat="ee";
@@ -501,7 +492,7 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    TH1F ratio_mc_systDown = hist::getRatio(*hist_mc_sysDown,*hist_mc,"data/MC",hist::ONLY1);
    TH1F ratio_mc_systUp = hist::getRatio(*hist_mc_sysUp,*hist_mc,"data/MC",hist::ONLY1);
    
-   TGraphAsymmErrors systGraphRatio = getErrorGraph(&ratio_mc_systUp,&ratio_mc_systDown,&ratio_mc,false);
+   TGraphAsymmErrors systGraphRatio = hist::getErrorGraph(&ratio_mc_systUp,&ratio_mc_systDown,&ratio_mc,false);
    
    // total unc.
    TH1F* hist_mc_totalDown = (TH1F*)syst.second->Clone();
@@ -534,9 +525,9 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    TH1F ratio_mc_expDataStatDown = hist::getRatio(*hist_mc_expDataStatDown,*hist_mc,"data/MC",hist::ONLY1);
    TH1F ratio_mc_expDataStatUp = hist::getRatio(*hist_mc_expDataStatUp,*hist_mc,"data/MC",hist::ONLY1);
    
-   TGraphAsymmErrors totalUncGraphRatio = getErrorGraph(&ratio_mc_totalUp,&ratio_mc_totalDown,&ratio_mc,false);
+   TGraphAsymmErrors totalUncGraphRatio = hist::getErrorGraph(&ratio_mc_totalUp,&ratio_mc_totalDown,&ratio_mc,false);
    
-   TGraphAsymmErrors expDataStatRatio = getErrorGraph(&ratio_mc_expDataStatUp,&ratio_mc_expDataStatDown,&ratio_mc,false);
+   TGraphAsymmErrors expDataStatRatio = hist::getErrorGraph(&ratio_mc_expDataStatUp,&ratio_mc_expDataStatDown,&ratio_mc,false);
    
    if(sPresel.Contains("cutflow")){    // set cutflow specific axis labels
       ratio_mc.GetXaxis()->SetBinLabel(1,"DiLepton");
@@ -647,8 +638,9 @@ void run()
       signalSamples = {"TTbar_diLepton"};
       break;
       case(2): //2017
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","WW","WZ","ZZ","ttZ","ttW"};
+      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
+      ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
       break;
       case(1): //2016
@@ -659,7 +651,7 @@ void run()
    }
    std::vector<TString> samplesToPlot = util::addVectors(mcSamples,dataSamples);
    
-   // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","CR_ENVELOPE_IND_UP","CR_ENVELOPE_IND_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
+   std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","CR_ENVELOPE_IND_UP","CR_ENVELOPE_IND_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","ELECTRON_ID_UP","ELECTRON_ID_DOWN","MUON_ID_UP","MUON_ID_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PU_UP","PU_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PU_DOWN"};
@@ -687,7 +679,7 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","MATCH_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PDF_50_DOWN"};
-   std::vector<TString> systToPlot = {"Nominal","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal"};
    
    // 1D plots
@@ -699,8 +691,8 @@ void run()
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          // ~vecDistr.push_back({selection+channel,"Lep_e_pt",0.,600.,50});
          // ~vecDistr.push_back({selection+channel,"Lep_mu_pt",0.,600.,50});
-         // ~vecDistr.push_back({selection+channel,"Lep1_pt",0.,480.,40});
-         // ~vecDistr.push_back({selection+channel,"Lep2_pt",0.,480.,40});
+         vecDistr.push_back({selection+channel,"Lep1_pt",0.,480.,40});
+         vecDistr.push_back({selection+channel,"Lep2_pt",0.,480.,40});
          // ~vecDistr.push_back({selection+channel,"MET",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,40,70,110,170,260,370,500}});
          // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,20,40,55,70,90,110,140,170,215,260,315,370,435,500}});
@@ -711,8 +703,8 @@ void run()
          // ~vecDistr.push_back({selection+channel,"pTsumlep",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"sumpTlep",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"pTbJet",0.,600.,30});
-         // ~vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,30});
-         // ~vecDistr.push_back({selection+channel,"Jet2_pt",0.,600.,30});
+         vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,30});
+         vecDistr.push_back({selection+channel,"Jet2_pt",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"dPhiMETnearJet",0.,3.2,32});
          // ~vecDistr.push_back({selection+channel,"dPhiMETleadJet",0.,3.2,32});
          // ~vecDistr.push_back({selection+channel,"dPhiMETlead2Jet",0.,3.2,32});
@@ -732,8 +724,8 @@ void run()
          // ~vecDistr.push_back({selection+channel,"dphi_metLepsum",0.,3.2,50});
          // ~vecDistr.push_back({selection+channel,"dPhiLep1Lep2",0.,3.2,50});
          // ~vecDistr.push_back({selection+channel,"dR_Lep1Lep2",0.,5.,100});
-         // ~vecDistr.push_back({selection+channel,"nJets",-0.5,10.5,11});
-         // ~vecDistr.push_back({selection+channel,"nBjets",-0.5,4.5,5});
+         vecDistr.push_back({selection+channel,"nJets",-0.5,11.5,11});
+         vecDistr.push_back({selection+channel,"nBjets",-0.5,4.5,5});
          // ~vecDistr.push_back({selection+channel,"MT2",0.,200.,50});
          // ~vecDistr.push_back({selection+channel,"MT",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"mt_MetLep2",0.,600.,30});
@@ -780,7 +772,7 @@ void run()
          // ~vecDistr.push_back({selection+channel,"ratio_vecsumpTlep_vecsumpTjet",0.,20.,50});
          // ~vecDistr.push_back({selection+channel,"mjj",0.,2000.,50});
          
-         vecDistr.push_back({selection+channel,"Lep1_pt*cos(Lep1_phi)",-250,250,25});
+         // ~vecDistr.push_back({selection+channel,"Lep1_pt*cos(Lep1_phi)",-250,250,25});
       }
    }
    
@@ -865,7 +857,7 @@ void run()
    
    // 1D plotting
    for (auto &distr_:vecDistr){
-      plotHistograms(distr_.path,distr_.name,hs,mcSamples_merged,colormap,systHists_vec,saver,true,false);
+      plotHistograms(distr_.path,distr_.name,hs,mcSamples_merged,colormap,systHists_vec,saver,false,false);
    }
    
    // 2D plotting
@@ -900,7 +892,7 @@ void run()
          TH1F* hist_mc = hs->getHistogram(loc,{"MC"});
          std::pair<TH1F*,TH1F*> syst = getTotalSyst(hist_mc,systHists_vec,loc);
          
-         TGraphAsymmErrors systGraph = getErrorGraph(syst.first,syst.second,hist_mc,true);
+         TGraphAsymmErrors systGraph = hist::getErrorGraph(syst.first,syst.second,hist_mc,true);
          
          systGraph.SetFillStyle(3001);
          systGraph.Draw("same 2");

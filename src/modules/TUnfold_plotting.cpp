@@ -14,7 +14,6 @@
 #include <TProfile.h>
 #include <TVectorD.h>
 
-
 #include "Config.hpp"
 #include "tools/hist.hpp"
 #include "tools/physics.hpp"
@@ -161,7 +160,47 @@ void plot_correlation(TH2F* corrMatrix, TString name, io::RootFileSaver* saver){
    corrMatrix->Draw("hcolz text");
    saver->save(can2D,name,true,true);
 }
+
+std::pair<TH1F*,TH1F*> getSystUnc(TH1F* const &nominal, TString const &path,bool const &addStat, bool const &withScaleFactor){
    
+   std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
+   // ~std::vector<TString> systVec = {"LUMI_UP","LUMI_DOWN"};
+   
+   TH1F* hist_shiftUP = (TH1F*)nominal->Clone();
+   TH1F* hist_shiftDOWN = (TH1F*)nominal->Clone();
+   hist_shiftUP->Reset();
+   hist_shiftDOWN->Reset();
+   
+   TH1F* tempSys;
+   TH1F tempShift;
+   
+   for (auto &syst : systVec){
+      io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root",syst.Data(),cfg.processFraction*100));
+      
+      tempSys = histReader.read<TH1F>(path);
+      tempShift = phys::getSystShift(*nominal,*tempSys);
+       
+      for (int i=0; i<=tempShift.GetNbinsX(); i++){
+         float content = tempShift.GetBinContent(i);
+         if (content>0) hist_shiftUP->SetBinContent(i,hist_shiftUP->GetBinContent(i)+content*content);
+         else hist_shiftDOWN->SetBinContent(i,hist_shiftDOWN->GetBinContent(i)+content*content);
+      }
+      
+   }
+   
+   if (addStat){  //add stat. unc.
+      for (int i=0; i<=nominal->GetNbinsX(); i++){
+         float content = nominal->GetBinError(i);
+         hist_shiftUP->SetBinContent(i,hist_shiftUP->GetBinContent(i)+content*content);
+         hist_shiftDOWN->SetBinContent(i,hist_shiftDOWN->GetBinContent(i)+content*content);
+      }
+   }
+   
+   hist::sqrtHist(*hist_shiftUP);
+   hist::sqrtHist(*hist_shiftDOWN);
+   
+   return std::make_pair(hist_shiftDOWN,hist_shiftUP);
+}
 
 extern "C"
 void run()
@@ -200,7 +239,7 @@ void run()
 
    //==============================================
    // step 2 : read binning schemes and input histograms
-   io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold/TUnfold%.1f.root" : "TUnfold/TUnfold_SF91_%.1f.root",cfg.processFraction*100));
+   io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold/TUnfold_Nominal_%.1f.root" : "TUnfold/TUnfold_SF91_Nominal_%.1f.root",cfg.processFraction*100));
    TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
    TString input_loc_result="TUnfold_results_"+sample+"_"+sample_response;
    if (withBSM) {
@@ -283,7 +322,13 @@ void run()
       if (i%num_bins_met==num_bins_met-1) phi_bin++;
    }
    
+   // Get syst unc
+   // ~std::pair<TH1F*,TH1F*> unfolded_syst = getSystUnc(unfolded,input_loc_result+"/hist_unfoldedResult",withScaleFactor);
+   std::pair<TH1F*,TH1F*> unfolded_total = getSystUnc(unfolded,input_loc_result+"/hist_unfoldedResult",true,withScaleFactor);
+   
    unfolded->SetBins(num_bins,xbins);
+   unfolded_total.first->SetBins(num_bins,xbins);
+   unfolded_total.second->SetBins(num_bins,xbins);
    unfolded_reg->SetBins(num_bins,xbins_minus);
    unfolded_bbb->SetBins(num_bins,xbins_plus);
    realDis->SetBins(num_bins,xbins);
@@ -312,13 +357,28 @@ void run()
    realDis->SetTitle(";p_{T}^{#nu#nu} (GeV);arbitrary unit");
    realDis->SetStats(false);
    
+   // Setup unc. plotting
+   TGraphAsymmErrors unfolded_totalGraph = hist::getErrorGraph(unfolded_total.first,unfolded_total.second,unfolded,true);
+   unfolded_totalGraph.SetLineColor(kBlack);
+   TGraphErrors unfolded_graph(unfolded);
+   for (int i=0; i<unfolded->GetNbinsX(); i++){    //change x error for plotting
+      unfolded_graph.SetPointError(i,4.,unfolded->GetBinError(i+1));
+   }
+   unfolded_graph.SetFillStyle(3001);
+   unfolded_graph.SetLineWidth(0);
+   unfolded_graph.SetFillColor(kGray+2);
    
    if (plotComparison) {
       unfolded_reg->SetLineColor(kGreen+2);
       unfolded_bbb->SetLineColor(kViolet);
       unfolded_reg->SetMarkerColor(kGreen+2);
       unfolded_bbb->SetMarkerColor(kViolet);
-      unfolded->Draw("pe1x0");  //Draw into current canvas
+      
+      unfolded->Draw("p");  //Draw into current canvas
+      unfolded_graph.Draw("pe2 same");  //Draw into current canvas
+      
+      unfolded_totalGraph.Draw("p same");  //Draw into current canvas
+            
       unfolded_reg->Draw("pe1x0 same");
       unfolded_bbb->Draw("pe1x0 same");
    }

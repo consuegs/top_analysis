@@ -896,3 +896,21 @@ std::pair<TH2F*,TH2F*> hist::getEnvelope(const TH2F* nominal, const std::vector<
    
    return std::make_pair(hist_envelopeDOWN,hist_envelopeUP);
 }
+
+// get graph with asym. errors from three histograms (shift=true if only shift and not shift+nominal is given)
+TGraphAsymmErrors hist::getErrorGraph(TH1F* const eDOWN, TH1F* const eUP, TH1F* const nominal, bool const shift){
+   TGraphAsymmErrors asymmerrors(nominal);
+   if (shift) {
+      for (int i=0; i<=eUP->GetNbinsX(); i++){
+         asymmerrors.SetPointEYhigh(i,eUP->GetBinContent(i+1));
+         asymmerrors.SetPointEYlow(i,eDOWN->GetBinContent(i+1));
+      }
+   }
+   else {
+      for (int i=0; i<=eUP->GetNbinsX(); i++){
+         asymmerrors.SetPointEYhigh(i,abs(eUP->GetBinContent(i+1)-nominal->GetBinContent(i+1)));
+         asymmerrors.SetPointEYlow(i,abs(eDOWN->GetBinContent(i+1)-nominal->GetBinContent(i+1)));
+      }
+   }
+   return asymmerrors;
+}
