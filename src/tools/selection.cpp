@@ -25,13 +25,14 @@ bool selection::triggerSelection(std::vector<bool> const &diElectronTriggers, st
    else{
       switch(year)
       {
-         case 1:
+         case 0: // 2016_preVFP
+         case 1: // 2016_postVFP
             data=dataTrigger2016::DataTriggerSelection2016(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,PD,is2016H);
             break;
-         case 2:
+         case 2: // 2017
             data=dataTrigger2017::DataTriggerSelection2017(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,PD,is2017AB);
             break;
-         case 3:
+         case 3: // 2018
             data=dataTrigger2018::DataTriggerSelection2018(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,PD);
             break;
       }

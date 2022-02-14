@@ -43,6 +43,18 @@ void run()
          "HLT_MET200_v",
          "HLT_MET200_v",
    };
+   std::vector<TString> baselineTriggerNames2016 = {
+         "HLT_PFHT300_PFMET110_v",
+         "HLT_PFMET120_PFMHT120_IDTight_v",
+         "HLT_PFMET170_HBHECleaned_v",
+         "HLT_PFMET300_v",
+         "HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_v",
+         "HLT_MET200_v",
+         "HLT_MET200_v",   //Dummies to have same length as 2017_2018
+         "HLT_MET200_v",
+         "HLT_MET200_v",
+         "HLT_MET200_v",
+   };
    std::vector<TString> baselineTriggerNames2017_2018 = {
          "HLT_PFMET200_HBHECleaned_v",
          "HLT_PFMET200_HBHE_BeamHaloCleaned_v",
@@ -128,9 +140,14 @@ void run()
          //Check if current sample is TTbar 2L sample (later used to veto tau events)
          bool ttBar_dilepton=dss.isTTbar2L;
                
+         
+         bool Run2016_preVFP=(cfg.year == "2016_preVFP");
+         bool Run2016_postVFP=(cfg.year == "2016_postVFP");
+         
          //Check if current sample is Run2016H
          bool Run2016H=false;
          if (dss.datasetName.find("Run2016H")!=std::string::npos) Run2016H=true;
+         
          
          //Check if current sample is Run2017
          bool Run2017=(cfg.year=="2017");
@@ -144,7 +161,9 @@ void run()
          if (dss.name.find("Run2018")!=std::string::npos) Run2018=true;
          
          //Set correct baselineTriggers
+         if (Run2016_preVFP || Run2016_postVFP) baselineTriggerNames=baselineTriggerNames2016;
          if (Run2018 || Run2017) baselineTriggerNames=baselineTriggerNames2017_2018;
+         
          
          //Check if current sample is DY MC
          bool DY_MC=false;
@@ -260,12 +279,18 @@ void run()
             bool diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *muonTrigg3 || *muonTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2;
             bool electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *eleMuTrigg3 || *eleMuTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg;
             
-            if(Run2017)diMuonTriggers=*muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2;
-            if(Run2016H){
-               diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2;
-               electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg;
+            if(Run2016_preVFP || Run2016_postVFP){
+               if(!Run2016H){ 
+                  diMuonTriggers=*muonTrigg3 || *muonTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2; // no DZ
+                  electronMuonTriggers=*eleMuTrigg3 || *eleMuTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg; // no DZ
+               }else{ 
+                  diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2; // with DZ
+                  electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg; // with DZ
+               }
             }
-            else if(Run2017AB){
+            
+            if(Run2017)diMuonTriggers=*muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2;
+            if(Run2017AB){
                diMuonTriggers=*muonTrigg1|| *singleMuonTrigg1 || *singleMuonTrigg2;
             }
             
@@ -291,13 +316,26 @@ void run()
             }
             
             std::vector<bool> triggerVec={true,baselineTriggers,trigger,doubleTrigger_DZ,doubleTrigger,singleTrigger};
-            std::vector<bool> selectionBool={baselineTriggers,true,
-                                             (cjets.size()<3 && baselineTriggers),
-                                             (cjets.size()>=3 && baselineTriggers),
-                                             (*n_Interactions<30 && baselineTriggers),
-                                             (*n_Interactions>=30 && baselineTriggers),
-                                             (met_puppi<150 && baselineTriggers),
-                                             (met_puppi>=150 && baselineTriggers)};
+            
+            std::vector<bool> selectionBool;
+            if(!(Run2016_preVFP || Run2016_postVFP)){
+               selectionBool={baselineTriggers,true,
+                                                (cjets.size()<3 && baselineTriggers),
+                                                (cjets.size()>=3 && baselineTriggers),
+                                                (*n_Interactions<30 && baselineTriggers),
+                                                (*n_Interactions>=30 && baselineTriggers),
+                                                (met_puppi<150 && baselineTriggers),
+                                                (met_puppi>=150 && baselineTriggers)};
+            }else{
+               selectionBool={baselineTriggers,true,
+                                                (cjets.size()<3 && baselineTriggers),
+                                                (cjets.size()>=3 && baselineTriggers),
+                                                (*n_Interactions<25 && baselineTriggers),
+                                                (*n_Interactions>=25 && baselineTriggers),
+                                                (met_puppi<150 && baselineTriggers),
+                                                (met_puppi>=150 && baselineTriggers)};
+            }
+            
             int i_trigger=0;
             int i_selection=0;
             // ~for(TString selection:{"baselineTrigger/","noTrigger/"}){
