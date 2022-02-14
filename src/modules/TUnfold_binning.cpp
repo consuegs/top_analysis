@@ -326,6 +326,10 @@ std::tuple<TString,TString,float> getPath_SampleName_SF(TString const &sample, T
    else if(syst.type()==Systematic::pdf){
       if(!isSignal) minTreePath_current = minTreePath_nominal;
    }
+   // Use nominal for other bkg in case of bFrag bSemi and MEScale (currently not working for madgraph samples)
+   else if(syst.type() == Systematic::bFrag || syst.type() == Systematic::bSemilep || syst.type() == Systematic::meFacScale || syst.type() == Systematic::meRenScale){
+      if(isBKGother) minTreePath_current = minTreePath_nominal;
+   }
    // Change SF for lumi and xsec uncertainties
    else if(cfg.systUncFactor.find(syst.type_str()) != cfg.systUncFactor.end()){
       minTreePath_current = minTreePath_nominal;

@@ -44,6 +44,7 @@ bTagEff_sample_syst_dict = {
 allMC = ["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
 
 allData2018 = ["DoubleMuon","MuonEG","SingleMuon","EGamma"] 
+allData2017 = ["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"] 
 
 sample_allSyst_dict = {
       "JESTotal_UP" : allMC,
@@ -98,6 +99,9 @@ sample_allSyst_dict = {
       "TOP_PT" : allMC
 }
 
+tunfold_syst = ["Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"]
+#  ~tunfold_syst = ["MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","BFRAG_UP","BSEMILEP_UP","BSEMILEP_DOWN"]
+
 
 class Range(object):
     def __init__(self, start, end):
@@ -123,12 +127,25 @@ def get_dataBasePath_dCache(year,dcap=False):      #return dataBasePath on dCach
       return "dcap://grid-dcap-extern.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
    else:
       return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
-   
-def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=False):
+
+def printSubmitInfo(args):
    print "Running "+args.m
    print "Systematic: "+args.s
-
    print "Process "+str(args.f*100)+"% of events"
+   
+def createLogPath(args):
+   logpath="logs/"+args.y+"/"+args.s+"/"+str(args.f)+"/"+args.m
+   if not os.path.exists(logpath):
+      try:
+         os.makedirs(logpath)
+      except OSError as exc: # Guard against race condition
+         if exc.errno != errno.EEXIST:
+            raise
+   return logpath
+   
+def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=False):
+   
+   printSubmitInfo(args)
    
    # get correct sample for bTagEff
    if (args.m == "bTagEff"):
@@ -180,13 +197,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
          sys.exit(1)
    
    # create logpath if not existing
-   logpath="logs/"+args.y+"/"+args.s+"/"+str(args.f)+"/"+args.m
-   if not os.path.exists(logpath):
-      try:
-         os.makedirs(logpath)
-      except OSError as exc: # Guard against race condition
-         if exc.errno != errno.EEXIST:
-            raise
+   logpath = createLogPath(args)
 
    requ_mem=1500   #standard value, allocated if not defined
    
@@ -236,12 +247,46 @@ Queue
                   subprocess.call(["condor_submit", submitFile])
 
 
+def submitTUnfold(args,systematics):
+   for syst in systematics:
+      
+      # override systematic
+      args.s = syst
+      
+      printSubmitInfo(args)
+      
+      # create logpath if not existing
+      logpath = createLogPath(args)
+      
+      # loop over selected systematics and submit corresponding jobs
+                           
+      for logFile in glob.glob(logpath+"/*"):  # Remove old logs
+         if os.path.exists(logFile):
+            os.remove(logFile)
+      
+      submitFile = logpath+"/"+args.m+".submit"    #define submit file
+                        
+      with open(submitFile,"w") as f:   # write condor submit
+         f.write("""
+Universe                = vanilla
+Executable              = runTUnfold.sh
+Arguments               = -f{0} {1} {2} -s{3}
+Log                     = logs/{2}/{3}/{0}/{1}/{1}.log
+Output                  = logs/{2}/{3}/{0}/{1}/{1}.out
+Error                   = logs/{2}/{3}/{0}/{1}/{1}.error
+use_x509userproxy       = true
+Queue
+""".format(str(args.f),args.m,args.y,args.s),)
+      subprocess.call(["condor_submit", submitFile])
+   
+   
+
 if __name__ == "__main__":
    
    #############################################
    # Select datasets to process
    #############################################
-   toProcess_mc=["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
+   #  ~toProcess_mc=["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
    #  ~toProcess_mc=["ZZ"]
    #  ~toProcess_mc=["DrellYan_NLO"]
    #  ~toProcess_mc=["TTbar_diLepton"]
@@ -251,6 +296,7 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["TTbar_diLepton_MATCH_UP","TTbar_diLepton_tau_MATCH_UP","TTbar_singleLepton_MATCH_UP","TTbar_hadronic_MATCH_UP"]
    #  ~toProcess_mc=["TTbar_diLepton_MATCH_DOWN","TTbar_diLepton_tau_MATCH_DOWN","TTbar_singleLepton_MATCH_DOWN","TTbar_hadronic_MATCH_DOWN"]
    #  ~toProcess_mc=["TTbar_diLepton_ERDON","TTbar_diLepton_tau_ERDON","TTbar_singleLepton_ERDON","TTbar_hadronic_ERDON"]
+   toProcess_mc=["TTbar_hadronic_CR1"]
    #  ~toProcess_mc=["TTbar_diLepton_CR1","TTbar_diLepton_tau_CR1","TTbar_singleLepton_CR1","TTbar_hadronic_CR1"]
    #  ~toProcess_mc=["TTbar_diLepton_CR2","TTbar_diLepton_tau_CR2","TTbar_singleLepton_CR2","TTbar_hadronic_CR2"]
    #  ~toProcess_mc=["TTbar_diLepton_MTOP169p5","TTbar_diLepton_tau_MTOP169p5","TTbar_singleLepton_MTOP169p5","TTbar_hadronic_MTOP169p5"]
@@ -259,6 +305,7 @@ if __name__ == "__main__":
    
    #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
    #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
+   #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"]       #2017
    #  ~toProcess_data=["MET"]      
    toProcess_data=[]
          
@@ -278,13 +325,20 @@ if __name__ == "__main__":
    parser.add_argument('--SingleSubmit', action='store_true' )
    parser.add_argument('--bTagEff_complete', action='store_true', default=False, help="Submits bTagEff jobs with all relevant systematics (use with care!)")
    parser.add_argument('--distributions_complete', action='store_true', default=False, help="Submits distributions jobs with all relevant systematics (use with care!)")
+   parser.add_argument('--tunfold_complete', action='store_true', default=False, help="Submits tunfold jobs with all relevant systematics (use with care!)")
    parser.add_argument('--pdf_complete', action='store_true', default=False, help="Submits distributions jobs with all pdf shifts (use with care!)")
    parser.add_argument('--noConfirmation', action='store_true', default=False, help="Disables keyboard input befor submission")
 
    args = parser.parse_args()
    
    if (args.bTagEff_complete == False and args.distributions_complete==False and args.pdf_complete==False):
-      submit(args,toProcess_mc,toProcess_data,toProcess_signal)
+      if (args.m == "TUnfold_binning"):
+         if (args.tunfold_complete):
+            submitTUnfold(args,tunfold_syst)
+         else:
+            submitTUnfold(args,{args.s})
+      else:
+         submit(args,toProcess_mc,toProcess_data,toProcess_signal)
    elif (args.bTagEff_complete):
       if (args.m == "bTagEff"):
          for syst in bTagEff_sample_syst_dict.keys():
@@ -296,10 +350,15 @@ if __name__ == "__main__":
    elif (args.distributions_complete):
       if (args.m == "" or args.m == "distributions"):
          print "Submit nominal"
-         submit(args,allMC,allData2018,[])
+         if (args.y=="2018"):
+            submit(args,allMC,allData2018,[])
+         elif (args.y=="2017"):
+            submit(args,allMC,allData2017,[])
+         else:
+            print args.y+" does not match correct year"
          for syst in sample_allSyst_dict.keys():
             args.s = syst
-            submit(args,sample_allSyst_dict[syst],[],[])
+            submit(args,sample_allSyst_dict[syst],[],[],args.noConfirmation)
       else:
          print "distributions_complete can only be used if distributions is selected as module!"
          exit(98)

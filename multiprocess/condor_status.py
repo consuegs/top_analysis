@@ -156,7 +156,8 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
     for job in jobs:
         if job["Args"]=="0":
             continue
-        if job["Cmd"].split("/")[-1]=="run.sh":
+        #  ~if job["Cmd"].split("/")[-1]=="run.sh":
+        if job["Cmd"].split("/")[-1].find("run")>=0:
             name = getNameFromFile(job["Args"])
         else:
             name = (job["Args"].split(",")[0]).split("/")[2]
@@ -215,8 +216,9 @@ def summaryJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF,modul
             status = checkStatusFromLog(distrLogPath,runningLogs.keys(),False,resubmit)
             if status[0]:
                 print colored(distrLogPath,"green",attrs=['bold'])
-                if (mergeOutputs.mergeRequired(distrLogPath,module=="distributions",False) or forceMergeAll) and resubmit==False:
-                    merge(distrLogPath,(mergeAll or forceMergeAll))
+                if (module != "TUnfold_binning"):
+                    if (mergeOutputs.mergeRequired(distrLogPath,module=="distributions",False) or forceMergeAll) and resubmit==False:
+                        merge(distrLogPath,(mergeAll or forceMergeAll))
             else:
                 systName = getSystFromOutFile(distrLogPath)
                 idleCheck = [value for key, value in runningLogs.iteritems() if key.find(systName)>0]
@@ -241,13 +243,14 @@ if __name__ == "__main__":
     parser.add_argument('--checkSuspended', action='store_true', help="Checks if jobs are suspended for more than 10 minutes, and offers resubmit")
     parser.add_argument('--distributions', action='store_true', help="Shows summary for distribution jobs per systematic")
     parser.add_argument('--bTagEff', action='store_true', help="Shows summary for bTaggEff jobs per systematic")
+    parser.add_argument('--TUnfold', action='store_true', help="Shows summary for TUnfold jobs per systematic")
     parser.add_argument('--resubmit', action='store_true', help="Automatic resubmit, avoids asking if job should be resubmitted for every single failed job")
     parser.add_argument('--mergeAll', action='store_true', help="Automatic merge, avoids asking if jobs should be merged")
     parser.add_argument('--forceMergeAll', action='store_true', help="Forces merge, even if not necessary due to updated input")
     parser.add_argument('--ignorePDF', action='store_true', help="Ignores all PDF jobs")
     args = parser.parse_args()
     
-    if(args.checkCompleted == "" and args.distributions==False and args.bTagEff==False):  # print running jobs only on nominal mode
+    if(args.checkCompleted == "" and args.distributions==False and args.bTagEff==False and args.TUnfold==False):  # print running jobs only on nominal mode
         printRunningJobs = True
     else:
         printRunningJobs = False
@@ -258,6 +261,8 @@ if __name__ == "__main__":
         summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF)
     elif(args.bTagEff):
         summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF,"bTagEff")
+    elif(args.TUnfold):
+        summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF,"TUnfold_binning")
     
     if(args.checkCompleted != ""):
         if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list

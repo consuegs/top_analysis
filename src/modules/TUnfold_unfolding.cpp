@@ -126,155 +126,256 @@ Config const &cfg=Config::get();
 extern "C"
 void run()
 {
-   //Read systematic from command line
-   Systematic::Systematic currentSystematic(cfg.systematic);
-   bool isNominal = (currentSystematic.type()==Systematic::nominal);
+   std::vector<TString> systVec = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","LUMI_UP","LUMI_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    
-   TString sample = cfg.tunfold_InputSamples[0];
-   TString sample_response = cfg.tunfold_ResponseSample;
-   
-   // Use pT reweighted
-   bool withPTreweight = cfg.tunfold_withPTreweight;
-   TString scale = cfg.tunfold_scalePTreweight;
-   
-   // Use DNN instead of pfMET
-   bool withDNN = cfg.tunfold_withDNN;
-   
-   // Use puppi instead of pfMET
-   bool withPuppi = !withDNN;
-   
-   // Use same bin numbers for gen/true
-   bool withSameBins = cfg.tunfold_withSameBins;
-   
-   // include signal to pseudo data
-   bool withBSM = cfg.tunfold_withBSM;
-   
-   //Use scale factor
-   bool withScaleFactor = cfg.tunfold_withScaleFactor;
-   
-   // perform toys studies?
-   bool toy_studies = cfg.tunfold_plotToyStudies;
-   int MAXTOY=3000;
-   
-   // switch on histogram errors
-   TH1::SetDefaultSumw2();
-
-   //==============================================
-   // step 1 : open output file
-   TString save_path = "TUnfold_results_"+sample+"_"+sample_response;
-   if (withBSM) save_path+="_BSM";
-   if (withPuppi) save_path+="_Puppi";
-   if (withDNN) save_path+="_DNN";
-   if (withSameBins) save_path+="_SameBins";
-   if (withPTreweight) save_path+="_PTreweight"+scale;
-   io::RootFileSaver saver(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root",currentSystematic.name().Data(),cfg.processFraction*100),save_path);
-
-   //==============================================
-   // step 2 : read binning schemes and input histograms
-   io::RootFileReader histReader(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root","Nominal",cfg.processFraction*100));
-   io::RootFileReader histReader_syst(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root",currentSystematic.name().Data(),cfg.processFraction*100));
-   TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
-   if (withBSM) input_loc+="_BSM";
-   if (withPuppi) input_loc+="_Puppi";
-   if (withDNN) input_loc+="_DNN";
-   if (withSameBins) input_loc+="_SameBins";
-   if (withPTreweight) input_loc+="_PTreweight"+scale;
-
-   TUnfoldBinning *detectorBinning=histReader.read<TUnfoldBinning>(input_loc+"/detector_binning");
-   TUnfoldBinning *generatorBinning=histReader.read<TUnfoldBinning>(input_loc+"/generator_binning");
-
-   if((!detectorBinning)||(!generatorBinning)) {
-      cout<<"problem to read binning schemes\n";
-   }
-
-   // read histograms
-   TH1 *histDataReco=histReader.read<TH1>(input_loc+"/histDataReco");
-   TH1 *histDataReco_unscaled=(TH1*)histDataReco->Clone();
-   TH1 *histDataReco_coarse=histReader.read<TH1>(input_loc+"/histDataReco_coarse");
-   TH1 *histDataReco_coarse_unscaled=(TH1*)histDataReco_coarse->Clone();
-   TH1 *histDataTruth=histReader.read<TH1>(input_loc+"/histDataTruth");
-   TH1 *histSignalFraction=histReader_syst.read<TH1>(input_loc+"/hist_SignalFraction");
-   TH1 *histMCRec_bkg=histReader_syst.read<TH1>(input_loc+"/histMCRec_bkg");
-   TH1 *histMCRec_bkg_coarse=histReader_syst.read<TH1>(input_loc+"/histMCRec_bkg_coarse");
-   TH1 *histSignalFraction_coarse=histReader_syst.read<TH1>(input_loc+"/hist_SignalFraction_coarse");
-   TH2 *histMCGenRec=histReader_syst.read<TH2>(input_loc+"/histMCGenRec");
-   TH2 *histMCGenRec_sameBins=histReader_syst.read<TH2>(input_loc+"/histMCGenRec_sameBins");
-
-   if((!histDataReco)||(!histDataTruth)||(!histMCGenRec)) {
-      cout<<"problem to read input histograms\n";
-   }
-   
-   // substract non-ttbar background
-   histDataReco->Add(histMCRec_bkg,-1);
-   histDataReco_coarse->Add(histMCRec_bkg_coarse,-1);
-   
-   // remove fakes in reco by applying signal fraction
-   histDataReco->Multiply(histSignalFraction);
-   histDataReco_coarse->Multiply(histSignalFraction_coarse);
-   
-   // ~// test with flat reco distribution
-   // ~for(int i=1; i<=histDataReco->GetNbinsX(); i++) {
-      // ~histDataReco->SetBinContent(i,10000);
-      // ~histDataReco->SetBinError(i,100);
-   // ~}
-   
-   //========================
-   // Step 3: unfolding
-   
-   
-   for (bool regularisation : {false,true}) {
+   for (auto syst : systVec){
+      //Read systematic from command line
       
-      // define saving folder
-      TString saveFolder = (regularisation)? "reg/" : "";
+      std::cout<<"Running "<<syst<<std::endl;
       
-      // preserve the area
-      // ~TUnfold::EConstraint constraintMode= TUnfold::kEConstraintArea;
-      TUnfold::EConstraint constraintMode= TUnfold::kEConstraintNone;
-
-      // basic choice of regularisation scheme:
-      // ~TUnfold::ERegMode regMode = TUnfold::kRegModeSize;
-      TUnfold::ERegMode regMode = TUnfold::kRegModeCurvature;
-      // ~TUnfold::ERegMode regMode = TUnfold::kRegModeDerivative;
-
-      // density flags
-      TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeBinWidth;
-      // ~TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeNone;
-
-      // detailed steering for regularisation
-      const char *REGULARISATION_DISTRIBUTION=0;
-      const char *REGULARISATION_AXISSTEERING="*[B]";
-
-      // set up matrix of migrations
-      TUnfoldDensity unfold(histMCGenRec,TUnfold::kHistMapOutputHoriz,
-                           regMode,constraintMode,densityFlags,
-                           generatorBinning,detectorBinning);
-
-      // define the input vector (the measured data distribution)
-      unfold.SetInput(histDataReco,1.0);
-      // ~unfold.SetInput(histDataReco,0.);
-
+      // ~Systematic::Systematic currentSystematic(cfg.systematic);
+      Systematic::Systematic currentSystematic(syst);
+      bool isNominal = (currentSystematic.type()==Systematic::nominal);
       
-      // ~unfold.ScanTau(1000,0,0,0);
-      // ~unfold.ScanLcurve(1000,0,0,0);
-      // ~std::cout<<unfold.GetTau()<<std::endl;
-      // run the unfolding
-      float tau=0;
-      if (regularisation) {
-         unfold.ScanTau(1000,0.0001,0.1,0); //With regularization
-         tau=unfold.GetTau();
+      TString sample = cfg.tunfold_InputSamples[0];
+      TString sample_response = cfg.tunfold_ResponseSample;
+      
+      // Use pT reweighted
+      bool withPTreweight = cfg.tunfold_withPTreweight;
+      TString scale = cfg.tunfold_scalePTreweight;
+      
+      // Use DNN instead of pfMET
+      bool withDNN = cfg.tunfold_withDNN;
+      
+      // Use puppi instead of pfMET
+      bool withPuppi = !withDNN;
+      
+      // Use same bin numbers for gen/true
+      bool withSameBins = cfg.tunfold_withSameBins;
+      
+      // include signal to pseudo data
+      bool withBSM = cfg.tunfold_withBSM;
+      
+      //Use scale factor
+      bool withScaleFactor = cfg.tunfold_withScaleFactor;
+      
+      // perform toys studies?
+      bool toy_studies = cfg.tunfold_plotToyStudies;
+      int MAXTOY=3000;
+      
+      // switch on histogram errors
+      TH1::SetDefaultSumw2();
+
+      //==============================================
+      // step 1 : open output file
+      TString save_path = "TUnfold_results_"+sample+"_"+sample_response;
+      if (withBSM) save_path+="_BSM";
+      if (withPuppi) save_path+="_Puppi";
+      if (withDNN) save_path+="_DNN";
+      if (withSameBins) save_path+="_SameBins";
+      if (withPTreweight) save_path+="_PTreweight"+scale;
+      io::RootFileSaver saver(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root",currentSystematic.name().Data(),cfg.processFraction*100),save_path);
+
+      //==============================================
+      // step 2 : read binning schemes and input histograms
+      io::RootFileReader histReader(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root","Nominal",cfg.processFraction*100));
+      io::RootFileReader histReader_syst(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root",currentSystematic.name().Data(),cfg.processFraction*100));
+      TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
+      if (withBSM) input_loc+="_BSM";
+      if (withPuppi) input_loc+="_Puppi";
+      if (withDNN) input_loc+="_DNN";
+      if (withSameBins) input_loc+="_SameBins";
+      if (withPTreweight) input_loc+="_PTreweight"+scale;
+
+      TUnfoldBinning *detectorBinning=histReader.read<TUnfoldBinning>(input_loc+"/detector_binning");
+      TUnfoldBinning *generatorBinning=histReader.read<TUnfoldBinning>(input_loc+"/generator_binning");
+
+      if((!detectorBinning)||(!generatorBinning)) {
+         cout<<"problem to read binning schemes\n";
       }
-      else unfold.DoUnfold(0.);//Without regularization
+
+      // read histograms
+      TH1 *histDataReco=histReader.read<TH1>(input_loc+"/histDataReco");
+      TH1 *histDataReco_unscaled=(TH1*)histDataReco->Clone();
+      TH1 *histDataReco_coarse=histReader.read<TH1>(input_loc+"/histDataReco_coarse");
+      TH1 *histDataReco_coarse_unscaled=(TH1*)histDataReco_coarse->Clone();
+      TH1 *histDataTruth=histReader.read<TH1>(input_loc+"/histDataTruth");
+      TH1 *histSignalFraction=histReader_syst.read<TH1>(input_loc+"/hist_SignalFraction");
+      TH1 *histMCRec_bkg=histReader_syst.read<TH1>(input_loc+"/histMCRec_bkg");
+      TH1 *histMCRec_bkg_coarse=histReader_syst.read<TH1>(input_loc+"/histMCRec_bkg_coarse");
+      TH1 *histSignalFraction_coarse=histReader_syst.read<TH1>(input_loc+"/hist_SignalFraction_coarse");
+      TH2 *histMCGenRec=histReader_syst.read<TH2>(input_loc+"/histMCGenRec");
+      TH2 *histMCGenRec_sameBins=histReader_syst.read<TH2>(input_loc+"/histMCGenRec_sameBins");
+
+      if((!histDataReco)||(!histDataTruth)||(!histMCGenRec)) {
+         cout<<"problem to read input histograms\n";
+      }
       
-      // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult");
-      // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
-      TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
-      TH1 *hist_folded=unfold.GetFoldedOutput("hist_foldedResult",";bin",0,0,false);
-      TH2 *cov_input=unfold.GetEmatrixInput("cov_input",";bin",0,0,true);
-      TH2 *cov_statResponse=unfold.GetEmatrixSysUncorr("cov_statResponse",";bin",0,0,true);
-      TH2 *cov_Output=unfold.GetEmatrixTotal("cov_total",";bin",0,0,true);
-      TH2 *corr_matrix=unfold.GetRhoIJtotal("Rho2D");
+      // substract non-ttbar background
+      histDataReco->Add(histMCRec_bkg,-1);
+      histDataReco_coarse->Add(histMCRec_bkg_coarse,-1);
       
-      // run the unfolding for toys
+      // remove fakes in reco by applying signal fraction
+      histDataReco->Multiply(histSignalFraction);
+      histDataReco_coarse->Multiply(histSignalFraction_coarse);
+      
+      // ~// test with flat reco distribution
+      // ~for(int i=1; i<=histDataReco->GetNbinsX(); i++) {
+         // ~histDataReco->SetBinContent(i,10000);
+         // ~histDataReco->SetBinError(i,100);
+      // ~}
+      
+      //========================
+      // Step 3: unfolding
+      
+      
+      for (bool regularisation : {false,true}) {
+         
+         // define saving folder
+         TString saveFolder = (regularisation)? "reg/" : "";
+         
+         // preserve the area
+         // ~TUnfold::EConstraint constraintMode= TUnfold::kEConstraintArea;
+         TUnfold::EConstraint constraintMode= TUnfold::kEConstraintNone;
+
+         // basic choice of regularisation scheme:
+         // ~TUnfold::ERegMode regMode = TUnfold::kRegModeSize;
+         TUnfold::ERegMode regMode = TUnfold::kRegModeCurvature;
+         // ~TUnfold::ERegMode regMode = TUnfold::kRegModeDerivative;
+
+         // density flags
+         TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeBinWidth;
+         // ~TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeNone;
+
+         // detailed steering for regularisation
+         const char *REGULARISATION_DISTRIBUTION=0;
+         const char *REGULARISATION_AXISSTEERING="*[B]";
+
+         // set up matrix of migrations
+         TUnfoldDensity unfold(histMCGenRec,TUnfold::kHistMapOutputHoriz,
+                              regMode,constraintMode,densityFlags,
+                              generatorBinning,detectorBinning);
+
+         // define the input vector (the measured data distribution)
+         unfold.SetInput(histDataReco,1.0);
+         // ~unfold.SetInput(histDataReco,0.);
+
+         
+         // ~unfold.ScanTau(1000,0,0,0);
+         // ~unfold.ScanLcurve(1000,0,0,0);
+         // ~std::cout<<unfold.GetTau()<<std::endl;
+         // run the unfolding
+         float tau=0;
+         if (regularisation) {
+            unfold.ScanTau(1000,0.0001,0.1,0); //With regularization
+            tau=unfold.GetTau();
+         }
+         else unfold.DoUnfold(0.);//Without regularization
+         
+         // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult");
+         // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
+         TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
+         TH1 *hist_folded=unfold.GetFoldedOutput("hist_foldedResult",";bin",0,0,false);
+         TH2 *cov_input=unfold.GetEmatrixInput("cov_input",";bin",0,0,true);
+         TH2 *cov_statResponse=unfold.GetEmatrixSysUncorr("cov_statResponse",";bin",0,0,true);
+         TH2 *cov_Output=unfold.GetEmatrixTotal("cov_total",";bin",0,0,true);
+         TH2 *corr_matrix=unfold.GetRhoIJtotal("Rho2D");
+         
+         // run the unfolding for toys
+         if(toy_studies){
+            //Define histograms for toy studies
+            TProfile *prof_pull=0;
+            TProfile *prof_res=0;
+            TH1 *hist_coverage=0;
+            TH1 *hist_pull=0;
+            TH1 *hist_res=0;
+            TH1 *hist_chi=0;
+            TH1 *hist_unfolded_firstToy=0;
+            for(int itoy=0;itoy<MAXTOY;itoy++) {
+               std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
+               // ~unfold.SetInput(generatePoissonToy(hist_folded,itoy),1.0);
+               TH1 *reco_toy=generatePoissonToy(histDataReco_unscaled,itoy);
+               reco_toy->Multiply(histSignalFraction);
+               unfold.SetInput(reco_toy,1.0);
+               if (regularisation) unfold.DoUnfold(tau); //With regularization
+               else unfold.DoUnfold(0.);//Without regularization
+               if (itoy==0)hist_unfolded_firstToy=unfold.GetOutput("",";bin",0,0,false);
+               analyzeToy(unfold.GetOutput("","",0,0,false),
+                             hist_unfolded,
+                             // ~histDataTruth,
+                             // ~cov_Output,
+                             cov_input,
+                             prof_pull,
+                             hist_coverage,hist_pull,prof_res,hist_res,hist_chi,MAXTOY);
+            }
+            saver.save(*hist_unfolded_firstToy,saveFolder+"hist_unfolded_firstToy");
+            saver.save(*prof_pull,saveFolder+"prof_pull");
+            saver.save(*prof_res,saveFolder+"prof_res");
+            saver.save(*hist_coverage,saveFolder+"hist_coverage");
+            saver.save(*hist_pull,saveFolder+"hist_pull");
+            saver.save(*hist_res,saveFolder+"hist_res");
+            saver.save(*hist_chi,saveFolder+"hist_chi");
+         }
+         
+         //Set stat. error to combined stat. error from input and response matrix
+         for (int i=1; i<hist_unfolded->GetNbinsX();i++){
+            hist_unfolded->SetBinError(i,sqrt(cov_input->GetBinContent(i,i)+cov_statResponse->GetBinContent(i,i)));
+         }
+         //===========================
+         // Step 4: retreive and plot unfolding results
+         // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult","P_{T}^{#nu#nu} [GeV]","signal");
+         saver.save(*hist_unfolded,saveFolder+"hist_unfoldedResult");
+         saver.save(*hist_folded,saveFolder+"hist_foldedResult");
+         saver.save(*cov_input,saveFolder+"cov_input");
+         saver.save(*cov_statResponse,saveFolder+"cov_statResponse");
+         saver.save(*corr_matrix,saveFolder+"corr_matrix");
+         saver.save(*cov_Output,saveFolder+"cov_output");
+      }//end unfolding loop
+      
+      /*
+      //SVD decomposition
+      // ~TMatrixD test(histMCGenRec->GetNbinsY(),histMCGenRec->GetNbinsX());
+      // ~for (int i=1; i<=histMCGenRec->GetNbinsX();i++){
+         // ~for (int j=1; j<=histMCGenRec->GetNbinsY();j++){
+            // ~test[j-1][i-1]=histMCGenRec->GetBinContent(i,j);
+         // ~}
+      // ~}
+      
+      TH2 *normResponse=unfold.GetProbabilityMatrix("prob_matrix",0,false);
+      TMatrixD test(normResponse->GetNbinsY(),normResponse->GetNbinsX());
+      for (int i=1; i<=normResponse->GetNbinsX();i++){
+         for (int j=1; j<=normResponse->GetNbinsY();j++){
+            test[j-1][i-1]=normResponse->GetBinContent(i,j);
+         }
+      }
+      // ~test.Print();
+      TDecompSVD testSVD(test);
+      testSVD.Decompose();
+      // ~testSVD.Print();
+      std::cout<<testSVD.Condition()<<std::endl;
+      
+      // ~TMatrixDEigen testEigen(test);
+      // ~TMatrixD eigenvalues=testEigen.GetEigenValues();
+      // ~eigenvalues.Print();
+      */
+      
+      //RooUnfold for Bin by Bin
+      TH2F* histMCGenRec_sameBins_inv = (TH2F*)histMCGenRec_sameBins->Clone();
+      for (int i=0; i<=histMCGenRec_sameBins->GetNbinsX()+1; i++){
+         for (int j=0; j<=histMCGenRec_sameBins->GetNbinsY()+1; j++){
+            histMCGenRec_sameBins_inv->SetBinContent(j,i,histMCGenRec_sameBins->GetBinContent(i,j));
+            histMCGenRec_sameBins_inv->SetBinError(j,i,histMCGenRec_sameBins->GetBinError(i,j));
+         }
+      }
+      RooUnfoldResponse responseRooUnfold(histMCGenRec_sameBins_inv->ProjectionX(), histMCGenRec_sameBins_inv->ProjectionY(), histMCGenRec_sameBins_inv);
+      RooUnfoldBinByBin bbb(&responseRooUnfold, histDataReco_coarse);
+      TH1* histBBB=bbb.Hreco(RooUnfold::kCovariance);
+      TMatrixD covBBB_matrix=bbb.Ereco();
+      TH2D covBBB(covBBB_matrix);
+          
+      saver.save(*histBBB,"BBB/hist_unfoldedResult");
+      saver.save(covBBB,"BBB/cov_output");
+      
       if(toy_studies){
          //Define histograms for toy studies
          TProfile *prof_pull=0;
@@ -286,116 +387,23 @@ void run()
          TH1 *hist_unfolded_firstToy=0;
          for(int itoy=0;itoy<MAXTOY;itoy++) {
             std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
-            // ~unfold.SetInput(generatePoissonToy(hist_folded,itoy),1.0);
-            TH1 *reco_toy=generatePoissonToy(histDataReco_unscaled,itoy);
-            reco_toy->Multiply(histSignalFraction);
-            unfold.SetInput(reco_toy,1.0);
-            if (regularisation) unfold.DoUnfold(tau); //With regularization
-            else unfold.DoUnfold(0.);//Without regularization
-            if (itoy==0)hist_unfolded_firstToy=unfold.GetOutput("",";bin",0,0,false);
-            analyzeToy(unfold.GetOutput("","",0,0,false),
-                          hist_unfolded,
-                          // ~histDataTruth,
-                          // ~cov_Output,
-                          cov_input,
+            TH1 *reco_toy=generatePoissonToy(histDataReco_coarse_unscaled,itoy);
+            reco_toy->Multiply(histSignalFraction_coarse);
+            RooUnfoldBinByBin bbb(&responseRooUnfold, reco_toy);
+            if (itoy==0)hist_unfolded_firstToy=bbb.Hreco(RooUnfold::kCovariance);
+            analyzeToy(bbb.Hreco(RooUnfold::kCovariance),
+                          histBBB,
+                          &covBBB,
                           prof_pull,
                           hist_coverage,hist_pull,prof_res,hist_res,hist_chi,MAXTOY);
          }
-         saver.save(*hist_unfolded_firstToy,saveFolder+"hist_unfolded_firstToy");
-         saver.save(*prof_pull,saveFolder+"prof_pull");
-         saver.save(*prof_res,saveFolder+"prof_res");
-         saver.save(*hist_coverage,saveFolder+"hist_coverage");
-         saver.save(*hist_pull,saveFolder+"hist_pull");
-         saver.save(*hist_res,saveFolder+"hist_res");
-         saver.save(*hist_chi,saveFolder+"hist_chi");
+         saver.save(*hist_unfolded_firstToy,"BBB/hist_unfolded_firstToy");
+         saver.save(*prof_pull,"BBB/prof_pull");
+         saver.save(*prof_res,"BBB/prof_res");
+         saver.save(*hist_coverage,"BBB/hist_coverage");
+         saver.save(*hist_pull,"BBB/hist_pull");
+         saver.save(*hist_res,"BBB/hist_res");
+         saver.save(*hist_chi,"BBB/hist_chi");
       }
-      
-      //Set stat. error to combined stat. error from input and response matrix
-      for (int i=1; i<hist_unfolded->GetNbinsX();i++){
-         hist_unfolded->SetBinError(i,sqrt(cov_input->GetBinContent(i,i)+cov_statResponse->GetBinContent(i,i)));
-      }
-      //===========================
-      // Step 4: retreive and plot unfolding results
-      // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult","P_{T}^{#nu#nu} [GeV]","signal");
-      saver.save(*hist_unfolded,saveFolder+"hist_unfoldedResult");
-      saver.save(*hist_folded,saveFolder+"hist_foldedResult");
-      saver.save(*cov_input,saveFolder+"cov_input");
-      saver.save(*cov_statResponse,saveFolder+"cov_statResponse");
-      saver.save(*corr_matrix,saveFolder+"corr_matrix");
-      saver.save(*cov_Output,saveFolder+"cov_output");
-   }//end unfolding loop
-   
-   /*
-   //SVD decomposition
-   // ~TMatrixD test(histMCGenRec->GetNbinsY(),histMCGenRec->GetNbinsX());
-   // ~for (int i=1; i<=histMCGenRec->GetNbinsX();i++){
-      // ~for (int j=1; j<=histMCGenRec->GetNbinsY();j++){
-         // ~test[j-1][i-1]=histMCGenRec->GetBinContent(i,j);
-      // ~}
-   // ~}
-   
-   TH2 *normResponse=unfold.GetProbabilityMatrix("prob_matrix",0,false);
-   TMatrixD test(normResponse->GetNbinsY(),normResponse->GetNbinsX());
-   for (int i=1; i<=normResponse->GetNbinsX();i++){
-      for (int j=1; j<=normResponse->GetNbinsY();j++){
-         test[j-1][i-1]=normResponse->GetBinContent(i,j);
-      }
-   }
-   // ~test.Print();
-   TDecompSVD testSVD(test);
-   testSVD.Decompose();
-   // ~testSVD.Print();
-   std::cout<<testSVD.Condition()<<std::endl;
-   
-   // ~TMatrixDEigen testEigen(test);
-   // ~TMatrixD eigenvalues=testEigen.GetEigenValues();
-   // ~eigenvalues.Print();
-   */
-   
-   //RooUnfold for Bin by Bin
-   TH2F* histMCGenRec_sameBins_inv = (TH2F*)histMCGenRec_sameBins->Clone();
-   for (int i=0; i<=histMCGenRec_sameBins->GetNbinsX()+1; i++){
-      for (int j=0; j<=histMCGenRec_sameBins->GetNbinsY()+1; j++){
-         histMCGenRec_sameBins_inv->SetBinContent(j,i,histMCGenRec_sameBins->GetBinContent(i,j));
-         histMCGenRec_sameBins_inv->SetBinError(j,i,histMCGenRec_sameBins->GetBinError(i,j));
-      }
-   }
-   RooUnfoldResponse responseRooUnfold(histMCGenRec_sameBins_inv->ProjectionX(), histMCGenRec_sameBins_inv->ProjectionY(), histMCGenRec_sameBins_inv);
-   RooUnfoldBinByBin bbb(&responseRooUnfold, histDataReco_coarse);
-   TH1* histBBB=bbb.Hreco(RooUnfold::kCovariance);
-   TMatrixD covBBB_matrix=bbb.Ereco();
-   TH2D covBBB(covBBB_matrix);
-       
-   saver.save(*histBBB,"BBB/hist_unfoldedResult");
-   saver.save(covBBB,"BBB/cov_output");
-   
-   if(toy_studies){
-      //Define histograms for toy studies
-      TProfile *prof_pull=0;
-      TProfile *prof_res=0;
-      TH1 *hist_coverage=0;
-      TH1 *hist_pull=0;
-      TH1 *hist_res=0;
-      TH1 *hist_chi=0;
-      TH1 *hist_unfolded_firstToy=0;
-      for(int itoy=0;itoy<MAXTOY;itoy++) {
-         std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
-         TH1 *reco_toy=generatePoissonToy(histDataReco_coarse_unscaled,itoy);
-         reco_toy->Multiply(histSignalFraction_coarse);
-         RooUnfoldBinByBin bbb(&responseRooUnfold, reco_toy);
-         if (itoy==0)hist_unfolded_firstToy=bbb.Hreco(RooUnfold::kCovariance);
-         analyzeToy(bbb.Hreco(RooUnfold::kCovariance),
-                       histBBB,
-                       &covBBB,
-                       prof_pull,
-                       hist_coverage,hist_pull,prof_res,hist_res,hist_chi,MAXTOY);
-      }
-      saver.save(*hist_unfolded_firstToy,"BBB/hist_unfolded_firstToy");
-      saver.save(*prof_pull,"BBB/prof_pull");
-      saver.save(*prof_res,"BBB/prof_res");
-      saver.save(*hist_coverage,"BBB/hist_coverage");
-      saver.save(*hist_pull,"BBB/hist_pull");
-      saver.save(*hist_res,"BBB/hist_res");
-      saver.save(*hist_chi,"BBB/hist_chi");
    }
 }
