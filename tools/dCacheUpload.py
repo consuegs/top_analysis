@@ -3,6 +3,9 @@
 import argparse
 import subprocess as sp
 import os
+import sys
+sys.path.append("../users")
+from getPath import getPath
 
 def getFullPath(fileName):
     return "file://"+fileName
@@ -20,9 +23,9 @@ if __name__ == "__main__":
             f.write(getFullPath(fileName)+"\n")
     
     if args.dryRun:
-        sp.call(["gfal-copy","--from-file",os.getcwd()+"/tempFiles.txt","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN=/pnfs/physik.rwth-aachen.de/cms/store/user/dmeuser/mergedNtuple/"+args.target,"-t 36000","-f","--dry-run"])
+        sp.call(["gfal-copy","--from-file",os.getcwd()+"/tempFiles.txt","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format("dCacheBasePath")+args.target,"-t 36000","-f","--dry-run"])
     else:
-        sp.call(["gfal-copy","--from-file",os.getcwd()+"/tempFiles.txt","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN=/pnfs/physik.rwth-aachen.de/cms/store/user/dmeuser/mergedNtuple/"+args.target,"-t 36000","-f"])
+        sp.call(["gfal-copy","--from-file",os.getcwd()+"/tempFiles.txt","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format("dCacheBasePath")+args.target,"-t 36000","-f"])
     
 
 

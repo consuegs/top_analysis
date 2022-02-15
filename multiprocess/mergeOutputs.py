@@ -13,6 +13,9 @@ import shlex
 import ROOT
 from ROOT import *
 import utilities
+sys.path.append("../users")
+from getPath import getPath
+
 
 def getNTupleVersion(year):    # checks config for number of files for given dataset
    config = configparser.ConfigParser()
@@ -165,17 +168,17 @@ def getDatasetList(logPath):    # get list of dataset, where jobs have been subm
     
 def getTreePath(logPath):       # get correct treePath from logPath
     info = getInfoFromLogPath(logPath)
-    treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/minTrees/{}/{}/".format(info["year"],getNTupleVersion(info["year"]),str(float(info["fraction"])*100),info["syst"])
+    treePath = "{}/{}/{}/minTrees/{}/{}/".format(getPath("scratchBasePath"),info["year"],getNTupleVersion(info["year"]),str(float(info["fraction"])*100),info["syst"])
     return treePath
 
 def getHistPath(logPath):       # get correct histPath from logPath
     info = getInfoFromLogPath(logPath)
-    treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/output_framework/multiHists/{}/".format(info["year"],getNTupleVersion(info["year"]),info["syst"])
+    treePath = "{}/{}/{}/output_framework/multiHists/{}/".format(getPath("scratchBasePath"),info["year"],getNTupleVersion(info["year"]),info["syst"])
     return treePath
     
 def getHistPath_module(logPath):       # get correct histPath from logPath for modules other than distributions
     info = getInfoFromLogPath(logPath)
-    treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/output_framework/{}/{}/".format(info["year"],getNTupleVersion(info["year"]),info["module"],info["syst"])
+    treePath = "{}/{}/{}/output_framework/{}/{}/".format(getPath("scratchBasePath"),info["year"],getNTupleVersion(info["year"]),info["module"],info["syst"])
     return treePath
     
 def mergeRequired(logPath,isDistributions=True,useTrees=True):       # check if there are more recent individual outputs than the merged one
@@ -354,7 +357,8 @@ if __name__ == "__main__":
         mergeHists_forSamples(args.logPath,histPath,datasetList,["DrellYan_M10to50","DrellYan_NLO"],"DrellYan_comb")    # merge samples for datacards
         mergeHists_forSamples(args.logPath,histPath,datasetList,["TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"],"TTbar_other")
         mergeHists_forSamples(args.logPath,histPath,datasetList,["WJetsToLNu","WW","WZ","ZZ","ttZ_QQ","ttZ_2L","ttW"],"otherBKG")
-        mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","EGamma","MuonEG","SingleMuon"],"data_obs")
+        mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","EGamma","MuonEG","SingleMuon"],"data_obs") # 2018
+        mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"],"data_obs") #2016/2017
         
         altSampleNames = ["CR1","CR2","ERDON","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5"]    # handle alt. sample for datacards
         if any(x in args.logPath for x in altSampleNames):

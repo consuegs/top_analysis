@@ -6,6 +6,9 @@ import glob
 import subprocess
 import sys
 import configparser
+import sys
+sys.path.append("../users")
+from getPath import getPath
 
 bTagEff_sample_syst_dict = {
       "Nominal" : "TTbar_diLepton",
@@ -45,6 +48,7 @@ allMC = ["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLep
 
 allData2018 = ["DoubleMuon","MuonEG","SingleMuon","EGamma"] 
 allData2017 = ["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"] 
+allData2016 = ["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"] 
 
 sample_allSyst_dict = {
       "JESTotal_UP" : allMC,
@@ -124,9 +128,9 @@ def get_dataBasePath_dCache(year,dcap=False):      #return dataBasePath on dCach
    config = configparser.ConfigParser()
    config.read("../config"+year+".ini")
    if dcap:
-      return "dcap://grid-dcap-extern.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
+      return "dcap://grid-dcap-extern.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
    else:
-      return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/dmeuser/mergedNtuple/{0}/{1}/".format(year,config["input"]["version"])
+      return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
 
 def printSubmitInfo(args):
    print "Running "+args.m
@@ -235,7 +239,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
                      f.write("""
 Universe                = vanilla
 Executable              = run.sh
-Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {8} {9}
+Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {8} {9} {11} {12}
 Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
 Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
 Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
@@ -243,7 +247,7 @@ use_x509userproxy       = true
 Request_Memory          = {4} Mb
 Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {10}
 Queue
-""".format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else ""),)
+""".format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath")),)
                   subprocess.call(["condor_submit", submitFile])
 
 
@@ -305,7 +309,7 @@ if __name__ == "__main__":
    
    #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
    #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
-   #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"]       #2017
+   #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"]       #2017, 2016
    #  ~toProcess_data=["MET"]      
    toProcess_data=[]
          
@@ -354,6 +358,8 @@ if __name__ == "__main__":
             submit(args,allMC,allData2018,[])
          elif (args.y=="2017"):
             submit(args,allMC,allData2017,[])
+         elif (args.y=="2016_preVFP" or args.y == "2016_postVFP"):
+            submit(args,allMC,allData2016,[])
          else:
             print args.y+" does not match correct year"
          for syst in sample_allSyst_dict.keys():

@@ -8,7 +8,9 @@ from termcolor import colored
 import re
 import subprocess as sp
 import mergeOutputs
-
+import sys
+sys.path.append("../users")
+from getPath import getPath
 
 def getInfos():
     out = subprocess.check_output(["condor_q", "-long"])
@@ -189,7 +191,7 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
 
         for job in susJobs:
             os.system("condor_hold "+job)
-        if len(susJobs)!=0: os.system("condor_release dmeuser")
+        if len(susJobs)!=0: os.system("condor_release {}".format(getPath("name")))
     
     return runningLogs
     
