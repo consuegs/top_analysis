@@ -5,7 +5,7 @@ source /etc/profile.d/umd_ui.sh #to enable proxy
 if [[ $8 != "" ]]
 then
    # ~xrdcp "$8" $TMP   #copy to node
-   dccp -H "$8" $TMP
+   dccp "$8" $TMP
 fi
 
 submitDir=${10}/multiprocess # framework base dir

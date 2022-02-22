@@ -75,7 +75,6 @@ def getProgressFromOut(outName,checkCompleted=False,printStatus=True,resubmit=Fa
         lines = len(open(outName).readlines(  ))
         if lines !=0:
             with open(outName,"r") as f:
-                next(f)
                 for line in f:
                     if line.find("Processing")==0:
                         processing = True
@@ -84,6 +83,7 @@ def getProgressFromOut(outName,checkCompleted=False,printStatus=True,resubmit=Fa
                         if progress==10:
                             color = "green"
                         if printStatus: print colored("--"+line.split(".")[0]+" "+str(progress*10)+"%",color)
+                        break
         if(processing == False and checkCompleted and lines>2):
             color = "red"
             if printStatus: 
@@ -117,7 +117,8 @@ def getStatusFromOut(outName,running,printStatus=True,resubmit=False):
                         color = "green"
                         if printStatus: print colored(datasetName+" is finished, copy took "+getCopyTimeFromError(outName).strip()+"s, script"+line.split(")")[-1].replace("=","").replace("\n","")+" on "+getMachineFromOut(outName),color)
         if finished == False and running:
-            getProgressFromOut(outName,True,printStatus,resubmit) 
+            if printStatus:
+                getProgressFromOut(outName,True,printStatus,resubmit) 
         elif finished == False and running == False:
             color = "red"
             if printStatus:
@@ -133,10 +134,17 @@ def checkStatusFromLog(logPath,runningLogs,printSingleJobs=True,resubmit=False):
     nTotal = 0
     nRunning = 0
     nFinished = 0
+    finishedList = []
+    with open(logPath+"finished.txt","r") as f:     #read jobs already finished at large check
+        for line in f:
+            finishedList.append(line.replace("\n",""))
     with open(logPath+"finished.txt","w") as f:
         for log in glob.glob(logPath+"*.submit"):
             nTotal+=1
             outFile = log.replace(".submit",".out")
+            if getNameFromOutFile(outFile) in finishedList:
+                nFinished+=1
+                continue
             if outFile in runningLogs:
                 nRunning+=1
                 getStatusFromOut(outFile,True,printSingleJobs,resubmit)
@@ -149,7 +157,7 @@ def checkStatusFromLog(logPath,runningLogs,printSingleJobs=True,resubmit=False):
                     allFinished = False
     return allFinished,[nTotal,nRunning,nFinished]
 
-def checkStatusFromQueue(printOutput=True,checkSuspended=False):
+def checkStatusFromQueue(printOutput=True,checkSuspended=False,noProgress=False):
     jobs = getInfos()
     jobs = sorted(jobs, key=lambda l: l["JobStatus"]+l["ClusterId"])
     susJobs = []
@@ -171,13 +179,15 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
             print colored("\033[1m"+name+"    "+job["ClusterId"]+"       idle"+"\033[0m","yellow")
         elif jStatus == "2":
             print colored("\033[1m"+name+"    "+job["RemoteHost"]+"   "+job["ClusterId"]+"       running"+"\033[0m","green")
-            getProgressFromOut(job["Out"])
+            if noProgress==False:
+                getProgressFromOut(job["Out"])
         elif jStatus == "5":
             print colored("\033[1m"+name+"    "+job["ClusterId"]+"       held"+"\033[0m","red")
         elif jStatus == "7":
             susTime = (time.time()-int(job["LastSuspensionTime"]))/60.
             print colored("\033[1m"+name+"    "+job["RemoteHost"]+"       suspended since {:.2f} min".format(susTime)+"         "+job["RemoteHost"]+"\033[0m","red")
-            getProgressFromOut(job["Out"])
+            if noProgress==False:
+                getProgressFromOut(job["Out"])
             if susTime > 10 and checkSuspended :
                 value = input("Job suspended for more than 10 Minutes, please enter 1 to kill job and start again or 0 to continue:\n")
                 if value==1:
@@ -250,6 +260,7 @@ if __name__ == "__main__":
     parser.add_argument('--mergeAll', action='store_true', help="Automatic merge, avoids asking if jobs should be merged")
     parser.add_argument('--forceMergeAll', action='store_true', help="Forces merge, even if not necessary due to updated input")
     parser.add_argument('--ignorePDF', action='store_true', help="Ignores all PDF jobs")
+    parser.add_argument('--noProgress', action='store_true', help="Do not show progress of single jobs")
     args = parser.parse_args()
     
     if(args.checkCompleted == "" and args.distributions==False and args.bTagEff==False and args.TUnfold==False):  # print running jobs only on nominal mode
@@ -257,7 +268,7 @@ if __name__ == "__main__":
     else:
         printRunningJobs = False
     
-    runningLogs = checkStatusFromQueue(printRunningJobs,args.checkSuspended)
+    runningLogs = checkStatusFromQueue(printRunningJobs,args.checkSuspended,args.noProgress)
     
     if(args.distributions):
         summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF)
