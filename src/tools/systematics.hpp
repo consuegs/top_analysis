@@ -272,10 +272,13 @@ namespace Systematic{
 
 
     /// Convert a type from string to enum
-    Type convertType(const TString& type);
+    Type convertType(const TString& type, bool const &quiet=false);
 
     /// Convert a type from enum to string
     TString convertType(const Type& type);
+    
+    /// Convert a type from string to string (removes variation from string)
+    TString convertTypeString(const TString& type);
 
     /// Convert a vector of types from string to enum
     std::vector<Type> convertType(const std::vector<TString>& types);

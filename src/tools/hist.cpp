@@ -696,6 +696,15 @@ void hist::sqrtHist(TH1& h)
    }
 }
 
+void hist::addQuadr(TH1F &h1, TH1F const &h2)
+{
+   TH1F add(h2);
+   h1.Multiply(&h1);
+   add.Multiply(&add);
+   h1.Add(&add);
+   sqrtHist(h1);
+}
+
 TH1F hist::getRatio(TH1F const &h1,TH1F const &h2,TString title,ErrorType et)
 {
    TH1F hRatio(h1);
@@ -898,19 +907,37 @@ std::pair<TH2F*,TH2F*> hist::getEnvelope(const TH2F* nominal, const std::vector<
 }
 
 // get graph with asym. errors from three histograms (shift=true if only shift and not shift+nominal is given)
-TGraphAsymmErrors hist::getErrorGraph(TH1F* const eDOWN, TH1F* const eUP, TH1F* const nominal, bool const shift){
+TGraphAsymmErrors hist::getErrorGraph(TH1F* const &eDOWN, TH1F* const &eUP, TH1F* const &nominal, bool const shift, bool const eXzero){
    TGraphAsymmErrors asymmerrors(nominal);
-   if (shift) {
-      for (int i=0; i<=eUP->GetNbinsX(); i++){
+   for (int i=0; i<=eUP->GetNbinsX(); i++){
+      if (shift) {
          asymmerrors.SetPointEYhigh(i,eUP->GetBinContent(i+1));
          asymmerrors.SetPointEYlow(i,eDOWN->GetBinContent(i+1));
       }
-   }
-   else {
-      for (int i=0; i<=eUP->GetNbinsX(); i++){
+      else{
          asymmerrors.SetPointEYhigh(i,abs(eUP->GetBinContent(i+1)-nominal->GetBinContent(i+1)));
          asymmerrors.SetPointEYlow(i,abs(eDOWN->GetBinContent(i+1)-nominal->GetBinContent(i+1)));
       }
+      
+      if (eXzero){
+         asymmerrors.SetPointEXhigh(i,0.);
+         asymmerrors.SetPointEXlow(i,0.);
+      }
    }
+   
    return asymmerrors;
+}
+
+TGraphAsymmErrors hist::getRatioAsymmGraph(TH1F const &down,TH1F const &up,TH1F const &nominal,TH1F const &denominator){
+
+   TH1F* sysDown = (TH1F*)nominal.Clone();
+   TH1F* sysUp = (TH1F*)nominal.Clone();
+   sysDown->Add(&down,-1.);
+   sysUp->Add(&up);
+            
+   TH1F ratio_nominal = getRatio(nominal,denominator,"data/MC",hist::ONLY1);
+   TH1F ratio_systDown = getRatio(*sysDown,denominator,"data/MC",hist::ONLY1);
+   TH1F ratio_systUp = getRatio(*sysUp,denominator,"data/MC",hist::ONLY1);
+   
+   return getErrorGraph(&ratio_systDown,&ratio_systUp,&ratio_nominal,false,true);
 }

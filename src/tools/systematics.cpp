@@ -14,7 +14,7 @@
 
 // --------------------- Functions defined in namespace Systematic for Type -------------------------
 
-Systematic::Type Systematic::convertType(const TString& type)
+Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
 {
     // Attention: the order here is important, since the first line where the BeginsWith is true is returned
     if(type.BeginsWith("Nominal")) return nominal;
@@ -276,7 +276,7 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("jetPileupIDapplied")) return jetPileupIDapplied;
     if(type.BeginsWith("jetLooseCleaningApplied")) return jetLooseCleaningApplied;
     if(type.BeginsWith("met40Cut")) return met40Cut;
-    std::cout<<"Warning in Systematic::convertType()! Following conversion is not implemented: "
+    if(!quiet) std::cout<<"Warning in Systematic::convertType()! Following conversion is not implemented: "
              <<type<<std::endl<<std::endl;
     return undefinedType;
 }
@@ -548,6 +548,11 @@ TString Systematic::convertType(const Type& type)
     
     std::cerr<<"Error in Systematic::convertType()! Conversion is not implemented\n...break\n"<<std::endl;
     exit(99);
+}
+
+TString Systematic::convertTypeString(const TString& type)
+{
+    return convertType(convertType(type));
 }
 
 

@@ -18,20 +18,7 @@
 #include "tools/weighters.hpp"
 
 using namespace std;
-
 Config const &cfg=Config::get();
-
-TString getSavePath(){
-   TString save_path = "TUnfold_binning_"+cfg.tunfold_InputSamples[0]+"_"+cfg.tunfold_ResponseSample;
-   if (cfg.tunfold_withBSM) save_path+="_BSM";
-   if (!cfg.tunfold_withDNN) save_path+="_Puppi";
-   if (cfg.tunfold_withDNN) save_path+="_DNN";
-   if (cfg.tunfold_withSameBins) save_path+="_SameBins";
-   if (cfg.tunfold_withPTreweight) {
-      save_path+="_PTreweight"+cfg.tunfold_scalePTreweight;
-   }
-   return save_path;
-}
 
 std::tuple<TUnfoldBinning*,TUnfoldBinning*> defineBinnings2D(std::vector<double> &metBinsCoarse_vector, std::vector<double> &phiBinsCoarse_vector, 
                                                             std::vector<double> &metBinsFine_vector, std::vector<double> &phiBinsFine_vector){
@@ -56,13 +43,13 @@ std::tuple<TUnfoldBinning*,TUnfoldBinning*> defineBinnings2D(std::vector<double>
    //=======================================================================
    // detector level binning scheme
 
-   TUnfoldBinning *detectorBinning=new TUnfoldBinning("detector");
-   TUnfoldBinning *detectorDistribution=detectorBinning->AddBinning("detectordistribution");
-   detectorDistribution->AddAxis("met",NBIN_MET_FINE,metBinsFine,
+   TUnfoldBinning *detectorDistribution=new TUnfoldBinning("detector");
+   TUnfoldBinning *detectorBinning=detectorDistribution->AddBinning("detectordistribution");
+   detectorBinning->AddAxis("met",NBIN_MET_FINE,metBinsFine,
                                  false, // no underflow bin (not reconstructed)
                                  true // overflow bin
                                  );
-   detectorDistribution->AddAxis("phi",NBIN_PHI_FINE,phiBinsFine,
+   detectorBinning->AddAxis("phi",NBIN_PHI_FINE,phiBinsFine,
                                  false, // no underflow bin (not reconstructed)
                                  false // no overflow bin (not reconstructed)
                                  );
@@ -84,10 +71,302 @@ std::tuple<TUnfoldBinning*,TUnfoldBinning*> defineBinnings2D(std::vector<double>
                            false // overflow bin
                            );
    
-   return {detectorDistribution,signalBinning};
+   return {detectorBinning,signalBinning};
 }
 
-void fillDataHists(TUnfoldBinning* const &detectorDistribution, TUnfoldBinning* const &signalBinning, io::RootFileSaver const &saver){
+std::tuple<TUnfoldBinning*,TUnfoldBinning*> defineBinnings1D(std::vector<double> &BinsCoarse_vector, std::vector<double> &BinsFine_vector){
+   
+   // Get nBins and convert to arrays needed for TUnfoldBinning
+   int NBIN_COARSE = BinsCoarse_vector.size()-1;
+   Double_t* BinsCoarse = &BinsCoarse_vector[0];
+   
+   if(cfg.tunfold_withSameBins){
+      BinsFine_vector.resize(NBIN_COARSE+1);
+      BinsFine_vector = BinsCoarse_vector;
+   }
+   int NBIN_FINE = BinsFine_vector.size()-1;
+   Double_t* BinsFine=&BinsFine_vector[0];
+   
+   //=======================================================================
+   // detector level binning scheme
+
+   TUnfoldBinning *detectorDistribution=new TUnfoldBinning("detector");
+   TUnfoldBinning *detectorBinning=detectorDistribution->AddBinning("detectordistribution");
+   detectorBinning->AddAxis("reco",NBIN_FINE,BinsFine,
+                                 false, // no underflow bin (not reconstructed)
+                                 true // overflow bin
+                                 );
+
+   //=======================================================================
+   // generator level binning
+   TUnfoldBinning *generatorBinning=new TUnfoldBinning("generator");
+
+   // signal distribution is measured with coarse binning
+   // fake bin is used to check
+   // what happens outside the phase-space
+   TUnfoldBinning *signalBinning = generatorBinning->AddBinning("signal");
+   signalBinning->AddAxis("gen",NBIN_COARSE,BinsCoarse,
+                           false, // underflow bin
+                           true // overflow bin
+                           );
+   
+   return {detectorBinning,signalBinning};
+}
+
+TH1* deriveSignalFraction(TH2* const histMCGenRec, TH1* const histMCRec_fakes, TUnfoldBinning* const &detectorBinning, io::RootFileSaver const &saver,
+                           TString const &histName, TString const &varName){
+   TH1 *hist_SignalFraction=detectorBinning->CreateHistogram(histName);
+   TH1 *histMCRec=histMCGenRec->ProjectionY("",1,-1);
+   saver.save(*histMCRec,varName+"/histMCRec");
+   
+   for(int i=1; i<=histMCRec->GetNbinsX(); i++){  //Is this correct or not???? Idea: mc stat. of ttbar signal is already taken into account in response matrix
+      histMCRec->SetBinError(i,0);
+   }
+   
+   hist_SignalFraction->Add(histMCRec);
+   histMCRec->Add(histMCRec_fakes);
+   hist_SignalFraction->Divide(histMCRec);
+   
+   return hist_SignalFraction;
+}
+
+TH1* deriveEfficiency(TH2* const histMCGenRec, TUnfoldBinning* const &signalBinning){
+   TH1 *hist_efficiency=signalBinning->CreateHistogram("efficiency");
+   for(int binGen=0;binGen<=histMCGenRec->GetNbinsX()+1;binGen++) {
+      double sum0=0.;
+      double sum1=0.;
+      for(int binRec=0;binRec<=histMCGenRec->GetNbinsY()+1;binRec++) {
+         double c=histMCGenRec->GetBinContent(binGen,binRec);
+         sum0+=c;
+         if((binRec>0)&&(binRec<=histMCGenRec->GetNbinsY()+1)) sum1+=c;
+      } 
+      if(sum0>0.0) hist_efficiency->SetBinContent(binGen,sum1/sum0);
+   }
+   return hist_efficiency;
+}
+
+void derivePurityStability(TH2* const histMCGenRec_purity, TUnfoldBinning* const &signalBinning, io::RootFileSaver const &saver, TString const &varName){
+   TH1 *hist_purity=signalBinning->CreateHistogram("purity");
+   TH1 *hist_stability=signalBinning->CreateHistogram("stability");
+   TH1 *hist_N_GenRec=signalBinning->CreateHistogram("N_GenRec");
+   TH1 *hist_N_Rec=signalBinning->CreateHistogram("N_Rec");
+   for(int binRec=0;binRec<=hist_purity->GetNbinsX()+1;binRec++) {
+      double sum=0.;
+      for(int binGen=1;binGen<=hist_purity->GetNbinsX()+1;binGen++) {
+         sum += histMCGenRec_purity->GetBinContent(binGen,binRec);
+      }
+      double p=0.;
+      if(sum>0.0) {
+         p=histMCGenRec_purity->GetBinContent(binRec,binRec)/sum;
+      }
+      hist_purity->SetBinContent(binRec,p);
+      hist_N_GenRec->SetBinContent(binRec,histMCGenRec_purity->GetBinContent(binRec,binRec));
+      hist_N_Rec->SetBinContent(binRec,sum);
+   }
+   
+   saver.save(*hist_purity,varName+"/hist_purity");
+   saver.save(*hist_N_GenRec,varName+"/hist_N_GenRec");
+   saver.save(*hist_N_Rec,varName+"/hist_N_Rec");
+   
+   for(int binGen=0;binGen<=hist_purity->GetNbinsX()+1;binGen++) {
+      double sum=0.;
+      for(int binRec=1;binRec<=hist_purity->GetNbinsX()+1;binRec++) {
+         sum += histMCGenRec_purity->GetBinContent(binGen,binRec);
+      }
+      double p=0.;
+      if(sum>0.0) {
+         p=histMCGenRec_purity->GetBinContent(binGen,binGen)/sum;
+      }
+      hist_stability->SetBinContent(binGen,p);
+   }
+   
+   saver.save(*hist_stability,varName+"/hist_stability");
+}
+
+//small class containing all TUnfold related hist for one distribution
+class Distribution
+{
+   public:
+      // 2D constructor
+      Distribution(TString const &varName,std::vector<double> xBinsCoarse_vector, std::vector<double> yBinsCoarse_vector, 
+                  std::vector<double> xBinsFine_vector, std::vector<double> yBinsFine_vector):
+      varName_(varName)
+      {
+         is2D = true;
+         std::tie(detectorBinning_,signalBinning_) = defineBinnings2D(xBinsCoarse_vector,yBinsCoarse_vector,xBinsFine_vector,yBinsFine_vector);
+      }
+      
+      // 1D constructor
+      Distribution(TString const &varName,std::vector<double> xBinsCoarse_vector, std::vector<double> xBinsFine_vector):
+      varName_(varName)
+      {
+         is2D = false;
+         std::tie(detectorBinning_,signalBinning_) = defineBinnings1D(xBinsCoarse_vector,xBinsFine_vector);
+      }
+      
+      void setupDataHists(){
+         histDataReco=detectorBinning_->CreateHistogram("histDataReco_"+varName_);
+         histDataReco_coarse=signalBinning_->CreateHistogram("histDataReco_coarse_"+varName_);
+         histDataTruth=signalBinning_->CreateHistogram("histDataTruth_"+varName_);
+         histDataTruth_fakes=signalBinning_->CreateHistogram("histDataTruth_fakes_"+varName_);
+      }
+      
+      void setupMCHists(){
+         histMCGenRec=TUnfoldBinning::CreateHistogramOfMigrations(signalBinning_,detectorBinning_,"histMCGenRec-"+varName_);
+         histMCGenRec_purity=TUnfoldBinning::CreateHistogramOfMigrations(signalBinning_,signalBinning_,"histMCGenRec_purity-"+varName_);
+         histMCRec_fakes=detectorBinning_->CreateHistogram("histMCRec_fakes-"+varName_);
+         histMCRec_fakes_coarse=signalBinning_->CreateHistogram("histMCRec_fakes_coarse-"+varName_);
+         histMCRec_bkg=detectorBinning_->CreateHistogram("histMCRec_bkg-"+varName_);
+         histMCRec_bkg_coarse=signalBinning_->CreateHistogram("histMCRec_bkg_coarse-"+varName_);
+      }
+      
+      //2D
+      void setVariables(Float_t &xReco, Float_t &yReco, Float_t &xGen, Float_t &yGen){
+         xReco_ = &xReco;
+         yReco_ = &yReco;
+         xGen_ = &xGen;
+         yGen_ = &yGen;
+      }
+      
+      //1D
+      void setVariables(Float_t &xReco, Float_t &xGen){
+         xReco_ = &xReco;
+         xGen_ = &xGen;
+      }
+      
+      void fillDataTruth_fakes(float const &weight){
+         Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         histDataTruth_fakes->Fill(genbinNumber,weight);
+      }
+      
+      void fillDataTruth(float const &weight){
+         Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         histDataTruth->Fill(genbinNumber,weight);
+      }
+      
+      void fillDataReco(float const &weight){
+         Int_t binNumber = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
+         histDataReco->Fill(binNumber,weight);
+         
+         Int_t binNumber_coarse = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
+         histDataReco_coarse->Fill(binNumber_coarse,weight);
+      }
+      
+      void fillMCbkg(float const &weight){
+         Int_t recBin = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
+         Int_t recBin_purity = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
+         histMCRec_bkg->Fill(recBin,weight);
+         histMCRec_bkg_coarse->Fill(recBin_purity,weight);
+      }
+      
+      void fillMCfakes(float const &weight){
+         Int_t recBin = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
+         Int_t recBin_purity = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
+         histMCRec_fakes->Fill(recBin,weight);
+         histMCRec_fakes_coarse->Fill(recBin_purity,weight);
+      }
+      
+      void fillMCGenRec(float const &mcWeight,float const &recoWeight){
+         Int_t recBin = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
+         Int_t recBin_purity = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
+         Int_t genBin = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         
+         histMCGenRec->Fill(genBin,recBin,mcWeight*recoWeight);
+         histMCGenRec_purity->Fill(genBin,recBin_purity,mcWeight*recoWeight);
+         
+         // count fraction of events which have a different weight on truth and reco (in reco underflow bin)
+         // this is required for TUnfold to function properly
+         histMCGenRec->Fill(genBin,0.,mcWeight-(mcWeight*recoWeight));
+         histMCGenRec_purity->Fill(genBin,0.,mcWeight-(mcWeight*recoWeight));
+      }
+      
+      void setExpStatUnc(){
+         // set reco bin error to error expected in data
+         for(int i=0;i<=histDataReco->GetNbinsX()+1;i++) {
+            histDataReco->SetBinError(i,sqrt(histDataReco->GetBinContent(i)));
+         }
+         for(int i=0;i<=histDataReco_coarse->GetNbinsX()+1;i++) {
+            histDataReco_coarse->SetBinError(i,sqrt(histDataReco_coarse->GetBinContent(i)));
+         }
+      }
+      
+      void saveDataHists(io::RootFileSaver const &saver){
+         saver.save(*detectorBinning_,varName_+"/detector_binning");
+         saver.save(*signalBinning_,varName_+"/generator_binning");
+         saver.save(*histDataReco,varName_+"/histDataReco");
+         saver.save(*histDataReco_coarse,varName_+"/histDataReco_coarse");
+         saver.save(*histDataTruth_fakes,varName_+"/histDataTruth_fakes");
+         saver.save(*histDataTruth,varName_+"/histDataTruth");
+      }
+      
+      void saveMCHists(io::RootFileSaver const &saver){
+         saver.save(*histMCGenRec,varName_+"/histMCGenRec");
+         saver.save(*histMCGenRec_purity,varName_+"/histMCGenRec_sameBins");
+         saver.save(*histMCRec_fakes,varName_+"/histMCRec_fakes");
+         saver.save(*histMCRec_bkg,varName_+"/histMCRec_bkg");
+         saver.save(*histMCRec_bkg_coarse,varName_+"/histMCRec_bkg_coarse");
+         saver.save(*(histMCGenRec->ProjectionX()),varName_+"/histMCGenRec_projX");
+         saver.save(*(histMCGenRec->ProjectionY()),varName_+"/histMCGenRec_projY");
+         
+         //Calculate Signal fration
+         TH1* hist_SignalFraction = deriveSignalFraction(histMCGenRec,histMCRec_fakes,detectorBinning_,saver,"hist_SignalFraction",varName_);
+         saver.save(*hist_SignalFraction,varName_+"/hist_SignalFraction");
+         
+         //Calculate Signal fration for coarse binning
+         TH1* hist_SignalFraction_coarse = deriveSignalFraction(histMCGenRec_purity,histMCRec_fakes_coarse,signalBinning_,saver,"hist_SignalFraction_coarse",varName_);
+         saver.save(*hist_SignalFraction_coarse,varName_+"/hist_SignalFraction_coarse");
+         
+         //Save normalized reco distribution for fake and non fake events
+         TH1D histGen_fakes=*(histMCGenRec_purity->ProjectionY("Fakes",1,1));
+         TH1D histGen_noFakes=*(histMCGenRec_purity->ProjectionY("Fakes",2,-1));
+         saver.save(histGen_fakes,varName_+"/histGen_fakes");
+         saver.save(histGen_noFakes,varName_+"/histGen_noFakes");
+         
+         //efficiency
+         TH1* hist_efficiency = deriveEfficiency(histMCGenRec,signalBinning_);
+         saver.save(*hist_efficiency,varName_+"/hist_efficiency");
+         
+         // calculate bin purities and stabilities
+         derivePurityStability(histMCGenRec_purity,signalBinning_,saver,varName_);
+      }
+      
+      TUnfoldBinning* detectorBinning_;
+      TUnfoldBinning* signalBinning_;
+      TString varName_;
+      bool is2D;
+      
+      Float_t* xGen_;
+      Float_t* yGen_;
+      Float_t* xReco_;
+      Float_t* yReco_;
+      
+      TH1* histDataReco;
+      TH1* histDataReco_coarse;
+      TH1* histDataTruth;
+      TH1* histDataTruth_fakes;
+      
+      TH2* histMCGenRec;
+      TH2* histMCGenRec_purity;
+      TH1* histMCRec_fakes;
+      TH1* histMCRec_fakes_coarse;
+      TH1* histMCRec_bkg;
+      TH1* histMCRec_bkg_coarse;
+};
+
+TString getSavePath(){
+   TString save_path = "TUnfold_binning_"+cfg.tunfold_InputSamples[0]+"_"+cfg.tunfold_ResponseSample;
+   if (cfg.tunfold_withBSM) save_path+="_BSM";
+   if (!cfg.tunfold_withDNN && cfg.tunfold_withPF) save_path+="_PF";
+   else if (!cfg.tunfold_withDNN) save_path+="_Puppi";
+   if (cfg.tunfold_withDNN) save_path+="_DNN";
+   if (cfg.tunfold_withSameBins) save_path+="_SameBins";
+   if (cfg.tunfold_withPTreweight) {
+      save_path+="_PTreweight"+cfg.tunfold_scalePTreweight;
+   }
+   return save_path;
+}
+
+void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver const &saver){
    
    TString sample = cfg.tunfold_InputSamples[0];
    
@@ -99,11 +378,14 @@ void fillDataHists(TUnfoldBinning* const &detectorDistribution, TUnfoldBinning* 
    Float_t phiRec,metRec,phiGen,metGen,mcWeight,recoWeight,genMET,reweight;
    UInt_t genDecayMode;
    
-   // define histograms to be filles
-   TH1 *histDataReco=detectorDistribution->CreateHistogram("histDataReco");
-   TH1 *histDataReco_coarse=signalBinning->CreateHistogram("histDataReco_coarse");
-   TH1 *histDataTruth=signalBinning->CreateHistogram("histDataTruth");
-   TH1 *histDataTruth_fakes=signalBinning->CreateHistogram("histDataTruth_fakes");
+   // setup distributions
+   for(Distribution& dist : distribution_vec) {
+      dist.setupDataHists();
+      if (dist.varName_ == "2D_dPhi_pTnunu") dist.setVariables(metRec,phiRec,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new") dist.setVariables(metRec,phiRec,metGen,phiGen);
+      else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
+      else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);      
+   }
    
    TString minTreePath_Nominal = TString::Format("%s/100.0/Nominal/",cfg.minTreePath.Data(),cfg.treeVersion.Data());
    
@@ -119,11 +401,17 @@ void fillDataHists(TUnfoldBinning* const &detectorDistribution, TUnfoldBinning* 
          
          // set tree variables
          dataTree->ResetBranchAddresses();
-         dataTree->SetBranchAddress("Phi_recPuppi",&phiRec);
-         dataTree->SetBranchAddress("PuppiMET",&metRec);
-         if(cfg.tunfold_withDNN) {
+         if(cfg.tunfold_withPF) {
+            dataTree->SetBranchAddress("Phi_rec",&phiRec);
+            dataTree->SetBranchAddress("MET",&metRec);
+         }
+         else if(cfg.tunfold_withDNN) {
             dataTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec);
             dataTree->SetBranchAddress("DNN_MET_pT",&metRec);
+         }
+         else{
+            dataTree->SetBranchAddress("Phi_recPuppi",&phiRec);
+            dataTree->SetBranchAddress("PuppiMET",&metRec);
          }
          dataTree->SetBranchAddress("Phi_NuNu",&phiGen);
          dataTree->SetBranchAddress("PtNuNu",&metGen);
@@ -159,33 +447,26 @@ void fillDataHists(TUnfoldBinning* const &detectorDistribution, TUnfoldBinning* 
             // ~if(genDecayMode>3 || metGen<0) continue;
             
             // ~if (metGen>0) mcWeight*=sqrt(sqrt(sqrt(sqrt(metGen))));
-
-            // fill histogram with data truth parameters
-            Int_t genbinNumber=signalBinning->GetGlobalBinNumber(metGen,phiGen);
             
             //reweight
             mcWeight*=reweight;
             
-            if (isSignal){
+            if (isSignal){    // fill truth distributions (used for pseudo data)
                if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40)) {
-                  histDataTruth_fakes->Fill(genbinNumber,mcWeight);
+                  for(Distribution& dist : distribution_vec) dist.fillDataTruth_fakes(mcWeight);
                }
-               else histDataTruth->Fill(genbinNumber,mcWeight);
+               else for(Distribution& dist : distribution_vec) dist.fillDataTruth(mcWeight);
             }
 
             // fill histogram with reconstructed quantities
             if (metRec<0) continue;   //events that are not reconstructed
-            
-            Int_t binNumber=detectorDistribution->GetGlobalBinNumber(metRec,phiRec);
-            histDataReco->Fill(binNumber,mcWeight*recoWeight);
-            
-            Int_t binNumber_coarse=signalBinning->GetGlobalBinNumber(metRec,phiRec);
-            histDataReco_coarse->Fill(binNumber_coarse,mcWeight*recoWeight);
+            for(Distribution& dist : distribution_vec) dist.fillDataReco(mcWeight*recoWeight);
          }
          io::log<<"";
       }
    }
    
+   /*
    TFile *bsmFile=new TFile(minTreePath_Nominal+"T2tt_650_350.root","read");
    TTree *BSMTree=(TTree *) bsmFile->Get("ttbar_res100.0/T2tt_650_350");
    if(!BSMTree) {
@@ -196,9 +477,17 @@ void fillDataHists(TUnfoldBinning* const &detectorDistribution, TUnfoldBinning* 
       BSMTree->ResetBranchAddresses();
       BSMTree->SetBranchAddress("Phi_recPuppi",&phiRec);
       BSMTree->SetBranchAddress("PuppiMET",&metRec);
-      if(cfg.tunfold_withDNN) {
+      if(cfg.tunfold_withPF) {
+         BSMTree->SetBranchAddress("Phi_rec",&phiRec);
+         BSMTree->SetBranchAddress("MET",&metRec);
+      }
+      else if(cfg.tunfold_withDNN) {
          BSMTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec);
          BSMTree->SetBranchAddress("DNN_MET_pT",&metRec);
+      }
+      else{
+         BSMTree->SetBranchAddress("Phi_recPuppi",&phiRec);
+         BSMTree->SetBranchAddress("PuppiMET",&metRec);
       }
       BSMTree->SetBranchAddress("Phi_NuNu",&phiGen);
       BSMTree->SetBranchAddress("PtNuNu",&metGen);
@@ -215,98 +504,21 @@ void fillDataHists(TUnfoldBinning* const &detectorDistribution, TUnfoldBinning* 
 
          // fill histogram with reconstructed quantities
          if (metRec<0) continue;   //events that are not reconstructed
-         Int_t binNumber=detectorDistribution->GetGlobalBinNumber(metRec,phiRec);
+         Int_t binNumber=detectorBinning->GetGlobalBinNumber(metRec,phiRec);
          histDataReco->Fill(binNumber,mcWeight);
          
          Int_t binNumber_coarse=signalBinning->GetGlobalBinNumber(metRec,phiRec);
          histDataReco_coarse->Fill(binNumber_coarse,mcWeight);
       }
    }
-   
-   // set reco bin error to error expected in data
-   for(int i=0;i<=histDataReco->GetNbinsX()+1;i++) {
-      histDataReco->SetBinError(i,sqrt(histDataReco->GetBinContent(i)));
-   }
-   for(int i=0;i<=histDataReco_coarse->GetNbinsX()+1;i++) {
-      histDataReco_coarse->SetBinError(i,sqrt(histDataReco_coarse->GetBinContent(i)));
-   }
-   
-   saver.save(*histDataReco,"histDataReco");
-   saver.save(*histDataReco_coarse,"histDataReco_coarse");
-   saver.save(*histDataTruth_fakes,"histDataTruth_fakes");
-   saver.save(*histDataTruth,"histDataTruth");
-
    delete BSMTree;
-}
-
-TH1* deriveSignalFraction(TH2* const histMCGenRec, TH1* const histMCRec_fakes, TUnfoldBinning* const &detectorDistribution, io::RootFileSaver const &saver,
-                           TString const &histName){
-   TH1 *hist_SignalFraction=detectorDistribution->CreateHistogram(histName);
-   TH1 *histMCRec=histMCGenRec->ProjectionY("",1,-1);
-   saver.save(*histMCRec,"histMCRec");
+   */
    
-   for(int i=1; i<=histMCRec->GetNbinsX(); i++){  //Is this correct or not???? Idea: mc stat. of ttbar signal is already taken into account in response matrix
-      histMCRec->SetBinError(i,0);
+   // correct stat unc. (if pseudo data) and save data hists
+   for(Distribution& dist : distribution_vec){
+      dist.setExpStatUnc();
+      dist.saveDataHists(saver);
    }
-   
-   hist_SignalFraction->Add(histMCRec);
-   histMCRec->Add(histMCRec_fakes);
-   hist_SignalFraction->Divide(histMCRec);
-   
-   return hist_SignalFraction;
-}
-
-TH1* deriveEfficiency(TH2* const histMCGenRec, TUnfoldBinning* const &signalBinning){
-   TH1 *hist_efficiency=signalBinning->CreateHistogram("efficiency");
-   for(int binGen=0;binGen<=histMCGenRec->GetNbinsX()+1;binGen++) {
-      double sum0=0.;
-      double sum1=0.;
-      for(int binRec=0;binRec<=histMCGenRec->GetNbinsY()+1;binRec++) {
-         double c=histMCGenRec->GetBinContent(binGen,binRec);
-         sum0+=c;
-         if((binRec>0)&&(binRec<=histMCGenRec->GetNbinsY()+1)) sum1+=c;
-      } 
-      if(sum0>0.0) hist_efficiency->SetBinContent(binGen,sum1/sum0);
-   }
-   return hist_efficiency;
-}
-
-void derivePurityStability(TH2* const histMCGenRec_purity, TUnfoldBinning* const &signalBinning, io::RootFileSaver const &saver){
-   TH1 *hist_purity=signalBinning->CreateHistogram("purity");
-   TH1 *hist_stability=signalBinning->CreateHistogram("stability");
-   TH1 *hist_N_GenRec=signalBinning->CreateHistogram("N_GenRec");
-   TH1 *hist_N_Rec=signalBinning->CreateHistogram("N_Rec");
-   for(int binRec=0;binRec<=hist_purity->GetNbinsX()+1;binRec++) {
-      double sum=0.;
-      for(int binGen=1;binGen<=hist_purity->GetNbinsX()+1;binGen++) {
-         sum += histMCGenRec_purity->GetBinContent(binGen,binRec);
-      }
-      double p=0.;
-      if(sum>0.0) {
-         p=histMCGenRec_purity->GetBinContent(binRec,binRec)/sum;
-      }
-      hist_purity->SetBinContent(binRec,p);
-      hist_N_GenRec->SetBinContent(binRec,histMCGenRec_purity->GetBinContent(binRec,binRec));
-      hist_N_Rec->SetBinContent(binRec,sum);
-   }
-   
-   saver.save(*hist_purity,"hist_purity");
-   saver.save(*hist_N_GenRec,"hist_N_GenRec");
-   saver.save(*hist_N_Rec,"hist_N_Rec");
-   
-   for(int binGen=0;binGen<=hist_purity->GetNbinsX()+1;binGen++) {
-      double sum=0.;
-      for(int binRec=1;binRec<=hist_purity->GetNbinsX()+1;binRec++) {
-         sum += histMCGenRec_purity->GetBinContent(binGen,binRec);
-      }
-      double p=0.;
-      if(sum>0.0) {
-         p=histMCGenRec_purity->GetBinContent(binGen,binGen)/sum;
-      }
-      hist_stability->SetBinContent(binGen,p);
-   }
-   
-   saver.save(*hist_stability,"hist_stability");
 }
 
 std::tuple<TString,TString,float> getPath_SampleName_SF(TString const &sample, TString const &minTreePath_nominal, TString const &minTreePath_syst, bool const isSignal, bool const                                                isBKGother, Systematic::Systematic const &syst){
@@ -343,17 +555,25 @@ std::tuple<TString,TString,float> getPath_SampleName_SF(TString const &sample, T
    return {minTreePath_current,currentSample,SF};
 }
 
-void fillMCHists(TUnfoldBinning* const &detectorDistribution, TUnfoldBinning* const &signalBinning, io::RootFileSaver const &saver, Systematic::Systematic const &syst){
+void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver const &saver, Systematic::Systematic const &syst){
+   //set correct paths for nominal and current syst
    TString minTreePath_nominal = TString::Format("%s/100.0/%s/",cfg.minTreePath.Data(),"Nominal");
    TString minTreePath_syst = TString::Format("%s/100.0/%s/",cfg.minTreePath.Data(),syst.name().Data());
-
-   TH2 *histMCGenRec=TUnfoldBinning::CreateHistogramOfMigrations(signalBinning,detectorDistribution,"histMCGenRec");
-   TH2 *histMCGenRec_purity=TUnfoldBinning::CreateHistogramOfMigrations(signalBinning,signalBinning,"histMCGenRec_purity");
-   TH1 *histMCRec_fakes=detectorDistribution->CreateHistogram("histMCRec_fakes");
-   TH1 *histMCRec_fakes_coarse=signalBinning->CreateHistogram("histMCRec_fakes_coarse");
-   TH1 *histMCRec_bkg=detectorDistribution->CreateHistogram("histMCRec_bkg");
-   TH1 *histMCRec_bkg_coarse=signalBinning->CreateHistogram("histMCRec_bkg_coarse");
    
+   // define variables for reading tree
+   Float_t phiRec,metRec,phiGen,metGen,mcWeight,recoWeight,genMET,reweight;
+   UInt_t genDecayMode;
+   
+   // setup distributions
+   for(Distribution& dist : distribution_vec) {
+      dist.setupMCHists();
+      if (dist.varName_ == "2D_dPhi_pTnunu") dist.setVariables(metRec,phiRec,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new") dist.setVariables(metRec,phiRec,metGen,phiGen);
+      else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
+      else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);      
+   }
+   
+   // create vector with all input samples
    std::vector<std::string> samples = cfg.tunfold_bkgSamples_ttbar;
    samples.insert(samples.begin(),cfg.tunfold_ResponseSample.Data());
    samples.insert(samples.end(),cfg.tunfold_bkgSamples_other.begin(),cfg.tunfold_bkgSamples_other.end());
@@ -372,16 +592,19 @@ void fillMCHists(TUnfoldBinning* const &detectorDistribution, TUnfoldBinning* co
          if(!signalTree) {
             cout<<"could not read 'signal' tree\n";
          }
-         
-         Float_t phiRec,metRec,phiGen,metGen,mcWeight,recoWeight,genMET,reweight;
-         UInt_t genDecayMode;
         
          signalTree->ResetBranchAddresses();
-         signalTree->SetBranchAddress("Phi_recPuppi",&phiRec);
-         signalTree->SetBranchAddress("PuppiMET",&metRec);
-         if(cfg.tunfold_withDNN) {
+         if(cfg.tunfold_withPF) {
+            signalTree->SetBranchAddress("Phi_rec",&phiRec);
+            signalTree->SetBranchAddress("MET",&metRec);
+         }
+         else if(cfg.tunfold_withDNN) {
             signalTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec);
             signalTree->SetBranchAddress("DNN_MET_pT",&metRec);
+         }
+         else{
+            signalTree->SetBranchAddress("Phi_recPuppi",&phiRec);
+            signalTree->SetBranchAddress("PuppiMET",&metRec);
          }
          signalTree->SetBranchAddress("Phi_NuNu",&phiGen);
          signalTree->SetBranchAddress("PtNuNu",&metGen);
@@ -401,7 +624,7 @@ void fillMCHists(TUnfoldBinning* const &detectorDistribution, TUnfoldBinning* co
             }
             if(signalTree->GetEntry(ievent)<=0) break;
             
-            // change reco weight (used for lumi and xsec unc.)
+            // change reco weight (used for xsec unc.)
             recoWeight*=sfUnc;
             
             // ~mcWeight=mcWeight*(137191.0/35867.05998);   //scale to full Run2 Lumi
@@ -414,69 +637,29 @@ void fillMCHists(TUnfoldBinning* const &detectorDistribution, TUnfoldBinning* co
             
             //ignore fakes
             // ~if(genDecayMode>3 || metGen<0) continue;
-
-            // bin number on reconstructed level
-            // bin number 0 corresponds to non-reconstructed events
-            Int_t recBin=0;
-            Int_t recBin_purity=0;
-            recBin=detectorDistribution->GetGlobalBinNumber(metRec,phiRec);
-            recBin_purity=signalBinning->GetGlobalBinNumber(metRec,phiRec);
             
+            // fill background distributions
             if(isBKGother){
-               histMCRec_bkg->Fill(recBin,mcWeight*recoWeight);
-               histMCRec_bkg_coarse->Fill(recBin_purity,mcWeight*recoWeight);
+               for(Distribution& dist : distribution_vec) dist.fillMCbkg(mcWeight*recoWeight);
                continue;
             }
             
-            if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40) || !isSignal) {    // store fakes and tt_other backgrounds for signal fraction
-               histMCRec_fakes->Fill(recBin,mcWeight*recoWeight);
-               histMCRec_fakes_coarse->Fill(recBin_purity,mcWeight*recoWeight);
+            // store fakes and tt_other backgrounds for signal fraction
+            if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40) || !isSignal) {
+               for(Distribution& dist : distribution_vec) dist.fillMCfakes(mcWeight*recoWeight);
                continue;
             }
-                        
-            // bin number on generator level for signal
-            Int_t genBin=signalBinning->GetGlobalBinNumber(metGen,phiGen);
-
-            histMCGenRec->Fill(genBin,recBin,mcWeight*recoWeight);
-            histMCGenRec_purity->Fill(genBin,recBin_purity,mcWeight*recoWeight);
             
-            // count fraction of events which have a different weight on truth and reco (in reco underflow bin)
-            // this is required for TUnfold to function properly
-            histMCGenRec->Fill(genBin,0.,mcWeight-(mcWeight*recoWeight));
-            histMCGenRec_purity->Fill(genBin,0.,mcWeight-(mcWeight*recoWeight));
+            // fill response matrix
+            for(Distribution& dist : distribution_vec) dist.fillMCGenRec(mcWeight,recoWeight);
          }
          io::log<<"";
       }
    }
-  
-   saver.save(*histMCGenRec,"histMCGenRec");
-   saver.save(*histMCGenRec_purity,"histMCGenRec_sameBins");
-   saver.save(*histMCRec_fakes,"histMCRec_fakes");
-   saver.save(*histMCRec_bkg,"histMCRec_bkg");
-   saver.save(*histMCRec_bkg_coarse,"histMCRec_bkg_coarse");
-   saver.save(*(histMCGenRec->ProjectionX()),"histMCGenRec_projX");
-   saver.save(*(histMCGenRec->ProjectionY()),"histMCGenRec_projY");
    
-   //Calculate Signal fration
-   TH1* hist_SignalFraction = deriveSignalFraction(histMCGenRec,histMCRec_fakes,detectorDistribution,saver,"hist_SignalFraction");
-   saver.save(*hist_SignalFraction,"hist_SignalFraction");
+   // derive additional quantities (e.g. purity and stability) and store histograms
+   for(Distribution& dist : distribution_vec) dist.saveMCHists(saver);
    
-   //Calculate Signal fration for coarse binning
-   TH1* hist_SignalFraction_coarse = deriveSignalFraction(histMCGenRec_purity,histMCRec_fakes_coarse,signalBinning,saver,"hist_SignalFraction_coarse");
-   saver.save(*hist_SignalFraction_coarse,"hist_SignalFraction_coarse");
-   
-   //Save normalized reco distribution for fake and non fake events
-   TH1D histGen_fakes=*(histMCGenRec_purity->ProjectionY("Fakes",1,1));
-   TH1D histGen_noFakes=*(histMCGenRec_purity->ProjectionY("Fakes",2,-1));
-   saver.save(histGen_fakes,"histGen_fakes");
-   saver.save(histGen_noFakes,"histGen_noFakes");
-   
-   //efficiency
-   TH1* hist_efficiency = deriveEfficiency(histMCGenRec,signalBinning);
-   saver.save(*hist_efficiency,"hist_efficiency");
-   
-   // calculate bin purities and stabilities
-   derivePurityStability(histMCGenRec_purity,signalBinning,saver);
 }
 
 extern "C"
@@ -489,21 +672,33 @@ void run()
    //=======================================================
    // Step 1: open file to save histograms and binning schemes
    TString save_path = getSavePath();
-   io::RootFileSaver saver(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/TUnfold_%s_%.1f.root" : "TUnfold/TUnfold_SF91_%s_%.1f.root",currentSystematic.name().Data(),cfg.processFraction*100),save_path);
+   io::RootFileSaver saver(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/%s/TUnfold_%s_%.1f.root" : "TUnfold/%s/TUnfold_SF91_%s_%.1f.root",save_path.Data(),currentSystematic.name().Data(),cfg.processFraction*100),save_path,true,true,true);
    
    //=======================================================
-   // Step 2: define and save binnings
-   std::vector<double> metBinsCoarse_vector = {0,40,80,120,160,230};
-   std::vector<double> phiBinsCoarse_vector = {0,0.7,1.4,3.141};
+   // Step 2: define binnings and distributions
    
-   std::vector<double> metBinsFine_vector={0,20,40,60,80,100,120,140,160,195,230};
-   std::vector<double> phiBinsFine_vector={0,0.35,0.7,1.05,1.4,2.27,3.141};
+   std::vector<Distribution> distribution_vec;
    
-   // get TUnfoldBinnings for detector and generator level
-   auto [detectorDistribution, signalBinning] = defineBinnings2D(metBinsCoarse_vector,phiBinsCoarse_vector,metBinsFine_vector,phiBinsFine_vector);
-   
-   saver.save(*detectorDistribution,"detector_binning");
-   saver.save(*signalBinning,"generator_binning");
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu",
+                                          {0,40,80,120,160,230},
+                                          {0,0.7,1.4,3.141},
+                                          {0,20,40,60,80,100,120,140,160,195,230},
+                                          {0,0.35,0.7,1.05,1.4,2.27,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new",     // Fabians optimized binning for DNN
+                                          {0,50,70,100,130,160,200},
+                                          {0,0.64,1.2,3.141},
+                                          {0,25,50,60,70,85,100,115,130,145,160,180,200,300},
+                                          {0,0.32,0.64,0.92,1.2,2.2,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("pTnunu",
+                                          {0,40,70,110,170,260,370},
+                                          {0,20,40,55,70,90,110,140,170,215,260,315,370,435}
+                                          ));
+   distribution_vec.push_back(Distribution("dPhi",
+                                          {0.,0.4,0.8,1.2,1.6,2.,2.4,2.8},
+                                          {0.,0.2,0.4,0.6,0.8,1.,1.2,1.4,1.6,1.8,2.,2.2,2.4,2.6,2.8,3.}
+                                          ));
 
    // switch on histogram errors
    TH1::SetDefaultSumw2();
@@ -511,11 +706,11 @@ void run()
    //=======================================================
    // Step 3: book and fill data histograms (only for nominal case)
    if (isNominal) {
-      fillDataHists(detectorDistribution,signalBinning,saver);
+      loopDataEvents(distribution_vec,saver);
    }
    
    //=======================================================
    // Step 4: book and fill histogram of migrations
    //         it receives events from both signal MC and background MC (depends on choosen systematic)
-   fillMCHists(detectorDistribution,signalBinning,saver,currentSystematic);
+   loopMCEvents(distribution_vec,saver,currentSystematic);
 }

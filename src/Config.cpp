@@ -108,6 +108,7 @@ Config::Config()
    tunfold_withPTreweight = pt.get<bool>("TUnfold.withPTreweight");
    tunfold_scalePTreweight = pt.get<std::string>("TUnfold.scalePTreweight");
    tunfold_withDNN = pt.get<bool>("TUnfold.withDNN");
+   tunfold_withPF = pt.get<bool>("TUnfold.withPF");
    tunfold_withSameBins = pt.get<bool>("TUnfold.withSameBins");
    tunfold_withBSM = pt.get<bool>("TUnfold.withBSM");
    tunfold_withScaleFactor = pt.get<bool>("TUnfold.withScaleFactor");

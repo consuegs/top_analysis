@@ -98,6 +98,7 @@ public:
    bool tunfold_withPTreweight;
    TString tunfold_scalePTreweight;
    bool tunfold_withDNN;
+   bool tunfold_withPF;
    bool tunfold_withSameBins;
    bool tunfold_withBSM;
    bool tunfold_withScaleFactor;

@@ -133,6 +133,7 @@ namespace hist
    void mergeOverflow(TH1& h, bool includeUnderflow=true);
    void mergeOverflow(TH2& h, bool includeUnderflow=true);
    void sqrtHist(TH1& h);
+   void addQuadr(TH1F &h1, TH1F const &h2);
 
    void setMaximum(TH1& h,std::vector<TH1F> hists,float multiplier=1.1);
    void setMinimum(TH1& h,std::vector<TH1F> hists,float multiplier=0.9,bool allowNegative=true);
@@ -156,7 +157,9 @@ namespace hist
    std::pair<TH2F*,TH2F*> getEnvelope(const TH2F* nominal, const std::vector<TH2F*> shifts);
    std::pair<TH2F*,TH2F*> getEnvelope(const TH2F* nominal, const std::vector<TH2F> &shifts);
    
-   TGraphAsymmErrors getErrorGraph(TH1F* const eDOWN, TH1F* const eUP, TH1F* const nominal, bool const shift);
+   TGraphAsymmErrors getErrorGraph(TH1F* const &eDOWN, TH1F* const &eUP, TH1F* const &nominal, bool const shift, bool const eXzero=false);
+   
+   TGraphAsymmErrors getRatioAsymmGraph(TH1F const &down,TH1F const &up,TH1F const &nominal,TH1F const &denominator);
 }
 
 #endif /* HIST_HPP__ */
