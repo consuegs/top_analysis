@@ -23,9 +23,10 @@ if __name__ == "__main__":
             f.write(getFullPath(fileName)+"\n")
     
     if args.dryRun:
-        sp.call(["gfal-copy","--from-file",os.getcwd()+"/tempFiles.txt","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format("dCacheBasePath")+args.target,"-t 36000","-f","--dry-run"])
+        sp.call(["gfal-copy","--from-file",os.getcwd()+"/tempFiles.txt","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000","-f","--dry-run"])
     else:
-        sp.call(["gfal-copy","--from-file",os.getcwd()+"/tempFiles.txt","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format("dCacheBasePath")+args.target,"-t 36000","-f"])
+        sp.call(["gfal-mkdir","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target])
+        sp.call(["gfal-copy","--from-file",os.getcwd()+"/tempFiles.txt","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000","-f"])
     
 
 
