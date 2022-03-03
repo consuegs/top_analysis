@@ -234,7 +234,8 @@ def getSampleNameCombine(sampleName):       # needed to correctly handle SampleN
 def mergeForCombine(logPath,histPath,sampleList):
     info = getInfoFromLogPath(logPath)
     nTupleVersion = getNTupleVersion(info["year"])
-    outputDir = histPath+"../combine/"
+    #  ~outputDir = histPath+"../combine/"
+    outputDir = histPath+"../combine_new/"
     outfile = "{}combineInput_{}.root".format(outputDir,nTupleVersion)
     
     filesToMerge = []    # keep track of files to merge
@@ -312,6 +313,7 @@ if __name__ == "__main__":
     parser.add_argument('--singleDataset', type=str, default="", help="Defines single dataset to merge (otherwise all samples are merged)")
     parser.add_argument("--mergeAllHists", action='store_true', default=True, help="Merge all hist of different datasets to one file")
     parser.add_argument("--mergeForCombine", action='store_true', default=False, help="Merge all hist of different datasets and systematics for combine input")
+    parser.add_argument('-y', type=str, help="Year to be merged, currently only used in combination with --mergeForCombine",default="2018")
     args = parser.parse_args()
     
     isDistributions = (args.logPath.find("distributions") > 0)
@@ -369,4 +371,6 @@ if __name__ == "__main__":
             print "-------------Start merging all datasets to one histFile----------------------"
             mergeAllHists(datasetList,args.logPath,histPath)
     elif(args.mergeForCombine):
+        args.logPath = "logs/{0}/Nominal/1.0/distributions/".format(args.y)
+        histPath = getHistPath(args.logPath)
         mergeForCombine(args.logPath,histPath,["TTbar_diLepton","DrellYan_comb","TTbar_other","otherBKG","SingleTop","data_obs"])
