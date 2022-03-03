@@ -104,8 +104,8 @@ void run()
          hs.addHist(selection+channel+"/METunc_Puppi"                 ,";Puppi #sigma(p_{t}^{miss}) (GeV);EventsBIN"           ,50,0,100);
          hs.addHist(selection+channel+"/MET*cos(PFMET_phi)"           ,";PF p_{x}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
          hs.addHist(selection+channel+"/MET*sind(PFMET_phi)"          ,";PF p_{y}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
-         hs.addHist(selection+channel+"/HT*cos(HT_phi)"               ,";H_{x} (GeV);EventsBIN"                                ,80,-400,400);
-         hs.addHist(selection+channel+"/HT*sin(HT_phi)"               ,";H_{y} (GeV);EventsBIN"                                ,80,-400,400);
+         hs.addHist(selection+channel+"/vecsum_pT_allJet*cos(HT_phi)" ,";vecsum_pT_allJet_{x} (GeV);EventsBIN"                 ,80,-400,400);
+         hs.addHist(selection+channel+"/vecsum_pT_allJet*sin(HT_phi)" ,";vecsum_pT_allJet_{y} (GeV);EventsBIN"                 ,80,-400,400);
          hs.addHist(selection+channel+"/nJets"                        ,";N_{jets} ;EventsBIN"                                  ,11,1.5,12.5);
          hs.addHist(selection+channel+"/n_Interactions"               ,";N_{interactions} ;EventsBIN"                          ,50,0,100);
          hs.addHist(selection+channel+"/Lep1_flavor"                  ,";Flavor_{l1} ;EventsBIN"                               ,2,0.5,2.5);
@@ -240,6 +240,16 @@ void run()
       Systematic::checkAlternativeSample(currentSystematic,ds.systName,ds.name);
       
       io::RootFileSaver ttbar_res_saver(TString::Format("../minTrees/%.1f/%s%s.root",cfg.processFraction*100,("/"+currentSystematic.name()+"/").Data(),TString(ds_name+((cfg.fileNR==0)?"":"_"+std::to_string(cfg.fileNR))).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,true,true);
+      
+      // test directly writing to dCache
+      /*
+      TString treePath = TString::Format("srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN=/pnfs/physik.rwth-aachen.de/cms/store/user/dmeuser/mergedNtuple/2018/v06/minTrees/%.1f/%s",cfg.processFraction*100,("/"+currentSystematic.name()+"/").Data());
+      
+      system("eval `scram unsetenv -sh`; gfal-mkdir "+treePath);
+      
+      io::RootFileSaver ttbar_res_saver(TString::Format("root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/dmeuser/mergedNtuple/2018/v06/minTrees/%.1f/%s%s.root",cfg.processFraction*100,("/"+currentSystematic.name()+"/").Data(),TString(ds_name+((cfg.fileNR==0)?"":"_"+std::to_string(cfg.fileNR))).Data()),TString::Format("ttbar_res%.1f",cfg.processFraction*100),true,false,true);
+      */
+      
       TTree ttbar_res("ttbar_res","ttbar_res");
       
       int runEra=cfg.fileNR;     //int to store run Era in minimal Trees
@@ -412,8 +422,8 @@ void run()
          minTree_Lep2_pt, minTree_Lep2_phi, minTree_Lep2_eta, minTree_Lep2_E, minTree_Lep2_flavor,
          minTree_Jet1_pt, minTree_Jet1_phi, minTree_Jet1_eta, minTree_Jet1_E, minTree_Jet1_bTagScore, minTree_Jet1_unc,
          minTree_Jet2_pt, minTree_Jet2_phi, minTree_Jet2_eta, minTree_Jet2_E, minTree_Jet2_bTagScore, minTree_Jet2_unc,
-         minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_genMET_phi, minTree_PtNuNu_phi, minTree_nJets, minTree_n_Interactions, minTree_DNN_MET_pT, minTree_DNN_MET_phi,minTree_DNN_MET_dPhi_nextLep,
-         minTree_mLL, minTree_MT2, minTree_vecsum_pT_allJet, minTree_vecsum_pT_l1l2_allJet, minTree_mass_l1l2_allJet, minTree_ratio_vecsumpTlep_vecsumpTjet, minTree_mjj;
+         minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_genMET_phi, minTree_PtNuNu_phi, minTree_nJets, minTree_nGenJets, minTree_n_Interactions, minTree_DNN_MET_pT, minTree_DNN_MET_phi,minTree_DNN_MET_dPhi_nextLep,
+         minTree_mLL, minTree_PtLL, minTree_PtLLgen, minTree_MT2, minTree_vecsum_pT_allJet, minTree_vecsum_pT_l1l2_allJet, minTree_mass_l1l2_allJet, minTree_ratio_vecsumpTlep_vecsumpTjet, minTree_mjj;
          UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions_gen, minTree_looseLeptonVeto, minTree_NpromptNeutrinos, minTree_NnonpromptNeutrinos, minTree_ee, minTree_mumu, minTree_emu;
          ULong64_t minTree_evtNo;
          std::vector<float> minTree_systWeights(Systematic::numberOfWeightTypes());
@@ -462,6 +472,7 @@ void run()
          ttbar_res.Branch("Phi_recXYcorr",&minTree_PhiRecXYcorr,"Phi_recXYcorr/f");
          ttbar_res.Branch("looseLeptonVeto",&minTree_looseLeptonVeto,"looseLeptonVeto/i");
          ttbar_res.Branch("nJets",&minTree_nJets,"nJets/f");
+         ttbar_res.Branch("nGenJets",&minTree_nGenJets,"nGenJets/f");
          ttbar_res.Branch("dPhiMETnearJet_Puppi",&minTree_PhiMetNearJet_Puppi,"dPhiMETnearJet_Puppi/f");
          ttbar_res.Branch("dPhiMETfarJet_Puppi",&minTree_PhiMetFarJet_Puppi,"dPhiMETfarJet_Puppi/f");
          ttbar_res.Branch("dPhiMETleadJet_Puppi",&minTree_PhiMetLeadJet_Puppi,"dPhiMETleadJet_Puppi/f");
@@ -497,6 +508,8 @@ void run()
          ttbar_res.Branch("Jet2_bTagScore",&minTree_Jet2_bTagScore,"Jet2_bTagScore/f");
          ttbar_res.Branch("Jet2_unc",&minTree_Jet2_unc,"Jet2_unc/f");
          ttbar_res.Branch("mLL",&minTree_mLL,"mLL/f");
+         ttbar_res.Branch("pTll",&minTree_PtLL,"pTll/f");
+         ttbar_res.Branch("pTllGen",&minTree_PtLLgen,"pTllGen/f");
          ttbar_res.Branch("PFMET_phi",&minTree_PFMET_phi,"PFMET_phi/f");
          ttbar_res.Branch("PuppiMET_phi",&minTree_PuppiMET_phi,"PuppiMET_phi/f");
          ttbar_res.Branch("CaloMET",&minTree_CaloMET,"CaloMET/f");
@@ -621,6 +634,7 @@ void run()
          // ~TTreeReaderValue<std::vector<tree::Muon>>     muons_add    (reader, "muons_add");
          TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
          TTreeReaderValue<std::vector<tree::Jet>>      jets_puppi     (reader, "jetsPuppi");
+         TTreeReaderValue<std::vector<tree::Particle>>      genJets     (reader, "genJets");
          TTreeReaderValue<std::vector<tree::GenParticle>> genParticles(reader, "genParticles");
          TTreeReaderValue<std::vector<tree::IntermediateGenParticle>> intermediateGenParticles(reader, "intermediateGenParticles");     
          TTreeReaderValue<std::vector<tree::Particle>> triggerObjects(reader, "hltEG165HE10Filter");
@@ -1030,6 +1044,14 @@ void run()
             pT_top1=gen_tops[0].Pt();
             pT_top2=gen_tops[1].Pt();
             
+            // Gen nGenJets with pT>30
+            std::vector<tree::Particle> genJets30;
+            for (const tree::Particle &j: *genJets){
+               if (j.p.Pt()>30){
+                  genJets30.push_back(j);
+               }
+            }
+            
             //Save different LeptonVetos and BJetVetos
             /*
             minTree_leptonVeto=false;
@@ -1144,6 +1166,7 @@ void run()
             minTree_PhiRecXYcorr=abs(dPhiMETnearLepXYcorr);
             minTree_looseLeptonVeto= *addLepton? 1: 0;
             minTree_nJets=cjets.size();
+            minTree_nGenJets=genJets30.size();
             minTree_PhiMetNearJet_Puppi=abs(dPhiMETnearJet_Puppi);
             minTree_PhiMetFarJet_Puppi=abs(dPhiMETfarJet_Puppi);
             minTree_PhiMetLeadJet_Puppi=abs(dPhiMETleadJet_Puppi);
@@ -1169,6 +1192,7 @@ void run()
             minTree_vecsum_pT_l1l2_allJet=(MHT+p_l1+p_l2).Pt();
             minTree_mass_l1l2_allJet=(MHT+p_l1+p_l2).M();
             minTree_ratio_vecsumpTlep_vecsumpTjet=(p_l1+p_l2).Pt()/MHT.Pt();
+            minTree_PtLLgen=(*genLepton+*genAntiLepton).Pt();
             
             minTree_DNN_MET_pT=-1;
             minTree_DNN_MET_phi=-4;
@@ -1196,6 +1220,7 @@ void run()
                minTree_Jet2_E=cjets[1].p.E();
                minTree_Jet2_bTagScore=cjets[1].bTagDeepCSV;
                minTree_mLL=(p_l1+p_l2).M();
+               minTree_PtLL=(p_l1+p_l2).Pt();
                minTree_mjj=(cjets[0].p+cjets[1].p).M();
                minTree_totalWeight=lumi_weight*fEventWeight*SFWeight;
                // ~std::cout<<minTree_totalWeight<<std::endl;
@@ -1262,6 +1287,7 @@ void run()
                minTree_mass_l1l2_allJet=-1;
                minTree_ratio_vecsumpTlep_vecsumpTjet=-1;
                minTree_mjj=-1;
+               minTree_PtLL=-1;
 
             }
             if (pseudo_selection==false) {
@@ -1274,6 +1300,8 @@ void run()
                minTree_leadTop=-1;
                minTree_dPhiNuNu=-1;
                minTree_PtNuNu_phi=-5;
+               minTree_nGenJets=-1;
+               minTree_PtLLgen=-1;
             }
             else {
                minTree_PhiPtnunuMet=abs(neutrinoPair.DeltaPhi(MET->p));
@@ -1465,8 +1493,8 @@ void run()
             hs.fill("baseline/"+path_cat+"/METunc_Puppi"                 ,MET_Puppi->uncertainty);
             hs.fill("baseline/"+path_cat+"/MET*cos(PFMET_phi)"           ,met*cos(MET->p.Phi()));
             hs.fill("baseline/"+path_cat+"/MET*sind(PFMET_phi)"          ,met*sin(MET->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/HT*cos(HT_phi)"               ,HT*cos(MHT.Phi()));
-            hs.fill("baseline/"+path_cat+"/HT*sin(HT_phi)"               ,HT*sin(MHT.Phi()));
+            hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet*cos(HT_phi)" ,MHT.Pt()*cos(MHT.Phi()));
+            hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet*sin(HT_phi)" ,MHT.Pt()*sin(MHT.Phi()));
             hs.fill("baseline/"+path_cat+"/nJets"                        ,cjets.size());
             hs.fill("baseline/"+path_cat+"/n_Interactions"               ,*n_Interactions);
             hs.fill("baseline/"+path_cat+"/Lep1_flavor"                  ,flavor_l1);

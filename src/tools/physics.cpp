@@ -6,7 +6,7 @@
 std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets,TLorentzVector const &p_l1,TLorentzVector const &p_l2)
 {
    std::vector<tree::Jet> cjets;
-   for (const tree::Jet j: jets){
+   for (const tree::Jet &j: jets){
       if (!j.TightIDlepVeto || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
       
       // Check overlap with selected leptons
