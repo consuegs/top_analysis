@@ -129,12 +129,26 @@ void run()
    std::vector<TString> systVec = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    // ~std::vector<TString> systVec = {"Nominal"};
    
+   // add pdf unc
+   for(int i=1; i<=50; i++){
+      systVec.push_back(TString::Format("PDF_%i_UP",i));
+      systVec.push_back(TString::Format("PDF_%i_DOWN",i));
+   }
+   
    std::vector<TString> distributions = {"2D_dPhi_pTnunu","2D_dPhi_pTnunu_new","pTnunu","dPhi"};
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu"};
+   
+   bool verbose = false;
    
    for (auto syst : systVec){
       
       std::cout<<"Running "<<syst<<std::endl;
+      
+      // avoid spamming from TUnfold
+      if (!verbose) {
+         gErrorIgnoreLevel = kFatal;
+         std::cout.setstate(std::ios_base::failbit);
+      }
       
       Systematic::Systematic currentSystematic(syst);
       bool isNominal = (currentSystematic.type()==Systematic::nominal);
@@ -419,5 +433,6 @@ void run()
             saver.save(*hist_chi,"BBB/hist_chi");
          }
       }
+      if (!verbose) std::cout.clear();;
    }
 }

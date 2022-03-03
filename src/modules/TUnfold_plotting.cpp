@@ -171,8 +171,8 @@ void plot_correlation(TH2F* corrMatrix, TString name, io::RootFileSaver* saver){
    saver->save(can2D,name,true,true);
 }
 
-void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSaver* saver, TString const &name,
-                        bool const  &combineUnc=false, std::map<TString,std::vector<TString>> const &systCombinations={}){
+void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSaver* saver, TString const &name, TString const &method, TString var,
+                        std::map<TString,std::vector<TString>> const &systCombinations={}){
    TH1F* zeroes = (TH1F*)indShifts.begin()->second.Clone();
    zeroes->Reset();
    
@@ -202,27 +202,26 @@ void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSav
       }
    }
    
-   if (combineUnc){  //combine uncertainties to reduce number of lines in plot
-      for (auto const & combi : systCombinations){
-         if (shiftsMap.find(combi.second[0]) != shiftsMap.end()){
-            TH1F down(shiftsMap[combi.second[0]].first);
-            TH1F up(shiftsMap[combi.second[0]].second);
-            down.Reset();
-            up.Reset();
-            
-            for (TString const &syst : combi.second){
-               std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(zeroes,{shiftsMap[syst].first,shiftsMap[syst].second});
-               hist::addQuadr(down,*envelopes.first);
-               hist::addQuadr(up,*envelopes.second);
-               shiftsMap.erase(syst);
-            }
-            
-            down.Scale(-1.);
-            shiftsMap[combi.first].first = down;
-            shiftsMap[combi.first].second = up;
+   //combine uncertainties to reduce number of lines in plot
+   for (auto const & combi : systCombinations){
+      if (shiftsMap.find(combi.second[0]) != shiftsMap.end()){
+         TH1F down(shiftsMap[combi.second[0]].first);
+         TH1F up(shiftsMap[combi.second[0]].second);
+         down.Reset();
+         up.Reset();
+         
+         for (TString const &syst : combi.second){
+            std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(zeroes,{shiftsMap[syst].first,shiftsMap[syst].second});
+            hist::addQuadr(down,*envelopes.first);
+            hist::addQuadr(up,*envelopes.second);
+            shiftsMap.erase(syst);
          }
+         
+         down.Scale(-1.);
+         shiftsMap[combi.first].first = down;
+         shiftsMap[combi.first].second = up;
       }
-   }   
+   }
       
    
    TCanvas can;
@@ -257,7 +256,7 @@ void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSav
    statShift.first.Draw("hist same");
    statShift.second.Draw("hist same");
    
-   totalShift.first.GetYaxis()->SetRangeUser(-50,50);
+   totalShift.first.GetYaxis()->SetRangeUser(-30,30);
    
    gfx::LegendEntries legE;
    legE.append(totalShift.first,"Total","f");
@@ -295,60 +294,92 @@ void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSav
       
    }
    
-   TLatex label=gfx::cornerLabel(name,1);
+   var.ReplaceAll("(GeV)","");
+   
+   TLatex label=gfx::cornerLabel(var,1);
    label.Draw();
+   TLatex label2=gfx::cornerLabel(method,3);
+   label2.Draw();
    
    TLegend leg=legE.buildLegend(.80,.15,0.95,.95,1);
    leg.SetTextSize(0.04);
    leg.Draw();
    
    totalShift.first.Draw("axis same");
-   saver->save(can,"systBreakdown/"+name,true,true);
+   saver->save(can,"systBreakdown/"+name+"_"+method,true,true);
    
 }
 
 TH1F getCRenvelope(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up){
-      io::RootFileReader histReader_CR1(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"CR1",cfg.processFraction*100));
-      io::RootFileReader histReader_CR2(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"CR2",cfg.processFraction*100));
-      io::RootFileReader histReader_ERDON(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"ERDON",cfg.processFraction*100));
+   io::RootFileReader histReader_CR1(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"CR1",cfg.processFraction*100));
+   io::RootFileReader histReader_CR2(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"CR2",cfg.processFraction*100));
+   io::RootFileReader histReader_ERDON(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"ERDON",cfg.processFraction*100));
+   
+   TH1F* hist_CR1 = histReader_CR1.read<TH1F>(path);
+   TH1F* hist_CR2 = histReader_CR2.read<TH1F>(path);
+   TH1F* hist_ERDON = histReader_ERDON.read<TH1F>(path);
+   
+   hist_CR1->Scale(1./cfg.lumi);
+   hist_CR2->Scale(1./cfg.lumi);
+   hist_ERDON->Scale(1./cfg.lumi);
+   
+   std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(nominal,{hist_CR1,hist_CR2,hist_ERDON});
+   
+   TH1F env_down = *envelopes.first;
+   TH1F env_up = *envelopes.second;
+               
+   if(up) return env_up;
+   else return env_down;
+}
+
+TH1F getPDFenvelope(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up){
+   
+   std::vector<TH1F> histVec;
+   for (int i=1; i<=50; i++){    // create reader for each shift
+      std::cout<<"Reading PDF variation "+std::to_string(i)<<std::endl;
+      io::RootFileReader histReader_up(TString::Format("TUnfold/%s/TUnfold_PDF_%i_UP_%.1f.root",filePath.Data(),i,cfg.processFraction*100));
+      io::RootFileReader histReader_down(TString::Format("TUnfold/%s/TUnfold_PDF_%i_DOWN_%.1f.root",filePath.Data(),i,cfg.processFraction*100));
       
-      TH1F* hist_CR1 = histReader_CR1.read<TH1F>(path);
-      TH1F* hist_CR2 = histReader_CR2.read<TH1F>(path);
-      TH1F* hist_ERDON = histReader_ERDON.read<TH1F>(path);
+      TH1F temp_up = *(histReader_up.read<TH1F>(path));
+      TH1F temp_down = *(histReader_down.read<TH1F>(path));
       
-      hist_CR1->Scale(1./cfg.lumi);
-      hist_CR2->Scale(1./cfg.lumi);
-      hist_ERDON->Scale(1./cfg.lumi);
+      temp_up.Scale(1./cfg.lumi);
+      temp_down.Scale(1./cfg.lumi);
       
-      std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(nominal,{hist_CR1,hist_CR2,hist_ERDON});
+      histVec.push_back(temp_up);
+      histVec.push_back(temp_down);
       
-      TH1F env_down = *envelopes.first;
-      TH1F env_up = *envelopes.second;
-                  
-      if(up) return env_up;
-      else return env_down;
+   }
+   
+   std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(nominal,histVec);
+   
+   TH1F env_down = *envelopes.first;
+   TH1F env_up = *envelopes.second;
+               
+   if(up) return env_up;
+   else return env_down;
 }
 
 TH1F getMTOPunc(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up){
-      io::RootFileReader histReader_shift(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),(up)? "MTOP175p5" : "MTOP169p5",cfg.processFraction*100));
-      TH1F* hist_shift = histReader_shift.read<TH1F>(path);
-      hist_shift->Scale(1./cfg.lumi);
-      
-      hist_shift->Add(nominal,-1.);
-      hist_shift->Scale(1/3.);
-      hist_shift->Add(nominal);
-      
-      return *hist_shift;
+   io::RootFileReader histReader_shift(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),(up)? "MTOP175p5" : "MTOP169p5",cfg.processFraction*100));
+   TH1F* hist_shift = histReader_shift.read<TH1F>(path);
+   hist_shift->Scale(1./cfg.lumi);
+   
+   hist_shift->Add(nominal,-1.);
+   hist_shift->Scale(1/3.);
+   hist_shift->Add(nominal);
+   
+   return *hist_shift;
 }
 
 TH1F getLUMIunc(TH1F* const &nominal, bool const &up){
-      TH1F hist_shift(*nominal);
-      float unc = cfg.systUncFactor.at("LUMI").first;
-      float sf = (up)? 1.0-unc : 1.0+unc;    //larger lumi leads to smaller xsec!!
-      
-      hist_shift.Scale(sf);
-      
-      return hist_shift;
+   TH1F hist_shift(*nominal);
+   float unc = cfg.systUncFactor.at("LUMI").first;
+   float sf = (up)? 1.0-unc : 1.0+unc;    //larger lumi leads to smaller xsec!!
+   
+   hist_shift.Scale(sf);
+   
+   return hist_shift;
 }
 
 std::pair<TH1F*,TH1F*> getSystUnc(TH1F* const &nominal, TString const &path, TString const &filePath, std::vector<TString> const &systVec, 
@@ -369,6 +400,9 @@ std::pair<TH1F*,TH1F*> getSystUnc(TH1F* const &nominal, TString const &path, TSt
       }
       else if (Systematic::convertType(syst) == Systematic::mtop){      // derive mtop uncertainty
          tempSys = getMTOPunc(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up);
+      }
+      else if (Systematic::convertType(syst) == Systematic::pdf_envelope){      // derive mtop uncertainty
+         tempSys = getPDFenvelope(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up);
       }
       else if (Systematic::convertType(syst) == Systematic::lumi){      // derive lumi unc.
          tempSys = getLUMIunc(nominal,Systematic::convertVariation(syst) == Systematic::up);
@@ -468,7 +502,9 @@ void run()
    vecDistr.push_back({"dPhi",0,3.2,";|#Delta#phi|(p_{T}^{#nu#nu},nearest l);#sigma (pb)","%.1f",false});
    
    //Define syst. unc. to plot
-   std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN"};
+   std::cout<<"!!!!!!!!!!!!!!!!!!!!Uncl. Energy is removed!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
+   // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN"};
+   std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN"};
    // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN"};
    // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN"};
    // ~std::vector<TString> systVec = {"CR_ENVELOPE_UP","CR_ENVELOPE_DOWN"};
@@ -477,13 +513,20 @@ void run()
    // ~std::vector<TString> systVec = {};
    
    //Define combination of syst. unc. for plotting
+   // ~std::map<TString,std::vector<TString>> systCombinations = {
+      // ~{"JES/JER",{"JESTotal","JER"}},
+      // ~{"BTAG",{"BTAGBC","BTAGL"}},
+      // ~{"LEPTON",{"ELECTRON_ID","ELECTRON_RECO","ELECTRON_SCALESMEARING","MUON_ID","MUON_ISO","MUON_SCALE"}},
+      // ~{"PS",{"PSISRSCALE","PSFSRSCALE"}},
+      // ~{"XSEC BKG",{"XSEC_TTOTHER","XSEC_DY","XSEC_ST","XSEC_OTHER"}},
+      // ~{"MESCALE",{"MERENSCALE","MEFACSCALE"}},
+   // ~};
    std::map<TString,std::vector<TString>> systCombinations = {
       {"JES/JER",{"JESTotal","JER"}},
       {"BTAG",{"BTAGBC","BTAGL"}},
       {"LEPTON",{"ELECTRON_ID","ELECTRON_RECO","ELECTRON_SCALESMEARING","MUON_ID","MUON_ISO","MUON_SCALE"}},
-      {"PS",{"PSISRSCALE","PSFSRSCALE"}},
-      {"XSEC BKG",{"XSEC_TTOTHER","XSEC_DY","XSEC_ST","XSEC_OTHER"}},
-      {"MESCALE",{"MERENSCALE","MEFACSCALE"}},
+      {"BKG",{"XSEC_TTOTHER","XSEC_DY","XSEC_ST","XSEC_OTHER"}},
+      {"THEORY",{"PSISRSCALE","PSFSRSCALE","MERENSCALE","MEFACSCALE","UETUNE","MATCH","BFRAG","BSEMILEP","PDF_ALPHAS","TOP_PT","CR_ENVELOPE","MTOP","PDF_ENVELOPE",}},
    };
    
    for (distrUnfold &dist : vecDistr){
@@ -889,9 +932,9 @@ void run()
       plot_correlation(corrMatrix_reg,saveName2D+"_reg",&saver);
       
       //Plot syst. unc. breakdown
-      plot_systBreakdown(indShifts,&saver,saveName+"_Nominal",true,systCombinations);
-      plot_systBreakdown(indShifts_reg,&saver,saveName+"_Reg",true,systCombinations);
-      plot_systBreakdown(indShifts_bbb,&saver,saveName+"_BBB",true,systCombinations);
+      plot_systBreakdown(indShifts,&saver,saveName,"Nominal",ratio.GetXaxis()->GetTitle(),systCombinations);
+      plot_systBreakdown(indShifts_reg,&saver,saveName,"Reg",ratio.GetXaxis()->GetTitle(),systCombinations);
+      plot_systBreakdown(indShifts_bbb,&saver,saveName,"BBB",ratio.GetXaxis()->GetTitle(),systCombinations);
       
       //Plot toy studies
       if (plotComparison) saveName=sample+"_"+sample_response;
