@@ -179,7 +179,7 @@ void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSav
    std::map<TString,std::pair<TH1F,TH1F>> shiftsMap;
    std::pair<TH1F,TH1F> totalShift;
    std::pair<TH1F,TH1F> statShift;
-   
+      
    for (auto const &shift : indShifts){      // connect up and down shifts for plotting
       
       if (Systematic::convertType(shift.first,true) == Systematic::undefinedType){
@@ -233,7 +233,10 @@ void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSav
    totalShift.first.SetMaximum(1.5*abs(totalShift.first.GetMaximum()));
    totalShift.first.SetMinimum(-1*totalShift.first.GetMaximum());
    totalShift.first.SetStats(false);
-   totalShift.first.SetTitle(";Signal Bin;Uncertainty(%)");
+   if (!saver->getInternalPath().Contains("2D")){
+      totalShift.first.SetTitle(TString::Format(";%s;Uncertainty(%)",var.Data()));
+   }
+   else totalShift.first.SetTitle(";Signal Bin;Uncertainty(%)");
    
    totalShift.first.SetFillColor(kOrange);
    totalShift.second.SetFillColor(kOrange);
@@ -498,7 +501,7 @@ void run()
    std::vector<distrUnfold> vecDistr;
    vecDistr.push_back({"2D_dPhi_pTnunu",0,400.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",true});
    vecDistr.push_back({"2D_dPhi_pTnunu_new",0,400.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",true});
-   vecDistr.push_back({"pTnunu",0,800.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",false});
+   vecDistr.push_back({"pTnunu",0,600.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",false});
    vecDistr.push_back({"dPhi",0,3.2,";|#Delta#phi|(p_{T}^{#nu#nu},nearest l);#sigma (pb)","%.1f",false});
    
    //Define syst. unc. to plot
@@ -655,6 +658,15 @@ void run()
       unfolded_bbb->SetBins(num_bins,xbins_plus);
       unfolded_bbb_total.first->SetBins(num_bins,xbins_plus);
       unfolded_bbb_total.second->SetBins(num_bins,xbins_plus);
+      
+      if (!dist.is2D){ // set correct binning for plotting syst breakdown (currently only 1D)
+         for(std::pair<TString,TH1F> const &shift : indShifts){
+            indShifts[shift.first].SetBins(num_bins,xbins);
+            indShifts_reg[shift.first].SetBins(num_bins,xbins);
+            indShifts_bbb[shift.first].SetBins(num_bins,xbins);
+         }
+      }
+      
       realDis->SetBins(num_bins,xbins);
       realDis_response->SetBins(num_bins,xbins);
       for (int i=1; i<=num_bins; i++) {  //Set proper label for x axis
