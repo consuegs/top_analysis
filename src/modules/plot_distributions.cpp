@@ -457,17 +457,17 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
       plotData = true;
    }
    
-   auto hists_BSM=hs->getHistograms(loc,{"TTbar_diLepton"});     //placeholder
-   auto BSM_legend=hs->getLegendEntries();    //placeholder
-   if (cfg.year_int==1){    //Plot BSM in 2016
-      hists_BSM=hs->getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
-      for (auto const &h: hists_BSM) {
-         h->Draw("same hist");
-         // ~h->SetLineWidth(4);
-      }
-      le+=hs->getLegendEntries();
-      BSM_legend=hs->getLegendEntries();
-   }
+   //auto hists_BSM=hs->getHistograms(loc,{"TTbar_diLepton"});     //placeholder
+   //auto BSM_legend=hs->getLegendEntries();    //placeholder
+   //if (cfg.year_int==1){    //Plot BSM in 2016
+   //   hists_BSM=hs->getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
+   //   for (auto const &h: hists_BSM) {
+   //      h->Draw("same hist");
+   //      // ~h->SetLineWidth(4);
+   //   }
+   //   le+=hs->getLegendEntries();
+   //   BSM_legend=hs->getLegendEntries();
+   //}
    
    // redraw axis, draw label and legend
    auto hists_SM=hs->getHistograms(loc,{"TTbar_diLepton"});
@@ -643,10 +643,12 @@ void run()
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
       break;
-      case(1): //2016
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","WW","WZ","ZZ","ttZ","ttW","T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200","DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
+      case(1): //2016_postVFP 
+      case(0): //2016_preVFP
+      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
+      ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
-      dataSamples = {};
       break;
    }
    std::vector<TString> samplesToPlot = util::addVectors(mcSamples,dataSamples);
@@ -680,7 +682,7 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","PDF_50_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
-   // ~std::vector<TString> systToPlot = {"Nominal"};
+   //std::vector<TString> systToPlot = {"Nominal","LUMI_UP","LUMI_DOWN"};
    
    // 1D plots
    std::vector<distr> vecDistr;
@@ -846,11 +848,12 @@ void run()
       hs->combineSamples("MC",mcSamples_merged);
       hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
       break;
-      case(1): //2016
-      mcSamples_merged = {"ttW/Z","WJetsToLNu","Diboson","DrellYan_NLO","SingleTop","tt other","TTbar_diLepton"};
+      case(0): //2016_preVFP
+      case(1): //2016_postVFP
+      mcSamples_merged = {"ttW/Z","WJetsToLNu","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
       hs->combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
       hs->combineSamples("MC",mcSamples_merged);
-      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_NLO","ttZ","ttW"});
+      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
       break;
    }
    std::map<const TString,Color_t> colormap = {{"TTbar_diLepton",kRed-6},{"Diboson",kCyan-8},{"ttW/Z",kGreen-7},{"tt other",kRed-9}};

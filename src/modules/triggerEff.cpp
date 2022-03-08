@@ -279,13 +279,15 @@ void run()
             bool diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *muonTrigg3 || *muonTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2;
             bool electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *eleMuTrigg3 || *eleMuTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg;
             
-            if(Run2016_preVFP || Run2016_postVFP){
-               if(!Run2016H){ 
-                  diMuonTriggers=*muonTrigg3 || *muonTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2; // no DZ
-                  electronMuonTriggers=*eleMuTrigg3 || *eleMuTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg; // no DZ
-               }else{ 
-                  diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2; // with DZ
-                  electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg; // with DZ
+            if (isData){
+               if(Run2016_preVFP || Run2016_postVFP){
+                  if(!Run2016H){ 
+                     diMuonTriggers=*muonTrigg3 || *muonTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2; // no DZ
+                     electronMuonTriggers=*eleMuTrigg3 || *eleMuTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg; // no DZ
+                  }else{ 
+                     diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2; // with DZ
+                     electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg; // with DZ
+                  }
                }
             }
             
