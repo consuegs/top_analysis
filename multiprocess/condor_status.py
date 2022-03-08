@@ -71,26 +71,27 @@ def resubmitJob(outName,automaticResubmit=False):
 
 def getProgressFromOut(outName,checkCompleted=False,printStatus=True,resubmit=False):
     processing = False
-    if os.path.exists(outName):
-        lines = len(open(outName).readlines(  ))
-        if lines !=0:
-            with open(outName,"r") as f:
-                next(f)
-                for line in f:
-                    if line.find("Processing")==0:
-                        processing = True
-                        progress = line.count(".")
-                        color = "yellow"
-                        if progress==10:
-                            color = "green"
-                        if printStatus: print colored("--"+line.split(".")[0]+" "+str(progress*10)+"%",color)
-        if(processing == False and checkCompleted and lines>2):
-            color = "red"
-            if printStatus: 
-                print colored(getNameFromOutFile(outName)+" failed",color)
-                resubmitJob(outName,resubmit)
-            if resubmit:
-                resubmitJob(outName,resubmit)
+    if (outName.find("TUnfold")<0):
+        if os.path.exists(outName):
+            lines = len(open(outName).readlines(  ))
+            if lines !=0:
+                with open(outName,"r") as f:
+                    next(f)
+                    for line in f:
+                        if line.find("Processing")==0:
+                            processing = True
+                            progress = line.count(".")
+                            color = "yellow"
+                            if progress==10:
+                                color = "green"
+                            if printStatus: print colored("--"+line.split(".")[0]+" "+str(progress*10)+"%",color)
+            if(processing == False and checkCompleted and lines>2):
+                color = "red"
+                if printStatus: 
+                    print colored(getNameFromOutFile(outName)+" failed",color)
+                    resubmitJob(outName,resubmit)
+                if resubmit:
+                    resubmitJob(outName,resubmit)
         
 
 def getStatusFromOut(outName,running,printStatus=True,resubmit=False):
@@ -206,9 +207,16 @@ def merge(distrLogPath,mergeAll=False,onlyHist=True):
             sp.call(["python","mergeOutputs.py",distrLogPath,"--onlyHists"])
         else:
             sp.call(["python","mergeOutputs.py",distrLogPath])
-    
+
+def dCacheTreeUpload(year):
+    treePath = mergeOutputs.getTreePath("logs/{0}/Nominal/1.0/distributions/".format(str(year))).replace("Nominal/","")
+    targetPath = "minTrees/"+str(year)+(treePath.split(str(year))[-1])
+    command = "eval `scram unsetenv -sh`;","gfal-copy",treePath,"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format(getPath("dCacheBasePath"))+targetPath,"-t 36000","-f","-r","--dry-run"
+    command = " ".join(command)
+    sp.call(command,shell=True)
 
 def summaryJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF,module="distributions"):
+    allFinished = True;
     for systPath in glob.glob("logs/"+year+"/*"):
         if ignorePDF:
             if systPath.find("PDF")>0 and systPath.find("PDF_ALPHAS")<0:
@@ -231,6 +239,11 @@ def summaryJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF,modul
                 print colored("-----Running:{}/{}".format(status[1][1]-nIdle,status[1][0]),"blue")
                 print colored("-----Failed:{}/{}".format(nFailed,status[1][0]),"red")
                 print colored("-----Finished:{}/{}".format(status[1][2],status[1][0]),"green")
+                allFinished = False;
+    if allFinished and module == "distributions":
+        value = input("All jobs finished succesfully. For uploading the minTrees to dCache enter 1:\n")
+        if value == 1:
+            dCacheTreeUpload(year)
 
 def isDistributions(logPath):
     return logPath.find("distributions")>0

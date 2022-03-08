@@ -67,6 +67,8 @@ def mergeTree(dataset,logPath,treePath):    # merges minTrees of given dataset
     if sp.call(["hadd","-f",outfile]+splitSamples):     # merging command
         sys.exit(1)
     sp.call(["rootrm",outfile+":ttbar_res100.0/ttbar_res"])
+    if sp.call(["chmod","a+rx",outfile],stdout=open(os.devnull, 'wb')):     # set rights for other to excess output file
+        sys.exit(1)
     os.chdir(runDir)
 
 def mergeHist(dataset,logPath,histPath):    # merges histograms of given dataset
