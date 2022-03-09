@@ -17,7 +17,7 @@ class jesCorrections
       jesCorrections(const std::string&, const Systematic::Systematic&);
       
       /// Scale the jet collection
-      void applySystematics(std::vector<tree::Jet>&, TLorentzVector&);
+      void applySystematics(std::vector<tree::Jet>&, std::vector<tree::MET*>&);
       
       /// Map to find correct JES unc names
       static const std::map<std::string, std::vector<std::string> > JESUncSourcesMap;

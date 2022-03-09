@@ -103,7 +103,7 @@ void run()
          hs.addHist(selection+channel+"/PuppiMET*sin(PuppiMET_phi)"   ,";Puppi p_{y}^{miss} (GeV);EventsBIN"                   ,50,-250,250);
          hs.addHist(selection+channel+"/METunc_Puppi"                 ,";Puppi #sigma(p_{t}^{miss}) (GeV);EventsBIN"           ,50,0,100);
          hs.addHist(selection+channel+"/MET*cos(PFMET_phi)"           ,";PF p_{x}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
-         hs.addHist(selection+channel+"/MET*sind(PFMET_phi)"          ,";PF p_{y}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
+         hs.addHist(selection+channel+"/MET*sin(PFMET_phi)"           ,";PF p_{y}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
          hs.addHist(selection+channel+"/vecsum_pT_allJet*cos(HT_phi)" ,";vecsum_pT_allJet_{x} (GeV);EventsBIN"                 ,80,-400,400);
          hs.addHist(selection+channel+"/vecsum_pT_allJet*sin(HT_phi)" ,";vecsum_pT_allJet_{y} (GeV);EventsBIN"                 ,80,-400,400);
          hs.addHist(selection+channel+"/nJets"                        ,";N_{jets} ;EventsBIN"                                  ,11,1.5,12.5);
@@ -145,8 +145,10 @@ void run()
          hs.addHist(selection+channel+"/dPhiLep1bJet"                 ,";|#delta#phi(lep1, lead b jet)| ;EventsBIN"            ,32,0,3.2);
          hs.addHist(selection+channel+"/dPhiLep1Jet1"                 ,";|#delta#phi(lep1, ljet1)| ;EventsBIN"                 ,32,0,3.2);
          hs.addHist(selection+channel+"/mLL"                          ,";m_{ll} (GeV) ;EventsBIN"                              ,50,0,200);
-         hs.addHist(selection+channel+"/CaloMET*cos(CaloMET)"         ,";Calo p_{x}^{miss} (GeV);EventsBIN"                    ,50,-250,250);
-         hs.addHist(selection+channel+"/CaloMET*sind(CaloMET)"        ,";Calo p_{y}^{miss} (GeV);EventsBIN"                    ,50,-250,250);
+         hs.addHist(selection+channel+"/CaloMET*cos(CaloMET_phi)"     ,";Calo p_{x}^{miss} (GeV);EventsBIN"                    ,50,-250,250);
+         hs.addHist(selection+channel+"/CaloMET*sin(CaloMET_phi)"     ,";Calo p_{y}^{miss} (GeV);EventsBIN"                    ,50,-250,250);
+         hs.addHist(selection+channel+"/PFMETxy*cos(PFMETxy_phi)"     ,";PFxy p_{x}^{miss} (GeV);EventsBIN"                    ,50,-250,250);
+         hs.addHist(selection+channel+"/PFMETxy*sin(PFMETxy_phi)"     ,";PFxy p_{y}^{miss} (GeV);EventsBIN"                    ,50,-250,250);
          hs.addHist(selection+channel+"/MT2"                          ,";MT_{2} (GeV);EventsBIN"                               ,50,0,200);
          hs.addHist(selection+channel+"/vecsum_pT_allJet"             ,";vecsum_pT_allJet (GeV);EventsBIN"                     ,50,0,500);
          hs.addHist(selection+channel+"/vecsum_pT_l1l2_allJet"        ,";vecsum_pT_l1l2_allJet (GeV);EventsBIN"                ,50,0,500);
@@ -413,16 +415,16 @@ void run()
          
          //variables used for storing in minimal trees
          float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
-         minTree_PhiMetbJet, minTree_dPhiLep1Lep2, minTree_dPhiJet1Jet2, minTree_METsig, minTree_N, minTree_SF, minTree_totalWeight, minTree_genMet, minTree_PuppiMet, minTree_XYcorrMet, 
+         minTree_PhiMetbJet, minTree_dPhiLep1Lep2, minTree_dPhiJet1Jet2, minTree_METsig, minTree_N, minTree_SF, minTree_totalWeight, minTree_genMet, minTree_PuppiMet,
          minTree_HT, minTree_HT_phi, minTree_MHT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
-         minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi, minTree_PhiRecXYcorr, minTree_PhiMetNearJet_Puppi, minTree_PhiMetFarJet_Puppi,
+         minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi,minTree_PhiRecXYcorr, minTree_PhiMetNearJet_Puppi, minTree_PhiMetFarJet_Puppi,
          minTree_PhiMetLeadJet_Puppi, minTree_PhiMetLead2Jet_Puppi, minTree_PhiMetbJet_Puppi, minTree_dPhiLep1bJet, minTree_dPhiLep1Jet1, minTree_ratioMET_sqrtMETunc_Puppi,
          minTree_ratio_pTj1_vecsum_pT_l1_l2_bjet, minTree_METunc_Puppi, minTree_METunc_PF, minTree_absmetres_PUPPI,
          minTree_Lep1_pt, minTree_Lep1_phi, minTree_Lep1_eta, minTree_Lep1_E, minTree_Lep1_flavor,
          minTree_Lep2_pt, minTree_Lep2_phi, minTree_Lep2_eta, minTree_Lep2_E, minTree_Lep2_flavor,
          minTree_Jet1_pt, minTree_Jet1_phi, minTree_Jet1_eta, minTree_Jet1_E, minTree_Jet1_bTagScore, minTree_Jet1_unc,
          minTree_Jet2_pt, minTree_Jet2_phi, minTree_Jet2_eta, minTree_Jet2_E, minTree_Jet2_bTagScore, minTree_Jet2_unc,
-         minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_genMET_phi, minTree_PtNuNu_phi, minTree_nJets, minTree_nGenJets, minTree_n_Interactions, minTree_DNN_MET_pT, minTree_DNN_MET_phi,minTree_DNN_MET_dPhi_nextLep,
+         minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_PFMETxy, minTree_PFMETxy_phi, minTree_genMET_phi, minTree_PtNuNu_phi, minTree_nJets, minTree_nGenJets, minTree_n_Interactions,minTree_DNN_MET_pT, minTree_DNN_MET_phi,minTree_DNN_MET_dPhi_nextLep,
          minTree_mLL, minTree_PtLL, minTree_PtLLgen, minTree_MT2, minTree_vecsum_pT_allJet, minTree_vecsum_pT_l1l2_allJet, minTree_mass_l1l2_allJet, minTree_ratio_vecsumpTlep_vecsumpTjet, minTree_mjj;
          UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions_gen, minTree_looseLeptonVeto, minTree_NpromptNeutrinos, minTree_NnonpromptNeutrinos, minTree_ee, minTree_mumu, minTree_emu;
          ULong64_t minTree_evtNo;
@@ -455,7 +457,6 @@ void run()
          ttbar_res.Branch("genDecayMode",&minTree_genDecayMode,"genDecayMode/i");
          ttbar_res.Branch("genMET",&minTree_genMet,"genMET/f");
          ttbar_res.Branch("PuppiMET",&minTree_PuppiMet,"PuppiMET/f");
-         ttbar_res.Branch("XYcorrMET",&minTree_XYcorrMet,"XYcorrMET/f");
          ttbar_res.Branch("HT",&minTree_HT,"HT/f");
          ttbar_res.Branch("HT_phi",&minTree_HT_phi,"HT_phi/f");
          ttbar_res.Branch("MHT",&minTree_MHT,"MHT/f");
@@ -514,6 +515,8 @@ void run()
          ttbar_res.Branch("PuppiMET_phi",&minTree_PuppiMET_phi,"PuppiMET_phi/f");
          ttbar_res.Branch("CaloMET",&minTree_CaloMET,"CaloMET/f");
          ttbar_res.Branch("CaloMET_phi",&minTree_CaloMET_phi,"CaloMET_phi/f");
+         ttbar_res.Branch("PFMETxy",&minTree_PFMETxy,"PFMETxy/f");
+         ttbar_res.Branch("PFMETxy_phi",&minTree_PFMETxy_phi,"PFMETxy_phi/f");
          ttbar_res.Branch("genMET_phi",&minTree_genMET_phi,"genMET_phi/f");
          ttbar_res.Branch("PtNuNu_phi",&minTree_PtNuNu_phi,"PtNuNu_phi/f");
          ttbar_res.Branch("NpromptNeutrinos",&minTree_NpromptNeutrinos,"NpromptNeutrinos/i");
@@ -719,9 +722,16 @@ void run()
             //Do only use ee,emu,mumu in in amc ttbar
             if (ttBar_amc && (*genDecayMode>3 || *genDecayMode==0)) continue;
             
+            // Construct vector of different METs for correction
+            std::vector<tree::MET*> PFMETs = {&(*MET),&(*MET_XYcorr),&(*MET_Calo)};
+            std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi)};
+            
             // Correct and select leptons
-            *muons = leptonCorretor.correctMuons(*muons,MET->p,MET_Puppi->p);
-            *electrons = leptonCorretor.correctElectrons(*electrons,MET->p,MET_Puppi->p);
+            std::cout<<"--------------------------------"<<std::endl;
+            std::cout<<MET_Puppi->p.Pt()<<"   "<<MET_Calo->p.Pt()<<"   "<<MET->p.Pt()<<std::endl;
+            *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
+            *electrons = leptonCorretor.correctElectrons(*electrons,PFMETs,PuppiMETs);
+            std::cout<<MET_Puppi->p.Pt()<<"   "<<MET_Calo->p.Pt()<<"   "<<MET->p.Pt()<<std::endl;
             
             //Baseline selection (including separation into ee, emu, mumu)
             TLorentzVector p_l1;
@@ -752,8 +762,8 @@ void run()
             
             //Apply JES and JER systematics
             if(!isData){
-               jesCorrector.applySystematics(*jets,MET->p);
-               jesCorrector_puppi.applySystematics(*jets_puppi,MET_Puppi->p);    // Needed for correction of Puppi MET
+               jesCorrector.applySystematics(*jets,PFMETs);
+               jesCorrector_puppi.applySystematics(*jets_puppi,PuppiMETs);    // Needed for correction of Puppi MET
                jerCorrector.smearCollection_Hybrid(*jets,*rho);
             }
             
@@ -1150,7 +1160,6 @@ void run()
             minTree_genDecayMode=*genDecayMode_pseudo;
             minTree_genMet=genMet;
             minTree_PuppiMet=met_puppi;
-            minTree_XYcorrMet=MET_XYcorr->p.Pt();
             minTree_HT=HT;
             minTree_HT_phi=MHT.Phi();
             minTree_MHT=MHT.M();
@@ -1183,6 +1192,8 @@ void run()
             minTree_PuppiMET_phi=MET_Puppi->p.Phi();
             minTree_CaloMET=MET_Calo->p.Pt();
             minTree_CaloMET_phi=MET_Calo->p.Phi();
+            minTree_PFMETxy=MET_XYcorr->p.Pt();
+            minTree_PFMETxy_phi=MET_XYcorr->p.Phi();
             minTree_genMET_phi=GENMET->p.Phi();
             minTree_PtNuNu_phi=neutrinoPair.Phi();
             minTree_NpromptNeutrinos=NpromptNeutrinos;
@@ -1237,7 +1248,6 @@ void run()
                minTree_PhiMetbJet=-1.;
                minTree_METsig=-1.;
                minTree_PuppiMet=-1.;
-               minTree_XYcorrMet=-1.;
                minTree_MHT=-1.;
                minTree_HT=-1.;
                minTree_HT_phi=-4.;
@@ -1279,6 +1289,8 @@ void run()
                minTree_Jet2_unc=-1;
                minTree_CaloMET=-1;
                minTree_CaloMET_phi=-5;
+               minTree_PFMETxy=-1;
+               minTree_PFMETxy_phi=-5;
                minTree_PuppiMET_phi=-5;
                minTree_PFMET_phi=-5;
                minTree_MT2=-1;
@@ -1492,7 +1504,7 @@ void run()
             hs.fill("baseline/"+path_cat+"/PuppiMET*sin(PuppiMET_phi)"   ,met_puppi*sin(MET_Puppi->p.Phi()));
             hs.fill("baseline/"+path_cat+"/METunc_Puppi"                 ,MET_Puppi->uncertainty);
             hs.fill("baseline/"+path_cat+"/MET*cos(PFMET_phi)"           ,met*cos(MET->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/MET*sind(PFMET_phi)"          ,met*sin(MET->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/MET*sin(PFMET_phi)"           ,met*sin(MET->p.Phi()));
             hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet*cos(HT_phi)" ,MHT.Pt()*cos(MHT.Phi()));
             hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet*sin(HT_phi)" ,MHT.Pt()*sin(MHT.Phi()));
             hs.fill("baseline/"+path_cat+"/nJets"                        ,cjets.size());
@@ -1534,8 +1546,10 @@ void run()
             hs.fill("baseline/"+path_cat+"/dPhiLep1bJet"                 ,abs(dPhiLep1BJet));
             hs.fill("baseline/"+path_cat+"/dPhiLep1Jet1"                 ,abs(dPhiLep1Jet1));
             hs.fill("baseline/"+path_cat+"/mLL"                          ,minTree_mLL);
-            hs.fill("baseline/"+path_cat+"/CaloMET*cos(CaloMET)"         ,MET_Calo->p.Pt()*cos(MET_Calo->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/CaloMET*sind(CaloMET)"        ,MET_Calo->p.Pt()*sin(MET_Calo->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/CaloMET*cos(CaloMET_phi)"     ,MET_Calo->p.Pt()*cos(MET_Calo->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/CaloMET*sin(CaloMET_phi)"     ,MET_Calo->p.Pt()*sin(MET_Calo->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/PFMETxy*cos(PFMETxy_phi)"     ,MET_XYcorr->p.Pt()*cos(MET_XYcorr->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/PFMETxy*sin(PFMETxy_phi)"     ,MET_XYcorr->p.Pt()*sin(MET_XYcorr->p.Phi()));
             hs.fill("baseline/"+path_cat+"/MT2"                          ,mt2);
             hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet"             ,minTree_vecsum_pT_allJet);
             hs.fill("baseline/"+path_cat+"/vecsum_pT_l1l2_allJet"        ,minTree_vecsum_pT_l1l2_allJet);

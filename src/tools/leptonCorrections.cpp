@@ -75,14 +75,19 @@ leptonCorrections::leptonCorrections(const Systematic::Systematic& systematic) :
 
 }
 
-std::vector<tree::Electron> leptonCorrections::correctElectrons(std::vector<tree::Electron>& electrons, TLorentzVector& met, 
-                                                      TLorentzVector& metPuppi, const bool applySCcut)
+std::vector<tree::Electron> leptonCorrections::correctElectrons(std::vector<tree::Electron>& electrons, std::vector<tree::MET*>& METs,
+                                                               std::vector<tree::MET*>& PuppiMETs, const bool applySCcut)
 {
    for(size_t iEle=0; iEle<electrons.size(); ++iEle){   //Remove electrons, which will be corrected from MET
       TLorentzVector temp(0.,0.,0.,0.);
       temp.SetPtEtaPhiM(electrons.at(iEle).p.Pt(),0.,electrons.at(iEle).p.Phi(),0.);
-      met = met + temp;
-      metPuppi = metPuppi + temp;
+      
+      for (tree::MET* MET : METs){
+            MET->p = MET->p + temp;
+      }
+      for (tree::MET* MET : PuppiMETs){
+            MET->p = MET->p + temp;
+      }
    }
    
    std::vector<tree::Electron> cElectrons;
@@ -96,20 +101,28 @@ std::vector<tree::Electron> leptonCorrections::correctElectrons(std::vector<tree
    for(size_t iEle=0; iEle<electrons.size(); ++iEle){   //Add shifted electrons back to met
       TLorentzVector temp(0.,0.,0.,0.);
       temp.SetPtEtaPhiM(electrons.at(iEle).p.Pt(),0.,electrons.at(iEle).p.Phi(),0.);
-      met = met - temp;
-      metPuppi = metPuppi - temp;
+      for (tree::MET* MET : METs){
+            MET->p = MET->p - temp;
+      }
+      for (tree::MET* MET : PuppiMETs){
+            MET->p = MET->p - temp;
+      }
    }
    sort(cElectrons.begin(), cElectrons.end(), tree::PtGreater);
    return cElectrons;
 }
 
-std::vector<tree::Muon> leptonCorrections::correctMuons(std::vector<tree::Muon>& muons, TLorentzVector& met, TLorentzVector& metPuppi)
+std::vector<tree::Muon> leptonCorrections::correctMuons(std::vector<tree::Muon>& muons,std::vector<tree::MET*>& METs, std::vector<tree::MET*>& PuppiMETs)
 {
    for(size_t iMu=0; iMu<muons.size(); ++iMu){   //Remove muons, which will be corrected from MET
       TLorentzVector temp(0.,0.,0.,0.);
       temp.SetPtEtaPhiM(muons.at(iMu).p.Pt(),0.,muons.at(iMu).p.Phi(),0.);
-      met = met + temp;
-      metPuppi = metPuppi + temp;
+      for (tree::MET* MET : METs){
+            MET->p = MET->p + temp;
+      }
+      for (tree::MET* MET : PuppiMETs){
+            MET->p = MET->p + temp;
+      }
    }
    
    std::vector<tree::Muon> cMuons;
@@ -123,8 +136,12 @@ std::vector<tree::Muon> leptonCorrections::correctMuons(std::vector<tree::Muon>&
    for(size_t iMu=0; iMu<muons.size(); ++iMu){   //Add shifted muons back to met
       TLorentzVector temp(0.,0.,0.,0.);
       temp.SetPtEtaPhiM(muons.at(iMu).p.Pt(),0.,muons.at(iMu).p.Phi(),0.);
-      met = met - temp;
-      metPuppi = metPuppi - temp;
+      for (tree::MET* MET : METs){
+            MET->p = MET->p - temp;
+      }
+      for (tree::MET* MET : PuppiMETs){
+            MET->p = MET->p - temp;
+      }
    }
    sort(cMuons.begin(), cMuons.end(), tree::PtGreater);
    return cMuons;

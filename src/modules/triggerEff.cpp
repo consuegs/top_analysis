@@ -231,9 +231,13 @@ void run()
             //Booleans for reco and zpeak selection
             bool rec_selection=false;
             
+            // Construct vector of different METs for correction
+            std::vector<tree::MET*> PFMETs = {&(*MET)};
+            std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi)};
+            
             // Correct and select leptons
-            *muons = leptonCorretor.correctMuons(*muons,MET->p,MET_Puppi->p);
-            *electrons = leptonCorretor.correctElectrons(*electrons,MET->p,MET_Puppi->p);
+            *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
+            *electrons = leptonCorretor.correctElectrons(*electrons,PFMETs,PuppiMETs);
             
             //Apply JER smearing
             if(!isData){

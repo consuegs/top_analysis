@@ -160,9 +160,13 @@ void run()
          //Do only use ee,emu,mumu in in amc ttbar
          if (ttBar_amc && (*genDecayMode>3 || *genDecayMode==0)) continue;
          
+         // Construct vector of different METs for correction
+         std::vector<tree::MET*> PFMETs = {&(*MET)};
+         std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi)};
+         
          // Correct and select leptons
-         *muons = leptonCorretor.correctMuons(*muons,MET->p,MET_Puppi->p);
-         *electrons = leptonCorretor.correctElectrons(*electrons,MET->p,MET_Puppi->p);
+         *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
+         *electrons = leptonCorretor.correctElectrons(*electrons,PFMETs,PuppiMETs);
          
          //Baseline selection (including separation into ee, emu, mumu)
          TLorentzVector p_l1;
@@ -184,8 +188,8 @@ void run()
          if (triggerMC==false) continue;
          
          //Apply JES and JER systematics
-         jesCorrector.applySystematics(*jets,MET->p);
-         jesCorrector_puppi.applySystematics(*jets_puppi,MET_Puppi->p);    // Needed for correction of Puppi MET
+         jesCorrector.applySystematics(*jets,PFMETs);
+         jesCorrector_puppi.applySystematics(*jets_puppi,PuppiMETs);    // Needed for correction of Puppi MET
          jerCorrector.smearCollection_Hybrid(*jets,*rho);
          
          float met=MET->p.Pt();
