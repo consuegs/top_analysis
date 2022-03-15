@@ -22,6 +22,34 @@ jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, cons
               <<Systematic::convertVariation(systematic.variation())<<"\n...break\n"<<std::endl;
          exit(98);
       }
+      
+      // Set restricted flavors
+      restricttoflav_.clear();
+      useRestrictFlav_ = false;
+      if(std::find(Systematic::jesTypes_pureFlavor.begin(), Systematic::jesTypes_pureFlavor.end(), type) != Systematic::jesTypes_pureFlavor.end()){
+         useRestrictFlav_ = true;
+         switch(type){
+            case Systematic::Type::jesFlavorPureGluon:
+               restricttoflav_.push_back(21);
+               restricttoflav_.push_back(0);
+               std::cout<<"Restrict flavor to 21, 0"<<std::endl;
+               break;
+            case Systematic::Type::jesFlavorPureQuark:
+               restricttoflav_.push_back(1);
+               restricttoflav_.push_back(2);
+               restricttoflav_.push_back(3);
+               std::cout<<"Restrict flavor to 1, 2, 3"<<std::endl;
+               break;
+            case Systematic::Type::jesFlavorPureCharm:
+               restricttoflav_.push_back(4);
+               std::cout<<"Restrict flavor to 4"<<std::endl;
+               break;
+            case Systematic::Type::jesFlavorPureBottom:
+               restricttoflav_.push_back(5);
+               std::cout<<"Restrict flavor to 5"<<std::endl;
+               break;
+         }
+      }
    }
    // Print which systematic is used and set boolean
    if(systematicInternal_ == vary_up) {std::cout<<"Apply systematic variation: up\n"; up=true;}
@@ -36,13 +64,30 @@ jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, cons
    }
    
    // Configure helper
+   useRealisticFlav_ = false;
    if(systematicInternal_!=nominal){
-      try {
-         uncertainty_ = new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[0]));
+      if (type != Systematic::Type::jesFlavorRealistic){
+         try {
+            uncertainty_ = new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[0]));
+         }
+         catch(std::runtime_error &rte){
+            std::cout << "JESBase::setFile: Uncertainty for source " << convertType(type) << " not found! Skipping\n";
+            exit(98);
+         }
       }
-      catch(std::runtime_error &rte){
-         std::cout << "JESBase::setFile: Uncertainty for source " << convertType(type) << " not found! Skipping\n";
-         exit(98);
+      else{    // for realistic flavor mixing, four different unc. sources are needed
+         useRealisticFlav_ = true;
+         std::cout<<"Use realistic flavor mixing"<<std::endl;
+         try {
+            uncertaintiesRelFlav_.push_back(new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[0])));
+            uncertaintiesRelFlav_.push_back(new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[1])));
+            uncertaintiesRelFlav_.push_back(new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[2])));
+            uncertaintiesRelFlav_.push_back(new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[3])));
+         }
+         catch(std::runtime_error &rte){
+            std::cout << "JESBase::setFile: Uncertainty for source " << convertType(type) << " not found! Skipping\n";
+            exit(98);
+         }
       }
    }
    
@@ -82,9 +127,44 @@ void jesCorrections::applySystematics(std::vector<tree::Jet>& Jets, std::vector<
 
 void jesCorrections::scaleJet(tree::Jet& jet)
 {
-   uncertainty_->setJetPt(jet.p.Pt());
-   uncertainty_->setJetEta(jet.p.Eta());
-   double uncert = uncertainty_->getUncertainty(up);
+   // Check jet matches restricted flavor
+   if (useRestrictFlav_) {
+      if(std::find(restricttoflav_.begin(),restricttoflav_.end(),abs(jet.hadronFlavour)) == restricttoflav_.end()){
+         return;
+      }
+   }
+   // Check if realistic flavor should be applied
+   double uncert = 0.;
+   if (!useRealisticFlav_){
+      uncertainty_->setJetPt(jet.p.Pt());
+      uncertainty_->setJetEta(jet.p.Eta());
+      uncert = uncertainty_->getUncertainty(up);
+   }
+   else {
+      switch(abs(jet.hadronFlavour)){
+         case 0:  //Gluon
+            uncertaintiesRelFlav_[0]->setJetPt(jet.p.Pt());
+            uncertaintiesRelFlav_[0]->setJetEta(jet.p.Eta());
+            uncert = uncertaintiesRelFlav_[0]->getUncertainty(up);
+            break;
+         case 4:  //Charm
+            uncertaintiesRelFlav_[2]->setJetPt(jet.p.Pt());
+            uncertaintiesRelFlav_[2]->setJetEta(jet.p.Eta());
+            uncert = uncertaintiesRelFlav_[2]->getUncertainty(up);
+            break;
+         case 5:  //Bottom
+            uncertaintiesRelFlav_[3]->setJetPt(jet.p.Pt());
+            uncertaintiesRelFlav_[3]->setJetEta(jet.p.Eta());
+            uncert = uncertaintiesRelFlav_[3]->getUncertainty(up);
+            break;
+         default: //Light Quark
+            uncertaintiesRelFlav_[1]->setJetPt(jet.p.Pt());
+            uncertaintiesRelFlav_[1]->setJetEta(jet.p.Eta());
+            uncert = uncertaintiesRelFlav_[1]->getUncertainty(up);
+            break;
+      }
+   }
+         
    if(up){
       jet.p *= 1+uncert;
       jet.uncorJecFactor_L1 *= 1./(1+uncert);
@@ -140,7 +220,7 @@ const std::map<std::string, std::vector<std::string> > jesCorrections::JESUncSou
   {"JESFlavorPureQuark",{"FlavorPureQuark"}},
   {"JESFlavorPureCharm",{"FlavorPureCharm"}},
   {"JESFlavorPureBottom",{"FlavorPureBottom"}},
-  // ~{"JESFlavorRealistic",{"FlavorPureGluon","FlavorPureQuark","FlavorPureCharm","FlavorPureBottom"}},
+  {"JESFlavorRealistic",{"FlavorPureGluon","FlavorPureQuark","FlavorPureCharm","FlavorPureBottom"}},
   {"JESCorrelationGroupbJES",{"CorrelationGroupbJES"}},
   {"JESCorrelationGroupFlavor",{"CorrelationGroupFlavor"}},
   {"JESCorrelationGroupUncorrelated",{"CorrelationGroupUncorrelated"}},

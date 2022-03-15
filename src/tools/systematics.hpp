@@ -399,6 +399,11 @@ namespace Systematic{
         jesUserDefinedHEM1516,
     };
     
+    /// Define jes systematics for pure flavor
+    const std::vector<Type> jesTypes_pureFlavor{
+        jesFlavorPureGluon, jesFlavorPureQuark, jesFlavorPureCharm, jesFlavorPureBottom
+    };
+    
     /// Define jer systematics
     const std::vector<Type> jerTypes{
         jer, jerEta0, jerEta1, jerEta2Pt0, jerEta2Pt1, jerEta3Pt0, jerEta3Pt1

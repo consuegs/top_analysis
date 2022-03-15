@@ -37,6 +37,12 @@ class jesCorrections
       
       /// Helpers to read scale from file
       JetCorrectionUncertainty* uncertainty_;
+      std::vector<JetCorrectionUncertainty*> uncertaintiesRelFlav_;
+      
+      /// Vector which stores restricted flavors (use for e.g. PureGluon)
+      std::vector<int> restricttoflav_;
+      bool useRestrictFlav_;
+      bool useRealisticFlav_;
    
 };
 
