@@ -69,8 +69,8 @@ def resubmitJob(outName,automaticResubmit=False):
         sp.call(["cat", outName.replace(".out",".log")])
         sp.call(["cat", outName.replace(".out",".error")])
 
-def getProgressFromOut(outName,checkCompleted=False,printStatus=True,resubmit=False):
-    processing = False
+def getProgressFromOut(outName,checkCompleted=False,printStatus=True,resubmit=False,running=False):
+    processing = running
     if (outName.find("TUnfold")<0):
         if os.path.exists(outName):
             lines = len(open(outName).readlines(  ))
@@ -118,7 +118,7 @@ def getStatusFromOut(outName,running,printStatus=True,resubmit=False):
                         color = "green"
                         if printStatus: print colored(datasetName+" is finished, copy took "+getCopyTimeFromError(outName).strip()+"s, script"+line.split(")")[-1].replace("=","").replace("\n","")+" on "+getMachineFromOut(outName),color)
         if finished == False and running:
-            getProgressFromOut(outName,True,printStatus,resubmit) 
+            getProgressFromOut(outName,True,printStatus,resubmit,True) 
         elif finished == False and running == False:
             color = "red"
             if printStatus:
@@ -177,7 +177,7 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
             print colored("\033[1m"+name+"    "+job["ClusterId"]+"       held"+"\033[0m","red")
         elif jStatus == "7":
             susTime = (time.time()-int(job["LastSuspensionTime"]))/60.
-            print colored("\033[1m"+name+"    "+job["RemoteHost"]+"       suspended since {:.2f} min".format(susTime)+"         "+job["RemoteHost"]+"\033[0m","red")
+            print colored("\033[1m"+name+"    "+job["RemoteHost"]+"       suspended since {:.2f} min".format(susTime)+"         "+job["RemoteHost"]+"       "+job["ClusterId"]+"\033[0m","red")
             getProgressFromOut(job["Out"])
             if susTime > 10 and checkSuspended :
                 value = input("Job suspended for more than 10 Minutes, please enter 1 to kill job and start again or 0 to continue:\n")
