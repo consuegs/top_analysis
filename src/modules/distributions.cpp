@@ -727,11 +727,8 @@ void run()
             std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi)};
             
             // Correct and select leptons
-            std::cout<<"--------------------------------"<<std::endl;
-            std::cout<<MET_Puppi->p.Pt()<<"   "<<MET_Calo->p.Pt()<<"   "<<MET->p.Pt()<<std::endl;
             *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
             *electrons = leptonCorretor.correctElectrons(*electrons,PFMETs,PuppiMETs);
-            std::cout<<MET_Puppi->p.Pt()<<"   "<<MET_Calo->p.Pt()<<"   "<<MET->p.Pt()<<std::endl;
             
             //Baseline selection (including separation into ee, emu, mumu)
             TLorentzVector p_l1;
