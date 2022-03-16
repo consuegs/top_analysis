@@ -249,11 +249,13 @@ void run()
             TLorentzVector p_l2;
             int flavor_l1=0;  //1 for electron and 2 for muon
             int flavor_l2=0;
+            double etaSC_l1=0;  // etaSC needed for electron ID SF
+            double etaSC_l2=0;
             bool muonLead=true; //Boolean for emu channel
             std::vector<bool> channel={false,false,false};     //ee, mumu, emu
             TString cat="";
             
-            rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead);
+            rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2,cat,muonLead);
                   
             std::vector<tree::Jet> cjets;
             std::vector<tree::Jet> BJets;
@@ -270,7 +272,7 @@ void run()
                else if (channel[2]) channelID = 3;
                
                fEventWeight = *w_pu * *w_mc;
-               float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2);
+               float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
                float bTagWeight = bTagWeighter.getEventWeight(cjets,channelID);
                SFWeight = bTagWeight*leptonSFweight;
             }

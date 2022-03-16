@@ -735,11 +735,13 @@ void run()
             TLorentzVector p_l2;
             int flavor_l1=0;  //1 for electron and 2 for muon
             int flavor_l2=0;
+            double etaSC_l1=0;  // etaSC needed for electron ID SF
+            double etaSC_l2=0;
             bool muonLead=true; //Boolean for emu channel
             std::vector<bool> channel={false,false,false};     //ee, mumu, emu
             TString cat="";
             
-            rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead);
+            rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2,cat,muonLead);
             
             //Trigger selection
             std::vector<bool> diElectronTriggers={*eleTrigg1,*eleTrigg2,*singleEleTrigg};
@@ -765,7 +767,7 @@ void run()
             }
             
             // Get leptonSF weight
-            float leptonSFweight =(isData)? 1. : leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2);
+            float leptonSFweight =(isData)? 1. : leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
             
             // Get mcWeight
             std::vector<float> bFrag_vec = {*fragUpWeight,*fragCentralWeight,*fragDownWeight,*fragPetersonWeight,*semilepbrUpWeight,*semilepbrDownWeight};
@@ -855,7 +857,7 @@ void run()
                if (rec_selection){
                   int currentPos = 0;
                   for (int i=0; i<leptonSF_vec.size(); i++){
-                     minTree_systWeights[i] = lumi_weight * fEventWeight * bTagWeight * triggerSF * leptonSF_vec[i].getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2);
+                     minTree_systWeights[i] = lumi_weight * fEventWeight * bTagWeight * triggerSF * leptonSF_vec[i].getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
                   }
                   currentPos += leptonSF_vec.size(); 
                   for (int i=0; i<bTagWeighter_vec.size(); i++){

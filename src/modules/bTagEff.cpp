@@ -173,11 +173,13 @@ void run()
          TLorentzVector p_l2;
          int flavor_l1=0;  //1 for electron and 2 for muon
          int flavor_l2=0;
+         double etaSC_l1=0;  // etaSC needed for electron ID SF
+         double etaSC_l2=0;
          bool muonLead=true; //Boolean for emu channel
          std::vector<bool> channel={false,false,false};     //ee, mumu, emu
          TString cat="";
          
-         if(!selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead)) continue;
+         if(!selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2,cat,muonLead)) continue;
          
          //Trigger selection
          std::vector<bool> diElectronTriggers={*eleTrigg1,*eleTrigg2,*singleEleTrigg};
@@ -209,7 +211,7 @@ void run()
          if (channel[0]) channelID = 1;
          else if (channel[1]) channelID = 2;
          else if (channel[2]) channelID = 3;
-         float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2);
+         float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
          // ~float triggerSF = triggerSFcalc.getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);    //Not used since bTagEff needed in triggerSF calc.
          float mcWeight = mcWeighter.getMCweight(*w_mc,*w_pdf,*w_ps,{*fragUpWeight,*fragCentralWeight,*fragDownWeight,*fragPetersonWeight,*semilepbrUpWeight,*semilepbrDownWeight});
          float fEventWeight=*w_pu * mcWeight;     //Set event weight 

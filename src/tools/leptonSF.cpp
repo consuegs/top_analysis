@@ -103,12 +103,13 @@ TH2* LeptonScaleFactors::prepareSF(const std::string& sfInputFileName,
 
 
 const float LeptonScaleFactors::getSFDilepton(const TLorentzVector &p_l1, const TLorentzVector &p_l2,
-                                             const int &flavor_l1, const int &flavor_l2)
+                                             const int &flavor_l1, const int &flavor_l2,
+                                             const double &etaSC_l1, const double &etaSC_l2)
 {
    float result(1.);
 
-   result *= this->leptonSF(p_l1, flavor_l1);
-   result *= this->leptonSF(p_l2, flavor_l2);
+   result *= this->leptonSF(p_l1, flavor_l1, etaSC_l1);
+   result *= this->leptonSF(p_l2, flavor_l2, etaSC_l2);
    return result;
 }
 
@@ -123,12 +124,12 @@ const float LeptonScaleFactors::get2DSF(const TH2* const histo, const float& x, 
    return (tempSF + uncFactor*histo->GetBinError(xbin, ybin) + uncFactor*DYunc*tempSF);
 }
 
-const float LeptonScaleFactors::leptonSF(const TLorentzVector p, const int flavor)
+const float LeptonScaleFactors::leptonSF(const TLorentzVector p, const int flavor, const double etaSC)
 {
    float result(1.);
    if(flavor==1) {
       result *= get2DSF(h2_electron_Reco_histo_, p.Eta(), p.Pt(), uncFactor_electron_RECO_);
-      result *= get2DSF(h2_electron_ID_histo_, p.Eta(), p.Pt(), uncFactor_electron_ID_, electron_ID_DY_unc_);
+      result *= get2DSF(h2_electron_ID_histo_, etaSC , p.Pt(), uncFactor_electron_ID_, electron_ID_DY_unc_);
    }
    else if (flavor==2){
       result *= get2DSF(h2_muon_ISO_histo_, fabs(p.Eta()), p.Pt(), uncFactor_muon_ISO_, muon_ISO_DY_unc_);
