@@ -127,18 +127,28 @@ extern "C"
 void run()
 {
    std::vector<TString> systVec = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
+   // ~std::vector<TString> systVec = {"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN",
+   
+   // ~"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorQCD_UP","JESFlavorQCD_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN",
+
+   // ~"JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFlavorPureGluon_UP","JESFlavorPureGluon_DOWN","JESFlavorPureQuark_UP","JESFlavorPureQuark_DOWN","JESFlavorPureCharm_UP","JESFlavorPureCharm_DOWN","JESFlavorPureBottom_UP","JESFlavorPureBottom_DOWN",
+   // ~};
+   // ~std::vector<TString> systVec = {"Nominal","JESTotal_UP","JESTotal_DOWN"};
    // ~std::vector<TString> systVec = {"Nominal"};
    
    // add pdf unc
-   for(int i=1; i<=50; i++){
-      systVec.push_back(TString::Format("PDF_%i_UP",i));
-      systVec.push_back(TString::Format("PDF_%i_DOWN",i));
-   }
+   // ~for(int i=1; i<=50; i++){
+      // ~systVec.push_back(TString::Format("PDF_%i_UP",i));
+      // ~systVec.push_back(TString::Format("PDF_%i_DOWN",i));
+   // ~}
    
-   std::vector<TString> distributions = {"2D_dPhi_pTnunu","2D_dPhi_pTnunu_new","pTnunu","dPhi"};
+   std::vector<TString> distributions = {"2D_dPhi_pTnunu","2D_dPhi_pTnunu_new","pTnunu","dPhi","pTll","inclusive"};
+   // ~std::vector<TString> distributions = {"pTll"};
+   // ~std::vector<TString> distributions = {"inclusive"};
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu"};
    
-   bool verbose = false;
+   // ~bool verbose = false;
+   bool verbose = true;
    
    for (auto syst : systVec){
       
@@ -255,109 +265,110 @@ void run()
          //========================
          // Step 3: unfolding
          
-         
-         for (bool regularisation : {false,true}) {
-            
-            // define saving folder
-            TString saveFolder = (regularisation)? "reg/" : "";
-            
-            // preserve the area
-            TUnfold::EConstraint constraintMode= TUnfold::kEConstraintArea;
-            // ~TUnfold::EConstraint constraintMode= TUnfold::kEConstraintNone;
+         if (varName != "inclusive") {    // use only BBB for inclusive xsec
+            for (bool regularisation : {false,true}) {
+               
+               // define saving folder
+               TString saveFolder = (regularisation)? "reg/" : "";
+               
+               // preserve the area
+               TUnfold::EConstraint constraintMode= TUnfold::kEConstraintArea;
+               // ~TUnfold::EConstraint constraintMode= TUnfold::kEConstraintNone;
 
-            // basic choice of regularisation scheme:
-            // ~TUnfold::ERegMode regMode = TUnfold::kRegModeSize;
-            TUnfold::ERegMode regMode = TUnfold::kRegModeCurvature;
-            // ~TUnfold::ERegMode regMode = TUnfold::kRegModeDerivative;
+               // basic choice of regularisation scheme:
+               // ~TUnfold::ERegMode regMode = TUnfold::kRegModeSize;
+               TUnfold::ERegMode regMode = TUnfold::kRegModeCurvature;
+               // ~TUnfold::ERegMode regMode = TUnfold::kRegModeDerivative;
 
-            // density flags
-            TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeBinWidth;
-            // ~TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeNone;
+               // density flags
+               TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeBinWidth;
+               // ~TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeNone;
 
-            // detailed steering for regularisation
-            const char *REGULARISATION_DISTRIBUTION=0;
-            const char *REGULARISATION_AXISSTEERING="*[B]";
+               // detailed steering for regularisation
+               const char *REGULARISATION_DISTRIBUTION=0;
+               const char *REGULARISATION_AXISSTEERING="*[B]";
 
-            // set up matrix of migrations
-            TUnfoldDensity unfold(histMCGenRec,TUnfold::kHistMapOutputHoriz,
-                                 regMode,constraintMode,densityFlags,
-                                 generatorBinning,detectorBinning);
+               // set up matrix of migrations
+               TUnfoldDensity unfold(histMCGenRec,TUnfold::kHistMapOutputHoriz,
+                                    regMode,constraintMode,densityFlags,
+                                    generatorBinning,detectorBinning);
 
-            // define the input vector (the measured data distribution)
-            unfold.SetInput(histDataReco,1.0);
-            // ~unfold.SetInput(histDataReco,0.);
+               // define the input vector (the measured data distribution)
+               unfold.SetInput(histDataReco,1.0);
+               // ~unfold.SetInput(histDataReco,0.);
 
-            
-            // ~unfold.ScanTau(1000,0,0,0);
-            // ~unfold.ScanLcurve(1000,0,0,0);
-            // ~std::cout<<unfold.GetTau()<<std::endl;
-            // run the unfolding
-            float tau=0;
-            if (regularisation) {
-               unfold.ScanTau(1000,0.0001,0.1,0); //With regularization
-               tau=unfold.GetTau();
-            }
-            else unfold.DoUnfold(0.);//Without regularization
-            
-            // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult");
-            // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
-            TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
-            TH1 *hist_folded=unfold.GetFoldedOutput("hist_foldedResult",";bin",0,0,false);
-            TH2 *cov_input=unfold.GetEmatrixInput("cov_input",";bin",0,0,true);
-            TH2 *cov_statResponse=unfold.GetEmatrixSysUncorr("cov_statResponse",";bin",0,0,true);
-            TH2 *cov_Output=unfold.GetEmatrixTotal("cov_total",";bin",0,0,true);
-            TH2 *corr_matrix=unfold.GetRhoIJtotal("Rho2D");
-            
-            // run the unfolding for toys
-            if(toy_studies){
-               //Define histograms for toy studies
-               TProfile *prof_pull=0;
-               TProfile *prof_res=0;
-               TH1 *hist_coverage=0;
-               TH1 *hist_pull=0;
-               TH1 *hist_res=0;
-               TH1 *hist_chi=0;
-               TH1 *hist_unfolded_firstToy=0;
-               for(int itoy=0;itoy<MAXTOY;itoy++) {
-                  std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
-                  // ~unfold.SetInput(generatePoissonToy(hist_folded,itoy),1.0);
-                  TH1 *reco_toy=generatePoissonToy(histDataReco_unscaled,itoy);
-                  reco_toy->Multiply(histSignalFraction);
-                  unfold.SetInput(reco_toy,1.0);
-                  if (regularisation) unfold.DoUnfold(tau); //With regularization
-                  else unfold.DoUnfold(0.);//Without regularization
-                  if (itoy==0)hist_unfolded_firstToy=unfold.GetOutput("",";bin",0,0,false);
-                  analyzeToy(unfold.GetOutput("","",0,0,false),
-                                hist_unfolded,
-                                // ~histDataTruth,
-                                // ~cov_Output,
-                                cov_input,
-                                prof_pull,
-                                hist_coverage,hist_pull,prof_res,hist_res,hist_chi,MAXTOY);
+               
+               // ~unfold.ScanTau(1000,0,0,0);
+               // ~unfold.ScanLcurve(1000,0,0,0);
+               // ~std::cout<<unfold.GetTau()<<std::endl;
+               // run the unfolding
+               float tau=0;
+               if (regularisation) {
+                  unfold.ScanTau(1000,0.0001,0.1,0); //With regularization
+                  tau=unfold.GetTau();
                }
-               saver.save(*hist_unfolded_firstToy,saveFolder+"hist_unfolded_firstToy");
-               saver.save(*prof_pull,saveFolder+"prof_pull");
-               saver.save(*prof_res,saveFolder+"prof_res");
-               saver.save(*hist_coverage,saveFolder+"hist_coverage");
-               saver.save(*hist_pull,saveFolder+"hist_pull");
-               saver.save(*hist_res,saveFolder+"hist_res");
-               saver.save(*hist_chi,saveFolder+"hist_chi");
-            }
-            
-            //Set stat. error to combined stat. error from input and response matrix
-            for (int i=1; i<hist_unfolded->GetNbinsX();i++){
-               hist_unfolded->SetBinError(i,sqrt(cov_input->GetBinContent(i,i)+cov_statResponse->GetBinContent(i,i)));
-            }
-            //===========================
-            // Step 4: retreive and plot unfolding results
-            // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult","P_{T}^{#nu#nu} [GeV]","signal");
-            saver.save(*hist_unfolded,saveFolder+"hist_unfoldedResult");
-            saver.save(*hist_folded,saveFolder+"hist_foldedResult");
-            saver.save(*cov_input,saveFolder+"cov_input");
-            saver.save(*cov_statResponse,saveFolder+"cov_statResponse");
-            saver.save(*corr_matrix,saveFolder+"corr_matrix");
-            saver.save(*cov_Output,saveFolder+"cov_output");
-         }//end unfolding loop
+               else unfold.DoUnfold(0.);//Without regularization
+               
+               // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult");
+               // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
+               TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
+               TH1 *hist_folded=unfold.GetFoldedOutput("hist_foldedResult",";bin",0,0,false);
+               TH2 *cov_input=unfold.GetEmatrixInput("cov_input",";bin",0,0,true);
+               TH2 *cov_statResponse=unfold.GetEmatrixSysUncorr("cov_statResponse",";bin",0,0,true);
+               TH2 *cov_Output=unfold.GetEmatrixTotal("cov_total",";bin",0,0,true);
+               TH2 *corr_matrix=unfold.GetRhoIJtotal("Rho2D");
+               
+               // run the unfolding for toys
+               if(toy_studies){
+                  //Define histograms for toy studies
+                  TProfile *prof_pull=0;
+                  TProfile *prof_res=0;
+                  TH1 *hist_coverage=0;
+                  TH1 *hist_pull=0;
+                  TH1 *hist_res=0;
+                  TH1 *hist_chi=0;
+                  TH1 *hist_unfolded_firstToy=0;
+                  for(int itoy=0;itoy<MAXTOY;itoy++) {
+                     std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
+                     // ~unfold.SetInput(generatePoissonToy(hist_folded,itoy),1.0);
+                     TH1 *reco_toy=generatePoissonToy(histDataReco_unscaled,itoy);
+                     reco_toy->Multiply(histSignalFraction);
+                     unfold.SetInput(reco_toy,1.0);
+                     if (regularisation) unfold.DoUnfold(tau); //With regularization
+                     else unfold.DoUnfold(0.);//Without regularization
+                     if (itoy==0)hist_unfolded_firstToy=unfold.GetOutput("",";bin",0,0,false);
+                     analyzeToy(unfold.GetOutput("","",0,0,false),
+                                   hist_unfolded,
+                                   // ~histDataTruth,
+                                   // ~cov_Output,
+                                   cov_input,
+                                   prof_pull,
+                                   hist_coverage,hist_pull,prof_res,hist_res,hist_chi,MAXTOY);
+                  }
+                  saver.save(*hist_unfolded_firstToy,saveFolder+"hist_unfolded_firstToy");
+                  saver.save(*prof_pull,saveFolder+"prof_pull");
+                  saver.save(*prof_res,saveFolder+"prof_res");
+                  saver.save(*hist_coverage,saveFolder+"hist_coverage");
+                  saver.save(*hist_pull,saveFolder+"hist_pull");
+                  saver.save(*hist_res,saveFolder+"hist_res");
+                  saver.save(*hist_chi,saveFolder+"hist_chi");
+               }
+               
+               //Set stat. error to combined stat. error from input and response matrix
+               for (int i=1; i<hist_unfolded->GetNbinsX();i++){
+                  hist_unfolded->SetBinError(i,sqrt(cov_input->GetBinContent(i,i)+cov_statResponse->GetBinContent(i,i)));
+               }
+               //===========================
+               // Step 4: retreive and plot unfolding results
+               // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult","P_{T}^{#nu#nu} [GeV]","signal");
+               saver.save(*hist_unfolded,saveFolder+"hist_unfoldedResult");
+               saver.save(*hist_folded,saveFolder+"hist_foldedResult");
+               saver.save(*cov_input,saveFolder+"cov_input");
+               saver.save(*cov_statResponse,saveFolder+"cov_statResponse");
+               saver.save(*corr_matrix,saveFolder+"corr_matrix");
+               saver.save(*cov_Output,saveFolder+"cov_output");
+            }//end unfolding loop
+         }
          
          /*
          //SVD decomposition
