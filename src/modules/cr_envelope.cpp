@@ -228,7 +228,7 @@ void produce_topmass()
    
 }
 
-void produce_PDF_envelope(){  //currently only for 1D hists
+void produce_PDF_envelope(bool onlyCutflowMuMu=false){  //currently only for 1D hists
       
    std::map<TString,std::vector<TH1F>> histMap;
    std::map<TString,std::vector<TH2F>> histMap2D;
@@ -239,6 +239,7 @@ void produce_PDF_envelope(){  //currently only for 1D hists
       io::RootFileReader histReader_up(TString::Format("multiHists/PDF_%i_UP/histograms_merged_%s.root",i,cfg.treeVersion.Data()));
       io::RootFileReader histReader_down(TString::Format("multiHists/PDF_%i_DOWN/histograms_merged_%s.root",i,cfg.treeVersion.Data()));
       for (auto path : histReader_up.listPaths(true)){
+         if(onlyCutflowMuMu && path.Contains("cutflow/mumu")==false) continue;
          if(path.Contains("2d")){
             histMap2D[path].push_back(*(histReader_up.read<TH2F>(path+"/TTbar_diLepton")));
             histMap2D[path].push_back(*(histReader_up.read<TH2F>(path+"/TTbar_diLepton")));
@@ -283,8 +284,9 @@ void produce_PDF_envelope(){  //currently only for 1D hists
 extern "C"
 void run()
 {   
-   // ~produce_cr_envelope();
-   produce_topmass();
+   produce_cr_envelope();
+   // ~produce_topmass();
    // ~produce_PDF_envelope();
+   // ~produce_PDF_envelope(true);
   
 }
