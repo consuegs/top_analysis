@@ -150,10 +150,10 @@ double Datasubset::getNgen_syst(const Systematic::Systematic& systematic) const
             return this->readNgenFromHist("hSystMCweight_PS_timesTopPU_",(upVariation)? 6 : 5);
             break;
          case Systematic::bFrag:
-            return this->readNgenFromHist("hSystMCweight__timesTopPU_",(upVariation)? 1 : 3);
+            return this->readNgenFromHist("hSystMCweight_bFrag_timesTopPU_",(upVariation)? 1 : 3);
             break;
          case Systematic::bSemilep:
-            return this->readNgenFromHist("hSystMCweight__timesTopPU_",(upVariation)? 5 : 6);
+            return this->readNgenFromHist("hSystMCweight_bFrag_timesTopPU_",(upVariation)? 5 : 6);
             break;
          case Systematic::pu:
             return this->readNgenFromHist("hSystMCweight_PU_timesTopPU_",(upVariation)? 2 : 3);
