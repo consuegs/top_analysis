@@ -175,6 +175,9 @@ void run()
          TTreeReaderValue<UInt_t> lumNo(reader, "lumNo");
          TTreeReaderValue<ULong64_t> evtNo(reader, "evtNo");
          TTreeReaderValue<float> w_mc(reader, "mc_weight");
+         TTreeReaderValue<float> fragCentralWeight(reader, "weightFragCentral");
+         TTreeReaderValue<float> w_topPT(reader, "topPTweight");
+         TTreeReaderValue<double> w_prefiring(reader, "prefiring_weight");
          TTreeReaderValue<std::vector<float>> w_pdf(reader, "pdf_weights");
          TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
          TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
@@ -271,10 +274,10 @@ void run()
                else if (channel[1]) channelID = 2;
                else if (channel[2]) channelID = 3;
                
-               fEventWeight = *w_pu * *w_mc;
+               fEventWeight = *w_pu * *w_mc * *w_topPT;
                float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
                float bTagWeight = bTagWeighter.getEventWeight(cjets,channelID);
-               SFWeight = bTagWeight*leptonSFweight;
+               SFWeight = bTagWeight*leptonSFweight * *w_prefiring;
             }
             hs.setFillWeight(fEventWeight*SFWeight);
             hs2d.setFillWeight(fEventWeight*SFWeight);

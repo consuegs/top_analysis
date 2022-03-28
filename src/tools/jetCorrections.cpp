@@ -62,7 +62,7 @@ jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, cons
       <<"Systematic variation requested, but no uncertainty file specified\n...break\n"<<std::endl;
    exit(98);
    }
-   
+      
    // Configure helper
    useRealisticFlav_ = false;
    if(systematicInternal_!=nominal){
@@ -99,14 +99,15 @@ void jesCorrections::applySystematics(std::vector<tree::Jet>& Jets, std::vector<
 {
    if(systematicInternal_!=nominal){ // Apply shifts only if JES systematic is selected
       for(size_t iJet=0; iJet<Jets.size(); ++iJet){   //Remove jets, which will be corrected from MET
-         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch_loose) continue;
+         // ~if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch_loose) continue;
+         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).p.Pt()*(1-Jets.at(iJet).muonf) < 15) continue;
          TLorentzVector temp(0.,0.,0.,0.);
          temp.SetPtEtaPhiM(Jets.at(iJet).p.Pt(),0.,Jets.at(iJet).p.Phi(),0.);
          for (tree::MET* MET : METs){
             MET->p = MET->p + (temp-(temp*(Jets.at(iJet).uncorJecFactor_L1)));
          }
       }
-      
+            
       // This loop corrects the jet collection used for jet selections
       for(size_t iJet=0; iJet<Jets.size(); ++iJet){
          if (abs(Jets.at(iJet).p.Eta())>=5.4) continue;
@@ -114,7 +115,8 @@ void jesCorrections::applySystematics(std::vector<tree::Jet>& Jets, std::vector<
       }
       
       for(size_t iJet=0; iJet<Jets.size(); ++iJet){   //Add shifted jets to MET
-         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch_loose) continue;
+         // ~if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch_loose) continue;
+         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).p.Pt()*(1-Jets.at(iJet).muonf) < 15) continue;
          TLorentzVector temp(0.,0.,0.,0.);
          temp.SetPtEtaPhiM(Jets.at(iJet).p.Pt(),0.,Jets.at(iJet).p.Phi(),0.);
          for (tree::MET* MET : METs){
@@ -122,7 +124,6 @@ void jesCorrections::applySystematics(std::vector<tree::Jet>& Jets, std::vector<
          }
       }
    }
-
 }
 
 void jesCorrections::scaleJet(tree::Jet& jet)

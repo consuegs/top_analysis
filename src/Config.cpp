@@ -51,7 +51,7 @@ Config::Config()
    
    jes_Folder=pt.get<std::string>("jetCorrections.jes_Folder");
    jes_UNC_mc=pt.get<std::string>("jetCorrections.jes_UNC_mc");
-   jes_UNC_mc_puppi=pt.get<std::string>("jetCorrections.jes_UNC_mc");
+   jes_UNC_mc_puppi=pt.get<std::string>("jetCorrections.jes_UNC_mc_puppi");
    jes_UNC_data=util::to_vector<std::string>(pt.get<std::string>("jetCorrections.jes_UNC_data"));
    jes_UNC_data_puppi=util::to_vector<std::string>(pt.get<std::string>("jetCorrections.jes_UNC_data_puppi"));
    

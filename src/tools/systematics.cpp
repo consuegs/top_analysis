@@ -782,6 +782,31 @@ TString Systematic::puWeightName(const Systematic & systematic){
    return weightName;
 }
 
+TString Systematic::prefiringWeightName(const Systematic & systematic){
+    std::cout<<"--- Beginning preparation of prefiring weight\n";
+    const Type type = systematic.type();
+    TString weightName = "prefiring_weight";
+    if(type==l1prefiring){
+        std::cout<<"Use systematic of type: "<<convertType(type)<<"\n";
+        if(systematic.variation() == up) {
+            std::cout<<"Apply systematic variation: up\n";
+            weightName = "prefiring_weight_up";
+        }
+        else if(systematic.variation() == down) {
+            std::cout<<"Apply systematic variation: down\n";
+            weightName = "prefiring_weight_down";
+        }
+        else {
+            std::cerr << "ERROR in constructor of pileup weights! Systematic variation is invalid: "
+                  << convertVariation(systematic.variation()) << "\n...break\n\n";
+            exit(98);
+      }
+   }
+   else std::cout<<"Do not apply systematic variation\n";
+   
+   return weightName;
+}
+
 TString Systematic::metNameAddition(const Systematic & systematic){
     std::cout<<"--- Beginning preparation of unclustered energy shift\n";
     const Type type = systematic.type();

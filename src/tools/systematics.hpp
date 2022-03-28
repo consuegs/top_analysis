@@ -489,7 +489,8 @@ namespace Systematic{
         unclustered,
         
         pdf,
-        xsec_ttother,xsec_dy,xsec_st,xsec_other
+        xsec_ttother,xsec_dy,xsec_st,xsec_other,
+        l1prefiring
     };
     
     ///Define systematics that are applied by varying the nominal MC weight
@@ -594,6 +595,9 @@ namespace Systematic{
     
     /// Get correct pileup weight name
     TString puWeightName(const Systematic & systematic);
+    
+    /// Get correct prefiring weight name
+    TString prefiringWeightName(const Systematic & systematic);
     
     /// Get correct met name (to derive unc. due to unclustered Energy)
     TString metNameAddition(const Systematic & systematic);

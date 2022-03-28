@@ -54,6 +54,8 @@ void run()
       for(TString channel:{"/ee","/mumu","/emu"}){
          hs.addHist(selection+channel+"/MET"   ,";%MET;EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/PuppiMET"   ,";%MET;EventsBIN"           ,100,0,500);
+         hs.addHist(selection+channel+"/PuppiMET_xy"   ,";%MET;EventsBIN"           ,100,0,500);
+         hs.addHist(selection+channel+"/MET_xy"   ,";%MET;EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/DNN_MET_pT"   ,";DNN_MET_pT (GeV);EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/DNN_MET_dPhi_nextLep"   ,";DNN_MET_dPhi_nextLep;EventsBIN"           ,320,0,3.2);
          hs.addHist(selection+channel+"/met1000"   ,";%MET;EventsBIN"           ,100,0,1000);
@@ -68,6 +70,8 @@ void run()
          hs.addHist(selection+channel+"/Jet2_pt"   ,";p_{T}^{Jet2} (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,320,0,3.2);
          hs.addHist(selection+channel+"/dphi_metNearLep_puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,320,0,3.2);
+         hs.addHist(selection+channel+"/dphi_metNearLep_puppi_xy"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,320,0,3.2);
+         hs.addHist(selection+channel+"/dphi_metNearLep_xy"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,320,0,3.2);
          hs.addHist(selection+channel+"/COSdphi_metNearLep"   ,";cos(|#Delta#phi|(p_{T}^{miss},nearest l));EventsBIN"           ,100,-1.,1);
          hs.addHist(selection+channel+"/SINdphi_metNearLep"   ,";sin(|#Delta#phi|(p_{T}^{miss},nearest l));EventsBIN"           ,100,0.,1);
          hs.addHist(selection+channel+"/dR_bJetLep1"   ,";|#Delta R|(b Jet,l_{1});EventsBIN"           ,100,0,5);
@@ -95,15 +99,21 @@ void run()
          hs.addHist(selection+channel+"/Jet2_phi"   ,";Jet2_phi;EventsBIN"           ,100,-3.2,3.2);
          hs.addHist(selection+channel+"/PFMET_phi"   ,";#phi (PFMET);EventsBIN"           ,100,-3.2,3.2);
          hs.addHist(selection+channel+"/PuppiMET_phi"   ,";#phi (PuppiMET);EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/PuppiMET_xy_phi"   ,";#phi (PuppiMET);EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/MET_xy_phi"   ,";#phi (MET);EventsBIN"           ,100,-3.2,3.2);
          hs.addHist(selection+channel+"/CaloMET"   ,";CaloMET (GeV);EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/CaloMET_phi"   ,";#phi (CaloMET);EventsBIN"           ,100,-3.2,3.2);
          
          //DNN Inputs
          hs.addHist(selection+channel+"/PuppiMET*cos(PuppiMET_phi)"   ,";Puppi p_{x}^{miss} (GeV);EventsBIN"                   ,50,-250,250);
          hs.addHist(selection+channel+"/PuppiMET*sin(PuppiMET_phi)"   ,";Puppi p_{y}^{miss} (GeV);EventsBIN"                   ,50,-250,250);
+         hs.addHist(selection+channel+"/PuppiMET_xy*cos(PuppiMET_xy_phi)"   ,";Puppi p_{x}^{miss} (GeV);EventsBIN"                   ,50,-250,250);
+         hs.addHist(selection+channel+"/PuppiMET_xy*sin(PuppiMET_xy_phi)"   ,";Puppi p_{y}^{miss} (GeV);EventsBIN"                   ,50,-250,250);
          hs.addHist(selection+channel+"/METunc_Puppi"                 ,";Puppi #sigma(p_{t}^{miss}) (GeV);EventsBIN"           ,50,0,100);
          hs.addHist(selection+channel+"/MET*cos(PFMET_phi)"           ,";PF p_{x}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
          hs.addHist(selection+channel+"/MET*sin(PFMET_phi)"           ,";PF p_{y}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
+         hs.addHist(selection+channel+"/MET_xy*cos(MET_xy_phi)"           ,";PF p_{x}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
+         hs.addHist(selection+channel+"/MET_xy*sin(MET_xy_phi)"           ,";PF p_{y}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
          hs.addHist(selection+channel+"/vecsum_pT_allJet*cos(HT_phi)" ,";vecsum_pT_allJet_{x} (GeV);EventsBIN"                 ,80,-400,400);
          hs.addHist(selection+channel+"/vecsum_pT_allJet*sin(HT_phi)" ,";vecsum_pT_allJet_{y} (GeV);EventsBIN"                 ,80,-400,400);
          hs.addHist(selection+channel+"/nJets"                        ,";N_{jets} ;EventsBIN"                                  ,11,1.5,12.5);
@@ -147,8 +157,6 @@ void run()
          hs.addHist(selection+channel+"/mLL"                          ,";m_{ll} (GeV) ;EventsBIN"                              ,50,0,200);
          hs.addHist(selection+channel+"/CaloMET*cos(CaloMET_phi)"     ,";Calo p_{x}^{miss} (GeV);EventsBIN"                    ,50,-250,250);
          hs.addHist(selection+channel+"/CaloMET*sin(CaloMET_phi)"     ,";Calo p_{y}^{miss} (GeV);EventsBIN"                    ,50,-250,250);
-         hs.addHist(selection+channel+"/PFMETxy*cos(PFMETxy_phi)"     ,";PFxy p_{x}^{miss} (GeV);EventsBIN"                    ,50,-250,250);
-         hs.addHist(selection+channel+"/PFMETxy*sin(PFMETxy_phi)"     ,";PFxy p_{y}^{miss} (GeV);EventsBIN"                    ,50,-250,250);
          hs.addHist(selection+channel+"/MT2"                          ,";MT_{2} (GeV);EventsBIN"                               ,50,0,200);
          hs.addHist(selection+channel+"/vecsum_pT_allJet"             ,";vecsum_pT_allJet (GeV);EventsBIN"                     ,50,0,500);
          hs.addHist(selection+channel+"/vecsum_pT_l1l2_allJet"        ,";vecsum_pT_l1l2_allJet (GeV);EventsBIN"                ,50,0,500);
@@ -219,10 +227,6 @@ void run()
    hs2d.addHist("baseline/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
    hs2d.addHist("baseline/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
    hs2d.addHist("baseline/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
-   
-   hs2d.addHist("baseline_Met200/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
-   hs2d.addHist("baseline_Met200/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
-   hs2d.addHist("baseline_Met200/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
 
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
@@ -268,7 +272,7 @@ void run()
          
          if(cfg.fileNR==0)runEra++;
          if(!isData) runEra=0;
-                  
+         
          // Configure JES/JER Corrections
          jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(runEra,false).Data(),currentSystematic);
          jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(runEra,true).Data(),currentSystematic);
@@ -415,16 +419,16 @@ void run()
          
          //variables used for storing in minimal trees
          float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
-         minTree_PhiMetbJet, minTree_dPhiLep1Lep2, minTree_dPhiJet1Jet2, minTree_METsig, minTree_N, minTree_SF, minTree_totalWeight, minTree_genMet, minTree_PuppiMet,
+         minTree_PhiMetbJet, minTree_dPhiLep1Lep2, minTree_dPhiJet1Jet2, minTree_METsig, minTree_N, minTree_SF, minTree_totalWeight, minTree_genMet, minTree_PuppiMet,minTree_PuppiMet_xy,minTree_Met_xy,
          minTree_HT, minTree_HT_phi, minTree_MHT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
-         minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi,minTree_PhiRecXYcorr, minTree_PhiMetNearJet_Puppi, minTree_PhiMetFarJet_Puppi,
+         minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi,minTree_PhiRecPuppi_xy,minTree_PhiRec_xy, minTree_PhiMetNearJet_Puppi, minTree_PhiMetFarJet_Puppi,
          minTree_PhiMetLeadJet_Puppi, minTree_PhiMetLead2Jet_Puppi, minTree_PhiMetbJet_Puppi, minTree_dPhiLep1bJet, minTree_dPhiLep1Jet1, minTree_ratioMET_sqrtMETunc_Puppi,
          minTree_ratio_pTj1_vecsum_pT_l1_l2_bjet, minTree_METunc_Puppi, minTree_METunc_PF, minTree_absmetres_PUPPI,
          minTree_Lep1_pt, minTree_Lep1_phi, minTree_Lep1_eta, minTree_Lep1_E, minTree_Lep1_flavor,
          minTree_Lep2_pt, minTree_Lep2_phi, minTree_Lep2_eta, minTree_Lep2_E, minTree_Lep2_flavor,
          minTree_Jet1_pt, minTree_Jet1_phi, minTree_Jet1_eta, minTree_Jet1_E, minTree_Jet1_bTagScore, minTree_Jet1_unc,
          minTree_Jet2_pt, minTree_Jet2_phi, minTree_Jet2_eta, minTree_Jet2_E, minTree_Jet2_bTagScore, minTree_Jet2_unc,
-         minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_PFMETxy, minTree_PFMETxy_phi, minTree_genMET_phi, minTree_PtNuNu_phi, minTree_nJets, minTree_nGenJets, minTree_n_Interactions,minTree_DNN_MET_pT, minTree_DNN_MET_phi,minTree_DNN_MET_dPhi_nextLep,
+         minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_PuppiMET_xy_phi, minTree_MET_xy_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_PFMETxy, minTree_PFMETxy_phi, minTree_genMET_phi, minTree_PtNuNu_phi, minTree_nJets, minTree_nGenJets, minTree_n_Interactions,minTree_DNN_MET_pT, minTree_DNN_MET_phi,minTree_DNN_MET_dPhi_nextLep,
          minTree_mLL, minTree_PtLL, minTree_PtLLgen, minTree_MT2, minTree_vecsum_pT_allJet, minTree_vecsum_pT_l1l2_allJet, minTree_mass_l1l2_allJet, minTree_ratio_vecsumpTlep_vecsumpTjet, minTree_mjj;
          UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions_gen, minTree_looseLeptonVeto, minTree_NpromptNeutrinos, minTree_NnonpromptNeutrinos, minTree_ee, minTree_mumu, minTree_emu;
          ULong64_t minTree_evtNo;
@@ -457,6 +461,8 @@ void run()
          ttbar_res.Branch("genDecayMode",&minTree_genDecayMode,"genDecayMode/i");
          ttbar_res.Branch("genMET",&minTree_genMet,"genMET/f");
          ttbar_res.Branch("PuppiMET",&minTree_PuppiMet,"PuppiMET/f");
+         ttbar_res.Branch("PuppiMET_xy",&minTree_PuppiMet_xy,"PuppiMET_xy/f");
+         ttbar_res.Branch("MET_xy",&minTree_Met_xy,"MET_xy/f");
          ttbar_res.Branch("HT",&minTree_HT,"HT/f");
          ttbar_res.Branch("HT_phi",&minTree_HT_phi,"HT_phi/f");
          ttbar_res.Branch("MHT",&minTree_MHT,"MHT/f");
@@ -470,7 +476,8 @@ void run()
          ttbar_res.Branch("leadTop_pT",&minTree_leadTop,"leadTop_pT/f");
          ttbar_res.Branch("dPhiNuNu",&minTree_dPhiNuNu,"dPhiNuNu/f");
          ttbar_res.Branch("Phi_recPuppi",&minTree_PhiRecPuppi,"Phi_recPuppi/f");
-         ttbar_res.Branch("Phi_recXYcorr",&minTree_PhiRecXYcorr,"Phi_recXYcorr/f");
+         ttbar_res.Branch("Phi_recPuppi_xy",&minTree_PhiRecPuppi_xy,"Phi_recPuppi_xy/f");
+         ttbar_res.Branch("Phi_rec_xy",&minTree_PhiRec_xy,"Phi_rec_xy/f");
          ttbar_res.Branch("looseLeptonVeto",&minTree_looseLeptonVeto,"looseLeptonVeto/i");
          ttbar_res.Branch("nJets",&minTree_nJets,"nJets/f");
          ttbar_res.Branch("nGenJets",&minTree_nGenJets,"nGenJets/f");
@@ -513,10 +520,10 @@ void run()
          ttbar_res.Branch("pTllGen",&minTree_PtLLgen,"pTllGen/f");
          ttbar_res.Branch("PFMET_phi",&minTree_PFMET_phi,"PFMET_phi/f");
          ttbar_res.Branch("PuppiMET_phi",&minTree_PuppiMET_phi,"PuppiMET_phi/f");
+         ttbar_res.Branch("PuppiMET_xy_phi",&minTree_PuppiMET_xy_phi,"PuppiMET_xy_phi/f");
+         ttbar_res.Branch("MET_xy_phi",&minTree_MET_xy_phi,"MET_xy_phi/f");
          ttbar_res.Branch("CaloMET",&minTree_CaloMET,"CaloMET/f");
          ttbar_res.Branch("CaloMET_phi",&minTree_CaloMET_phi,"CaloMET_phi/f");
-         ttbar_res.Branch("PFMETxy",&minTree_PFMETxy,"PFMETxy/f");
-         ttbar_res.Branch("PFMETxy_phi",&minTree_PFMETxy_phi,"PFMETxy_phi/f");
          ttbar_res.Branch("genMET_phi",&minTree_genMET_phi,"genMET_phi/f");
          ttbar_res.Branch("PtNuNu_phi",&minTree_PtNuNu_phi,"PtNuNu_phi/f");
          ttbar_res.Branch("NpromptNeutrinos",&minTree_NpromptNeutrinos,"NpromptNeutrinos/i");
@@ -630,6 +637,9 @@ void run()
          TTreeReaderValue<float> fragPetersonWeight(reader, "weightFragPeterson");
          TTreeReaderValue<float> semilepbrUpWeight(reader, "weightSemilepbrUp");
          TTreeReaderValue<float> semilepbrDownWeight(reader, "weightSemilepbrDown");
+         TTreeReaderValue<double> w_prefiring(reader, Systematic::prefiringWeightName(currentSystematic));
+         TTreeReaderValue<double> w_prefiring_up(reader, "prefiring_weight_up");
+         TTreeReaderValue<double> w_prefiring_down(reader, "prefiring_weight_down");
          // ~TTreeReaderValue<float> w_bTag(reader, (year_int==1)? "bTagWeight_DeepCSV" : "bTagWeight");     //Use DeepCSV for 2016 at the moment
          TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
          TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
@@ -642,9 +652,10 @@ void run()
          TTreeReaderValue<std::vector<tree::IntermediateGenParticle>> intermediateGenParticles(reader, "intermediateGenParticles");     
          TTreeReaderValue<std::vector<tree::Particle>> triggerObjects(reader, "hltEG165HE10Filter");
          TTreeReaderValue<tree::MET> MET(reader, "met"+metAddition);
+         TTreeReaderValue<tree::MET> MET_xy(reader, "metXYcorr"+metAddition);
          TTreeReaderValue<tree::MET> GENMET(reader, "met_gen");
          TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi"+metAddition);
-         TTreeReaderValue<tree::MET> MET_XYcorr(reader, "metXYcorr");
+         TTreeReaderValue<tree::MET> MET_Puppi_xy(reader, "metPuppiXYcorr"+metAddition);
          TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
          TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
          TTreeReaderValue<int> n_Interactions(reader, "nPV");
@@ -723,8 +734,8 @@ void run()
             if (ttBar_amc && (*genDecayMode>3 || *genDecayMode==0)) continue;
             
             // Construct vector of different METs for correction
-            std::vector<tree::MET*> PFMETs = {&(*MET),&(*MET_XYcorr),&(*MET_Calo)};
-            std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi)};
+            std::vector<tree::MET*> PFMETs = {&(*MET),&(*MET_xy),&(*MET_Calo)};
+            std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi),&(*MET_Puppi_xy)};
             
             // Correct and select leptons
             *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
@@ -774,7 +785,7 @@ void run()
             float mcWeight = (isData)? 1. : mcWeighter.getMCweight(*w_mc,*w_pdf,*w_ps,bFrag_vec);
                         
             if(isSignal || !applytopPTreweighting) *w_topPT=1.;  //Set top weight for signals or if topPTsystematic to 1 
-            float cutFlow_weight=(isData)? 1: *w_pu * mcWeight * leptonSFweight * *w_topPT;
+            float cutFlow_weight=(isData)? 1: *w_pu * mcWeight * *w_topPT * leptonSFweight * *w_prefiring;
             
             //Set some met variables
             float met=MET->p.Pt();
@@ -833,7 +844,7 @@ void run()
             if(!isData){
                if(rec_selection) triggerSF = triggerSFcalc.getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);
                fEventWeight=*w_pu * mcWeight * *w_topPT;     //Set event weight 
-               SFWeight=leptonSFweight * bTagWeight * triggerSF;     //Set combined SF weight
+               SFWeight=leptonSFweight * bTagWeight * triggerSF * *w_prefiring;     //Set combined SF weight
                hs.setFillWeight(fEventWeight*SFWeight);
                hs2d.setFillWeight(fEventWeight*SFWeight);
             }
@@ -845,11 +856,11 @@ void run()
             if(rec_selection){
                hs_cutflow.fillweight("cutflow/"+cat,5,(isData)? cutFlow_weight : cutFlow_weight * bTagWeight);
                if(isData) hs_cutflow.fillweight("cutflow/"+cat,6,1);
-               else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * mcWeight * leptonSFweight * bTagWeight * *w_topPT *triggerSF);
+               else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * mcWeight * leptonSFweight * *w_prefiring * bTagWeight * *w_topPT *triggerSF);
             }
             if(rec_selection && !*addLepton){
                if(isData) hs_cutflow.fillweight("cutflow/"+cat,7,1);
-               else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * mcWeight * leptonSFweight * bTagWeight * *w_topPT *triggerSF);
+               else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * mcWeight * leptonSFweight * *w_prefiring * bTagWeight * *w_topPT *triggerSF);
             }
             
             //Fill syst. weights to minimal tree if nominal
@@ -857,15 +868,15 @@ void run()
                if (rec_selection){
                   int currentPos = 0;
                   for (int i=0; i<leptonSF_vec.size(); i++){
-                     minTree_systWeights[i] = lumi_weight * fEventWeight * bTagWeight * triggerSF * leptonSF_vec[i].getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
+                     minTree_systWeights[i] = lumi_weight * fEventWeight * bTagWeight * triggerSF * *w_prefiring * leptonSF_vec[i].getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
                   }
                   currentPos += leptonSF_vec.size(); 
                   for (int i=0; i<bTagWeighter_vec.size(); i++){
-                     minTree_systWeights[currentPos+i] = lumi_weight * fEventWeight * triggerSF * leptonSFweight * bTagWeighter_vec[i].getEventWeight(cjets,channelID);
+                     minTree_systWeights[currentPos+i] = lumi_weight * fEventWeight * triggerSF * leptonSFweight * *w_prefiring * bTagWeighter_vec[i].getEventWeight(cjets,channelID);
                   }
                   currentPos += bTagWeighter_vec.size();
                   for (int i=0; i<triggerSF_vec.size(); i++){
-                     minTree_systWeights[currentPos+i] = lumi_weight * fEventWeight * bTagWeight * leptonSFweight * triggerSF_vec[i].getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);
+                     minTree_systWeights[currentPos+i] = lumi_weight * fEventWeight * bTagWeight * leptonSFweight * *w_prefiring * triggerSF_vec[i].getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);
                   }
                   currentPos += triggerSF_vec.size();
                   for (int i=0; i<mcWeighter_vec.size(); i++){
@@ -955,13 +966,15 @@ void run()
             //Get DeltaPhi between MET (or genMet or neutrino pT) and nearest Lepton
             float dPhiMETnearLep=4;
             float dPhiMETnearLepPuppi=4;
-            float dPhiMETnearLepXYcorr=4;
+            float dPhiMETnearLepPuppi_xy=4;
+            float dPhiMETnearLep_xy=4;
             float mt_MetNextLep=0; 
             float mt_NuNuNextLep=0; 
             for (TLorentzVector const lep : {p_l1,p_l2}){
                const float dPhi=MET->p.DeltaPhi(lep);
                const float dPhi_Puppi=MET_Puppi->p.DeltaPhi(lep);
-               const float dPhi_XYcorr=MET_XYcorr->p.DeltaPhi(lep);
+               const float dPhi_Puppi_xy=MET_Puppi_xy->p.DeltaPhi(lep);
+               const float dPhi_xy=MET_xy->p.DeltaPhi(lep);
                if (std::abs(dPhi) < std::abs(dPhiMETnearLep)) {
                   dPhiMETnearLep=dPhi;
                   mt_MetNextLep=phys::M_T(MET->p,lep);
@@ -969,8 +982,11 @@ void run()
                if (std::abs(dPhi_Puppi) < std::abs(dPhiMETnearLepPuppi)) {
                   dPhiMETnearLepPuppi=dPhi_Puppi;
                }
-               if (std::abs(dPhi_XYcorr) < std::abs(dPhiMETnearLepXYcorr)) {
-                  dPhiMETnearLepXYcorr=dPhi_XYcorr;
+               if (std::abs(dPhi_Puppi_xy) < std::abs(dPhiMETnearLepPuppi_xy)) {
+                  dPhiMETnearLepPuppi_xy=dPhi_Puppi_xy;
+               }
+               if (std::abs(dPhi_xy) < std::abs(dPhiMETnearLep_xy)) {
+                  dPhiMETnearLep_xy=dPhi_xy;
                }
             }
             float dPhigenMETnearLep=4;
@@ -1159,6 +1175,8 @@ void run()
             minTree_genDecayMode=*genDecayMode_pseudo;
             minTree_genMet=genMet;
             minTree_PuppiMet=met_puppi;
+            minTree_PuppiMet_xy=MET_Puppi_xy->p.Pt();
+            minTree_Met_xy=MET_xy->p.Pt();
             minTree_HT=HT;
             minTree_HT_phi=MHT.Phi();
             minTree_MHT=MHT.M();
@@ -1171,7 +1189,8 @@ void run()
             minTree_leadTop=pT_top1;
             minTree_dPhiNuNu=abs(dPhiNuNu);
             minTree_PhiRecPuppi=abs(dPhiMETnearLepPuppi);
-            minTree_PhiRecXYcorr=abs(dPhiMETnearLepXYcorr);
+            minTree_PhiRecPuppi_xy=abs(dPhiMETnearLepPuppi_xy);
+            minTree_PhiRec_xy=abs(dPhiMETnearLep_xy);
             minTree_looseLeptonVeto= *addLepton? 1: 0;
             minTree_nJets=cjets.size();
             minTree_nGenJets=genJets30.size();
@@ -1189,10 +1208,10 @@ void run()
             minTree_absmetres_PUPPI=abs(met_puppi-genMet);
             minTree_PFMET_phi=MET->p.Phi();
             minTree_PuppiMET_phi=MET_Puppi->p.Phi();
+            minTree_PuppiMET_xy_phi=MET_Puppi_xy->p.Phi();
+            minTree_MET_xy_phi=MET_xy->p.Phi();
             minTree_CaloMET=MET_Calo->p.Pt();
             minTree_CaloMET_phi=MET_Calo->p.Phi();
-            minTree_PFMETxy=MET_XYcorr->p.Pt();
-            minTree_PFMETxy_phi=MET_XYcorr->p.Phi();
             minTree_genMET_phi=GENMET->p.Phi();
             minTree_PtNuNu_phi=neutrinoPair.Phi();
             minTree_NpromptNeutrinos=NpromptNeutrinos;
@@ -1247,6 +1266,8 @@ void run()
                minTree_PhiMetbJet=-1.;
                minTree_METsig=-1.;
                minTree_PuppiMet=-1.;
+               minTree_PuppiMet_xy=-1.;
+               minTree_Met_xy=-1.;
                minTree_MHT=-1.;
                minTree_HT=-1.;
                minTree_HT_phi=-4.;
@@ -1256,7 +1277,8 @@ void run()
                minTree_totalWeight=minTree_N;
                minTree_PhiPtnunuMet=-1;
                minTree_PhiRecPuppi=-1;
-               minTree_PhiRecXYcorr=-1;
+               minTree_PhiRecPuppi_xy=-1;
+               minTree_PhiRec_xy=-1;
                minTree_n_Interactions=0;
                minTree_looseLeptonVeto=5;
                minTree_nJets=-1;
@@ -1291,6 +1313,8 @@ void run()
                minTree_PFMETxy=-1;
                minTree_PFMETxy_phi=-5;
                minTree_PuppiMET_phi=-5;
+               minTree_PuppiMET_xy_phi=-5;
+               minTree_MET_xy_phi=-5;
                minTree_PFMET_phi=-5;
                minTree_MT2=-1;
                minTree_vecsum_pT_allJet=-1;
@@ -1456,6 +1480,8 @@ void run()
             
             hs.fill("baseline/"+path_cat+"/MET"                         ,met);
             hs.fill("baseline/"+path_cat+"/PuppiMET"                    ,met_puppi);
+            hs.fill("baseline/"+path_cat+"/PuppiMET_xy"                 ,MET_Puppi_xy->p.Pt());
+            hs.fill("baseline/"+path_cat+"/MET_xy"                      ,MET_xy->p.Pt());
             hs.fill("baseline/"+path_cat+"/met1000"                     ,met);
             hs.fill("baseline/"+path_cat+"/DNN_MET_pT"                  ,DNN_MET_pT);
             hs.fill("baseline/"+path_cat+"/DNN_MET_dPhi_nextLep"        ,DNN_MET_dPhi_nextLep);
@@ -1468,6 +1494,8 @@ void run()
             hs.fill("baseline/"+path_cat+"/Jet2_pt"                     ,cjets[1].p.Pt());
             hs.fill("baseline/"+path_cat+"/dphi_metNearLep"             ,abs(dPhiMETnearLep));
             hs.fill("baseline/"+path_cat+"/dphi_metNearLep_puppi"       ,abs(dPhiMETnearLepPuppi));
+            hs.fill("baseline/"+path_cat+"/dphi_metNearLep_puppi_xy"    ,abs(dPhiMETnearLepPuppi_xy));
+            hs.fill("baseline/"+path_cat+"/dphi_metNearLep_xy"          ,abs(dPhiMETnearLep_xy));
             hs.fill("baseline/"+path_cat+"/COSdphi_metNearLep"          ,TMath::Cos(abs(dPhiMETnearLep)));
             hs.fill("baseline/"+path_cat+"/SINdphi_metNearLep"          ,TMath::Sin(abs(dPhiMETnearLep)));
             hs.fill("baseline/"+path_cat+"/dPhiLep1bJet"                ,abs(dPhiLep1BJet));
@@ -1496,65 +1524,69 @@ void run()
             hs.fill("baseline/"+path_cat+"/Jet2_phi"                    ,cjets[1].p.Phi());
             hs.fill("baseline/"+path_cat+"/PFMET_phi"                   ,MET->p.Phi());
             hs.fill("baseline/"+path_cat+"/PuppiMET_phi"                ,MET_Puppi->p.Phi());
+            hs.fill("baseline/"+path_cat+"/PuppiMET_xy_phi"             ,MET_Puppi_xy->p.Phi());
+            hs.fill("baseline/"+path_cat+"/MET_xy_phi"                  ,MET_xy->p.Phi());
             hs.fill("baseline/"+path_cat+"/CaloMET"                     ,MET_Calo->p.Pt());
             hs.fill("baseline/"+path_cat+"/CaloMET_phi"                 ,MET_Calo->p.Phi());
             
-            hs.fill("baseline/"+path_cat+"/PuppiMET*cos(PuppiMET_phi)"   ,met_puppi*cos(MET_Puppi->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/PuppiMET*sin(PuppiMET_phi)"   ,met_puppi*sin(MET_Puppi->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/METunc_Puppi"                 ,MET_Puppi->uncertainty);
-            hs.fill("baseline/"+path_cat+"/MET*cos(PFMET_phi)"           ,met*cos(MET->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/MET*sin(PFMET_phi)"           ,met*sin(MET->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet*cos(HT_phi)" ,MHT.Pt()*cos(MHT.Phi()));
-            hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet*sin(HT_phi)" ,MHT.Pt()*sin(MHT.Phi()));
-            hs.fill("baseline/"+path_cat+"/nJets"                        ,cjets.size());
-            hs.fill("baseline/"+path_cat+"/n_Interactions"               ,*n_Interactions);
-            hs.fill("baseline/"+path_cat+"/Lep1_flavor"                  ,flavor_l1);
-            hs.fill("baseline/"+path_cat+"/Lep2_flavor"                  ,flavor_l2);
-            hs.fill("baseline/"+path_cat+"/Lep1_pt*cos(Lep1_phi)"        ,p_l1.Pt()*cos(p_l1.Phi()));
-            hs.fill("baseline/"+path_cat+"/Lep1_pt*sin(Lep1_phi)"        ,p_l1.Pt()*sin(p_l1.Phi()));
-            hs.fill("baseline/"+path_cat+"/Lep1_eta"                     ,p_l1.Eta());
-            hs.fill("baseline/"+path_cat+"/Lep1_E"                       ,p_l1.E());
-            hs.fill("baseline/"+path_cat+"/Lep2_pt*cos(Lep2_phi)"        ,p_l2.Pt()*cos(p_l2.Phi()));
-            hs.fill("baseline/"+path_cat+"/Lep2_pt*sin(Lep2_phi)"        ,p_l2.Pt()*sin(p_l2.Phi()));
-            hs.fill("baseline/"+path_cat+"/Lep2_eta"                     ,p_l2.Eta());
-            hs.fill("baseline/"+path_cat+"/Lep2_E"                       ,p_l2.E());
-            hs.fill("baseline/"+path_cat+"/Jet1_pt*cos(Jet1_phi)"        ,cjets[0].p.Pt()*cos(cjets[0].p.Phi()));
-            hs.fill("baseline/"+path_cat+"/Jet1_pt*sin(Jet1_phi)"        ,cjets[0].p.Pt()*sin(cjets[0].p.Phi()));
-            hs.fill("baseline/"+path_cat+"/Jet1_eta"                     ,cjets[0].p.Eta());
-            hs.fill("baseline/"+path_cat+"/Jet1_E"                       ,cjets[0].p.E());
-            hs.fill("baseline/"+path_cat+"/Jet2_pt*cos(Jet2_phi)"        ,cjets[1].p.Pt()*cos(cjets[1].p.Phi()));
-            hs.fill("baseline/"+path_cat+"/Jet2_pt*sin(Jet2_phi)"        ,cjets[1].p.Pt()*sin(cjets[1].p.Phi()));
-            hs.fill("baseline/"+path_cat+"/Jet2_eta"                     ,cjets[1].p.Eta());
-            hs.fill("baseline/"+path_cat+"/Jet2_E"                       ,cjets[1].p.E());
-            hs.fill("baseline/"+path_cat+"/dPhiMETnearJet"               ,abs(dPhiMETnearJet));
-            hs.fill("baseline/"+path_cat+"/dPhiMETfarJet"                ,abs(dPhiMETfarJet));
-            hs.fill("baseline/"+path_cat+"/dPhiMETleadJet"               ,abs(dPhiMETleadJet));
-            hs.fill("baseline/"+path_cat+"/dPhiMETlead2Jet"              ,abs(dPhiMETlead2Jet));
-            hs.fill("baseline/"+path_cat+"/dPhiMETbJet"                  ,abs(dPhiMetBJet));
-            hs.fill("baseline/"+path_cat+"/dPhiLep1Lep2"                 ,abs(dPhiLep1Lep2));
-            hs.fill("baseline/"+path_cat+"/dPhiJet1Jet2"                 ,abs(dPhiJet1Jet2));
-            hs.fill("baseline/"+path_cat+"/METsig"                       ,MET->sig);
-            hs.fill("baseline/"+path_cat+"/MHT"                          ,MHT.M());
-            hs.fill("baseline/"+path_cat+"/MT"                           ,mt_MetLep1);
-            hs.fill("baseline/"+path_cat+"/looseLeptonVeto"              ,*addLepton? 1: 0);
-            hs.fill("baseline/"+path_cat+"/dPhiMETnearJet_Puppi"         ,abs(dPhiMETnearJet_Puppi));
-            hs.fill("baseline/"+path_cat+"/dPhiMETfarJet_Puppi"          ,abs(dPhiMETfarJet_Puppi));
-            hs.fill("baseline/"+path_cat+"/dPhiMETleadJet_Puppi"         ,abs(dPhiMETleadJet_Puppi));
-            hs.fill("baseline/"+path_cat+"/dPhiMETlead2Jet_Puppi"        ,abs(dPhiMETlead2Jet_Puppi));
-            hs.fill("baseline/"+path_cat+"/dPhiMETbJet_Puppi"            ,abs(dPhiMetBJet_Puppi));
-            hs.fill("baseline/"+path_cat+"/dPhiLep1bJet"                 ,abs(dPhiLep1BJet));
-            hs.fill("baseline/"+path_cat+"/dPhiLep1Jet1"                 ,abs(dPhiLep1Jet1));
-            hs.fill("baseline/"+path_cat+"/mLL"                          ,minTree_mLL);
-            hs.fill("baseline/"+path_cat+"/CaloMET*cos(CaloMET_phi)"     ,MET_Calo->p.Pt()*cos(MET_Calo->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/CaloMET*sin(CaloMET_phi)"     ,MET_Calo->p.Pt()*sin(MET_Calo->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/PFMETxy*cos(PFMETxy_phi)"     ,MET_XYcorr->p.Pt()*cos(MET_XYcorr->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/PFMETxy*sin(PFMETxy_phi)"     ,MET_XYcorr->p.Pt()*sin(MET_XYcorr->p.Phi()));
-            hs.fill("baseline/"+path_cat+"/MT2"                          ,mt2);
-            hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet"             ,minTree_vecsum_pT_allJet);
-            hs.fill("baseline/"+path_cat+"/vecsum_pT_l1l2_allJet"        ,minTree_vecsum_pT_l1l2_allJet);
-            hs.fill("baseline/"+path_cat+"/mass_l1l2_allJet"             ,minTree_mass_l1l2_allJet);
-            hs.fill("baseline/"+path_cat+"/ratio_vecsumpTlep_vecsumpTjet",minTree_ratio_vecsumpTlep_vecsumpTjet);
-            hs.fill("baseline/"+path_cat+"/mjj"                          ,minTree_mjj);
+            hs.fill("baseline/"+path_cat+"/PuppiMET*cos(PuppiMET_phi)"                 ,met_puppi*cos(MET_Puppi->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/PuppiMET*sin(PuppiMET_phi)"                 ,met_puppi*sin(MET_Puppi->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/METunc_Puppi"                               ,MET_Puppi->uncertainty);
+            hs.fill("baseline/"+path_cat+"/MET*cos(PFMET_phi)"                         ,met*cos(MET->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/MET*sin(PFMET_phi)"                         ,met*sin(MET->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet*cos(HT_phi)"               ,MHT.Pt()*cos(MHT.Phi()));
+            hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet*sin(HT_phi)"               ,MHT.Pt()*sin(MHT.Phi()));
+            hs.fill("baseline/"+path_cat+"/nJets"                                      ,cjets.size());
+            hs.fill("baseline/"+path_cat+"/n_Interactions"                             ,*n_Interactions);
+            hs.fill("baseline/"+path_cat+"/Lep1_flavor"                                ,flavor_l1);
+            hs.fill("baseline/"+path_cat+"/Lep2_flavor"                                ,flavor_l2);
+            hs.fill("baseline/"+path_cat+"/Lep1_pt*cos(Lep1_phi)"                      ,p_l1.Pt()*cos(p_l1.Phi()));
+            hs.fill("baseline/"+path_cat+"/Lep1_pt*sin(Lep1_phi)"                      ,p_l1.Pt()*sin(p_l1.Phi()));
+            hs.fill("baseline/"+path_cat+"/Lep1_eta"                                   ,p_l1.Eta());
+            hs.fill("baseline/"+path_cat+"/Lep1_E"                                     ,p_l1.E());
+            hs.fill("baseline/"+path_cat+"/Lep2_pt*cos(Lep2_phi)"                      ,p_l2.Pt()*cos(p_l2.Phi()));
+            hs.fill("baseline/"+path_cat+"/Lep2_pt*sin(Lep2_phi)"                      ,p_l2.Pt()*sin(p_l2.Phi()));
+            hs.fill("baseline/"+path_cat+"/Lep2_eta"                                   ,p_l2.Eta());
+            hs.fill("baseline/"+path_cat+"/Lep2_E"                                     ,p_l2.E());
+            hs.fill("baseline/"+path_cat+"/Jet1_pt*cos(Jet1_phi)"                      ,cjets[0].p.Pt()*cos(cjets[0].p.Phi()));
+            hs.fill("baseline/"+path_cat+"/Jet1_pt*sin(Jet1_phi)"                      ,cjets[0].p.Pt()*sin(cjets[0].p.Phi()));
+            hs.fill("baseline/"+path_cat+"/Jet1_eta"                                   ,cjets[0].p.Eta());
+            hs.fill("baseline/"+path_cat+"/Jet1_E"                                     ,cjets[0].p.E());
+            hs.fill("baseline/"+path_cat+"/Jet2_pt*cos(Jet2_phi)"                      ,cjets[1].p.Pt()*cos(cjets[1].p.Phi()));
+            hs.fill("baseline/"+path_cat+"/Jet2_pt*sin(Jet2_phi)"                      ,cjets[1].p.Pt()*sin(cjets[1].p.Phi()));
+            hs.fill("baseline/"+path_cat+"/Jet2_eta"                                   ,cjets[1].p.Eta());
+            hs.fill("baseline/"+path_cat+"/Jet2_E"                                     ,cjets[1].p.E());
+            hs.fill("baseline/"+path_cat+"/dPhiMETnearJet"                             ,abs(dPhiMETnearJet));
+            hs.fill("baseline/"+path_cat+"/dPhiMETfarJet"                              ,abs(dPhiMETfarJet));
+            hs.fill("baseline/"+path_cat+"/dPhiMETleadJet"                             ,abs(dPhiMETleadJet));
+            hs.fill("baseline/"+path_cat+"/dPhiMETlead2Jet"                            ,abs(dPhiMETlead2Jet));
+            hs.fill("baseline/"+path_cat+"/dPhiMETbJet"                                ,abs(dPhiMetBJet));
+            hs.fill("baseline/"+path_cat+"/dPhiLep1Lep2"                               ,abs(dPhiLep1Lep2));
+            hs.fill("baseline/"+path_cat+"/dPhiJet1Jet2"                               ,abs(dPhiJet1Jet2));
+            hs.fill("baseline/"+path_cat+"/METsig"                                     ,MET->sig);
+            hs.fill("baseline/"+path_cat+"/MHT"                                        ,MHT.M());
+            hs.fill("baseline/"+path_cat+"/MT"                                         ,mt_MetLep1);
+            hs.fill("baseline/"+path_cat+"/looseLeptonVeto"                            ,*addLepton? 1: 0);
+            hs.fill("baseline/"+path_cat+"/dPhiMETnearJet_Puppi"                       ,abs(dPhiMETnearJet_Puppi));
+            hs.fill("baseline/"+path_cat+"/dPhiMETfarJet_Puppi"                        ,abs(dPhiMETfarJet_Puppi));
+            hs.fill("baseline/"+path_cat+"/dPhiMETleadJet_Puppi"                       ,abs(dPhiMETleadJet_Puppi));
+            hs.fill("baseline/"+path_cat+"/dPhiMETlead2Jet_Puppi"                      ,abs(dPhiMETlead2Jet_Puppi));
+            hs.fill("baseline/"+path_cat+"/dPhiMETbJet_Puppi"                          ,abs(dPhiMetBJet_Puppi));
+            hs.fill("baseline/"+path_cat+"/dPhiLep1bJet"                               ,abs(dPhiLep1BJet));
+            hs.fill("baseline/"+path_cat+"/dPhiLep1Jet1"                               ,abs(dPhiLep1Jet1));
+            hs.fill("baseline/"+path_cat+"/mLL"                                        ,minTree_mLL);
+            hs.fill("baseline/"+path_cat+"/CaloMET*cos(CaloMET_phi)"                   ,MET_Calo->p.Pt()*cos(MET_Calo->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/CaloMET*sin(CaloMET_phi)"                   ,MET_Calo->p.Pt()*sin(MET_Calo->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/MET_xy*cos(MET_xy_phi)"                     ,MET_xy->p.Pt()*cos(MET_xy->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/MET_xy*sin(MET_xy_phi)"                     ,MET_xy->p.Pt()*sin(MET_xy->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/PuppiMET_xy*cos(PuppiMET_xy_phi)"           ,MET_Puppi_xy->p.Pt()*cos(MET_Puppi_xy->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/PuppiMET_xy*sin(PuppiMET_xy_phi)"           ,MET_Puppi_xy->p.Pt()*sin(MET_Puppi_xy->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/MT2"                                        ,mt2);
+            hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet"                           ,minTree_vecsum_pT_allJet);
+            hs.fill("baseline/"+path_cat+"/vecsum_pT_l1l2_allJet"                      ,minTree_vecsum_pT_l1l2_allJet);
+            hs.fill("baseline/"+path_cat+"/mass_l1l2_allJet"                           ,minTree_mass_l1l2_allJet);
+            hs.fill("baseline/"+path_cat+"/ratio_vecsumpTlep_vecsumpTjet"              ,minTree_ratio_vecsumpTlep_vecsumpTjet);
+            hs.fill("baseline/"+path_cat+"/mjj"                                        ,minTree_mjj);
             
             hs.fill("genParticles/"+path_cat+"/pT_nunu"                 ,neutrinoPair.Pt());
             hs.fill("genParticles/"+path_cat+"/genMET"                  ,genMet);
