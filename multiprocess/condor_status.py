@@ -54,10 +54,23 @@ def getCopyTimeFromError(outName):
                 time = time.split("seconds")[0]
     return time
     
+def checkErrorFile(outName):
+    logName = outName.replace(".out",".error")
+    if logName.find("TUnfold"):
+        return True
+    size = os.path.getsize(logName)/(1024*1024)
+    with open(logName,"r") as f:
+        next(f)
+        for line in f:
+            if line.find("NaN")>=0:
+                return False
+    return size < 1
+    
+    
 def resubmitJob(outName,automaticResubmit=False):
     if automaticResubmit: value = 1
     else :
-        value = input("For resubmitting "+getNameFromOutFile(outName)+" enter 1. For showing .out, .log and .error enter 2:\n")
+        value = input("For resubmitting "+outName+" enter 1. For showing .out, .log and .error enter 2:\n")
     if value==1:
         print "Resubmitting..."
         sp.call(["condor_submit", outName.replace(".out",".submit")])
@@ -109,7 +122,11 @@ def getStatusFromOut(outName,running,printStatus=True,resubmit=False):
                 resubmitJob(outName,resubmit)
     else:
         datasetName = getNameFromOutFile(outName)
-        if len(open(outName).readlines(  )) !=0:
+        if checkErrorFile(outName) == False:
+            print colored(getNameFromOutFile(outName)+" failed"+" on "+getMachineFromOut(outName),"red")
+            finished = True
+            resubmitJob(outName,resubmit)
+        elif len(open(outName).readlines(  )) !=0:
             with open(outName,"r") as f:
                 next(f)
                 for line in f:
@@ -126,7 +143,6 @@ def getStatusFromOut(outName,running,printStatus=True,resubmit=False):
                 resubmitJob(outName,resubmit)
             if resubmit:
                 resubmitJob(outName,resubmit)
-    
     return finished
     
 def checkStatusFromLog(logPath,runningLogs,printSingleJobs=True,resubmit=False):
