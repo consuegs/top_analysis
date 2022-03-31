@@ -56,13 +56,15 @@ def getCopyTimeFromError(outName):
     
 def checkErrorFile(outName):
     logName = outName.replace(".out",".error")
-    if logName.find("TUnfold"):
+    if logName.find("TUnfold")>=0:
         return True
     size = os.path.getsize(logName)/(1024*1024)
     with open(logName,"r") as f:
         next(f)
         for line in f:
             if line.find("NaN")>=0:
+                return False
+            if line.find("SysError")>=0:
                 return False
     return size < 1
     
@@ -123,9 +125,7 @@ def getStatusFromOut(outName,running,printStatus=True,resubmit=False):
     else:
         datasetName = getNameFromOutFile(outName)
         if checkErrorFile(outName) == False:
-            print colored(getNameFromOutFile(outName)+" failed"+" on "+getMachineFromOut(outName),"red")
-            finished = True
-            resubmitJob(outName,resubmit)
+            finished = False
         elif len(open(outName).readlines(  )) !=0:
             with open(outName,"r") as f:
                 next(f)
