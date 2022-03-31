@@ -40,8 +40,8 @@ void run()
    bool isNominal = (currentSystematic.type()==Systematic::nominal);
    
    // Configure JES/JER Corrections
-   jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(0,false).Data(),currentSystematic);
-   jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(0,true).Data(),currentSystematic);
+   jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(0,false).Data(),cfg.jes_UNC_mc_regrouped,currentSystematic,cfg.year);
+   jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(0,true).Data(),cfg.jes_UNC_mc_puppi_regrouped,currentSystematic,cfg.year);
    jerCorrections jerCorrector = jerCorrections(cfg.jer_SF_mc.Data(),cfg.jer_RES_mc.Data(),currentSystematic);
    
    // Configure lepton Correction

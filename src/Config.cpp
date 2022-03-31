@@ -54,6 +54,8 @@ Config::Config()
    jes_UNC_mc_puppi=pt.get<std::string>("jetCorrections.jes_UNC_mc_puppi");
    jes_UNC_data=util::to_vector<std::string>(pt.get<std::string>("jetCorrections.jes_UNC_data"));
    jes_UNC_data_puppi=util::to_vector<std::string>(pt.get<std::string>("jetCorrections.jes_UNC_data_puppi"));
+   jes_UNC_mc_regrouped=jes_Folder+pt.get<std::string>("jetCorrections.jes_UNC_mc_regrouped");
+   jes_UNC_mc_puppi_regrouped=jes_Folder+pt.get<std::string>("jetCorrections.jes_UNC_mc_puppi_regrouped");
    
    muonTrigg1=pt.get<std::string>("trigger.muonTrigg1");
    muonTrigg2=pt.get<std::string>("trigger.muonTrigg2");

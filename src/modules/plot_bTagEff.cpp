@@ -37,7 +37,10 @@ void run()
                                        "JESTimePtEta_DOWN",
                                        
                                        "JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFlavorPureGluon_UP","JESFlavorPureGluon_DOWN","JESFlavorPureQuark_UP",
-                                       "JESFlavorPureQuark_DOWN","JESFlavorPureCharm_UP","JESFlavorPureCharm_DOWN","JESFlavorPureBottom_UP","JESFlavorPureBottom_DOWN"
+                                       "JESFlavorPureQuark_DOWN","JESFlavorPureCharm_UP","JESFlavorPureCharm_DOWN","JESFlavorPureBottom_UP","JESFlavorPureBottom_DOWN",
+                                       
+                                       "JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESFlavorQCDreg_UP","JESFlavorQCDreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN",
+                                       "JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN",
                                     };
    // ~std::vector<TString> systToPlot = {"Nominal"};
    

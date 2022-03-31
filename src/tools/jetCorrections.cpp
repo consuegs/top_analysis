@@ -5,7 +5,7 @@
 
 //////////////////////////////////// Jet Energy Scales //////////////////////////////////////////////////////
 
-jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, const Systematic::Systematic& systematic) :
+jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, const std::string& jesUncertaintySourceFile_regrouped, const Systematic::Systematic& systematic, const TString& year) :
    systematicInternal_(undefined),
    systematic_(systematic)
 {
@@ -57,18 +57,33 @@ jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, cons
    else std::cout<<"Do not apply systematic variation\n";
    
    // Check existence of uncertainty file
-   if(jesUncertaintySourceFile.empty()){
+   if(jesUncertaintySourceFile.empty() || jesUncertaintySourceFile_regrouped.empty()){
    std::cerr<<"ERROR in constructor of jesCorrections! "
       <<"Systematic variation requested, but no uncertainty file specified\n...break\n"<<std::endl;
    exit(98);
    }
+   
+   // Check if regrouped JES is used
+   bool regrouped = (std::find(Systematic::jesTypes_regrouped.begin(), Systematic::jesTypes_regrouped.end(), type) != Systematic::jesTypes_regrouped.end());
       
    // Configure helper
    useRealisticFlav_ = false;
    if(systematicInternal_!=nominal){
-      if (type != Systematic::Type::jesFlavorRealistic){
+      if (type != Systematic::Type::jesFlavorRealistic && !regrouped){
          try {
             uncertainty_ = new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[0]));
+         }
+         catch(std::runtime_error &rte){
+            std::cout << "JESBase::setFile: Uncertainty for source " << convertType(type) << " not found! Skipping\n";
+            exit(98);
+         }
+      }
+      else if (regrouped){
+         try {
+            std::cout<<"Use regrouped file"<<std::endl;
+            std::string uncName = JESUncSourcesMap.at(systematic_.type_str())[0];
+            boost::replace_all(uncName,"Year",("_"+year).Data());
+            uncertainty_ = new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile_regrouped,uncName));
          }
          catch(std::runtime_error &rte){
             std::cout << "JESBase::setFile: Uncertainty for source " << convertType(type) << " not found! Skipping\n";
@@ -239,6 +254,9 @@ const std::map<std::string, std::vector<std::string> > jesCorrections::JESUncSou
   {"JESEC2Year", {"EC2Year"}},
   {"JESHF", {"HF"}},
   {"JESHFYear", {"HFYear"}},
+  {"JESRelativeBalreg", {"RelativeBal"}},
+  {"JESFlavorQCDreg", {"FlavorQCD"}},
+  {"JESRelativeSampleYear", {"RelativeSampleYear"}},
 };
 
 //////////////////////////////////// Jet Energy Resolution //////////////////////////////////////////////////////

@@ -259,7 +259,7 @@ void run()
       TTree ttbar_res("ttbar_res","ttbar_res");
       
       int runEra=cfg.fileNR;     //int to store run Era in minimal Trees
-            
+                  
       for (auto dss: cfg.datasets.getDatasubsets({ds.name})){   
       // ~for (auto const &dss: cfg.datasets.getDatasubsets(true,true,true)){
          TFile* file = TFile::Open(dss.getPath(),"read");
@@ -274,8 +274,8 @@ void run()
          if(!isData) runEra=0;
          
          // Configure JES/JER Corrections
-         jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(runEra,false).Data(),currentSystematic);
-         jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(runEra,true).Data(),currentSystematic);
+         jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(runEra,false).Data(),cfg.jes_UNC_mc_regrouped,currentSystematic,cfg.year);
+         jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(runEra,true).Data(),cfg.jes_UNC_mc_puppi_regrouped,currentSystematic,cfg.year);
          jerCorrections jerCorrector = jerCorrections(isData? cfg.jer_SF_data.Data() : cfg.jer_SF_mc.Data(),isData? cfg.jer_RES_data.Data() : cfg.jer_RES_mc.Data(),currentSystematic);
          
          // Configure lepton Correction

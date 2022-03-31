@@ -14,7 +14,7 @@
 class jesCorrections
 {
    public:
-      jesCorrections(const std::string&, const Systematic::Systematic&);
+      jesCorrections(const std::string&, const std::string&, const Systematic::Systematic&, const TString&);
       
       /// Scale the jet collection
       void applySystematics(std::vector<tree::Jet>&, std::vector<tree::MET*>&);

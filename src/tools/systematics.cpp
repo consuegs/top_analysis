@@ -76,6 +76,9 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("JEREta3Pt0")) return jerEta3Pt0;
     if(type.BeginsWith("JEREta3Pt1")) return jerEta3Pt1;
     if(type.BeginsWith("JER")) return jer;
+    if(type.BeginsWith("JESRelativeBalreg")) return jesRelativeBal_reg;
+    if(type.BeginsWith("JESFlavorQCDreg")) return jesFlavorQCD_reg;
+    if(type.BeginsWith("JESRelativeSampleYear")) return jesRelativeSampleYear;
     if(type.BeginsWith("JESAbsoluteStat")) return jesAbsoluteStat;
     if(type.BeginsWith("JESAbsoluteScale")) return jesAbsoluteScale;
     if(type.BeginsWith("JESAbsoluteFlavMap")) return jesAbsoluteFlavMap;
@@ -141,7 +144,7 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("JESEC2Year")) return jesEC2Year;
     if(type.BeginsWith("JESEC2")) return jesEC2;
     if(type.BeginsWith("JESHFYear")) return jesHFYear;
-    if(type.BeginsWith("JESHF")) return jesHF;
+    if(type.BeginsWith("JESHF")) return jesHF; 
     if(type.BeginsWith("JESUserDefinedHEM1516")) return jesUserDefinedHEM1516;
     if(type.BeginsWith("JESTotal")) return jesTotal;
 
@@ -410,6 +413,9 @@ TString Systematic::convertType(const Type& type)
     if(type == jesEC2) return "JESEC2";
     if(type == jesHFYear) return "JESHFYear";
     if(type == jesHF) return "JESHF";
+    if(type == jesRelativeBal_reg) return "JESRelativeBalreg";
+    if(type == jesFlavorQCD_reg) return "JESFlavorQCDreg";
+    if(type == jesRelativeSampleYear) return "JESRelativeSampleYear";
     if(type == jesUserDefinedHEM1516) return "JESUserDefinedHEM1516";
 
     if(type == frac_tthf) return "FRAC_TTHF";
