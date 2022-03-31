@@ -298,7 +298,7 @@ if __name__ == "__main__":
     if(args.checkCompleted != ""):
         if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list
             if checkStatusFromLog(args.checkCompleted,runningLogs.keys(),True,args.resubmit)[0]:
-                if mergeOutputs.mergeRequired(args.checkCompleted,isDistributions(args.checkCompleted),False):
+                if mergeOutputs.mergeRequired(args.checkCompleted,isDistributions(args.checkCompleted),False) or args.forceMergeAll:
                     merge(args.checkCompleted)
                 else:
                     print "No merge required"

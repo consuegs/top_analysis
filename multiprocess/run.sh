@@ -20,7 +20,7 @@ cd ../build
 
 export ANALYSIS_YEAR_CONFIG="$4"
 
-./run.x "$1" "$2" "$3" "$5" "$6" "$7"
+./run_condor.x "$1" "$2" "$3" "$5" "$6" "$7"
 
 if [[ $8 != "" ]]
 then

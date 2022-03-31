@@ -290,6 +290,9 @@ def createLogPath(args):
             raise
    return logpath
    
+def copyExecutable():
+      subprocess.call(["cp","-p","../build/run.x","../build/run_condor.x"])
+   
 def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=False):
    
    printSubmitInfo(args)
@@ -481,6 +484,9 @@ if __name__ == "__main__":
    parser.add_argument('--noConfirmation', action='store_true', default=False, help="Disables keyboard input befor submission")
 
    args = parser.parse_args()
+   
+   # copy executable to avoid problems when compiling during running jobs
+   copyExecutable()
    
    if (args.bTagEff_complete == False and args.distributions_complete==False and args.pdf_complete==False):
       if (args.m == "TUnfold_binning"):
