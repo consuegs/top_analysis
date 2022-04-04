@@ -686,7 +686,6 @@ void run()
             }
                         
             //Booleans for reco and pseudo selection
-            // ~bool rec_selection=false;
             bool rec_selection=false;
             bool pseudo_selection=true;
             
@@ -695,6 +694,12 @@ void run()
             
             //Do only use ee,emu,mumu in in amc ttbar
             if (ttBar_amc && (*genDecayMode>3 || *genDecayMode==0)) continue;
+            
+            // Get pT of Neutrino Pair, which is further changed in case of BSM scenarios!!
+            TLorentzVector neutrinoPair(0,0,0,0);
+            neutrinoPair=(*genNeutrino)+(*genAntiNeutrino);
+            
+            if (*genDecayMode_pseudo==0 || (*genDecayMode_pseudo!=3 && neutrinoPair.Pt()<40)) pseudo_selection=false; //pseudo baseline selection
             
             // Construct vector of different METs for correction
             std::vector<tree::MET*> PFMETs = {&(*MET),&(*MET_xy),&(*MET_Calo)};
@@ -716,6 +721,7 @@ void run()
             TString cat="";
             
             rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2,cat,muonLead);
+            if(rec_selection==false && pseudo_selection==false) continue;
             
             //Trigger selection
             std::vector<bool> diElectronTriggers={*eleTrigg1,*eleTrigg2,*singleEleTrigg};
@@ -732,14 +738,16 @@ void run()
             }
             
             if (triggerMC==false) rec_selection=false;
+            if(rec_selection==false && pseudo_selection==false) continue;
+            
             
             //Apply JES and JER systematics
             if(!isData){
                jesCorrector.applySystematics(*jets,PFMETs);
                jesCorrector_puppi.applySystematics(*jets_puppi,PuppiMETs);    // Needed for correction of Puppi MET
-               jerCorrector.smearCollection_Hybrid(*jets,*rho);
+               // ~jerCorrector.smearCollection_Hybrid(*jets,*rho);
             }
-            
+                        
             // Get leptonSF weight
             float leptonSFweight =(isData)? 1. : leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
             
@@ -759,7 +767,8 @@ void run()
             
             if(rec_selection) hs_cutflow.fillweight("cutflow/"+cat,1,cutFlow_weight);
             
-            std::vector<tree::Jet> cjets;
+            // ~std::vector<tree::Jet> cjets;
+            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho);
             std::vector<tree::Jet> BJets;
             std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi_xy,channel,*jets,cjets,BJets);
             
@@ -774,9 +783,11 @@ void run()
             }
             
             if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
+            if(rec_selection==false && pseudo_selection==false) continue;
             
             // Cross check for add. MET cut in emu
             if(currentSystematic.type()==Systematic::met40Cut && met_puppi<40) rec_selection=false;
+            if(rec_selection==false && pseudo_selection==false) continue;
             
             //Get bTag weight
             float bTagWeight = 1.;
@@ -789,17 +800,12 @@ void run()
             }
  
             // end reco baseline selection
-            
-            // Get pT of Neutrino Pair, which is further changed in case of BSM scenarios!!
-            TLorentzVector neutrinoPair(0,0,0,0);
-            neutrinoPair=(*genNeutrino)+(*genAntiNeutrino);
-            
-            if (*genDecayMode_pseudo==0 || (*genDecayMode_pseudo!=3 && neutrinoPair.Pt()<40)) pseudo_selection=false; //pseudo baseline selection
-            
+                        
             if(rec_selection==false && pseudo_selection==false) continue;  // only proceed with events selected by one of the baseline selection (reco or pseudo)
             
             // Continue if data events and not selected
             if(rec_selection==false && isData) continue;
+            
             
             //Set Event weights
             float fEventWeight = 1.;
@@ -1409,7 +1415,7 @@ void run()
             
             //Fill hists
             TString path_cat=cat;
-            
+                        
             hs.fill("baseline/"+path_cat+"/MET"                         ,met);
             hs.fill("baseline/"+path_cat+"/PuppiMET"                    ,met_puppi);
             hs.fill("baseline/"+path_cat+"/PuppiMET_xy"                 ,MET_Puppi_xy->p.Pt());

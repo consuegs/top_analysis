@@ -53,6 +53,8 @@ class jerCorrections
       
       /// Smear the jet collection based on hybrid method
       void smearCollection_Hybrid(std::vector<tree::Jet>&, const float&);
+      /// Smear jet based on hybrid method
+      void smearJet_Hybrid(tree::Jet&, const float&);
    
    private:
       JME::JetResolution* m_resolution_;
@@ -60,12 +62,12 @@ class jerCorrections
       
       float rho_;
       
-      /// Smear jet based on hybrid method
-      void smearJet_Hybrid(tree::Jet&);
-      
       /// Variation the be applied
       Variation systematic_variation_;
       const Systematic::Systematic systematic_;
+      
+      /// Use split JER unc
+      bool splitJER;
       
       /// Check if jet has to be taken into account for systematic
       bool checkApplySystematic(const TLorentzVector&);

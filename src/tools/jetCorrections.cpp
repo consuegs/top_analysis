@@ -299,6 +299,9 @@ jerCorrections::jerCorrections(const std::string& jerSFSourceFile, const std::st
       }
    }
    
+   // Check if split JER unc is used
+   splitJER = !(systematic_variation_==Variation::NOMINAL || systematic_.type()==Systematic::jer);
+   
    // Print which systematic is used and set boolean
    if(systematic_variation_ == Variation::UP) {std::cout<<"Apply systematic variation: up\n";}
    else if(systematic_variation_ == Variation::DOWN) std::cout<<"Apply systematic variation: down\n";
@@ -309,23 +312,22 @@ jerCorrections::jerCorrections(const std::string& jerSFSourceFile, const std::st
 void jerCorrections::smearCollection_Hybrid(std::vector<tree::Jet>& Jets, const float& rho)
 {
    // Set rho for smearing
-   rho_ = rho;
+   // ~rho_ = rho;
    
-   // This loop smeares the jet collection used for jet selections (for split JER check eta,pT bin)
-   if(systematic_variation_==Variation::NOMINAL || systematic_.type()==Systematic::jer){
-      for(size_t iJet=0; iJet<Jets.size(); ++iJet){
-         this->smearJet_Hybrid(Jets.at(iJet));
-      }
-   }
-   else{
-      for(size_t iJet=0; iJet<Jets.size(); ++iJet){
-         if(this->checkApplySystematic(Jets.at(iJet).p)) this->smearJet_Hybrid(Jets.at(iJet));
-      }
+   for(size_t iJet=0; iJet<Jets.size(); ++iJet){
+      this->smearJet_Hybrid(Jets.at(iJet),rho);
    }
 }
 
-void jerCorrections::smearJet_Hybrid(tree::Jet& jet)
+void jerCorrections::smearJet_Hybrid(tree::Jet& jet,const float& rho)
 {
+   // Set rho for smearing
+   rho_ = rho;
+   
+   if(splitJER){  // Check if split JER is used
+      if(!this->checkApplySystematic(jet.p)) return;
+   }
+   
    double jer_sf= m_ScaleFactor_->getScaleFactor({{JME::Binning::JetEta, jet.p.Eta()}}, systematic_variation_);
    double jet_resolution= m_resolution_->getResolution({{JME::Binning::JetPt, jet.p.Pt()}, {JME::Binning::JetEta, jet.p.Eta()}, {JME::Binning::Rho, rho_}});
    float smearingFactor = 1.;

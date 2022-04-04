@@ -14,10 +14,10 @@ namespace selection
                         TString &cat, bool &muonLead);
    
    std::vector<bool> ttbarSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
-                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets);
+                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> const &cleanJets, std::vector<tree::Jet> &bJets);
                                     
-   std::vector<bool> kitSyncSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
-                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets);
+   // ~std::vector<bool> kitSyncSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
+                                    // ~std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets);
 } // namespace selection
 
 #endif /* SELECTION_HPP__ */

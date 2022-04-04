@@ -4,11 +4,12 @@
 #include "tree/TreeParticles.hpp"
 #include "tools/systematics.hpp"
 #include "tools/MT2Functor.h"
+#include "tools/jetCorrections.hpp"
 #include <TH1F.h>
 
 namespace phys
 {
-   std::vector<tree::Jet> getCleanedJets(std::vector<tree::Jet> const &jets,TLorentzVector const &p_l1,TLorentzVector const &p_l2);
+   std::vector<tree::Jet> getCleanedJets(std::vector<tree::Jet> &jets,TLorentzVector const &p_l1,TLorentzVector const &p_l2,jerCorrections &jerCorrector,const float& rho);
    std::vector<tree::Jet> getCleanedJets_looseID(std::vector<tree::Jet> const &jets);
    float computeHT(std::vector<tree::Jet> const &jets);
    float METoverSqrtHT(float MET, float HT); // returns inf for HT=0.0

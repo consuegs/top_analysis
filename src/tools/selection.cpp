@@ -104,7 +104,7 @@ bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, 
 }
 
 std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
-                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
+                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> const &cleanJets, std::vector<tree::Jet> &bJets)
 {
    std::vector<bool> selection_vec={false,false,false,false};
       
@@ -114,7 +114,7 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    else selection_vec[0]=true;
    
    //Jet Cut
-   cleanJets=phys::getCleanedJets(jets, p_l1, p_l2);
+   // ~cleanJets=phys::getCleanedJets(jets, p_l1, p_l2);
    if(cleanJets.size()<2) return selection_vec;
    else selection_vec[1]=true;
    
@@ -147,6 +147,7 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    }
 }
 
+/*
 std::vector<bool> selection::kitSyncSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
                                     std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
 {
@@ -181,6 +182,7 @@ std::vector<bool> selection::kitSyncSelection(TLorentzVector const &p_l1, TLoren
       return selection_vec;
    }
 }
+*/
 
 
 
