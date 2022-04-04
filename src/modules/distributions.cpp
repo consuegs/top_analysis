@@ -741,11 +741,10 @@ void run()
             if(rec_selection==false && pseudo_selection==false) continue;
             
             
-            //Apply JES and JER systematics
+            //Apply JES
             if(!isData){
                jesCorrector.applySystematics(*jets,PFMETs);
                jesCorrector_puppi.applySystematics(*jets_puppi,PuppiMETs);    // Needed for correction of Puppi MET
-               // ~jerCorrector.smearCollection_Hybrid(*jets,*rho);
             }
                         
             // Get leptonSF weight

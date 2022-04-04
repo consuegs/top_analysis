@@ -194,13 +194,12 @@ void run()
          //Apply JES and JER systematics
          jesCorrector.applySystematics(*jets,PFMETs);
          jesCorrector_puppi.applySystematics(*jets_puppi,PuppiMETs);    // Needed for correction of Puppi MET
-         jerCorrector.smearCollection_Hybrid(*jets,*rho);
          
          float met=MET->p.Pt();
          float const met_puppi=MET_Puppi_xy->p.Pt();
          float const genMet=GENMET->p.Pt();
          
-         std::vector<tree::Jet> cjets;
+         std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho);
          std::vector<tree::Jet> BJets;
          std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
          

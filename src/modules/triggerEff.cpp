@@ -243,11 +243,6 @@ void run()
             *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
             *electrons = leptonCorretor.correctElectrons(*electrons,PFMETs,PuppiMETs);
             
-            //Apply JER smearing
-            if(!isData){
-               jerCorrector.smearCollection_Hybrid(*jets,*rho);
-            }
-            
             //Baseline selection (including separation into ee, emu, mumu)
             TLorentzVector p_l1;
             TLorentzVector p_l2;
@@ -261,7 +256,7 @@ void run()
             
             rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2,cat,muonLead);
                   
-            std::vector<tree::Jet> cjets;
+            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho);
             std::vector<tree::Jet> BJets;
             std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
             if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
