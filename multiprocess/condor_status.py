@@ -60,7 +60,6 @@ def checkErrorFile(outName):
         return True
     size = os.path.getsize(logName)/(1024*1024)
     with open(logName,"r") as f:
-        next(f)
         for line in f:
             if line.find("NaN")>=0:
                 return False

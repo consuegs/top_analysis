@@ -290,9 +290,6 @@ def createLogPath(args):
             raise
    return logpath
    
-def copyExecutable():
-      subprocess.call(["cp","-p","../build/run.x","../build/run_condor.x"])
-   
 def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=False):
    
    printSubmitInfo(args)
@@ -384,6 +381,18 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
                         inputPath = ""
                                        
                      with open(submitFile,"w") as f:   # write condor submit
+                        #  ~f.write("""
+#  ~Universe                = vanilla
+#  ~Executable              = run.sh
+#  ~Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {8} {9} {11} {12}
+#  ~Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
+#  ~Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
+#  ~Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
+#  ~use_x509userproxy       = true
+#  ~Request_Memory          = {4} Mb
+#  ~Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {10}
+#  ~Queue
+   #  ~""".format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath")),)
                         f.write("""
 Universe                = vanilla
 Executable              = run.sh
@@ -393,7 +402,7 @@ Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
 Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
 use_x509userproxy       = true
 Request_Memory          = {4} Mb
-Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {10}
+Requirements            = (TARGET.Machine == "lxblade33.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade34.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade35.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade36.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade37.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade38.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade39.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade40.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade41.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade42.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade43.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade44.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade45.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade46.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade47.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade48.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade49.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade50.physik.rwth-aachen.de") || (substr(TARGET.Machine,0,4) == "lx1b")
 Queue
    """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath")),)
                      subprocess.call(["condor_submit", submitFile])
@@ -484,9 +493,6 @@ if __name__ == "__main__":
    parser.add_argument('--noConfirmation', action='store_true', default=False, help="Disables keyboard input befor submission")
 
    args = parser.parse_args()
-   
-   # copy executable to avoid problems when compiling during running jobs
-   copyExecutable()
    
    if (args.bTagEff_complete == False and args.distributions_complete==False and args.pdf_complete==False):
       if (args.m == "TUnfold_binning"):

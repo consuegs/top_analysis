@@ -2,6 +2,11 @@
 
 source /etc/profile.d/umd_ui.sh #to enable proxy
 
+#random sleep to avoid to many simultaneous copy jobs
+duration=$[ ( $RANDOM % 15 )  + 1 ]
+echo "Sleeping for "$duration" minutes"
+sleep $duration"m"
+
 if [[ $8 != "" ]]
 then
    # ~xrdcp "$8" $TMP   #copy to node
@@ -20,7 +25,7 @@ cd ../build
 
 export ANALYSIS_YEAR_CONFIG="$4"
 
-./run_condor.x "$1" "$2" "$3" "$5" "$6" "$7"
+./run.x "$1" "$2" "$3" "$5" "$6" "$7"
 
 if [[ $8 != "" ]]
 then
