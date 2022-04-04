@@ -184,6 +184,7 @@ void run()
          TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
          TTreeReaderValue<tree::MET> MET(reader, "met");
          TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
+         TTreeReaderValue<tree::MET> MET_Puppi_xy(reader, "metPuppiXYcorr");
          TTreeReaderValue<float> rho(reader, "rho");
          TTreeReaderValue<int> genDecayMode(reader, "ttbarDecayMode");
          TTreeReaderValue<int> n_Interactions(reader, "nPV");
@@ -226,7 +227,7 @@ void run()
             }
             
             float met=MET->p.Pt();
-            float const met_puppi=MET_Puppi->p.Pt();
+            float const met_puppi=MET_Puppi_xy->p.Pt();
             
             //Do not use tau events in signal sample
             if (ttBar_dilepton && *genDecayMode>3) continue;
@@ -236,7 +237,7 @@ void run()
             
             // Construct vector of different METs for correction
             std::vector<tree::MET*> PFMETs = {&(*MET)};
-            std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi)};
+            std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi_xy)};
             
             // Correct and select leptons
             *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);

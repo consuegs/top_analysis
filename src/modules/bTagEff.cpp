@@ -128,6 +128,7 @@ void run()
       TTreeReaderValue<tree::MET> MET(reader, "met");
       TTreeReaderValue<tree::MET> GENMET(reader, "met_gen");
       TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
+      TTreeReaderValue<tree::MET> MET_Puppi_xy(reader, "metPuppiXYcorr");
       TTreeReaderValue<float> rho(reader, "rho");
       TTreeReaderValue<bool> muonTrigg1(reader, cfg.muonTrigg1);
       TTreeReaderValue<bool> muonTrigg2(reader, cfg.muonTrigg2);
@@ -163,7 +164,7 @@ void run()
          
          // Construct vector of different METs for correction
          std::vector<tree::MET*> PFMETs = {&(*MET)};
-         std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi)};
+         std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi_xy)};
          
          // Correct and select leptons
          *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
@@ -196,7 +197,7 @@ void run()
          jerCorrector.smearCollection_Hybrid(*jets,*rho);
          
          float met=MET->p.Pt();
-         float const met_puppi=MET_Puppi->p.Pt();
+         float const met_puppi=MET_Puppi_xy->p.Pt();
          float const genMet=GENMET->p.Pt();
          
          std::vector<tree::Jet> cjets;

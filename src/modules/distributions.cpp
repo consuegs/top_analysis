@@ -10,6 +10,7 @@
 #include "tools/leptonCorrections.hpp"
 #include "tools/triggerSF.hpp"
 #include "tools/mcWeights.hpp"
+#include "tools/dnnRegression.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -21,6 +22,8 @@
 #include <TNtuple.h>
 #include <iostream>
 #include <fstream>
+#include <chrono>
+#include <numeric>
 
 #include "TMVA/Factory.h"
 #include "TMVA/Reader.h"
@@ -29,6 +32,8 @@
 
 #include "cppflow/ops.h"
 #include "cppflow/model.h"
+
+using namespace std::chrono;
 
 Config const &cfg=Config::get();
 
@@ -231,6 +236,10 @@ void run()
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
    std::map<TString,float> Ngen;
+   
+   //Define variable used for event runtime measurements
+   double totalTime;
+   double timePerEvent;
    
    for (TString ds_name: cfg.datasets.getDatasetNames()){
       auto ds=cfg.datasets.getDataset(ds_name);
@@ -566,57 +575,10 @@ void run()
          } 
          
          //Initialize DNN regression
-         // ~TMVA::PyMethodBase::PyInitialize();
-         // ~TMVA::Reader* reader_TMVA_Bin1=new TMVA::Reader("Silent");
-         // ~TMVA::Reader* reader_TMVA_Bin2=new TMVA::Reader("Silent");
-         // ~TMVA::Reader* reader_TMVA_Bin3=new TMVA::Reader("Silent");
-         // ~TMVA::Reader* reader_TMVA_Bin4=new TMVA::Reader("Silent");
-         // ~TMVA::Reader* reader_TMVA_Bin5=new TMVA::Reader("Silent");
-         // ~TMVA::Reader* reader_TMVA_Bin6=new TMVA::Reader("Silent");
-         // ~bool applyDNN=cfg.applyDNN;
-         // ~if(applyDNN){
-            // ~for(TMVA::Reader* tempreader:{reader_TMVA_Bin1, reader_TMVA_Bin2, reader_TMVA_Bin3, reader_TMVA_Bin4, reader_TMVA_Bin5, reader_TMVA_Bin6}){
-               // ~tempreader->AddVariable("PuppiMET", &minTree_PuppiMet);
-               // ~tempreader->AddVariable("METunc_Puppi", &minTree_METunc_Puppi);
-               // ~tempreader->AddVariable("MET", &minTree_MET);
-               // ~tempreader->AddVariable("HT", &minTree_HT);
-               // ~tempreader->AddVariable("nJets", &minTree_nJets);
-               // ~tempreader->AddVariable("n_Interactions", &minTree_n_Interactions);
-               // ~tempreader->AddVariable("Lep1_flavor", &minTree_Lep1_flavor);
-               // ~tempreader->AddVariable("Lep2_flavor", &minTree_Lep2_flavor);
-               // ~tempreader->AddVariable("Lep1_pt", &minTree_Lep1_pt);
-               // ~tempreader->AddVariable("Lep1_phi", &minTree_Lep1_phi);
-               // ~tempreader->AddVariable("Lep1_eta", &minTree_Lep1_eta);
-               // ~tempreader->AddVariable("Lep1_E", &minTree_Lep1_E);
-               // ~tempreader->AddVariable("Lep2_pt", &minTree_Lep2_pt);
-               // ~tempreader->AddVariable("Lep2_phi", &minTree_Lep2_phi);
-               // ~tempreader->AddVariable("Lep2_eta", &minTree_Lep2_eta);
-               // ~tempreader->AddVariable("Lep2_E", &minTree_Lep2_E);
-               // ~tempreader->AddVariable("Jet1_pt", &minTree_Jet1_pt);
-               // ~tempreader->AddVariable("Jet1_phi", &minTree_Jet1_phi);
-               // ~tempreader->AddVariable("Jet1_eta", &minTree_Jet1_eta);
-               // ~tempreader->AddVariable("Jet1_E", &minTree_Jet1_E);
-               // ~tempreader->AddVariable("Jet2_pt", &minTree_Jet2_pt);
-               // ~tempreader->AddVariable("Jet2_phi", &minTree_Jet2_phi);
-               // ~tempreader->AddVariable("Jet2_eta", &minTree_Jet2_eta);
-               // ~tempreader->AddVariable("Jet2_E", &minTree_Jet2_E);
-               // ~tempreader->AddSpectator("PuppiMET", &minTree_PuppiMet);   //Placeholder
-               // ~tempreader->AddSpectator("genMET", &minTree_genMT);    //Placeholder
-            // ~}
-            // ~reader_TMVA_Bin1->BookMVA("PyKerasBin1", "dataset/weights/TMVARegression_PyKerasBin1.weights.xml");
-            // ~reader_TMVA_Bin2->BookMVA("PyKerasBin2", "dataset/weights/TMVARegression_PyKerasBin2.weights.xml");
-            // ~reader_TMVA_Bin3->BookMVA("PyKerasBin3", "dataset/weights/TMVARegression_PyKerasBin3.weights.xml");
-            // ~reader_TMVA_Bin4->BookMVA("PyKerasBin4", "dataset/weights/TMVARegression_PyKerasBin4.weights.xml");
-            // ~reader_TMVA_Bin5->BookMVA("PyKerasBin5", "dataset/weights/TMVARegression_PyKerasBin5.weights.xml");
-            // ~reader_TMVA_Bin6->BookMVA("PyKerasBin6", "dataset/weights/TMVARegression_PyKerasBin6.weights.xml");
-         // ~}
+         DNNregression dnnRegression(cfg.DNN_Path.Data());
+         std::vector<float> input_vec(20);
+         std::vector<float> output_vec(2);
          
-         putenv(strdup("TF_CPP_MIN_LOG_LEVEL=3"));   //Avoid tensorflow output
-         cppflow::model model_Inclusive(cfg.DNN_Path.Data());
-         std::vector<double> input_vec(54);
-         std::vector<int64_t> shape (2);
-         shape[0]=1;
-         shape[1]=54;
          
          //Set Tree Input variables
          TTreeReader reader(cfg.treeName, file);
@@ -714,6 +676,7 @@ void run()
          
          int iEv=0;
          int processEvents=cfg.processFraction*dss.entries;
+         auto startTime_evtLoop = high_resolution_clock::now();
          while (reader.Next()){
             iEv++;
             if (iEv>processEvents) break;
@@ -790,6 +753,7 @@ void run()
             //Set some met variables
             float met=MET->p.Pt();
             float const met_puppi=MET_Puppi->p.Pt();
+            float const met_puppi_xy=MET_Puppi_xy->p.Pt();
             float const genMet=GENMET->p.Pt();
             float mt2 = phys::MT2(p_l1,p_l2,MET_Puppi->p);
             
@@ -797,7 +761,7 @@ void run()
             
             std::vector<tree::Jet> cjets;
             std::vector<tree::Jet> BJets;
-            std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
+            std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi_xy,channel,*jets,cjets,BJets);
             
             if(rec_selection && ttbarSelection[0]){
                hs_cutflow.fillweight("cutflow/"+cat,2,cutFlow_weight);
@@ -1024,7 +988,7 @@ void run()
             if (rec_selection){ 
                for (tree::Jet const &jet : cjets) {
                   const float dPhi=MET->p.DeltaPhi(jet.p);
-                  const float dPhi_Puppi=MET_Puppi->p.DeltaPhi(jet.p);
+                  const float dPhi_Puppi=MET_Puppi_xy->p.DeltaPhi(jet.p);
                   if (std::abs(dPhi) < std::abs(dPhiMETnearJet)) dPhiMETnearJet=dPhi;
                   if (std::abs(dPhi) > std::abs(dPhiMETfarJet)) dPhiMETfarJet=dPhi;
                   if (std::abs(dPhi_Puppi) < std::abs(dPhiMETnearJet_Puppi)) dPhiMETnearJet_Puppi=dPhi_Puppi;
@@ -1035,9 +999,9 @@ void run()
                dPhiMETleadJet=MET->p.DeltaPhi(cjets[0].p);
                dPhiMETlead2Jet=MET->p.DeltaPhi(cjets[1].p);
                dPhiMetBJet=MET->p.DeltaPhi(BJets[0].p);
-               dPhiMETleadJet_Puppi=MET_Puppi->p.DeltaPhi(cjets[0].p);
-               dPhiMETlead2Jet_Puppi=MET_Puppi->p.DeltaPhi(cjets[1].p);
-               dPhiMetBJet_Puppi=MET_Puppi->p.DeltaPhi(BJets[0].p);
+               dPhiMETleadJet_Puppi=MET_Puppi_xy->p.DeltaPhi(cjets[0].p);
+               dPhiMETlead2Jet_Puppi=MET_Puppi_xy->p.DeltaPhi(cjets[1].p);
+               dPhiMetBJet_Puppi=MET_Puppi_xy->p.DeltaPhi(BJets[0].p);
                dPhiLep1Lep2=p_l1.DeltaPhi(p_l2);
                dPhiJet1Jet2=cjets[0].p.DeltaPhi(cjets[1].p);
                dPhiLep1bJet=p_l1.DeltaPhi(BJets[0].p);
@@ -1350,67 +1314,35 @@ void run()
             float DNN_MET_dPhi_nextLep=5.;
             if (rec_selection){
                if(cfg.applyDNN){
-                  input_vec[0]=minTree_PuppiMet*cos(minTree_PuppiMET_phi);
-                  input_vec[1]=minTree_PuppiMet*sin(minTree_PuppiMET_phi);
-                  input_vec[2]=minTree_METunc_Puppi;
-                  input_vec[3]=minTree_MET*cos(minTree_PFMET_phi);
-                  input_vec[4]=minTree_MET*sin(minTree_PFMET_phi);
-                  input_vec[5]=minTree_HT*cos(minTree_HT_phi);
-                  input_vec[6]=minTree_HT*sin(minTree_HT_phi);
-                  input_vec[7]=minTree_nJets;
-                  input_vec[8]=minTree_n_Interactions;
-                  input_vec[9]=minTree_Lep1_flavor;
-                  input_vec[10]=minTree_Lep2_flavor;
-                  input_vec[11]=minTree_Lep1_pt*cos(minTree_Lep1_phi);
-                  input_vec[12]=minTree_Lep1_pt*sin(minTree_Lep1_phi);
-                  input_vec[13]=minTree_Lep1_eta;
-                  input_vec[14]=minTree_Lep1_E;
-                  input_vec[15]=minTree_Lep2_pt*cos(minTree_Lep2_phi);
-                  input_vec[16]=minTree_Lep2_pt*sin(minTree_Lep2_phi);
-                  input_vec[17]=minTree_Lep2_eta;
-                  input_vec[18]=minTree_Lep2_E;
-                  input_vec[19]=minTree_Jet1_pt*cos(minTree_Jet1_phi);
-                  input_vec[20]=minTree_Jet1_pt*sin(minTree_Jet1_phi);
-                  input_vec[21]=minTree_Jet1_eta;
-                  input_vec[22]=minTree_Jet1_E;
-                  input_vec[23]=minTree_Jet2_pt*cos(minTree_Jet2_phi);
-                  input_vec[24]=minTree_Jet2_pt*sin(minTree_Jet2_phi);
-                  input_vec[25]=minTree_Jet2_eta;
-                  input_vec[26]=minTree_Jet2_E;
-                  input_vec[27]=minTree_PhiMetNearJet;
-                  input_vec[28]=minTree_PhiMetFarJet;
-                  input_vec[29]=minTree_PhiMetLeadJet;
-                  input_vec[30]=minTree_PhiMetLead2Jet;
-                  input_vec[31]=minTree_PhiMetbJet;
-                  input_vec[32]=minTree_dPhiLep1Lep2;
-                  input_vec[33]=minTree_dPhiJet1Jet2;
-                  input_vec[34]=minTree_METsig;
-                  input_vec[35]=minTree_MHT;
-                  input_vec[36]=minTree_MT;
-                  input_vec[37]=minTree_looseLeptonVeto;
-                  input_vec[38]=minTree_PhiMetNearJet_Puppi;
-                  input_vec[39]=minTree_PhiMetFarJet_Puppi;
-                  input_vec[40]=minTree_PhiMetLeadJet_Puppi;
-                  input_vec[41]=minTree_PhiMetLead2Jet_Puppi;
-                  input_vec[42]=minTree_PhiMetbJet_Puppi;
-                  input_vec[43]=minTree_dPhiLep1bJet;
-                  input_vec[44]=minTree_dPhiLep1Jet1;
-                  input_vec[45]=minTree_mLL;
-                  input_vec[46]=minTree_CaloMET*cos(minTree_CaloMET_phi);
-                  input_vec[47]=minTree_CaloMET*sin(minTree_CaloMET_phi);
-                  input_vec[48]=minTree_MT2;
-                  input_vec[49]=minTree_vecsum_pT_allJet;
-                  input_vec[50]=minTree_vecsum_pT_l1l2_allJet;
-                  input_vec[51]=minTree_mass_l1l2_allJet;
-                  input_vec[52]=minTree_ratio_vecsumpTlep_vecsumpTjet;
-                  input_vec[53]=minTree_mjj;
-                  auto tensor = cppflow::tensor(input_vec, shape);
+                  //ONNX
+                  input_vec[0]=minTree_PuppiMet_xy*sin(minTree_PuppiMET_xy_phi);
+                  input_vec[1]=minTree_PuppiMet_xy*cos(minTree_PuppiMET_xy_phi);
+                  input_vec[2]=minTree_Met_xy*sin(minTree_MET_xy_phi);
+                  input_vec[3]=minTree_Met_xy*cos(minTree_MET_xy_phi);
+                  input_vec[4]=minTree_vecsum_pT_allJet*sin(minTree_HT_phi);
+                  input_vec[5]=minTree_vecsum_pT_allJet*cos(minTree_HT_phi);
+                  input_vec[6]=minTree_mass_l1l2_allJet;
+                  input_vec[7]=minTree_Jet1_pt*sin(minTree_Jet1_phi);
+                  input_vec[8]=minTree_MHT;
+                  input_vec[9]=minTree_Lep1_pt*cos(minTree_Lep1_phi);
+                  input_vec[10]=minTree_Lep1_pt*sin(minTree_Lep1_phi);
+                  input_vec[11]=minTree_Jet1_pt*cos(minTree_Jet1_phi);
+                  input_vec[12]=minTree_CaloMET;
+                  input_vec[13]=minTree_vecsum_pT_allJet;
+                  input_vec[14]=minTree_MT2;
+                  input_vec[15]=minTree_mjj;
+                  input_vec[16]=minTree_nJets;
+                  input_vec[17]=minTree_Jet1_E;
+                  input_vec[18]=minTree_HT;
+                  input_vec[19]=minTree_METunc_Puppi;
+                                    
+                  dnnRegression.evaluate(input_vec,output_vec);
+                  DNN_MET_x = minTree_PuppiMet*cos(minTree_PuppiMET_phi)-output_vec[0];
+                  DNN_MET_y = minTree_PuppiMet*sin(minTree_PuppiMET_phi)-output_vec[1];
                   
-                  auto output = model_Inclusive({{"serving_default_batch_normalization_input:0", tensor}},{"StatefulPartitionedCall:0"});
-                  DNN_MET_x = minTree_PuppiMet*cos(minTree_PuppiMET_phi)-output[0].get_data<float>()[0];
-                  DNN_MET_y = minTree_PuppiMet*sin(minTree_PuppiMET_phi)-output[0].get_data<float>()[1];
                   DNN_MET.SetXYZM(DNN_MET_x,DNN_MET_y,0.,0.);
                   DNN_MET_pT=DNN_MET.Pt();
+                  
                   
                   for (TLorentzVector const lep : {p_l1,p_l2}){
                      const float dPhi=DNN_MET.DeltaPhi(lep);
@@ -1621,6 +1553,12 @@ void run()
          }// evt loop
          io::log<<"";
          
+         //Derive runtime
+         auto stopTime_evtLoop = high_resolution_clock::now();
+         auto duration = duration_cast<milliseconds>(stopTime_evtLoop - startTime_evtLoop);
+         totalTime = duration.count();
+         timePerEvent = totalTime/(1.0*iEv);
+         
          hs.scaleLumi(currentSystematic);
          hs_cutflow.scaleLumi(currentSystematic);
          hs2d.scaleLumi(currentSystematic);
@@ -1656,5 +1594,8 @@ void run()
    hs.saveHistograms(saver_hist,samplesToCombine);
    hs_cutflow.saveHistograms(saver_hist,samplesToCombine);
    hs2d.saveHistograms(saver_hist,samplesToCombine);
+   
+   // Print runtime for event loop
+   std::cout<<"Event loop had a total runtime of "<<totalTime<<"ms correspond to "<<timePerEvent<<"ms per event"<<std::endl;
    
 }
