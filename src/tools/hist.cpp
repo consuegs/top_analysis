@@ -377,6 +377,18 @@ void hist::Histograms<HIST>::saveHistograms(io::RootFileSaver const &saver_hist,
    }
 }
 
+template <class HIST>
+void hist::Histograms<HIST>::saveHistograms2D_as1D(io::RootFileSaver const &saver_hist, std::vector<TString> const &Samples)
+{   
+   for (auto const &mv:mmH_){
+      for (TString sSample: Samples){
+         auto temp=(TH2F*)getHistogram(mv.first,sSample);
+         temp->SetName(sSample);
+         saver_hist.save(histTrafo_2D(temp),mv.first+"/"+sSample);
+      }
+   }
+}
+
 /*******************************************************************************
  * end class Histograms
  ******************************************************************************/
@@ -533,11 +545,19 @@ TH1F hist::histTrafo_2D(TH2F* const &hist2D){
    int numBins = numBins_x*numBins_y;
    const TArrayD* binedges_x = hist2D->GetXaxis()->GetXbins();
    double binedges_1d[numBins+1];
-	binedges_1d[0]=0;
    int phi_bin = 0;
-   for (int i=0; i<(numBins); i++)   {
-      binedges_1d[i+1] = binedges_x->GetAt(i%numBins_x+1)+phi_bin*binedges_x->GetAt(numBins_x);
-      if (i%numBins_x==numBins_x-1) phi_bin++;
+   if (binedges_x->GetSize()==0){   //For Histograms with constant bin width (only use bin numbers)
+      binedges_1d[0]=0.5;
+      for (int i=1; i<=numBins; i++){
+         binedges_1d[i]=i+0.5;
+      }
+   }
+   else{
+      binedges_1d[0]=hist2D->GetXaxis()->GetXmin();
+      for (int i=0; i<(numBins); i++){
+         binedges_1d[i+1] = binedges_x->GetAt(i%numBins_x+1)+phi_bin*binedges_x->GetAt(numBins_x);
+         if (i%numBins_x==numBins_x-1) phi_bin++;
+      }
    }
    
    

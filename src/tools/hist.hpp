@@ -70,6 +70,7 @@ namespace hist
       float getCountError(TString const &varName, TString const &sample);
       void saveHistograms(io::RootFileSaver const &saver_hist, std::vector<TString> const &Samples);
       void saveHistograms(io::RootFileSaver const &saver_hist, std::vector<std::string> const &Samples);
+      void saveHistograms2D_as1D(io::RootFileSaver const &saver_hist, std::vector<TString> const &Samples);
 
       gfx::LegendEntries getLegendEntries();
    private:

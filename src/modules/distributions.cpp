@@ -37,6 +37,15 @@ using namespace std::chrono;
 
 Config const &cfg=Config::get();
 
+struct dim2D {
+   TString name;
+   TString axisTitle;
+   float xMin;
+   float xMax;
+   int nBins;
+   float value = 0;
+};
+
 extern "C"
 void run()
 {
@@ -232,6 +241,41 @@ void run()
    hs2d.addHist("baseline/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
    hs2d.addHist("baseline/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
    hs2d.addHist("baseline/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
+   
+   //Define 2D histograms for GOF studies
+   std::vector<dim2D> dim2D_vec;
+   hist::Histograms<TH2F> hs2d_GOF(vsDatasubsets);
+   dim2D_vec.push_back({"PuppiMET_xy*cos(PuppiMET_xy_phi)","Puppi p_{x}^{miss} (GeV)",-150, 150, 6});
+   dim2D_vec.push_back({"PuppiMET_xy*sin(PuppiMET_xy_phi)","Puppi p_{y}^{miss} (GeV)",-150, 150, 6});
+   dim2D_vec.push_back({"MET_xy*cos(MET_xy_phi)","PF p_{x}^{miss} (GeV)",-150, 150, 6});
+   dim2D_vec.push_back({"MET_xy*sin(MET_xy_phi)","PF p_{y}^{miss} (GeV)",-150, 150, 6});
+   dim2D_vec.push_back({"vecsum_pT_allJet*cos(HT_phi)","p_{x}^{sum all jets} (GeV)",-150, 150, 6});
+   dim2D_vec.push_back({"vecsum_pT_allJet*sin(HT_phi)","p_{y}^{sum all jets} (GeV) ",-150, 150, 6});
+   dim2D_vec.push_back({"mass_l1l2_allJet", "mass_l1l2_allJet (GeV) ",0, 1800, 6});
+   dim2D_vec.push_back({"Jet1_pt*sin(Jet1_phi)","p_{y}^{jet1} (GeV) ",-400, 400, 5});
+   dim2D_vec.push_back({"MHT", "M_{HT} (GeV) ",0, 1800, 6});
+   dim2D_vec.push_back({"Lep1_pt*cos(Lep1_phi)","p_{x}^{lep1} (GeV) ",-250, 250, 5});
+   dim2D_vec.push_back({"Lep1_pt*sin(Lep1_phi)","p_{y}^{lep1} (GeV) ",-250, 250, 5});
+   dim2D_vec.push_back({"Jet1_pt*cos(Jet1_phi)","p_{x}^{jet1} (GeV) ",-400, 400, 5});
+   dim2D_vec.push_back({"CaloMET","CaloMET (GeV) ",0, 200, 5});
+   dim2D_vec.push_back({"MT2","MT_{2} (GeV) ",0, 160, 5});
+   dim2D_vec.push_back({"mjj", "m_{jj} (GeV) ",0, 1800, 6});
+   dim2D_vec.push_back({"nJets","n_{jets}",1.5, 7.5, 6});
+   dim2D_vec.push_back({"Jet1_E","E^{jet1} (GeV) ",0, 500, 5});
+   dim2D_vec.push_back({"HT","H_{T} (GeV) ",0, 1200, 6});
+   dim2D_vec.push_back({"Jet2_pt*cos(Jet2_phi)","p_{x}^{jet2} (GeV) ",-250, 250, 5});
+   dim2D_vec.push_back({"Jet2_pt*sin(Jet2_phi)","p_{y}^{jet2} (GeV) ",-250, 250, 5});
+   
+   for (int i=0; i<dim2D_vec.size(); i++){
+      for (int j=(i+1); j<dim2D_vec.size(); j++){
+         for(TString channel:{"/ee","/mumu","/emu"}){
+            TString path = "baseline_GOF2D"+channel+"/"+dim2D_vec[i].name+"_VS_"+dim2D_vec[j].name;
+            TString title = ";"+dim2D_vec[i].axisTitle+";"+dim2D_vec[j].axisTitle+";EventsBIN";
+            hs2d_GOF.addHist(path,title,dim2D_vec[i].nBins,dim2D_vec[i].xMin,dim2D_vec[i].xMax,dim2D_vec[j].nBins,dim2D_vec[j].xMin,dim2D_vec[j].xMax);
+         }
+      }
+   }
+   
 
    //Additional map to calculate signal efficiencies
    std::map<TString,float> count;
@@ -352,6 +396,7 @@ void run()
          hs.setCurrentSample(dss.name);
          hs_cutflow.setCurrentSample(dss.name);
          hs2d.setCurrentSample(dss.name);
+         hs2d_GOF.setCurrentSample(dss.name);
          
          //Lumi weight for current sample
          float lumi_weight=dss.xsec/dss.getNgen_syst(currentSystematic)*cfg.lumi;
@@ -804,10 +849,12 @@ void run()
                SFWeight=leptonSFweight * bTagWeight * triggerSF * *w_prefiring;     //Set combined SF weight
                hs.setFillWeight(fEventWeight*SFWeight);
                hs2d.setFillWeight(fEventWeight*SFWeight);
+               hs2d_GOF.setFillWeight(fEventWeight*SFWeight);
             }
             else{
                hs.setFillWeight(1);
                hs2d.setFillWeight(1);
+               hs2d_GOF.setFillWeight(1);
                hs_cutflow.setFillWeight(1);
             }
             if(rec_selection){
@@ -1437,6 +1484,37 @@ void run()
                   hs.fill("baseline/"+path_cat+"/Lep_mu_pt",p_l2.Pt());
                }
             }
+            
+            //Fill hists for 2D GOF studies
+            // First set values
+            dim2D_vec[0].value = MET_Puppi_xy->p.Pt()*cos(MET_Puppi_xy->p.Phi());
+            dim2D_vec[1].value = MET_Puppi_xy->p.Pt()*sin(MET_Puppi_xy->p.Phi());
+            dim2D_vec[2].value = MET_xy->p.Pt()*cos(MET_xy->p.Phi());
+            dim2D_vec[3].value = MET_xy->p.Pt()*sin(MET_xy->p.Phi());
+            dim2D_vec[4].value = MHT.Pt()*cos(MHT.Phi());
+            dim2D_vec[5].value = MHT.Pt()*sin(MHT.Phi());
+            dim2D_vec[6].value = minTree_mass_l1l2_allJet;
+            dim2D_vec[7].value = cjets[0].p.Pt()*sin(cjets[0].p.Phi());
+            dim2D_vec[8].value = MHT.M();
+            dim2D_vec[9].value = p_l1.Pt()*cos(p_l1.Phi());
+            dim2D_vec[10].value = p_l1.Pt()*sin(p_l1.Phi());
+            dim2D_vec[11].value = cjets[0].p.Pt()*cos(cjets[0].p.Phi());
+            dim2D_vec[12].value = MET_Calo->p.Pt();
+            dim2D_vec[13].value = mt2;
+            dim2D_vec[14].value = minTree_mjj;
+            dim2D_vec[15].value = cjets.size();
+            dim2D_vec[16].value = cjets[0].p.E();
+            dim2D_vec[17].value = HT;
+            dim2D_vec[18].value = cjets[1].p.Pt()*cos(cjets[1].p.Phi());
+            dim2D_vec[19].value = cjets[1].p.Pt()*sin(cjets[1].p.Phi());
+            
+            // Now loop over 2D hists an fill
+            for (int i=0; i<dim2D_vec.size(); i++){
+               for (int j=(i+1); j<dim2D_vec.size(); j++){
+                  hs2d_GOF.fill("baseline_GOF2D/"+path_cat+"/"+dim2D_vec[i].name+"_VS_"+dim2D_vec[j].name,dim2D_vec[i].value,dim2D_vec[j].value);
+               }
+            }
+            
                   
          }// evt loop
          io::log<<"";
@@ -1450,9 +1528,11 @@ void run()
          hs.scaleLumi(currentSystematic);
          hs_cutflow.scaleLumi(currentSystematic);
          hs2d.scaleLumi(currentSystematic);
+         hs2d_GOF.scaleLumi(currentSystematic);
          hs.mergeOverflow();
          hs_cutflow.mergeOverflow();
-         // ~hs2d.mergeOverflow();
+         hs2d.mergeOverflow();
+         hs2d_GOF.mergeOverflow();
          file->Close();
          
          //Save ntuple for TTbar resolution used in binning studies (only if last file of sample e.g. for SingleTop)
@@ -1473,6 +1553,7 @@ void run()
    hs.combineFromSubsamples(samplesToCombine);
    hs_cutflow.combineFromSubsamples(samplesToCombine);
    hs2d.combineFromSubsamples(samplesToCombine);
+   hs2d_GOF.combineFromSubsamples(samplesToCombine);
    
    // Save histograms
    TString loc=TString::Format("hists/histograms_%s%s.root",cfg.treeVersion.Data(),("_"+currentSystematic.name()).Data());
@@ -1482,6 +1563,9 @@ void run()
    hs.saveHistograms(saver_hist,samplesToCombine);
    hs_cutflow.saveHistograms(saver_hist,samplesToCombine);
    hs2d.saveHistograms(saver_hist,samplesToCombine);
+   
+   // Save histograms for 2D GOF studies (transform 2D to 1D first)
+   hs2d_GOF.saveHistograms2D_as1D(saver_hist,samplesToCombine);
    
    // Print runtime for event loop
    std::cout<<"Event loop had a total runtime of "<<totalTime<<"ms correspond to "<<timePerEvent<<"ms per event"<<std::endl;
