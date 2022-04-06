@@ -278,29 +278,37 @@ if __name__ == "__main__":
     parser.add_argument('--mergeAll', action='store_true', help="Automatic merge, avoids asking if jobs should be merged")
     parser.add_argument('--forceMergeAll', action='store_true', help="Forces merge, even if not necessary due to updated input")
     parser.add_argument('--ignorePDF', action='store_true', help="Ignores all PDF jobs")
+    parser.add_argument('--repeat', action='store_true', help="Repeats tasks after 15 minutes of sleeping")
     args = parser.parse_args()
     
-    if(args.checkCompleted == "" and args.distributions==False and args.bTagEff==False and args.TUnfold==False):  # print running jobs only on nominal mode
-        printRunningJobs = True
-    else:
-        printRunningJobs = False
-    
-    runningLogs = checkStatusFromQueue(printRunningJobs,args.checkSuspended)
-    
-    if(args.distributions):
-        summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF)
-    elif(args.bTagEff):
-        summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF,"bTagEff")
-    elif(args.TUnfold):
-        summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF,"TUnfold_binning")
-    
-    if(args.checkCompleted != ""):
-        if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list
-            if checkStatusFromLog(args.checkCompleted,runningLogs.keys(),True,args.resubmit)[0]:
-                if mergeOutputs.mergeRequired(args.checkCompleted,isDistributions(args.checkCompleted),False) or args.forceMergeAll:
-                    merge(args.checkCompleted)
-                else:
-                    print "No merge required"
+    while True:
+        if(args.checkCompleted == "" and args.distributions==False and args.bTagEff==False and args.TUnfold==False):  # print running jobs only on nominal mode
+            printRunningJobs = True
         else:
-            print "Wrong Path"
+            printRunningJobs = False
+        
+        runningLogs = checkStatusFromQueue(printRunningJobs,args.checkSuspended)
+        
+        if(args.distributions):
+            summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF)
+        elif(args.bTagEff):
+            summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF,"bTagEff")
+        elif(args.TUnfold):
+            summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF,"TUnfold_binning")
+        
+        if(args.checkCompleted != ""):
+            if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list
+                if checkStatusFromLog(args.checkCompleted,runningLogs.keys(),True,args.resubmit)[0]:
+                    if mergeOutputs.mergeRequired(args.checkCompleted,isDistributions(args.checkCompleted),False) or args.forceMergeAll:
+                        merge(args.checkCompleted)
+                    else:
+                        print "No merge required"
+            else:
+                print "Wrong Path"
+        
+        if (args.repeat):
+            print time.strftime("%H-%M-%S:"), "Sleeping for 15 minutes."
+            time.sleep(900)
+        else:
+            break
 
