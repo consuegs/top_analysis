@@ -267,11 +267,13 @@ def get_fileName(dataset,year,fileNR):      #checks config for name of file
    config.read("../config"+year+".ini")
    return config[dataset]["files"].split(",")[fileNR]
 
-def get_dataBasePath_dCache(year,dcap=False):      #return dataBasePath on dCache for given year
+def get_dataBasePath_dCache(year,curl=True,dcap=False):      #return dataBasePath on dCache for given year
    config = configparser.ConfigParser()
    config.read("../config"+year+".ini")
    if dcap:
       return "dcap://grid-dcap-extern.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
+   elif curl:
+      return "curlsimple://grid-webdav.physik.rwth-aachen.de:2889/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
    else:
       return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
 
@@ -308,12 +310,15 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    print toProcess_signal
    
    # set dataBasePath depending on dCache options
-   if args.scratchInput==False and args.copyDCache==False:
+   if args.scratchInput==False and args.copyDCache==False and args.condFileTransfer==False:
       print "Use dCache input"
       dataBasePath = "-d"+get_dataBasePath_dCache(args.y)
    elif args.copyDCache:
       print "Copy input from dCache to condor node"
       dataBasePath = "-d$TMP/"
+   elif args.condFileTransfer:
+      print "Use Condor file transfer to copy from dCache to node"
+      dataBasePath = ""
    else:
       print "Use scratch input"
       dataBasePath = ""
@@ -355,57 +360,66 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
       startFileNR = 1
       for sel in [[toProcess_mc,"--mc_dataset="],[toProcess_data,"--data_dataset="],[toProcess_signal,"--signal_dataset="]]:
           for x in sel[0]:
-                  sampleStr=sel[1]+x   # create dataset argument for run.x depending on sample type
-                  totalFiles=get_fileNR(x,args.y)     # get total number of files for dataset
-                  
-                  if (args.SingleSubmit):    # set fileNR if SingleSubmit option is selected
-                     if (singleFileNR<=totalFiles):
-                        totalFiles=singleFileNR
-                        startFileNR=singleFileNR
-                     else:
-                        print "Selected SingleFileNR is not available"
-                        exit(98)
-                  
-                  for fileNR in range(startFileNR-1,totalFiles):     # loop over files for given dataset
-                                       
-                     for logFile in glob.glob(logpath+"/"+args.m+"_"+x+"_"+str(fileNR+1)+"*"):  # Remove old logs
-                        if os.path.exists(logFile):
-                           os.remove(logFile)
-                     
-                     submitFile = logpath+"/"+args.m+"_"+x+"_"+str(fileNR+1)+".submit"    #define submit file
-                     
-                     if args.copyDCache:     #set path to dCache input in case of copying to condor node
-                        inputPath = get_dataBasePath_dCache(args.y,True)+get_fileName(x,args.y,fileNR)
-                        inputPath = inputPath.replace(" ", "")
-                     else:
-                        inputPath = ""
-                                       
-                     with open(submitFile,"w") as f:   # write condor submit
-                        #  ~f.write("""
-#  ~Universe                = vanilla
-#  ~Executable              = run.sh
-#  ~Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {8} {9} {11} {12}
-#  ~Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
-#  ~Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
-#  ~Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
-#  ~use_x509userproxy       = true
-#  ~Request_Memory          = {4} Mb
-#  ~Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {10}
-#  ~Queue
-   #  ~""".format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath")),)
-                        f.write("""
-Universe                = vanilla
-Executable              = run.sh
-Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {8} {9} {11} {12}
-Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
-Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
-Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
-use_x509userproxy       = true
-Request_Memory          = {4} Mb
-Requirements            = (TARGET.Machine == "lxblade33.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade34.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade35.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade36.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade37.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade38.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade39.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade40.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade41.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade42.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade43.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade44.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade45.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade46.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade47.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade48.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade49.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade50.physik.rwth-aachen.de") || (substr(TARGET.Machine,0,4) == "lx1b")
-Queue
-   """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath")),)
-                     subprocess.call(["condor_submit", submitFile])
+            sampleStr=sel[1]+x   # create dataset argument for run.x depending on sample type
+            totalFiles=get_fileNR(x,args.y)     # get total number of files for dataset
+            
+            if (args.SingleSubmit):    # set fileNR if SingleSubmit option is selected
+               if (singleFileNR<=totalFiles):
+                  totalFiles=singleFileNR
+                  startFileNR=singleFileNR
+               else:
+                  print "Selected SingleFileNR is not available"
+                  exit(98)
+            
+            for fileNR in range(startFileNR-1,totalFiles):     # loop over files for given dataset
+                                 
+               for logFile in glob.glob(logpath+"/"+args.m+"_"+x+"_"+str(fileNR+1)+"*"):  # Remove old logs
+                  if os.path.exists(logFile):
+                     os.remove(logFile)
+               
+               submitFile = logpath+"/"+args.m+"_"+x+"_"+str(fileNR+1)+".submit"    #define submit file
+               
+               if args.copyDCache:     #set path to dCache input in case of copying to condor node
+                  inputPath = get_dataBasePath_dCache(args.y,False,True)+get_fileName(x,args.y,fileNR)
+                  inputPath = inputPath.replace(" ", "")
+               elif args.condFileTransfer:    #set path to dCache input in case of copying to condor node
+                  inputPath = get_dataBasePath_dCache(args.y,True,False)+get_fileName(x,args.y,fileNR)
+                  inputPath = inputPath.replace(" ", "")
+               else:
+                  inputPath = ""
+                                 
+               with open(submitFile,"w") as f:   # write condor submit
+                  if args.copyDCache:
+                     f.write("""
+   Universe                = vanilla
+   Executable              = run.sh
+   Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {8} {9} {11} {12}
+   Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
+   Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
+   Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
+   use_x509userproxy       = true
+   Request_Memory          = {4} Mb
+   Requirements            = (TARGET.Machine == "lxblade33.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade34.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade35.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade36.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade37.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade38.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade39.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade40.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade41.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade42.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade43.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade44.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade45.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade46.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade47.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade48.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade49.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade50.physik.rwth-aachen.de")
+   Queue
+      """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath")),)
+                  else:
+                     f.write("""
+   Universe                = vanilla
+   Executable              = run_condorFileTrans.sh
+   Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {10} {11}
+   Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
+   Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
+   Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
+   stream_output           = true
+   use_x509userproxy       = true
+   should_transfer_files   = YES
+   transfer_plugins        = curlsimple=curlSimple_plugin.py
+   transfer_input_files    = {8}
+   Request_Memory          = {4} Mb
+   Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {9}
+   Queue
+      """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath")),)
+               subprocess.call(["condor_submit", submitFile])
 
 
 def submitTUnfold(args,systematics):
@@ -483,7 +497,8 @@ if __name__ == "__main__":
    parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",required=True)
    parser.add_argument('-s', type=str, default="Nominal", help="systematic shift")
    parser.add_argument('--scratchInput', action='store_true', default=False, help="Use nTuple stored on scratch, otherwise dCache Input is used.")
-   parser.add_argument('--copyDCache', action='store_true', default=True, help="Copy nTuples stored on DCache to node before running the code.")
+   parser.add_argument('--copyDCache', action='store_true', default=False, help="Copy nTuples stored on dCache to node before running the code.")
+   parser.add_argument('--condFileTransfer', action='store_true', default=True, help="Use condor file transfer to copy from dCache to node before running the code.")
    parser.add_argument('--SingleSubmit', action='store_true' )
    parser.add_argument('--bTagEff_complete', action='store_true', default=False, help="Submits bTagEff jobs with all relevant systematics (use with care!)")
    parser.add_argument('--distributions_complete', action='store_true', default=False, help="Submits distributions jobs with all relevant systematics (use with care!)")
