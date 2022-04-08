@@ -245,6 +245,8 @@ def mergeForCombine(logPath,histPath,sampleList):
     if os.path.exists(outputDir) == False:      #create combine folder for output files
         os.mkdir(outputDir)
     
+    f_out = TFile(outfile,"RECREATE")      # output file containing all hists
+    
     for systPath in glob.glob("logs/"+info["year"]+"/*"):   # loop for renaming and merging histograms
         distrLogPath = systPath+"/1.0/distributions/"
         if(os.path.exists(distrLogPath)):
@@ -257,7 +259,7 @@ def mergeForCombine(logPath,histPath,sampleList):
             listAllObjectPaths(f,histNames)     # get all paths in root file
             for histName in histNames:
                 histNameSplitted = histName.split("/")
-                if histNameSplitted[1] != "distributions100.0" or histNameSplitted[2] != "baseline":     # only store relevant histograms with full stat.
+                if histNameSplitted[1] != "distributions100.0" or histNameSplitted[2].startswith("baseline") == False:     # only store relevant histograms with full stat.
                     continue
                 sampleName = histName.split("/")[-1]
                 strippedSampleName = sampleName.replace("_"+info_syst["syst"],"")   # only store processes needed for combine
@@ -279,7 +281,7 @@ def mergeForCombine(logPath,histPath,sampleList):
                     systNameCombine = "_"+syst+"Down"
                 else:
                     systNameCombine = getSytNameCombine(info_syst["syst"])  # get correct name of systematic for combine
-                f_out = TFile(tempFileName,"RECREATE")
+                #  ~f_out = TFile(tempFileName,"RECREATE")
                 filesToMerge.append(tempFileName)
                 f_out.cd()
                 for histName in hists.keys():
@@ -293,15 +295,16 @@ def mergeForCombine(logPath,histPath,sampleList):
                             f_out.mkdir(folderName)
                             f_out.cd(folderName)
                     hists[histName].Write(outputHistName)
-                f_out.Close()
+                #  ~f_out.Close()
             
             f.Close()
     
-    print "-------Merging renamed histograms---------------"
-    if os.path.exists(outfile):
-        os.remove(outfile)
-    if sp.call(["hadd","-f",outfile]+filesToMerge,stdout=open(os.devnull, 'wb')):    # combine temp hists with hadd
-        sys.exit(1)
+    f_out.Close()
+    #  ~print "-------Merging renamed histograms---------------"
+    #  ~if os.path.exists(outfile):
+        #  ~os.remove(outfile)
+    #  ~if sp.call(["hadd","-f",outfile]+filesToMerge,stdout=open(os.devnull, 'wb')):    # combine temp hists with hadd
+        #  ~sys.exit(1)
     if sp.call(["chmod","a+rx",outfile],stdout=open(os.devnull, 'wb')):     # set rights for other to excess output file
         sys.exit(1)
     
