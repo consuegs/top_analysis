@@ -247,6 +247,7 @@ tunfold_syst = [
 
 "JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFlavorPureGluon_UP","JESFlavorPureGluon_DOWN","JESFlavorPureQuark_UP","JESFlavorPureQuark_DOWN","JESFlavorPureCharm_UP","JESFlavorPureCharm_DOWN","JESFlavorPureBottom_UP","JESFlavorPureBottom_DOWN",
 
+"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESFlavorQCDreg_UP","JESFlavorQCDreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN"
 ]
 
 
@@ -497,8 +498,8 @@ if __name__ == "__main__":
    parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",required=True)
    parser.add_argument('-s', type=str, default="Nominal", help="systematic shift")
    parser.add_argument('--scratchInput', action='store_true', default=False, help="Use nTuple stored on scratch, otherwise dCache Input is used.")
-   parser.add_argument('--copyDCache', action='store_true', default=False, help="Copy nTuples stored on dCache to node before running the code.")
-   parser.add_argument('--condFileTransfer', action='store_true', default=True, help="Use condor file transfer to copy from dCache to node before running the code.")
+   parser.add_argument('--copyDCache', action='store_true', default=True, help="Copy nTuples stored on dCache to node before running the code.")
+   parser.add_argument('--condFileTransfer', action='store_true', default=False, help="Use condor file transfer to copy from dCache to node before running the code.")
    parser.add_argument('--SingleSubmit', action='store_true' )
    parser.add_argument('--bTagEff_complete', action='store_true', default=False, help="Submits bTagEff jobs with all relevant systematics (use with care!)")
    parser.add_argument('--distributions_complete', action='store_true', default=False, help="Submits distributions jobs with all relevant systematics (use with care!)")
