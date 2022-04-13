@@ -74,7 +74,7 @@ Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std:
          Ngen_woWeight=0;
       } else {
          // ~Ngen=h->GetBinContent(2);
-         Ngen=h->GetBinContent(4);     //initial_mc_pu_topPt_weighted
+         Ngen=h->GetBinContent(3);     //initial_mc_pu_topPt_weighted
          Ngen_woWeight=h->GetBinContent(1);
          entries=t->GetEntries();
       }
