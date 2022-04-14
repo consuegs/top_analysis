@@ -483,7 +483,7 @@ void run()
    io::RootFileReader histReader(inputLoc,TString::Format("triggerEff%.1f",cfg.processFraction*100));
    io::RootFileSaver saver(TString::Format("triggerEff/plots_triggerEff%.1f.root",cfg.processFraction*100),"plot_triggerEff");
    io::RootFileSaver saverHist(TString::Format("triggerEff/hists_triggerEff%.1f.root",cfg.processFraction*100),"triggerEff");
-   io::RootFileSaver saverSF(TString::Format("data/TriggerSF_%s.root",cfg.year.Data()),"");
+   io::RootFileSaver saverSF(TString::Format("../data/TriggerSF_%s.root",cfg.year.Data()),"",false,false);
 
    
    //Plot 1D efficiencies

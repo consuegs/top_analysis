@@ -20,7 +20,7 @@ void Config::setOutput(const std::string output){
 Config::Config()
 {
    // ~boost::property_tree::ptree pt;
-   std::string cfgFile(CMAKE_SOURCE_DIR);
+   std::string cfgFile(std::string(getenv("PWD"))+"/../");
    std::string config_year=getenv("ANALYSIS_YEAR_CONFIG");
    if (config_year!=NULL){
       std::cout<<"Running on year "+config_year+" (to change set ANALYSIS_YEAR_CONFIG variable)"<<std::endl;
@@ -117,11 +117,19 @@ Config::Config()
    tunfold_plotComparison = pt.get<bool>("TUnfold.plotComparison");
    tunfold_plotToyStudies = pt.get<bool>("TUnfold.plotToyStudies");
 
-   outputDirectory=pt.get<std::string>("output.directory")+treeVersion+"/output_framework";
+   // Check if running on lx* with home directory excess, if not, output cannot be stored on /net/...
+   TString hostname=getenv("HOSTNAME");
+   if (hostname.Contains("lx")){
+      outputDirectory=pt.get<std::string>("output.directory")+treeVersion+"/output_framework";
+   }
+   else{
+      outputDirectory="../output_framework";
+   }
+   
    datasets=DatasetCollection(pt,dataBasePath);
    
    bTagSF_file=pt.get<std::string>("BTag_Weights.BTagSF_file");
-   bTagEffPath=outputDirectory+pt.get<std::string>("BTag_Weights.BTagEffPath");
+   bTagEffPath=pt.get<std::string>("BTag_Weights.BTagEffPath");
 }
 
 TString Config::getJESPath(const int run_era, const bool isPuppi=false) const{

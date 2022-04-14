@@ -47,7 +47,7 @@ TH2* TriggerScaleFactors::prepareSF(const std::string& sfInputFileName,
                                const std::string& histogramName)const
 {
    
-   io::RootFileReader triggerSF_ee(sfInputFileName.c_str(),"");
+   io::RootFileReader triggerSF_ee(sfInputFileName.c_str(),"",false);
 
    // Access histogram containing scale factors
    TH2* h_scaleFactor(0);

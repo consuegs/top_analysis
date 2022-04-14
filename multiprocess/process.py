@@ -172,57 +172,57 @@ sample_allSyst_dict = {
       "L1PREFIRING_UP" : allMC,
       "L1PREFIRING_DOWN" : allMC,
       
-      "JESAbsoluteMPFBias_UP" : allMC,
-      "JESAbsoluteMPFBias_DOWN" : allMC,
-      "JESAbsoluteScale_UP" : allMC,
-      "JESAbsoluteScale_DOWN" : allMC,
-      "JESAbsoluteStat_UP" : allMC,
-      "JESAbsoluteStat_DOWN" : allMC,
-      "JESFlavorQCD_UP" : allMC,
-      "JESFlavorQCD_DOWN" : allMC,
-      "JESFragmentation_UP" : allMC,
-      "JESFragmentation_DOWN" : allMC,
-      "JESPileUpDataMC_UP" : allMC,
-      "JESPileUpDataMC_DOWN" : allMC,
-      "JESPileUpPtBB_UP" : allMC,
-      "JESPileUpPtBB_DOWN" : allMC,
-      "JESPileUpPtEC1_UP" : allMC,
-      "JESPileUpPtEC1_DOWN" : allMC,
-      "JESPileUpPtRef_UP" : allMC,
-      "JESPileUpPtRef_DOWN" : allMC,
-      "JESRelativeBal_UP" : allMC,
-      "JESRelativeBal_DOWN" : allMC,
-      "JESRelativeFSR_UP" : allMC,
-      "JESRelativeFSR_DOWN" : allMC,
-      "JESRelativeJEREC1_UP" : allMC,
-      "JESRelativeJEREC1_DOWN" : allMC,
-      "JESRelativePtBB_UP" : allMC,
-      "JESRelativePtBB_DOWN" : allMC,
-      "JESRelativePtEC1_UP" : allMC,
-      "JESRelativePtEC1_DOWN" : allMC,
-      "JESRelativeSample_UP" : allMC,
-      "JESRelativeSample_DOWN" : allMC,
-      "JESRelativeStatEC_UP" : allMC,
-      "JESRelativeStatEC_DOWN" : allMC,
-      "JESRelativeStatFSR_UP" : allMC,
-      "JESRelativeStatFSR_DOWN" : allMC,
-      "JESSinglePionECAL_UP" : allMC,
-      "JESSinglePionECAL_DOWN" : allMC,
-      "JESSinglePionHCAL_UP" : allMC,
-      "JESSinglePionHCAL_DOWN" : allMC,
-      "JESTimePtEta_UP" : allMC,
-      "JESTimePtEta_DOWN" : allMC,
+      #  ~"JESAbsoluteMPFBias_UP" : allMC,
+      #  ~"JESAbsoluteMPFBias_DOWN" : allMC,
+      #  ~"JESAbsoluteScale_UP" : allMC,
+      #  ~"JESAbsoluteScale_DOWN" : allMC,
+      #  ~"JESAbsoluteStat_UP" : allMC,
+      #  ~"JESAbsoluteStat_DOWN" : allMC,
+      #  ~"JESFlavorQCD_UP" : allMC,
+      #  ~"JESFlavorQCD_DOWN" : allMC,
+      #  ~"JESFragmentation_UP" : allMC,
+      #  ~"JESFragmentation_DOWN" : allMC,
+      #  ~"JESPileUpDataMC_UP" : allMC,
+      #  ~"JESPileUpDataMC_DOWN" : allMC,
+      #  ~"JESPileUpPtBB_UP" : allMC,
+      #  ~"JESPileUpPtBB_DOWN" : allMC,
+      #  ~"JESPileUpPtEC1_UP" : allMC,
+      #  ~"JESPileUpPtEC1_DOWN" : allMC,
+      #  ~"JESPileUpPtRef_UP" : allMC,
+      #  ~"JESPileUpPtRef_DOWN" : allMC,
+      #  ~"JESRelativeBal_UP" : allMC,
+      #  ~"JESRelativeBal_DOWN" : allMC,
+      #  ~"JESRelativeFSR_UP" : allMC,
+      #  ~"JESRelativeFSR_DOWN" : allMC,
+      #  ~"JESRelativeJEREC1_UP" : allMC,
+      #  ~"JESRelativeJEREC1_DOWN" : allMC,
+      #  ~"JESRelativePtBB_UP" : allMC,
+      #  ~"JESRelativePtBB_DOWN" : allMC,
+      #  ~"JESRelativePtEC1_UP" : allMC,
+      #  ~"JESRelativePtEC1_DOWN" : allMC,
+      #  ~"JESRelativeSample_UP" : allMC,
+      #  ~"JESRelativeSample_DOWN" : allMC,
+      #  ~"JESRelativeStatEC_UP" : allMC,
+      #  ~"JESRelativeStatEC_DOWN" : allMC,
+      #  ~"JESRelativeStatFSR_UP" : allMC,
+      #  ~"JESRelativeStatFSR_DOWN" : allMC,
+      #  ~"JESSinglePionECAL_UP" : allMC,
+      #  ~"JESSinglePionECAL_DOWN" : allMC,
+      #  ~"JESSinglePionHCAL_UP" : allMC,
+      #  ~"JESSinglePionHCAL_DOWN" : allMC,
+      #  ~"JESTimePtEta_UP" : allMC,
+      #  ~"JESTimePtEta_DOWN" : allMC,
       
-      "JESFlavorRealistic_UP" : allMC,
-      "JESFlavorRealistic_DOWN" : allMC,
-      "JESFlavorPureGluon_UP" : allMC,
-      "JESFlavorPureGluon_DOWN" : allMC,
-      "JESFlavorPureQuark_UP" : allMC,
-      "JESFlavorPureQuark_DOWN" : allMC,
-      "JESFlavorPureCharm_UP" : allMC,
-      "JESFlavorPureCharm_DOWN" : allMC,
-      "JESFlavorPureBottom_UP" : allMC,
-      "JESFlavorPureBottom_DOWN" : allMC,
+      #  ~"JESFlavorRealistic_UP" : allMC,
+      #  ~"JESFlavorRealistic_DOWN" : allMC,
+      #  ~"JESFlavorPureGluon_UP" : allMC,
+      #  ~"JESFlavorPureGluon_DOWN" : allMC,
+      #  ~"JESFlavorPureQuark_UP" : allMC,
+      #  ~"JESFlavorPureQuark_DOWN" : allMC,
+      #  ~"JESFlavorPureCharm_UP" : allMC,
+      #  ~"JESFlavorPureCharm_DOWN" : allMC,
+      #  ~"JESFlavorPureBottom_UP" : allMC,
+      #  ~"JESFlavorPureBottom_DOWN" : allMC,
       
       "JESRelativeBalreg_UP" : allMC,
       "JESRelativeBalreg_DOWN" : allMC,
@@ -268,11 +268,19 @@ def get_fileName(dataset,year,fileNR):      #checks config for name of file
    config.read("../config"+year+".ini")
    return config[dataset]["files"].split(",")[fileNR]
 
-def get_dataBasePath_dCache(year,curl=True,dcap=False):      #return dataBasePath on dCache for given year
+def get_version(year):      #checks config for name of file
+   config = configparser.ConfigParser()
+   config.read("../config"+year+".ini")
+   return config["input"]["version"]
+
+def get_dataBasePath_dCache(year,curl=True,dcap=False,extern=False):      #return dataBasePath on dCache for given year
    config = configparser.ConfigParser()
    config.read("../config"+year+".ini")
    if dcap:
-      return "dcap://grid-dcap-extern.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
+      if extern:
+         return "dcap://grid-dcap-extern.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
+      else:
+         return "dcap://grid-dcap.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
    elif curl:
       return "curlsimple://grid-webdav.physik.rwth-aachen.de:2889/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
    else:
@@ -284,7 +292,7 @@ def printSubmitInfo(args):
    print "Process "+str(args.f*100)+"% of events"
    
 def createLogPath(args):
-   logpath="logs/"+args.y+"/"+args.s+"/"+str(args.f)+"/"+args.m
+   logpath = "logs/"+args.y+"/"+args.s+"/"+str(args.f)+"/"+args.m
    if not os.path.exists(logpath):
       try:
          os.makedirs(logpath)
@@ -292,6 +300,79 @@ def createLogPath(args):
          if exc.errno != errno.EEXIST:
             raise
    return logpath
+
+def uploadCompressedCMSSW():    #compress and upload CMSSW to dCache to run on grid
+   runDir = os.getcwd()
+   filePath = runDir+"/inputs/"
+   if not os.path.exists(filePath):
+      try:
+         os.makedirs(filePath)
+      except OSError as exc: # Guard against race condition
+         if exc.errno != errno.EEXIST:
+            raise
+   CMSSW_path = os.getenv('CMSSW_BASE')
+   CMSSW_version = CMSSW_path.split("/")[-1]
+   filePath+=CMSSW_version+".tgz"
+   
+   print "Compressing",CMSSW_version
+   try:
+      os.chdir(CMSSW_path+"/../")
+      subprocess.call(["tar","-zcvf",filePath,CMSSW_version],stdout=open(os.devnull, 'wb'))
+      os.chdir(runDir)
+   except Exception as error:
+      print "Compressing failed"
+      errno, errstr = error.args
+      print errstr
+      sys.exit(20)
+   
+   print "Uploading",CMSSW_version,"to dCache"
+   targetPath = "gridJobInputs/"+CMSSW_version+".tgz"
+   command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format(getPath("dCacheBasePath"))+targetPath,"-f","-r"
+   command = " ".join(command)
+   try:
+      subprocess.call(command,shell=True)
+   except Exception as error:
+      print "Uploading failed"
+      errno, errstr = error.args
+      print errstr
+      sys.exit(21)
+
+def uploadCompressedFW():    #compress and upload local Framework to dCache to run on grid
+   runDir = os.getcwd()
+   filePath = runDir+"/inputs/"
+   if not os.path.exists(filePath):
+      try:
+         os.makedirs(filePath)
+      except OSError as exc: # Guard against race condition
+         if exc.errno != errno.EEXIST:
+            raise
+   
+   FW_files = ["CMakeLists.txt","cmake","config2018.ini","config2017.ini","config2016_preVFP.ini","config2016_postVFP.ini","data","src"]
+   filePath+="FW.tgz"
+   FW_path = getPath("frameworkBasePath")
+   
+   print "Compressing framework from",FW_path
+   try:
+      os.chdir(FW_path)
+      subprocess.call(["tar","-hzcvf",filePath]+FW_files,stdout=open(os.devnull, 'wb'))
+      os.chdir(runDir)
+   except Exception as error:
+      print "Compressing failed"
+      errno, errstr = error.args
+      print errstr
+      sys.exit(30)
+   
+   print "Uploading framework to dCache"
+   targetPath = "gridJobInputs/FW.tgz"
+   command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format(getPath("dCacheBasePath"))+targetPath,"-f","-r"
+   command = " ".join(command)
+   try:
+      subprocess.call(command,shell=True)
+   except Exception as error:
+      print "Uploading failed"
+      errno, errstr = error.args
+      print errstr
+      sys.exit(31)
    
 def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=False):
    
@@ -381,13 +462,14 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
                submitFile = logpath+"/"+args.m+"_"+x+"_"+str(fileNR+1)+".submit"    #define submit file
                
                if args.copyDCache:     #set path to dCache input in case of copying to condor node
-                  inputPath = get_dataBasePath_dCache(args.y,False,True)+get_fileName(x,args.y,fileNR)
+                  inputPath = get_dataBasePath_dCache(args.y,False,True,True)+get_fileName(x,args.y,fileNR)
                   inputPath = inputPath.replace(" ", "")
                elif args.condFileTransfer:    #set path to dCache input in case of copying to condor node
                   inputPath = get_dataBasePath_dCache(args.y,True,False)+get_fileName(x,args.y,fileNR)
                   inputPath = inputPath.replace(" ", "")
                else:
-                  inputPath = ""
+                  inputPath = get_dataBasePath_dCache(args.y,False,True)+get_fileName(x,args.y,fileNR)
+                  inputPath = inputPath.replace(" ", "")
                                  
                with open(submitFile,"w") as f:   # write condor submit
                   if args.copyDCache:
@@ -403,7 +485,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    Requirements            = (TARGET.Machine == "lxblade33.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade34.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade35.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade36.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade37.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade38.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade39.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade40.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade41.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade42.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade43.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade44.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade45.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade46.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade47.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade48.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade49.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade50.physik.rwth-aachen.de")
    Queue
       """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath")),)
-                  else:
+                  elif args.condFileTransfer:
                      f.write("""
    Universe                = vanilla
    Executable              = run_condorFileTrans.sh
@@ -420,6 +502,23 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {9}
    Queue
       """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath")),)
+                  else:    # Grid submission
+                     f.write("""
+   universe                = grid
+   grid_resource           = condor grid-ce-1-rwth.gridka.de grid-ce-1-rwth.gridka.de:9619
+   Executable              = runGrid.sh
+   Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {10} {11}
+   Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
+   Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
+   Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
+   use_x509userproxy       = true
+   should_transfer_files   = YES
+   when_to_transfer_output = ON_EXIT_OR_EVICT
+   transfer_output_files   = output_framework,minTrees
+   transfer_output_remaps  = "output_framework = {8}/{5}/{9}/output_framework; minTrees = {8}/{5}/{9}/minTrees"
+   getenv                  = yes
+   Queue
+      """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1), getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),inputPath))
                subprocess.call(["condor_submit", submitFile])
 
 
@@ -481,10 +580,10 @@ if __name__ == "__main__":
    toProcess_mc=allMC
    
    #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
-   #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
+   toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
    #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"]       #2017, 2016
    #  ~toProcess_data=["MET"]      
-   toProcess_data=[]
+   #  ~toProcess_data=[]
          
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10"]
@@ -498,7 +597,7 @@ if __name__ == "__main__":
    parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",required=True)
    parser.add_argument('-s', type=str, default="Nominal", help="systematic shift")
    parser.add_argument('--scratchInput', action='store_true', default=False, help="Use nTuple stored on scratch, otherwise dCache Input is used.")
-   parser.add_argument('--copyDCache', action='store_true', default=True, help="Copy nTuples stored on dCache to node before running the code.")
+   parser.add_argument('--copyDCache', action='store_true', default=False, help="Copy nTuples stored on dCache to node before running the code.")
    parser.add_argument('--condFileTransfer', action='store_true', default=False, help="Use condor file transfer to copy from dCache to node before running the code.")
    parser.add_argument('--SingleSubmit', action='store_true' )
    parser.add_argument('--bTagEff_complete', action='store_true', default=False, help="Submits bTagEff jobs with all relevant systematics (use with care!)")
@@ -509,6 +608,10 @@ if __name__ == "__main__":
    parser.add_argument('--noConfirmation', action='store_true', default=False, help="Disables keyboard input befor submission")
 
    args = parser.parse_args()
+   
+   # Upload CMSSW and FW to dCache if running on grid
+   uploadCompressedCMSSW()
+   uploadCompressedFW()
    
    if (args.bTagEff_complete == False and args.distributions_complete==False and args.pdf_complete==False):
       if (args.m == "TUnfold_binning"):

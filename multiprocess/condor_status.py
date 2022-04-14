@@ -14,12 +14,12 @@ from getPath import getPath
 
 def getInfos():
     out = subprocess.check_output(["condor_q", "-long"])
-    for jobStrings in out.split("\n\n"):
-        for line in jobStrings.split("\n"):
-            if line:
-                break
-                print [line.split(" = ")]
-    return [ dict([line.replace("\"","").split(" = ") for line in jobStrings.split("\n") if " = " in line]) for jobStrings in out.split("\n\n") if jobStrings ]
+    #  ~for jobStrings in out.split("\n\n"):
+        #  ~for line in jobStrings.split("\n"):
+            #  ~if line:
+                #  ~break
+                #  ~print [line.split(" = ")]
+    return [ dict([line.replace("\"","").split(" = ") for line in jobStrings.split("\n") if (" = " in line and "TransferOutputRemaps" not in line)]) for jobStrings in out.split("\n\n") if jobStrings ]
 
 def getSummary():
     out = subprocess.check_output(["condor_q"])
@@ -50,9 +50,10 @@ def getCopyTimeFromError(outName):
     with open(logName,"r") as f:
         for line in f:
             if line.find("seconds") >= 0:
-                time = line.split("in")[-1]
-                time = time.split("seconds")[0]
-    return time
+                line = line.split("in")[-1]
+                time = line.split("seconds")[0]
+                speed = line.split("seconds")[1]
+    return time,speed
     
 def checkErrorFile(outName):
     logName = outName.replace(".out",".error")
@@ -132,7 +133,7 @@ def getStatusFromOut(outName,running,printStatus=True,resubmit=False):
                     if line.find("took")>=0:
                         finished = True
                         color = "green"
-                        if printStatus: print colored(datasetName+" is finished, copy took "+getCopyTimeFromError(outName).strip()+"s, script"+line.split(")")[-1].replace("=","").replace("\n","")+" on "+getMachineFromOut(outName),color)
+                        if printStatus: print colored(datasetName+" is finished, copy took "+getCopyTimeFromError(outName)[0].strip()+"s with "+getCopyTimeFromError(outName)[1].strip()+", script"+line.split(")")[-1].replace("=","").replace("\n","")+" on "+getMachineFromOut(outName),color)
         if finished == False and running:
             getProgressFromOut(outName,True,printStatus,resubmit,True) 
         elif finished == False and running == False:
@@ -172,6 +173,10 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
     runningLogs = {}
 
     for job in jobs:
+        
+        if job.has_key("RemoteHost") == False:
+            job["RemoteHost"] = "Grid"
+        
         if job["Args"]=="0":
             continue
         #  ~if job["Cmd"].split("/")[-1]=="run.sh":

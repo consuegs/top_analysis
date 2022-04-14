@@ -57,7 +57,7 @@ void run()
       TString inputLoc = TString::Format("bTagEff/%s/%s_merged_%s.root",currentSystematic.name().Data(),sampleName.Data(),cfg.treeVersion.Data());
       io::RootFileReader histReader(inputLoc,TString::Format("bTagEff%.1f",cfg.processFraction*100));
       io::RootFileSaver saver(TString::Format("bTagEff/plots_bTagEff%.1f.root",cfg.processFraction*100),TString::Format("%s/",currentSystematic.name().Data()));
-      io::RootFileSaver histSaver(TString::Format("data/bTagEff/%s.root",currentSystematic.name().Data()),"");
+      io::RootFileSaver histSaver(TString::Format("../data/bTagEff%s/%s.root",cfg.year.Data(),currentSystematic.name().Data()),"",false,false);
       
       //Plot 2D bTag Eff.
       TCanvas can;

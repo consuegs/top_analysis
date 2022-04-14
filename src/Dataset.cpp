@@ -182,6 +182,12 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    bool isSplitSample=false;
    std::string systName;
    std::vector<std::string> mcDataset = util::to_vector<std::string>(pt.get<std::string>("input.mc_datasets"));
+   
+   // Do not use datasets defined in config if running on grid
+   TString hostname=getenv("HOSTNAME");
+   bool gridRunning = (hostname.Contains("lx")==false);
+   if (gridRunning) mcDataset.clear();
+   
    if(single) mcDataset = util::to_vector<std::string>(datasetMC_single);  // Use only one dataset if single option is choosen
    for (std::string sDs: mcDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
@@ -265,6 +271,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    // Signals
    std::vector<std::string> signalDataset = util::to_vector<std::string>(pt.get<std::string>("input.signals"));
    if(single) signalDataset = util::to_vector<std::string>(datasetSIGNAL_single);  // Use only one dataset if single option is choosen
+   if (gridRunning) signalDataset.clear();
    for (std::string sDs: signalDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs = util::to_vector<float>(pt.get<std::string>(sDs+".xsecs"));
@@ -308,6 +315,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    // Data
    std::vector<std::string> dataDataset = util::to_vector<std::string>(pt.get<std::string>("input.data_streams"));
    if(single) dataDataset = util::to_vector<std::string>(datasetDATA_single);  // Use only one dataset if single option is choosen
+   if (gridRunning) dataDataset.clear();
    for (std::string sDs: dataDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
       xsecs=std::vector<float>(filenames.size(),-1);
