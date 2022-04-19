@@ -66,11 +66,10 @@ def getAllSamples(year):
     config.read("../config"+year+".ini")
     dataBasePath = config["input"]["dataBasePath"]+config["input"]["version"]
     samples = []
-    for sampleFile in glob.glob(dataBasePath+"/nTuple/*"):
-        if sampleFile.find(".root")>0:
-            continue
-        if sampleFile.find("TTTo2L2Nu")>0:
-            samples.append(sampleFile)
+    for sampleFile in glob.glob(dataBasePath+"/nTuple/TTTo2L2Nu*"):
+        sampleName = sampleFile.rsplit('_', 1)[0]
+        if sampleName not in samples:
+            samples.append(sampleName)
     return samples
     
 
@@ -99,7 +98,7 @@ if __name__ == "__main__":
         inputSamples = getAllSamples(args.year)
     else:
         inputSamples = [args.singleSample]
-    
+            
     i = 0
     for sample in inputSamples:
         i+=1
