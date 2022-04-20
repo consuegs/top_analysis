@@ -36,5 +36,6 @@ dccp "$8" ../
 echo $(date)
 
 export ANALYSIS_YEAR_CONFIG="$4"
+export HOSTNAME=$HOSTNAME
 
 ./run.x "$1" "$2" "$3" "$5" "$6" -d ../

@@ -2,8 +2,10 @@
 
 source /etc/profile.d/umd_ui.sh #to enable proxy
 
+export HOSTNAME=$HOSTNAME
+
 #random sleep to avoid to many simultaneous copy jobs
-duration=$[ ( $RANDOM % 15 )  + 1 ]
+duration=$[ ( $RANDOM % 10 )  + 1 ]
 echo "Sleeping for "$duration" minutes"
 sleep $duration"m"
 
