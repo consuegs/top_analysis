@@ -11,5 +11,6 @@ cd $submitDir
 cd ../build
 
 export ANALYSIS_YEAR_CONFIG="$3"
+export HOSTNAME=$HOSTNAME
 
 ./run.x "$1" "$2" "$4"

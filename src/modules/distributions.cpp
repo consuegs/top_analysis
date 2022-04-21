@@ -643,8 +643,6 @@ void run()
          TTreeReaderValue<std::vector<tree::Jet>>      jets_puppi     (reader, "jetsPuppi");
          TTreeReaderValue<std::vector<tree::Particle>>      genJets     (reader, "genJets");
          TTreeReaderValue<std::vector<tree::GenParticle>> genParticles(reader, "genParticles");
-         TTreeReaderValue<std::vector<tree::IntermediateGenParticle>> intermediateGenParticles(reader, "intermediateGenParticles");     
-         TTreeReaderValue<std::vector<tree::Particle>> triggerObjects(reader, "hltEG165HE10Filter");
          TTreeReaderValue<tree::MET> MET(reader, "met"+metAddition);
          TTreeReaderValue<tree::MET> MET_xy(reader, "metXYcorr"+metAddition);
          TTreeReaderValue<tree::MET> GENMET(reader, "met_gen");
