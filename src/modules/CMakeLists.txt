@@ -60,11 +60,11 @@ set(MODULES
   # ~plot_yearComparisonsSebastian
   cr_envelope
   # ~analyze_minTrees
-  testHarvester
-  testHarvester_ttbar
-  testHarvester_ttbar_chan
-  testHarvester_ttbar_2D
-  testONNX
+  # ~testHarvester
+  # ~testHarvester_ttbar
+  # ~testHarvester_ttbar_chan
+  # ~testHarvester_ttbar_2D
+  # ~testONNX
   )
 
 foreach(MODULE ${MODULES})
