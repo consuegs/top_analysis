@@ -41,6 +41,8 @@ void run(){
   // ch::Categories is just a typedef of vector<pair<int, string>>
   //! [part1]
 
+  float lumiUnc = cfg.systUncFactor.at("LUMI").first;
+  cout << lumiUnc << endl;
 
   //! [part2]
   vector<string> masses = ch::MassesFromRange("120-135:5");
@@ -135,16 +137,25 @@ void run(){
 
   // Finally we iterate through each bin,mass combination and write a
   // datacard.
-  for (auto b : bins) {
-    for (auto m : masses) {
-      cout << ">> Writing datacard for bin: " << b << " and mass: " << m
-           << "\n";
-      // We need to filter on both the mass and the mass hypothesis,
-      // where we must remember to include the "*" mass entry to get
-      // all the data and backgrounds.
-      cb.cp().bin({b}).mass({m, "*"}).WriteDatacard(
-          b + "_" + m + ".txt", output);
-    }
+  // ~for (auto b : bins) {
+    // ~for (auto m : masses) {
+      // ~cout << ">> Writing datacard for bin: " << b << " and mass: " << m
+           // ~<< "\n";
+      // ~// We need to filter on both the mass and the mass hypothesis,
+      // ~// where we must remember to include the "*" mass entry to get
+      // ~// all the data and backgrounds.
+      // ~cb.cp().bin({b}).mass({m, "*"}).WriteDatacard(
+          // ~b + "_" + m + ".txt", output);
+    // ~}
+  // ~}
+  for (auto m : masses) {
+    cout << ">> Writing datacard for all bins and mass: " << m
+         << "\n";
+    // We need to filter on both the mass and the mass hypothesis,
+    // where we must remember to include the "*" mass entry to get
+    // all the data and backgrounds.
+    cb.cp().mass({m, "*"}).WriteDatacard(
+        m + ".txt", output);
   }
   //! [part9]
 }

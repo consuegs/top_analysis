@@ -62,6 +62,8 @@ set(MODULES
   # ~analyze_minTrees
   testHarvester
   testHarvester_ttbar
+  testHarvester_ttbar_chan
+  testHarvester_ttbar_2D
   )
 
 foreach(MODULE ${MODULES})
