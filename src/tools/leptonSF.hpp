@@ -35,7 +35,8 @@ public:
 
    /// Get lepton per-event scale factor for exactly two leptons
    const float getSFDilepton(const TLorentzVector &p_l1, const TLorentzVector &p_l2,
-                   const int &flavor_l1, const int &flavor_l2);
+                   const int &flavor_l1, const int &flavor_l2,
+                   const double &etaSC_l1, const double &etaSC_l2);
 
    void setDYExtrapolationUncFactors(const float& muon_ISO_DY_unc, const float& electron_ID_DY_unc);
 
@@ -53,7 +54,7 @@ private:
                    const std::string& histogramName)const;
 
    /// Get per-lepton scale factor
-   const float leptonSF(const TLorentzVector p, const int flavor);
+   const float leptonSF(const TLorentzVector p, const int flavor, const double etaSC);
    
    /// Get SF from 2D hist
    const float get2DSF(const TH2* const histo, const float& x, const float& y, const float uncFactor, const float DYunc);

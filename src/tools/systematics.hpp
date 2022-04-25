@@ -127,7 +127,7 @@ namespace Systematic{
         jesCorrelationGroupFlavor,//39
         jesCorrelationGroupUncorrelated,//40
         jesHttEta0to5, jesHttEta0to3, jesHttEta3to5, jesHttEC2,
-        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear,
+        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear, jesRelativeBal_reg, jesFlavorQCD_reg, jesRelativeSampleYear,
         jesUserDefinedHEM1516,
         jesFlavorRealistic,
 
@@ -272,10 +272,13 @@ namespace Systematic{
 
 
     /// Convert a type from string to enum
-    Type convertType(const TString& type);
+    Type convertType(const TString& type, bool const &quiet=false);
 
     /// Convert a type from enum to string
     TString convertType(const Type& type);
+    
+    /// Convert a type from string to string (removes variation from string)
+    TString convertTypeString(const TString& type);
 
     /// Convert a vector of types from string to enum
     std::vector<Type> convertType(const std::vector<TString>& types);
@@ -334,7 +337,7 @@ namespace Systematic{
         jesFlavorZJet, jesFlavorPhotonJet, jesFlavorPureGluon, jesFlavorPureQuark, jesFlavorPureCharm, jesFlavorPureBottom, jesFlavorRealistic,
         jesCorrelationGroupMPFInSitu, jesCorrelationGroupIntercalibration, jesCorrelationGroupbJES, jesCorrelationGroupFlavor, jesCorrelationGroupUncorrelated,
         jesHttEta0to5, jesHttEta0to3, jesHttEta3to5, jesHttEC2,
-        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear,
+        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear, jesRelativeBal_reg, jesFlavorQCD_reg, jesRelativeSampleYear,
         jesUserDefinedHEM1516,
         frac_tthf, frac_ttother,
         lumi,
@@ -392,8 +395,18 @@ namespace Systematic{
         jesFlavorZJet, jesFlavorPhotonJet, jesFlavorPureGluon, jesFlavorPureQuark, jesFlavorPureCharm, jesFlavorPureBottom, jesFlavorRealistic,
         jesCorrelationGroupMPFInSitu, jesCorrelationGroupIntercalibration, jesCorrelationGroupbJES, jesCorrelationGroupFlavor, jesCorrelationGroupUncorrelated,
         jesHttEta0to5, jesHttEta0to3, jesHttEta3to5, jesHttEC2,
-        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear,
+        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear, jesRelativeBal_reg, jesFlavorQCD_reg, jesRelativeSampleYear,
         jesUserDefinedHEM1516,
+    };
+    
+    /// Define jes systematics for pure flavor
+    const std::vector<Type> jesTypes_pureFlavor{
+        jesFlavorPureGluon, jesFlavorPureQuark, jesFlavorPureCharm, jesFlavorPureBottom
+    };
+    
+    /// Define jes systematics for regrouped option
+    const std::vector<Type> jesTypes_regrouped{
+        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesRelativeBal_reg, jesFlavorQCD_reg, jesRelativeSampleYear,
     };
     
     /// Define jer systematics
@@ -481,7 +494,8 @@ namespace Systematic{
         unclustered,
         
         pdf,
-        xsec_ttother,xsec_dy,xsec_st,xsec_other
+        xsec_ttother,xsec_dy,xsec_st,xsec_other,
+        l1prefiring
     };
     
     ///Define systematics that are applied by varying the nominal MC weight
@@ -586,6 +600,9 @@ namespace Systematic{
     
     /// Get correct pileup weight name
     TString puWeightName(const Systematic & systematic);
+    
+    /// Get correct prefiring weight name
+    TString prefiringWeightName(const Systematic & systematic);
     
     /// Get correct met name (to derive unc. due to unclustered Energy)
     TString metNameAddition(const Systematic & systematic);

@@ -175,12 +175,16 @@ void run()
          TTreeReaderValue<UInt_t> lumNo(reader, "lumNo");
          TTreeReaderValue<ULong64_t> evtNo(reader, "evtNo");
          TTreeReaderValue<float> w_mc(reader, "mc_weight");
+         TTreeReaderValue<float> fragCentralWeight(reader, "weightFragCentral");
+         TTreeReaderValue<float> w_topPT(reader, "topPTweight");
+         TTreeReaderValue<double> w_prefiring(reader, "prefiring_weight");
          TTreeReaderValue<std::vector<float>> w_pdf(reader, "pdf_weights");
          TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
          TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
          TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
          TTreeReaderValue<tree::MET> MET(reader, "met");
          TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
+         TTreeReaderValue<tree::MET> MET_Puppi_xy(reader, "metPuppiXYcorr");
          TTreeReaderValue<float> rho(reader, "rho");
          TTreeReaderValue<int> genDecayMode(reader, "ttbarDecayMode");
          TTreeReaderValue<int> n_Interactions(reader, "nPV");
@@ -223,7 +227,7 @@ void run()
             }
             
             float met=MET->p.Pt();
-            float const met_puppi=MET_Puppi->p.Pt();
+            float const met_puppi=MET_Puppi_xy->p.Pt();
             
             //Do not use tau events in signal sample
             if (ttBar_dilepton && *genDecayMode>3) continue;
@@ -231,27 +235,28 @@ void run()
             //Booleans for reco and zpeak selection
             bool rec_selection=false;
             
-            // Correct and select leptons
-            *muons = leptonCorretor.correctMuons(*muons,MET->p,MET_Puppi->p);
-            *electrons = leptonCorretor.correctElectrons(*electrons,MET->p,MET_Puppi->p);
+            // Construct vector of different METs for correction
+            std::vector<tree::MET*> PFMETs = {&(*MET)};
+            std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi_xy)};
             
-            //Apply JER smearing
-            if(!isData){
-               jerCorrector.smearCollection_Hybrid(*jets,*rho);
-            }
+            // Correct and select leptons
+            *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
+            *electrons = leptonCorretor.correctElectrons(*electrons,PFMETs,PuppiMETs);
             
             //Baseline selection (including separation into ee, emu, mumu)
             TLorentzVector p_l1;
             TLorentzVector p_l2;
             int flavor_l1=0;  //1 for electron and 2 for muon
             int flavor_l2=0;
+            double etaSC_l1=0;  // etaSC needed for electron ID SF
+            double etaSC_l2=0;
             bool muonLead=true; //Boolean for emu channel
             std::vector<bool> channel={false,false,false};     //ee, mumu, emu
             TString cat="";
             
-            rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead);
+            rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2,cat,muonLead);
                   
-            std::vector<tree::Jet> cjets;
+            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho);
             std::vector<tree::Jet> BJets;
             std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
             if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
@@ -265,10 +270,10 @@ void run()
                else if (channel[1]) channelID = 2;
                else if (channel[2]) channelID = 3;
                
-               fEventWeight = *w_pu * *w_mc;
-               float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2);
+               fEventWeight = *w_pu * *w_mc * *w_topPT;
+               float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
                float bTagWeight = bTagWeighter.getEventWeight(cjets,channelID);
-               SFWeight = bTagWeight*leptonSFweight;
+               SFWeight = bTagWeight*leptonSFweight * *w_prefiring;
             }
             hs.setFillWeight(fEventWeight*SFWeight);
             hs2d.setFillWeight(fEventWeight*SFWeight);
@@ -279,16 +284,11 @@ void run()
             bool diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *muonTrigg3 || *muonTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2;
             bool electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *eleMuTrigg3 || *eleMuTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg;
             
-            if(Run2016_preVFP || Run2016_postVFP){
-               if(!Run2016H){ 
-                  diMuonTriggers=*muonTrigg3 || *muonTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2; // no DZ
-                  electronMuonTriggers=*eleMuTrigg3 || *eleMuTrigg4 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg; // no DZ
-               }else{ 
-                  diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2; // with DZ
-                  electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg; // with DZ
-               }
+            if(Run2016H){ 
+               diMuonTriggers=*muonTrigg1 || *muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2; // with DZ
+               electronMuonTriggers=*eleMuTrigg1 || *eleMuTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2 || *singleEleTrigg; // with DZ
             }
-            
+
             if(Run2017)diMuonTriggers=*muonTrigg2 || *singleMuonTrigg1 || *singleMuonTrigg2;
             if(Run2017AB){
                diMuonTriggers=*muonTrigg1|| *singleMuonTrigg1 || *singleMuonTrigg2;

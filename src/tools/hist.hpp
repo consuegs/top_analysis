@@ -14,6 +14,7 @@
 #include <TH2F.h>
 #include <THStack.h>
 #include <TProfile2D.h>
+#include <TGraphAsymmErrors.h>
 
 namespace hist
 {
@@ -69,6 +70,7 @@ namespace hist
       float getCountError(TString const &varName, TString const &sample);
       void saveHistograms(io::RootFileSaver const &saver_hist, std::vector<TString> const &Samples);
       void saveHistograms(io::RootFileSaver const &saver_hist, std::vector<std::string> const &Samples);
+      void saveHistograms2D_as1D(io::RootFileSaver const &saver_hist, std::vector<TString> const &Samples);
 
       gfx::LegendEntries getLegendEntries();
    private:
@@ -132,6 +134,7 @@ namespace hist
    void mergeOverflow(TH1& h, bool includeUnderflow=true);
    void mergeOverflow(TH2& h, bool includeUnderflow=true);
    void sqrtHist(TH1& h);
+   void addQuadr(TH1F &h1, TH1F const &h2);
 
    void setMaximum(TH1& h,std::vector<TH1F> hists,float multiplier=1.1);
    void setMinimum(TH1& h,std::vector<TH1F> hists,float multiplier=0.9,bool allowNegative=true);
@@ -154,6 +157,10 @@ namespace hist
    std::pair<TH1F*,TH1F*> getEnvelope(const TH1F* nominal, const std::vector<TH1F> &shifts);
    std::pair<TH2F*,TH2F*> getEnvelope(const TH2F* nominal, const std::vector<TH2F*> shifts);
    std::pair<TH2F*,TH2F*> getEnvelope(const TH2F* nominal, const std::vector<TH2F> &shifts);
+   
+   TGraphAsymmErrors getErrorGraph(TH1F* const &eDOWN, TH1F* const &eUP, TH1F* const &nominal, bool const shift, bool const eXzero=false);
+   
+   TGraphAsymmErrors getRatioAsymmGraph(TH1F const &down,TH1F const &up,TH1F const &nominal,TH1F const &denominator);
 }
 
 #endif /* HIST_HPP__ */

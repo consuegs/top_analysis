@@ -14,7 +14,7 @@
 
 // --------------------- Functions defined in namespace Systematic for Type -------------------------
 
-Systematic::Type Systematic::convertType(const TString& type)
+Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
 {
     // Attention: the order here is important, since the first line where the BeginsWith is true is returned
     if(type.BeginsWith("Nominal")) return nominal;
@@ -76,6 +76,9 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("JEREta3Pt0")) return jerEta3Pt0;
     if(type.BeginsWith("JEREta3Pt1")) return jerEta3Pt1;
     if(type.BeginsWith("JER")) return jer;
+    if(type.BeginsWith("JESRelativeBalreg")) return jesRelativeBal_reg;
+    if(type.BeginsWith("JESFlavorQCDreg")) return jesFlavorQCD_reg;
+    if(type.BeginsWith("JESRelativeSampleYear")) return jesRelativeSampleYear;
     if(type.BeginsWith("JESAbsoluteStat")) return jesAbsoluteStat;
     if(type.BeginsWith("JESAbsoluteScale")) return jesAbsoluteScale;
     if(type.BeginsWith("JESAbsoluteFlavMap")) return jesAbsoluteFlavMap;
@@ -141,7 +144,7 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("JESEC2Year")) return jesEC2Year;
     if(type.BeginsWith("JESEC2")) return jesEC2;
     if(type.BeginsWith("JESHFYear")) return jesHFYear;
-    if(type.BeginsWith("JESHF")) return jesHF;
+    if(type.BeginsWith("JESHF")) return jesHF; 
     if(type.BeginsWith("JESUserDefinedHEM1516")) return jesUserDefinedHEM1516;
     if(type.BeginsWith("JESTotal")) return jesTotal;
 
@@ -276,7 +279,7 @@ Systematic::Type Systematic::convertType(const TString& type)
     if(type.BeginsWith("jetPileupIDapplied")) return jetPileupIDapplied;
     if(type.BeginsWith("jetLooseCleaningApplied")) return jetLooseCleaningApplied;
     if(type.BeginsWith("met40Cut")) return met40Cut;
-    std::cout<<"Warning in Systematic::convertType()! Following conversion is not implemented: "
+    if(!quiet) std::cout<<"Warning in Systematic::convertType()! Following conversion is not implemented: "
              <<type<<std::endl<<std::endl;
     return undefinedType;
 }
@@ -410,6 +413,9 @@ TString Systematic::convertType(const Type& type)
     if(type == jesEC2) return "JESEC2";
     if(type == jesHFYear) return "JESHFYear";
     if(type == jesHF) return "JESHF";
+    if(type == jesRelativeBal_reg) return "JESRelativeBalreg";
+    if(type == jesFlavorQCD_reg) return "JESFlavorQCDreg";
+    if(type == jesRelativeSampleYear) return "JESRelativeSampleYear";
     if(type == jesUserDefinedHEM1516) return "JESUserDefinedHEM1516";
 
     if(type == frac_tthf) return "FRAC_TTHF";
@@ -548,6 +554,11 @@ TString Systematic::convertType(const Type& type)
     
     std::cerr<<"Error in Systematic::convertType()! Conversion is not implemented\n...break\n"<<std::endl;
     exit(99);
+}
+
+TString Systematic::convertTypeString(const TString& type)
+{
+    return convertType(convertType(type));
 }
 
 
@@ -765,6 +776,31 @@ TString Systematic::puWeightName(const Systematic & systematic){
         else if(systematic.variation() == down) {
             std::cout<<"Apply systematic variation: down\n";
             weightName = "pu_weight_down";
+        }
+        else {
+            std::cerr << "ERROR in constructor of pileup weights! Systematic variation is invalid: "
+                  << convertVariation(systematic.variation()) << "\n...break\n\n";
+            exit(98);
+      }
+   }
+   else std::cout<<"Do not apply systematic variation\n";
+   
+   return weightName;
+}
+
+TString Systematic::prefiringWeightName(const Systematic & systematic){
+    std::cout<<"--- Beginning preparation of prefiring weight\n";
+    const Type type = systematic.type();
+    TString weightName = "prefiring_weight";
+    if(type==l1prefiring){
+        std::cout<<"Use systematic of type: "<<convertType(type)<<"\n";
+        if(systematic.variation() == up) {
+            std::cout<<"Apply systematic variation: up\n";
+            weightName = "prefiring_weight_up";
+        }
+        else if(systematic.variation() == down) {
+            std::cout<<"Apply systematic variation: down\n";
+            weightName = "prefiring_weight_down";
         }
         else {
             std::cerr << "ERROR in constructor of pileup weights! Systematic variation is invalid: "

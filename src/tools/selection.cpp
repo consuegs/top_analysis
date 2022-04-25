@@ -41,7 +41,8 @@ bool selection::triggerSelection(std::vector<bool> const &diElectronTriggers, st
 }
 
 bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, std::vector<tree::Muon> const &muons, std::vector<bool> &channel,
-                        TLorentzVector &p_l1, TLorentzVector &p_l2, int &flavor_l1, int &flavor_l2, TString &cat, bool &muonLead)
+                        TLorentzVector &p_l1, TLorentzVector &p_l2, int &flavor_l1, int &flavor_l2, double &etaSC_l1, double &etaSC_l2,
+                        TString &cat, bool &muonLead)
 {
    
    if ((electrons.size()+muons.size()) == 2){
@@ -53,6 +54,8 @@ bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, 
             p_l2 = electrons[1].p;
             flavor_l1 = 1;
             flavor_l2 = 1;
+            etaSC_l1 = electrons[0].etaSC;
+            etaSC_l2 = electrons[1].etaSC;
             cat = "ee";
          }
       }
@@ -64,6 +67,8 @@ bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, 
             p_l2 = muons[1].p;
             flavor_l1 = 2;
             flavor_l2 = 2;
+            etaSC_l1 = muons[0].p.Eta();
+            etaSC_l2 = muons[1].p.Eta();
             cat = "mumu";
          }
       }
@@ -76,6 +81,8 @@ bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, 
                p_l2 = electrons[0].p;
                flavor_l1 = 2;
                flavor_l2 = 1;
+               etaSC_l1 = muons[0].p.Eta();
+               etaSC_l2 = electrons[0].etaSC;
             }
             else{
                muonLead = false;
@@ -83,6 +90,8 @@ bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, 
                p_l2 = muons[0].p;
                flavor_l1 = 1;
                flavor_l2 = 2;
+               etaSC_l1 = electrons[0].etaSC;
+               etaSC_l2 = muons[0].p.Eta();
             }
             channel[2] = true;
             cat = "emu";
@@ -95,7 +104,7 @@ bool selection::diLeptonSelection(std::vector<tree::Electron> const &electrons, 
 }
 
 std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
-                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
+                                    std::vector<tree::Jet> const &jets, std::vector<tree::Jet> const &cleanJets, std::vector<tree::Jet> &bJets)
 {
    std::vector<bool> selection_vec={false,false,false,false};
       
@@ -105,7 +114,7 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    else selection_vec[0]=true;
    
    //Jet Cut
-   cleanJets=phys::getCleanedJets(jets, p_l1, p_l2);
+   // ~cleanJets=phys::getCleanedJets(jets, p_l1, p_l2);
    if(cleanJets.size()<2) return selection_vec;
    else selection_vec[1]=true;
    
@@ -138,6 +147,7 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    }
 }
 
+/*
 std::vector<bool> selection::kitSyncSelection(TLorentzVector const &p_l1, TLorentzVector const &p_l2, float const &met, std::vector<bool> const &channel,
                                     std::vector<tree::Jet> const &jets, std::vector<tree::Jet> &cleanJets, std::vector<tree::Jet> &bJets)
 {
@@ -172,6 +182,7 @@ std::vector<bool> selection::kitSyncSelection(TLorentzVector const &p_l1, TLoren
       return selection_vec;
    }
 }
+*/
 
 
 

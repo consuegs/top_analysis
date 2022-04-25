@@ -3,15 +3,18 @@
 #include <limits>
 #include <iostream>
 
-std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> const &jets,TLorentzVector const &p_l1,TLorentzVector const &p_l2)
+std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> &jets,TLorentzVector const &p_l1,TLorentzVector const &p_l2,jerCorrections &jerCorrector,const float& rho)
 {
    std::vector<tree::Jet> cjets;
-   for (const tree::Jet j: jets){
-      if (!j.TightIDlepVeto || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
+   for (tree::Jet &j: jets){
+      if (!j.TightIDlepVeto || fabs(j.p.Eta())>2.4) continue;
       
       // Check overlap with selected leptons
       if(j.p.DeltaR(p_l1)<0.4) continue;
       else if (j.p.DeltaR(p_l2)<0.4) continue;
+            
+      jerCorrector.smearJet_Hybrid(j,rho);
+      if (j.p.Pt()<30) continue;
       
       cjets.push_back(j);
    }

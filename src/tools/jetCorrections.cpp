@@ -5,7 +5,7 @@
 
 //////////////////////////////////// Jet Energy Scales //////////////////////////////////////////////////////
 
-jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, const Systematic::Systematic& systematic) :
+jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, const std::string& jesUncertaintySourceFile_regrouped, const Systematic::Systematic& systematic, const TString& year) :
    systematicInternal_(undefined),
    systematic_(systematic)
 {
@@ -22,6 +22,34 @@ jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, cons
               <<Systematic::convertVariation(systematic.variation())<<"\n...break\n"<<std::endl;
          exit(98);
       }
+      
+      // Set restricted flavors
+      restricttoflav_.clear();
+      useRestrictFlav_ = false;
+      if(std::find(Systematic::jesTypes_pureFlavor.begin(), Systematic::jesTypes_pureFlavor.end(), type) != Systematic::jesTypes_pureFlavor.end()){
+         useRestrictFlav_ = true;
+         switch(type){
+            case Systematic::Type::jesFlavorPureGluon:
+               restricttoflav_.push_back(21);
+               restricttoflav_.push_back(0);
+               std::cout<<"Restrict flavor to 21, 0"<<std::endl;
+               break;
+            case Systematic::Type::jesFlavorPureQuark:
+               restricttoflav_.push_back(1);
+               restricttoflav_.push_back(2);
+               restricttoflav_.push_back(3);
+               std::cout<<"Restrict flavor to 1, 2, 3"<<std::endl;
+               break;
+            case Systematic::Type::jesFlavorPureCharm:
+               restricttoflav_.push_back(4);
+               std::cout<<"Restrict flavor to 4"<<std::endl;
+               break;
+            case Systematic::Type::jesFlavorPureBottom:
+               restricttoflav_.push_back(5);
+               std::cout<<"Restrict flavor to 5"<<std::endl;
+               break;
+         }
+      }
    }
    // Print which systematic is used and set boolean
    if(systematicInternal_ == vary_up) {std::cout<<"Apply systematic variation: up\n"; up=true;}
@@ -29,36 +57,72 @@ jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, cons
    else std::cout<<"Do not apply systematic variation\n";
    
    // Check existence of uncertainty file
-   if(jesUncertaintySourceFile.empty()){
+   if(jesUncertaintySourceFile.empty() || jesUncertaintySourceFile_regrouped.empty()){
    std::cerr<<"ERROR in constructor of jesCorrections! "
       <<"Systematic variation requested, but no uncertainty file specified\n...break\n"<<std::endl;
    exit(98);
    }
    
+   // Check if regrouped JES is used
+   bool regrouped = (std::find(Systematic::jesTypes_regrouped.begin(), Systematic::jesTypes_regrouped.end(), type) != Systematic::jesTypes_regrouped.end());
+      
    // Configure helper
+   useRealisticFlav_ = false;
    if(systematicInternal_!=nominal){
-      try {
-         uncertainty_ = new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[0]));
+      if (type != Systematic::Type::jesFlavorRealistic && !regrouped){
+         try {
+            uncertainty_ = new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[0]));
+         }
+         catch(std::runtime_error &rte){
+            std::cout << "JESBase::setFile: Uncertainty for source " << convertType(type) << " not found! Skipping\n";
+            exit(98);
+         }
       }
-      catch(std::runtime_error &rte){
-         std::cout << "JESBase::setFile: Uncertainty for source " << convertType(type) << " not found! Skipping\n";
-         exit(98);
+      else if (regrouped){
+         try {
+            std::cout<<"Use regrouped file"<<std::endl;
+            std::string uncName = JESUncSourcesMap.at(systematic_.type_str())[0];
+            boost::replace_all(uncName,"Year",("_"+year).Data());
+            uncertainty_ = new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile_regrouped,uncName));
+         }
+         catch(std::runtime_error &rte){
+            std::cout << "JESBase::setFile: Uncertainty for source " << convertType(type) << " not found! Skipping\n";
+            exit(98);
+         }
+      }
+      else{    // for realistic flavor mixing, four different unc. sources are needed
+         useRealisticFlav_ = true;
+         std::cout<<"Use realistic flavor mixing"<<std::endl;
+         try {
+            uncertaintiesRelFlav_.push_back(new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[0])));
+            uncertaintiesRelFlav_.push_back(new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[1])));
+            uncertaintiesRelFlav_.push_back(new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[2])));
+            uncertaintiesRelFlav_.push_back(new JetCorrectionUncertainty(JetCorrectorParameters(jesUncertaintySourceFile,JESUncSourcesMap.at(systematic_.type_str())[3])));
+         }
+         catch(std::runtime_error &rte){
+            std::cout << "JESBase::setFile: Uncertainty for source " << convertType(type) << " not found! Skipping\n";
+            exit(98);
+         }
       }
    }
    
 }
    
 
-void jesCorrections::applySystematics(std::vector<tree::Jet>& Jets, TLorentzVector& MET)
+// ~void jesCorrections::applySystematics(std::vector<tree::Jet>& Jets, TLorentzVector& MET)
+void jesCorrections::applySystematics(std::vector<tree::Jet>& Jets, std::vector<tree::MET*>& METs)
 {
    if(systematicInternal_!=nominal){ // Apply shifts only if JES systematic is selected
       for(size_t iJet=0; iJet<Jets.size(); ++iJet){   //Remove jets, which will be corrected from MET
-         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch_loose) continue;
+         // ~if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch_loose) continue;
+         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).p.Pt()*(1-Jets.at(iJet).muonf) < 15) continue;
          TLorentzVector temp(0.,0.,0.,0.);
          temp.SetPtEtaPhiM(Jets.at(iJet).p.Pt(),0.,Jets.at(iJet).p.Phi(),0.);
-         MET = MET + (temp-(temp*(Jets.at(iJet).uncorJecFactor_L1)));
+         for (tree::MET* MET : METs){
+            MET->p = MET->p + (temp-(temp*(Jets.at(iJet).uncorJecFactor_L1)));
+         }
       }
-      
+            
       // This loop corrects the jet collection used for jet selections
       for(size_t iJet=0; iJet<Jets.size(); ++iJet){
          if (abs(Jets.at(iJet).p.Eta())>=5.4) continue;
@@ -66,20 +130,57 @@ void jesCorrections::applySystematics(std::vector<tree::Jet>& Jets, TLorentzVect
       }
       
       for(size_t iJet=0; iJet<Jets.size(); ++iJet){   //Add shifted jets to MET
-         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch_loose) continue;
+         // ~if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).hasMuonMatch_loose) continue;
+         if ((Jets.at(iJet).cef+Jets.at(iJet).nef)>0.9 || Jets.at(iJet).p.Pt()*(1-Jets.at(iJet).muonf) < 15) continue;
          TLorentzVector temp(0.,0.,0.,0.);
          temp.SetPtEtaPhiM(Jets.at(iJet).p.Pt(),0.,Jets.at(iJet).p.Phi(),0.);
-         MET = MET - (temp-(temp*(Jets.at(iJet).uncorJecFactor_L1)));
+         for (tree::MET* MET : METs){
+            MET->p = MET->p - (temp-(temp*(Jets.at(iJet).uncorJecFactor_L1)));
+         }
       }
    }
-
 }
 
 void jesCorrections::scaleJet(tree::Jet& jet)
 {
-   uncertainty_->setJetPt(jet.p.Pt());
-   uncertainty_->setJetEta(jet.p.Eta());
-   double uncert = uncertainty_->getUncertainty(up);
+   // Check jet matches restricted flavor
+   if (useRestrictFlav_) {
+      if(std::find(restricttoflav_.begin(),restricttoflav_.end(),abs(jet.hadronFlavour)) == restricttoflav_.end()){
+         return;
+      }
+   }
+   // Check if realistic flavor should be applied
+   double uncert = 0.;
+   if (!useRealisticFlav_){
+      uncertainty_->setJetPt(jet.p.Pt());
+      uncertainty_->setJetEta(jet.p.Eta());
+      uncert = uncertainty_->getUncertainty(up);
+   }
+   else {
+      switch(abs(jet.hadronFlavour)){
+         case 0:  //Gluon
+            uncertaintiesRelFlav_[0]->setJetPt(jet.p.Pt());
+            uncertaintiesRelFlav_[0]->setJetEta(jet.p.Eta());
+            uncert = uncertaintiesRelFlav_[0]->getUncertainty(up);
+            break;
+         case 4:  //Charm
+            uncertaintiesRelFlav_[2]->setJetPt(jet.p.Pt());
+            uncertaintiesRelFlav_[2]->setJetEta(jet.p.Eta());
+            uncert = uncertaintiesRelFlav_[2]->getUncertainty(up);
+            break;
+         case 5:  //Bottom
+            uncertaintiesRelFlav_[3]->setJetPt(jet.p.Pt());
+            uncertaintiesRelFlav_[3]->setJetEta(jet.p.Eta());
+            uncert = uncertaintiesRelFlav_[3]->getUncertainty(up);
+            break;
+         default: //Light Quark
+            uncertaintiesRelFlav_[1]->setJetPt(jet.p.Pt());
+            uncertaintiesRelFlav_[1]->setJetEta(jet.p.Eta());
+            uncert = uncertaintiesRelFlav_[1]->getUncertainty(up);
+            break;
+      }
+   }
+         
    if(up){
       jet.p *= 1+uncert;
       jet.uncorJecFactor_L1 *= 1./(1+uncert);
@@ -135,7 +236,7 @@ const std::map<std::string, std::vector<std::string> > jesCorrections::JESUncSou
   {"JESFlavorPureQuark",{"FlavorPureQuark"}},
   {"JESFlavorPureCharm",{"FlavorPureCharm"}},
   {"JESFlavorPureBottom",{"FlavorPureBottom"}},
-  // ~{"JESFlavorRealistic",{"FlavorPureGluon","FlavorPureQuark","FlavorPureCharm","FlavorPureBottom"}},
+  {"JESFlavorRealistic",{"FlavorPureGluon","FlavorPureQuark","FlavorPureCharm","FlavorPureBottom"}},
   {"JESCorrelationGroupbJES",{"CorrelationGroupbJES"}},
   {"JESCorrelationGroupFlavor",{"CorrelationGroupFlavor"}},
   {"JESCorrelationGroupUncorrelated",{"CorrelationGroupUncorrelated"}},
@@ -153,6 +254,9 @@ const std::map<std::string, std::vector<std::string> > jesCorrections::JESUncSou
   {"JESEC2Year", {"EC2Year"}},
   {"JESHF", {"HF"}},
   {"JESHFYear", {"HFYear"}},
+  {"JESRelativeBalreg", {"RelativeBal"}},
+  {"JESFlavorQCDreg", {"FlavorQCD"}},
+  {"JESRelativeSampleYear", {"RelativeSampleYear"}},
 };
 
 //////////////////////////////////// Jet Energy Resolution //////////////////////////////////////////////////////
@@ -195,6 +299,9 @@ jerCorrections::jerCorrections(const std::string& jerSFSourceFile, const std::st
       }
    }
    
+   // Check if split JER unc is used
+   splitJER = !(systematic_variation_==Variation::NOMINAL || systematic_.type()==Systematic::jer);
+   
    // Print which systematic is used and set boolean
    if(systematic_variation_ == Variation::UP) {std::cout<<"Apply systematic variation: up\n";}
    else if(systematic_variation_ == Variation::DOWN) std::cout<<"Apply systematic variation: down\n";
@@ -205,23 +312,22 @@ jerCorrections::jerCorrections(const std::string& jerSFSourceFile, const std::st
 void jerCorrections::smearCollection_Hybrid(std::vector<tree::Jet>& Jets, const float& rho)
 {
    // Set rho for smearing
-   rho_ = rho;
+   // ~rho_ = rho;
    
-   // This loop smeares the jet collection used for jet selections (for split JER check eta,pT bin)
-   if(systematic_variation_==Variation::NOMINAL || systematic_.type()==Systematic::jer){
-      for(size_t iJet=0; iJet<Jets.size(); ++iJet){
-         this->smearJet_Hybrid(Jets.at(iJet));
-      }
-   }
-   else{
-      for(size_t iJet=0; iJet<Jets.size(); ++iJet){
-         if(this->checkApplySystematic(Jets.at(iJet).p)) this->smearJet_Hybrid(Jets.at(iJet));
-      }
+   for(size_t iJet=0; iJet<Jets.size(); ++iJet){
+      this->smearJet_Hybrid(Jets.at(iJet),rho);
    }
 }
 
-void jerCorrections::smearJet_Hybrid(tree::Jet& jet)
+void jerCorrections::smearJet_Hybrid(tree::Jet& jet,const float& rho)
 {
+   // Set rho for smearing
+   rho_ = rho;
+   
+   if(splitJER){  // Check if split JER is used
+      if(!this->checkApplySystematic(jet.p)) return;
+   }
+   
    double jer_sf= m_ScaleFactor_->getScaleFactor({{JME::Binning::JetEta, jet.p.Eta()}}, systematic_variation_);
    double jet_resolution= m_resolution_->getResolution({{JME::Binning::JetPt, jet.p.Pt()}, {JME::Binning::JetEta, jet.p.Eta()}, {JME::Binning::Rho, rho_}});
    float smearingFactor = 1.;

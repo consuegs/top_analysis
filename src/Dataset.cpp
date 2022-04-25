@@ -73,7 +73,8 @@ Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std:
          entries=0;
          Ngen_woWeight=0;
       } else {
-         Ngen=h->GetBinContent(2);
+         // ~Ngen=h->GetBinContent(2);
+         Ngen=h->GetBinContent(3);     //initial_mc_pu_topPt_weighted
          Ngen_woWeight=h->GetBinContent(1);
          entries=t->GetEntries();
       }
@@ -124,38 +125,41 @@ double Datasubset::getNgen_syst(const Systematic::Systematic& systematic) const
       switch(type){
          case Systematic::meFacScale:
             if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? meScaleBins[0] : meScaleBins[1]);
+            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? meScaleBins[0] : meScaleBins[1]);
             break;
          case Systematic::meRenScale:
             if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? meScaleBins[2] : meScaleBins[3]);
+            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? meScaleBins[2] : meScaleBins[3]);
             break;
          case Systematic::meScale:
             if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? meScaleBins[4] : meScaleBins[5]);
+            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? meScaleBins[4] : meScaleBins[5]);
             break;
          case Systematic::alphasPdf:
             if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? 112 : 111);
+            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? 112 : 111);
             break;
          case Systematic::pdf:
             if (isPythiaOnly) return Ngen;  //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_",(upVariation)? 9+(2*systematic.variationNumber()) : 10+(2*systematic.variationNumber()));
+            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? 9+(2*systematic.variationNumber()) : 10+(2*systematic.variationNumber()));
             break;
          case Systematic::psISRScale:
-            return this->readNgenFromHist("hSystMCweight_PS_",(upVariation)? 28 : 27);
+            return this->readNgenFromHist("hSystMCweight_PS_timesTopPU_",(upVariation)? 28 : 27);
             break;
          case Systematic::psFSRScale:
-            return this->readNgenFromHist("hSystMCweight_PS_",(upVariation)? 6 : 5);
+            return this->readNgenFromHist("hSystMCweight_PS_timesTopPU_",(upVariation)? 6 : 5);
             break;
          case Systematic::bFrag:
-            return this->readNgenFromHist("hSystMCweight_bFrag_",(upVariation)? 1 : 3);
+            return this->readNgenFromHist("hSystMCweight_bFrag_timesTopPU_",(upVariation)? 1 : 3);
             break;
          case Systematic::bSemilep:
-            return this->readNgenFromHist("hSystMCweight_bFrag_",(upVariation)? 5 : 6);
+            return this->readNgenFromHist("hSystMCweight_bFrag_timesTopPU_",(upVariation)? 5 : 6);
             break;
          case Systematic::pu:
-            return this->readNgenFromHist("hSystMCweight_PU_",(upVariation)? 2 : 3);
+            return this->readNgenFromHist("hSystMCweight_PU_timesTopPU_",(upVariation)? 2 : 3);
+            break;
+         case Systematic::topPt:
+            return this->readNgenFromHist("hSystMCweight_topPt_timesTopPU_",1);
             break;
          default:
             std::cout<<"getNgen_syst: Correct normalization for "<<Systematic::convertType(type)<<" not found"<<std::endl;
@@ -178,6 +182,12 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    bool isSplitSample=false;
    std::string systName;
    std::vector<std::string> mcDataset = util::to_vector<std::string>(pt.get<std::string>("input.mc_datasets"));
+   
+   // Do not use datasets defined in config if running on grid
+   TString hostname=getenv("HOSTNAME");
+   bool gridRunning = (hostname.Contains("lx")==false);
+   if (gridRunning) mcDataset.clear();
+   
    if(single) mcDataset = util::to_vector<std::string>(datasetMC_single);  // Use only one dataset if single option is choosen
    for (std::string sDs: mcDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
@@ -260,6 +270,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    }
    // Signals
    std::vector<std::string> signalDataset = util::to_vector<std::string>(pt.get<std::string>("input.signals"));
+   if (gridRunning) signalDataset.clear();
    if(single) signalDataset = util::to_vector<std::string>(datasetSIGNAL_single);  // Use only one dataset if single option is choosen
    for (std::string sDs: signalDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));
@@ -303,6 +314,7 @@ DatasetCollection::DatasetCollection(boost::property_tree::ptree const& pt,TStri
    }
    // Data
    std::vector<std::string> dataDataset = util::to_vector<std::string>(pt.get<std::string>("input.data_streams"));
+   if (gridRunning) dataDataset.clear();
    if(single) dataDataset = util::to_vector<std::string>(datasetDATA_single);  // Use only one dataset if single option is choosen
    for (std::string sDs: dataDataset){
       filenames = util::to_vector<std::string>(pt.get<std::string>(sDs+".files"));

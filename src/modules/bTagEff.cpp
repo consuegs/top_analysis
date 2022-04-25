@@ -40,8 +40,8 @@ void run()
    bool isNominal = (currentSystematic.type()==Systematic::nominal);
    
    // Configure JES/JER Corrections
-   jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(0,false).Data(),currentSystematic);
-   jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(0,true).Data(),currentSystematic);
+   jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(0,false).Data(),cfg.jes_UNC_mc_regrouped,currentSystematic,cfg.year);
+   jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(0,true).Data(),cfg.jes_UNC_mc_puppi_regrouped,currentSystematic,cfg.year);
    jerCorrections jerCorrector = jerCorrections(cfg.jer_SF_mc.Data(),cfg.jer_RES_mc.Data(),currentSystematic);
    
    // Configure lepton Correction
@@ -120,6 +120,7 @@ void run()
       TTreeReaderValue<float> fragPetersonWeight(reader, "weightFragPeterson");
       TTreeReaderValue<float> semilepbrUpWeight(reader, "weightSemilepbrUp");
       TTreeReaderValue<float> semilepbrDownWeight(reader, "weightSemilepbrDown");
+      TTreeReaderValue<double> w_prefiring(reader, "prefiring_weight");
       TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
       TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
       TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
@@ -127,6 +128,7 @@ void run()
       TTreeReaderValue<tree::MET> MET(reader, "met");
       TTreeReaderValue<tree::MET> GENMET(reader, "met_gen");
       TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi");
+      TTreeReaderValue<tree::MET> MET_Puppi_xy(reader, "metPuppiXYcorr");
       TTreeReaderValue<float> rho(reader, "rho");
       TTreeReaderValue<bool> muonTrigg1(reader, cfg.muonTrigg1);
       TTreeReaderValue<bool> muonTrigg2(reader, cfg.muonTrigg2);
@@ -160,20 +162,26 @@ void run()
          //Do only use ee,emu,mumu in in amc ttbar
          if (ttBar_amc && (*genDecayMode>3 || *genDecayMode==0)) continue;
          
+         // Construct vector of different METs for correction
+         std::vector<tree::MET*> PFMETs = {&(*MET)};
+         std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi_xy)};
+         
          // Correct and select leptons
-         *muons = leptonCorretor.correctMuons(*muons,MET->p,MET_Puppi->p);
-         *electrons = leptonCorretor.correctElectrons(*electrons,MET->p,MET_Puppi->p);
+         *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
+         *electrons = leptonCorretor.correctElectrons(*electrons,PFMETs,PuppiMETs);
          
          //Baseline selection (including separation into ee, emu, mumu)
          TLorentzVector p_l1;
          TLorentzVector p_l2;
          int flavor_l1=0;  //1 for electron and 2 for muon
          int flavor_l2=0;
+         double etaSC_l1=0;  // etaSC needed for electron ID SF
+         double etaSC_l2=0;
          bool muonLead=true; //Boolean for emu channel
          std::vector<bool> channel={false,false,false};     //ee, mumu, emu
          TString cat="";
          
-         if(!selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,cat,muonLead)) continue;
+         if(!selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2,cat,muonLead)) continue;
          
          //Trigger selection
          std::vector<bool> diElectronTriggers={*eleTrigg1,*eleTrigg2,*singleEleTrigg};
@@ -184,15 +192,14 @@ void run()
          if (triggerMC==false) continue;
          
          //Apply JES and JER systematics
-         jesCorrector.applySystematics(*jets,MET->p);
-         jesCorrector_puppi.applySystematics(*jets_puppi,MET_Puppi->p);    // Needed for correction of Puppi MET
-         jerCorrector.smearCollection_Hybrid(*jets,*rho);
+         jesCorrector.applySystematics(*jets,PFMETs);
+         jesCorrector_puppi.applySystematics(*jets_puppi,PuppiMETs);    // Needed for correction of Puppi MET
          
          float met=MET->p.Pt();
-         float const met_puppi=MET_Puppi->p.Pt();
+         float const met_puppi=MET_Puppi_xy->p.Pt();
          float const genMet=GENMET->p.Pt();
          
-         std::vector<tree::Jet> cjets;
+         std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho);
          std::vector<tree::Jet> BJets;
          std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
          
@@ -205,11 +212,11 @@ void run()
          if (channel[0]) channelID = 1;
          else if (channel[1]) channelID = 2;
          else if (channel[2]) channelID = 3;
-         float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2);
+         float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
          // ~float triggerSF = triggerSFcalc.getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);    //Not used since bTagEff needed in triggerSF calc.
          float mcWeight = mcWeighter.getMCweight(*w_mc,*w_pdf,*w_ps,{*fragUpWeight,*fragCentralWeight,*fragDownWeight,*fragPetersonWeight,*semilepbrUpWeight,*semilepbrDownWeight});
-         float fEventWeight=*w_pu * mcWeight;     //Set event weight 
-         float SFWeight=leptonSFweight * *w_topPT;     //Set combined SF weight
+         float fEventWeight=*w_pu * mcWeight * *w_topPT;     //Set event weight 
+         float SFWeight=leptonSFweight * *w_prefiring;     //Set combined SF weight
          hs2d.setFillWeight(fEventWeight*SFWeight);
          
          TString path_cat="ee";

@@ -17,7 +17,7 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 find_package(ROOT REQUIRED TreePlayer PyROOT Unfold XMLParser TMVA PyMVA)
 include(RootUseFile)
 
-### add cppflow (inlcuding tensorflow and dependencies)
+### add cppflow (including tensorflow and dependencies)
 find_library(TENSORFLOW_LIB tensorflow HINT /cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/tensorflow/2.1.0-ghbfee/lib/)
 find_library(Protobuf_LIB protobuf HINT /cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/protobuf/3.11.3/lib)
 find_library(Giflib_LIB gif HINT /cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/giflib/5.2.0/lib)
@@ -27,6 +27,10 @@ link_directories("${TENSORFLOW_LIB}")
 link_directories("${Protobuf_LIB}")
 link_directories("${Giflib_LIB}")
 include_directories("/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/protobuf/3.11.3/include")
+
+### add ONNXRuntime
+include_directories("${CMAKE_SOURCE_DIR}/src/ext/onnxruntime-linux-x64-1.11.0/include/")
+link_directories("${CMAKE_SOURCE_DIR}/src/ext/onnxruntime-linux-x64-1.11.0/lib")
 
 # change version: cmake --help-module FindPythonLibs
 find_package(PythonLibs REQUIRED)
@@ -50,6 +54,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 ### define standalone
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSTANDALONE")
+
+### ONNXRuntime
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lonnxruntime")
 
 # pass some definitions for usage in code
 add_definitions(

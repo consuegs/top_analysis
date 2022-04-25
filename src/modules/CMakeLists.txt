@@ -64,6 +64,7 @@ set(MODULES
   testHarvester_ttbar
   testHarvester_ttbar_chan
   testHarvester_ttbar_2D
+  testONNX
   )
 
 foreach(MODULE ${MODULES})

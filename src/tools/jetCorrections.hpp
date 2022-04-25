@@ -14,10 +14,10 @@
 class jesCorrections
 {
    public:
-      jesCorrections(const std::string&, const Systematic::Systematic&);
+      jesCorrections(const std::string&, const std::string&, const Systematic::Systematic&, const TString&);
       
       /// Scale the jet collection
-      void applySystematics(std::vector<tree::Jet>&, TLorentzVector&);
+      void applySystematics(std::vector<tree::Jet>&, std::vector<tree::MET*>&);
       
       /// Map to find correct JES unc names
       static const std::map<std::string, std::vector<std::string> > JESUncSourcesMap;
@@ -37,6 +37,12 @@ class jesCorrections
       
       /// Helpers to read scale from file
       JetCorrectionUncertainty* uncertainty_;
+      std::vector<JetCorrectionUncertainty*> uncertaintiesRelFlav_;
+      
+      /// Vector which stores restricted flavors (use for e.g. PureGluon)
+      std::vector<int> restricttoflav_;
+      bool useRestrictFlav_;
+      bool useRealisticFlav_;
    
 };
 
@@ -47,6 +53,8 @@ class jerCorrections
       
       /// Smear the jet collection based on hybrid method
       void smearCollection_Hybrid(std::vector<tree::Jet>&, const float&);
+      /// Smear jet based on hybrid method
+      void smearJet_Hybrid(tree::Jet&, const float&);
    
    private:
       JME::JetResolution* m_resolution_;
@@ -54,12 +62,12 @@ class jerCorrections
       
       float rho_;
       
-      /// Smear jet based on hybrid method
-      void smearJet_Hybrid(tree::Jet&);
-      
       /// Variation the be applied
       Variation systematic_variation_;
       const Systematic::Systematic systematic_;
+      
+      /// Use split JER unc
+      bool splitJER;
       
       /// Check if jet has to be taken into account for systematic
       bool checkApplySystematic(const TLorentzVector&);

@@ -20,7 +20,7 @@ void Config::setOutput(const std::string output){
 Config::Config()
 {
    // ~boost::property_tree::ptree pt;
-   std::string cfgFile(CMAKE_SOURCE_DIR);
+   std::string cfgFile(std::string(getenv("PWD"))+"/../");
    std::string config_year=getenv("ANALYSIS_YEAR_CONFIG");
    if (config_year!=NULL){
       std::cout<<"Running on year "+config_year+" (to change set ANALYSIS_YEAR_CONFIG variable)"<<std::endl;
@@ -51,9 +51,11 @@ Config::Config()
    
    jes_Folder=pt.get<std::string>("jetCorrections.jes_Folder");
    jes_UNC_mc=pt.get<std::string>("jetCorrections.jes_UNC_mc");
-   jes_UNC_mc_puppi=pt.get<std::string>("jetCorrections.jes_UNC_mc");
+   jes_UNC_mc_puppi=pt.get<std::string>("jetCorrections.jes_UNC_mc_puppi");
    jes_UNC_data=util::to_vector<std::string>(pt.get<std::string>("jetCorrections.jes_UNC_data"));
    jes_UNC_data_puppi=util::to_vector<std::string>(pt.get<std::string>("jetCorrections.jes_UNC_data_puppi"));
+   jes_UNC_mc_regrouped=jes_Folder+pt.get<std::string>("jetCorrections.jes_UNC_mc_regrouped");
+   jes_UNC_mc_puppi_regrouped=jes_Folder+pt.get<std::string>("jetCorrections.jes_UNC_mc_puppi_regrouped");
    
    muonTrigg1=pt.get<std::string>("trigger.muonTrigg1");
    muonTrigg2=pt.get<std::string>("trigger.muonTrigg2");
@@ -108,17 +110,26 @@ Config::Config()
    tunfold_withPTreweight = pt.get<bool>("TUnfold.withPTreweight");
    tunfold_scalePTreweight = pt.get<std::string>("TUnfold.scalePTreweight");
    tunfold_withDNN = pt.get<bool>("TUnfold.withDNN");
+   tunfold_withPF = pt.get<bool>("TUnfold.withPF");
    tunfold_withSameBins = pt.get<bool>("TUnfold.withSameBins");
    tunfold_withBSM = pt.get<bool>("TUnfold.withBSM");
    tunfold_withScaleFactor = pt.get<bool>("TUnfold.withScaleFactor");
    tunfold_plotComparison = pt.get<bool>("TUnfold.plotComparison");
    tunfold_plotToyStudies = pt.get<bool>("TUnfold.plotToyStudies");
 
-   outputDirectory=pt.get<std::string>("output.directory")+treeVersion+"/output_framework";
+   // Check if running on lx* with home directory excess, if not, output cannot be stored on /net/...
+   TString hostname=getenv("HOSTNAME");
+   if (hostname.Contains("lx")){
+      outputDirectory=pt.get<std::string>("output.directory")+treeVersion+"/output_framework";
+   }
+   else{
+      outputDirectory="../output_framework";
+   }
+   
    datasets=DatasetCollection(pt,dataBasePath);
    
    bTagSF_file=pt.get<std::string>("BTag_Weights.BTagSF_file");
-   bTagEffPath=outputDirectory+pt.get<std::string>("BTag_Weights.BTagEffPath");
+   bTagEffPath=pt.get<std::string>("BTag_Weights.BTagEffPath");
 }
 
 TString Config::getJESPath(const int run_era, const bool isPuppi=false) const{

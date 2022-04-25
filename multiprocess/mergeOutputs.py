@@ -13,6 +13,9 @@ import shlex
 import ROOT
 from ROOT import *
 import utilities
+sys.path.append("../users")
+from getPath import getPath
+
 
 def getNTupleVersion(year):    # checks config for number of files for given dataset
    config = configparser.ConfigParser()
@@ -64,6 +67,8 @@ def mergeTree(dataset,logPath,treePath):    # merges minTrees of given dataset
     if sp.call(["hadd","-f",outfile]+splitSamples):     # merging command
         sys.exit(1)
     sp.call(["rootrm",outfile+":ttbar_res100.0/ttbar_res"])
+    if sp.call(["chmod","a+rx",outfile],stdout=open(os.devnull, 'wb')):     # set rights for other to excess output file
+        sys.exit(1)
     os.chdir(runDir)
 
 def mergeHist(dataset,logPath,histPath):    # merges histograms of given dataset
@@ -165,17 +170,17 @@ def getDatasetList(logPath):    # get list of dataset, where jobs have been subm
     
 def getTreePath(logPath):       # get correct treePath from logPath
     info = getInfoFromLogPath(logPath)
-    treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/minTrees/{}/{}/".format(info["year"],getNTupleVersion(info["year"]),str(float(info["fraction"])*100),info["syst"])
+    treePath = "{}/{}/{}/minTrees/{}/{}/".format(getPath("scratchBasePath"),info["year"],getNTupleVersion(info["year"]),str(float(info["fraction"])*100),info["syst"])
     return treePath
 
 def getHistPath(logPath):       # get correct histPath from logPath
     info = getInfoFromLogPath(logPath)
-    treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/output_framework/multiHists/{}/".format(info["year"],getNTupleVersion(info["year"]),info["syst"])
+    treePath = "{}/{}/{}/output_framework/multiHists/{}/".format(getPath("scratchBasePath"),info["year"],getNTupleVersion(info["year"]),info["syst"])
     return treePath
     
 def getHistPath_module(logPath):       # get correct histPath from logPath for modules other than distributions
     info = getInfoFromLogPath(logPath)
-    treePath = "/net/data_cms1b/user/dmeuser/top_analysis/{}/{}/output_framework/{}/{}/".format(info["year"],getNTupleVersion(info["year"]),info["module"],info["syst"])
+    treePath = "{}/{}/{}/output_framework/{}/{}/".format(getPath("scratchBasePath"),info["year"],getNTupleVersion(info["year"]),info["module"],info["syst"])
     return treePath
     
 def mergeRequired(logPath,isDistributions=True,useTrees=True):       # check if there are more recent individual outputs than the merged one
@@ -231,13 +236,16 @@ def getSampleNameCombine(sampleName):       # needed to correctly handle SampleN
 def mergeForCombine(logPath,histPath,sampleList):
     info = getInfoFromLogPath(logPath)
     nTupleVersion = getNTupleVersion(info["year"])
-    outputDir = histPath+"../combine/"
+    #  ~outputDir = histPath+"../combine/"
+    outputDir = histPath+"../combine_new/"
     outfile = "{}combineInput_{}.root".format(outputDir,nTupleVersion)
     
     filesToMerge = []    # keep track of files to merge
     
     if os.path.exists(outputDir) == False:      #create combine folder for output files
         os.mkdir(outputDir)
+    
+    f_out = TFile(outfile,"RECREATE")      # output file containing all hists
     
     for systPath in glob.glob("logs/"+info["year"]+"/*"):   # loop for renaming and merging histograms
         distrLogPath = systPath+"/1.0/distributions/"
@@ -251,7 +259,7 @@ def mergeForCombine(logPath,histPath,sampleList):
             listAllObjectPaths(f,histNames)     # get all paths in root file
             for histName in histNames:
                 histNameSplitted = histName.split("/")
-                if histNameSplitted[1] != "distributions100.0" or histNameSplitted[2] != "baseline":     # only store relevant histograms with full stat.
+                if histNameSplitted[1] != "distributions100.0" or histNameSplitted[2].startswith("baseline") == False:     # only store relevant histograms with full stat.
                     continue
                 sampleName = histName.split("/")[-1]
                 strippedSampleName = sampleName.replace("_"+info_syst["syst"],"")   # only store processes needed for combine
@@ -273,7 +281,7 @@ def mergeForCombine(logPath,histPath,sampleList):
                     systNameCombine = "_"+syst+"Down"
                 else:
                     systNameCombine = getSytNameCombine(info_syst["syst"])  # get correct name of systematic for combine
-                f_out = TFile(tempFileName,"RECREATE")
+                #  ~f_out = TFile(tempFileName,"RECREATE")
                 filesToMerge.append(tempFileName)
                 f_out.cd()
                 for histName in hists.keys():
@@ -287,15 +295,16 @@ def mergeForCombine(logPath,histPath,sampleList):
                             f_out.mkdir(folderName)
                             f_out.cd(folderName)
                     hists[histName].Write(outputHistName)
-                f_out.Close()
+                #  ~f_out.Close()
             
             f.Close()
     
-    print "-------Merging renamed histograms---------------"
-    if os.path.exists(outfile):
-        os.remove(outfile)
-    if sp.call(["hadd","-f",outfile]+filesToMerge,stdout=open(os.devnull, 'wb')):    # combine temp hists with hadd
-        sys.exit(1)
+    f_out.Close()
+    #  ~print "-------Merging renamed histograms---------------"
+    #  ~if os.path.exists(outfile):
+        #  ~os.remove(outfile)
+    #  ~if sp.call(["hadd","-f",outfile]+filesToMerge,stdout=open(os.devnull, 'wb')):    # combine temp hists with hadd
+        #  ~sys.exit(1)
     if sp.call(["chmod","a+rx",outfile],stdout=open(os.devnull, 'wb')):     # set rights for other to excess output file
         sys.exit(1)
     
@@ -309,6 +318,7 @@ if __name__ == "__main__":
     parser.add_argument('--singleDataset', type=str, default="", help="Defines single dataset to merge (otherwise all samples are merged)")
     parser.add_argument("--mergeAllHists", action='store_true', default=True, help="Merge all hist of different datasets to one file")
     parser.add_argument("--mergeForCombine", action='store_true', default=False, help="Merge all hist of different datasets and systematics for combine input")
+    parser.add_argument('-y', type=str, help="Year to be merged, currently only used in combination with --mergeForCombine",default="2018")
     args = parser.parse_args()
     
     isDistributions = (args.logPath.find("distributions") > 0)
@@ -354,7 +364,8 @@ if __name__ == "__main__":
         mergeHists_forSamples(args.logPath,histPath,datasetList,["DrellYan_M10to50","DrellYan_NLO"],"DrellYan_comb")    # merge samples for datacards
         mergeHists_forSamples(args.logPath,histPath,datasetList,["TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"],"TTbar_other")
         mergeHists_forSamples(args.logPath,histPath,datasetList,["WJetsToLNu","WW","WZ","ZZ","ttZ_QQ","ttZ_2L","ttW"],"otherBKG")
-        mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","EGamma","MuonEG","SingleMuon"],"data_obs")
+        mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","EGamma","MuonEG","SingleMuon"],"data_obs") # 2018
+        mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"],"data_obs") #2016/2017
         
         altSampleNames = ["CR1","CR2","ERDON","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5"]    # handle alt. sample for datacards
         if any(x in args.logPath for x in altSampleNames):
@@ -365,4 +376,6 @@ if __name__ == "__main__":
             print "-------------Start merging all datasets to one histFile----------------------"
             mergeAllHists(datasetList,args.logPath,histPath)
     elif(args.mergeForCombine):
+        args.logPath = "logs/{0}/Nominal/1.0/distributions/".format(args.y)
+        histPath = getHistPath(args.logPath)
         mergeForCombine(args.logPath,histPath,["TTbar_diLepton","DrellYan_comb","TTbar_other","otherBKG","SingleTop","data_obs"])

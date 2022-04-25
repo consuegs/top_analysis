@@ -29,6 +29,8 @@ public:
    TString jes_UNC_mc_puppi;
    std::vector<std::string> jes_UNC_data;
    std::vector<std::string> jes_UNC_data_puppi;
+   std::string jes_UNC_mc_regrouped;
+   std::string jes_UNC_mc_puppi_regrouped;
    TString getJESPath(const int,const bool) const;
    
    TString muonTrigg1;
@@ -98,6 +100,7 @@ public:
    bool tunfold_withPTreweight;
    TString tunfold_scalePTreweight;
    bool tunfold_withDNN;
+   bool tunfold_withPF;
    bool tunfold_withSameBins;
    bool tunfold_withBSM;
    bool tunfold_withScaleFactor;

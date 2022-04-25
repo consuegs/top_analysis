@@ -18,6 +18,7 @@ set(SRCS
   triggerSF.cpp
   mcWeights.cpp
   minTreeReader.cpp
+  dnnRegression.cpp
   )
 
 add_library(tools SHARED ${SRCS})
