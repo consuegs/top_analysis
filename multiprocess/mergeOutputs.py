@@ -276,7 +276,12 @@ def mergeForCombine(logPath,histPath,sampleList):
                 for syst in ["CR1","CR2","ERDON","TOP_PT"]:
                     tempFileNames[syst] = outputDir+syst+"_DOWN.root"
             
+            isTrigg = False;
             for syst,tempFileName in tempFileNames.items():
+                
+                if "TRIG" in syst:  # boolean to split TRIG eff per channel
+                    isTrigg = True
+                
                 if (info_syst["syst"]!=syst):   # for one sided down shift
                     systNameCombine = "_"+syst+"Down"
                 else:
@@ -294,6 +299,12 @@ def mergeForCombine(logPath,histPath,sampleList):
                         if f_out.cd(folderName) == False:
                             f_out.mkdir(folderName)
                             f_out.cd(folderName)
+                    
+                    if isTrigg: # store uncorrelated TRIG syst
+                        hists[histName].Write(outputHistName.replace("TRIG","TRIG_ee"))
+                        hists[histName].Write(outputHistName.replace("TRIG","TRIG_emu"))
+                        hists[histName].Write(outputHistName.replace("TRIG","TRIG_mumu"))
+                    
                     hists[histName].Write(outputHistName)
                 #  ~f_out.Close()
             
