@@ -336,6 +336,9 @@ void run()
                                                 (met_puppi>=150 && baselineTriggers)};
             }
             
+            // Stupid bug fix to get proper results on grid
+            if(channel[0] || channel[1] || channel[2]) int testing = 1;
+            
             int i_trigger=0;
             int i_selection=0;
             // ~for(TString selection:{"baselineTrigger/","noTrigger/"}){
