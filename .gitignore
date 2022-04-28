@@ -6,6 +6,5 @@
 /output_v01/
 /multiprocess/logs/
 *.pyc
-/data/DNN/
 /data/bTagEff*/
 /data/Trigger*
