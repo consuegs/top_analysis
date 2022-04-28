@@ -78,7 +78,7 @@ public:
    TString treeName;
    TString gitHash;
    std::string dataBasePath;
-   TString minTreePath;
+   std::string minTreePath;
 
    TString outputDirectory;
 

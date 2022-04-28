@@ -378,7 +378,7 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
    }
    
    // define variables for reading tree
-   Float_t phiRec,metRec,phiGen,metGen,pTllRec,pTllGen,mcWeight,recoWeight,genMET,reweight;
+   Float_t phiRec,metRec,phiRec_DNN,metRec_DNN,phiGen,metGen,pTllRec,pTllGen,mcWeight,recoWeight,genMET,reweight;
    UInt_t genDecayMode;
    
    // setup distributions
@@ -386,13 +386,17 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       dist.setupDataHists();
       if (dist.varName_ == "2D_dPhi_pTnunu") dist.setVariables(metRec,phiRec,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new") dist.setVariables(metRec,phiRec,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);
+      else if (dist.varName_ == "pTnunu_DNN") dist.setVariables(metRec_DNN,metGen);
+      else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);
       else if (dist.varName_ == "pTll") dist.setVariables(pTllRec,pTllGen);      
       else if (dist.varName_ == "inclusive") dist.setVariables(phiRec,phiGen);      
    }
    
-   TString minTreePath_Nominal = TString::Format("%s/100.0/Nominal/",cfg.minTreePath.Data(),cfg.treeVersion.Data());
+   TString minTreePath_Nominal = cfg.minTreePath+TString::Format("/100.0/%s/","Nominal");
    
    for (TString currentSample : cfg.tunfold_InputSamples){     // loop over samples (data or pseudo data)
       bool isSignal = (currentSample == "TTbar_diLepton");
@@ -418,6 +422,8 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
             dataTree->SetBranchAddress("Phi_recPuppi",&phiRec);
             dataTree->SetBranchAddress("PuppiMET",&metRec);
          }
+         dataTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec_DNN);
+         dataTree->SetBranchAddress("DNN_MET_pT",&metRec_DNN);
          dataTree->SetBranchAddress("Phi_NuNu",&phiGen);
          dataTree->SetBranchAddress("PtNuNu",&metGen);
          dataTree->SetBranchAddress("pTll",&pTllRec);
@@ -564,11 +570,11 @@ std::tuple<TString,TString,float> getPath_SampleName_SF(TString const &sample, T
 
 void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver const &saver, Systematic::Systematic const &syst){
    //set correct paths for nominal and current syst
-   TString minTreePath_nominal = TString::Format("%s/100.0/%s/",cfg.minTreePath.Data(),"Nominal");
-   TString minTreePath_syst = TString::Format("%s/100.0/%s/",cfg.minTreePath.Data(),syst.name().Data());
+   TString minTreePath_nominal = cfg.minTreePath+TString::Format("/100.0/%s/","Nominal");
+   TString minTreePath_syst = cfg.minTreePath+TString::Format("/100.0/%s/",syst.name().Data());
    
    // define variables for reading tree
-   Float_t phiRec,metRec,phiGen,metGen,pTllRec,pTllGen,mcWeight,recoWeight,genMET,reweight;
+   Float_t phiRec,metRec,phiRec_DNN,metRec_DNN,phiGen,metGen,pTllRec,pTllGen,mcWeight,recoWeight,genMET,reweight;
    UInt_t genDecayMode;
    
    // setup distributions
@@ -576,7 +582,11 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
       dist.setupMCHists();
       if (dist.varName_ == "2D_dPhi_pTnunu") dist.setVariables(metRec,phiRec,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new") dist.setVariables(metRec,phiRec,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
+      else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);      
+      else if (dist.varName_ == "pTnunu_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);      
       else if (dist.varName_ == "pTll") dist.setVariables(pTllRec,pTllGen);      
       else if (dist.varName_ == "inclusive") dist.setVariables(phiRec,phiGen);      
@@ -615,6 +625,8 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
             signalTree->SetBranchAddress("Phi_recPuppi",&phiRec);
             signalTree->SetBranchAddress("PuppiMET",&metRec);
          }
+         signalTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec_DNN);
+         signalTree->SetBranchAddress("DNN_MET_pT",&metRec_DNN);
          signalTree->SetBranchAddress("Phi_NuNu",&phiGen);
          signalTree->SetBranchAddress("PtNuNu",&metGen);
          signalTree->SetBranchAddress("pTll",&pTllRec);
@@ -702,11 +714,31 @@ void run()
                                           {0,25,50,60,70,85,100,115,130,145,160,180,200,300},
                                           {0,0.32,0.64,0.92,1.2,2.2,3.141}
                                           ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_DNN",
+                                          {0,40,80,120,160,230},
+                                          {0,0.7,1.4,3.141},
+                                          {0,20,40,60,80,100,120,140,160,195,230},
+                                          {0,0.35,0.7,1.05,1.4,2.27,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_DNN",     // Fabians optimized binning for DNN
+                                          {0,50,70,100,130,160,200},
+                                          {0,0.64,1.2,3.141},
+                                          {0,25,50,60,70,85,100,115,130,145,160,180,200,300},
+                                          {0,0.32,0.64,0.92,1.2,2.2,3.141}
+                                          ));
    distribution_vec.push_back(Distribution("pTnunu",
                                           {0,40,70,110,170,260,370},
                                           {0,20,40,55,70,90,110,140,170,215,260,315,370,435}
                                           ));
    distribution_vec.push_back(Distribution("dPhi",
+                                          {0.,0.4,0.8,1.2,1.6,2.,2.4,2.8},
+                                          {0.,0.2,0.4,0.6,0.8,1.,1.2,1.4,1.6,1.8,2.,2.2,2.4,2.6,2.8,3.}
+                                          ));
+   distribution_vec.push_back(Distribution("pTnunu_DNN",
+                                          {0,40,70,110,170,260,370},
+                                          {0,20,40,55,70,90,110,140,170,215,260,315,370,435}
+                                          ));
+   distribution_vec.push_back(Distribution("dPhi_DNN",
                                           {0.,0.4,0.8,1.2,1.6,2.,2.4,2.8},
                                           {0.,0.2,0.4,0.6,0.8,1.,1.2,1.4,1.6,1.8,2.,2.2,2.4,2.6,2.8,3.}
                                           ));

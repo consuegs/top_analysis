@@ -33,8 +33,23 @@ duration=$[ ( $RANDOM % 5 )  + 1 ]
 echo "Sleeping for "$duration" minutes"
 sleep $duration"m"
 
-#get input tree from dCache
-dccp "$8" ../
+#get inputs from dCache
+if [[ $2 != "TUnfold_binning" ]]
+then
+   dccp "$8" ../
+else
+   syst="$5"
+   syst=${syst:2}
+   mkdir ../100.0
+   cd "../100.0"
+   eval `scram unsetenv -sh`;
+   gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="$7"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
+   gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="$7"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
+   cd ../CMSSW_10_5_0/src/
+   eval `scramv1 runtime -sh`
+   cd $sourceDir
+   cd build
+fi
 
 echo $(date)
 
@@ -43,7 +58,12 @@ export HOSTNAME=$HOSTNAME
 echo $HOSTNAME
 
 #run framework
-./run.x "$1" "$2" "$3" "$5" "$6" -d ../
+if [[ $2 != "TUnfold_binning" ]]
+then
+   ./run.x "$1" "$2" "$3" "$5" "$6" -d ../
+else
+   ./run.x "$1" "$2" "$5" -m ../
+fi
 
 #copy mintree to dCache if distribution module is running
 if [[ $2 == "distributions" ]]

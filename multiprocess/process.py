@@ -7,6 +7,7 @@ import subprocess
 import sys
 import configparser
 import sys
+import re
 sys.path.append("../users")
 from getPath import getPath
 
@@ -246,13 +247,13 @@ sample_allSyst_dict = {
 }
 
 tunfold_syst = [
-#  ~"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN",
+"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN",
 
 "JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorQCD_UP","JESFlavorQCD_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN",
 
 #  ~"JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFlavorPureGluon_UP","JESFlavorPureGluon_DOWN","JESFlavorPureQuark_UP","JESFlavorPureQuark_DOWN","JESFlavorPureCharm_UP","JESFlavorPureCharm_DOWN","JESFlavorPureBottom_UP","JESFlavorPureBottom_DOWN",
 
-"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESFlavorQCDreg_UP","JESFlavorQCDreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN"
+"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN"
 ]
 
 
@@ -305,6 +306,23 @@ def createLogPath(args):
          if exc.errno != errno.EEXIST:
             raise
    return logpath
+
+def checkCEjobs():      #check how many jobs are present in both CE and choose with CE to submit to
+   out = subprocess.check_output(["condor_status", "-grid"])
+   jobs_ce1 = 0
+   jobs_ce2 = 0
+   for line in out.split("\n"):
+      if "ce-1" in line:
+         line = re.sub(" +"," ",line)
+         jobs_ce1 += int(line.split(" ")[3])
+      elif "ce-2" in line:
+         line = re.sub(" +"," ",line)
+         jobs_ce2 += int(line.split(" ")[3])
+   
+   if jobs_ce1>jobs_ce2:
+      return "ce-2"
+   else:
+      return "ce-1"
 
 def uploadCompressedCMSSW():    #compress and upload CMSSW to dCache to run on grid
    runDir = os.getcwd()
@@ -510,7 +528,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
                   else:    # Grid submission
                      f.write("""
    universe                = grid
-   grid_resource           = condor grid-ce-2-rwth.gridka.de grid-ce-2-rwth.gridka.de:9619
+   grid_resource           = condor grid-{12}-rwth.gridka.de grid-{12}-rwth.gridka.de:9619
    Executable              = runGrid.sh
    Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {10} {11} {9}
    Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
@@ -522,7 +540,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    transfer_output_remaps  = "output_framework = {8}/{5}/{9}/output_framework"
    getenv                  = yes
    Queue
-      """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1), getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),inputPath))
+      """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1), getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),inputPath,checkCEjobs()))
                subprocess.call(["condor_submit", submitFile])
 
 
@@ -546,17 +564,34 @@ def submitTUnfold(args,systematics):
       submitFile = logpath+"/"+args.m+".submit"    #define submit file
                         
       with open(submitFile,"w") as f:   # write condor submit
-         f.write("""
-Universe                = vanilla
-Executable              = runTUnfold.sh
-Arguments               = -f{0} {1} {2} -s{3}
-Log                     = logs/{2}/{3}/{0}/{1}/{1}.log
-Output                  = logs/{2}/{3}/{0}/{1}/{1}.out
-Error                   = logs/{2}/{3}/{0}/{1}/{1}.error
-use_x509userproxy       = true
-Queue
-""".format(str(args.f),args.m,args.y,args.s),)
-      subprocess.call(["condor_submit", submitFile])
+         if args.copyDCache:
+            f.write("""
+      Universe                = vanilla
+      Executable              = runTUnfold.sh
+      Arguments               = -f{0} {1} {2} -s{3}
+      Log                     = logs/{2}/{3}/{0}/{1}/{1}.log
+      Output                  = logs/{2}/{3}/{0}/{1}/{1}.out
+      Error                   = logs/{2}/{3}/{0}/{1}/{1}.error
+      use_x509userproxy       = true
+      Queue
+      """.format(str(args.f),args.m,args.y,args.s),)
+         else:    #grid submission
+            f.write("""
+      universe                = grid
+      grid_resource           = condor grid-{12}-rwth.gridka.de grid-{12}-rwth.gridka.de:9619
+      Executable              = runGrid.sh
+      Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {10} {11} {9}
+      Log                     = logs/{5}/{6}/{0}/{1}/{1}.log
+      Output                  = logs/{5}/{6}/{0}/{1}/{1}.out
+      Error                   = logs/{5}/{6}/{0}/{1}/{1}.error
+      use_x509userproxy       = true
+      should_transfer_files   = YES
+      transfer_output_files   = output_framework
+      transfer_output_remaps  = "output_framework = {8}/{5}/{9}/output_framework"
+      getenv                  = yes
+      Queue
+         """.format(str(args.f),args.m,"placeholder","placeholder","placeholder",args.y,args.s,"placeholder", getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),"placeholder",checkCEjobs()))
+      #  ~subprocess.call(["condor_submit", submitFile])
    
    
 
@@ -580,14 +615,14 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["TTbar_diLepton_CR2","TTbar_diLepton_tau_CR2","TTbar_singleLepton_CR2","TTbar_hadronic_CR2"]
    #  ~toProcess_mc=["TTbar_diLepton_MTOP169p5","TTbar_diLepton_tau_MTOP169p5","TTbar_singleLepton_MTOP169p5","TTbar_hadronic_MTOP169p5"]
    #  ~toProcess_mc=["TTbar_diLepton_MTOP175p5","TTbar_diLepton_tau_MTOP175p5","TTbar_singleLepton_MTOP175p5","TTbar_hadronic_MTOP175p5"]
-   #  ~toProcess_mc=[]
-   toProcess_mc=allMC
+   toProcess_mc=[]
+   #  ~toProcess_mc=allMC
    
    #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
    #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
-   toProcess_data=["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"]       #2017, 2016
+   #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"]       #2017, 2016
    #  ~toProcess_data=["MET"]      
-   #  ~toProcess_data=[]
+   toProcess_data=[]
          
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10"]
@@ -612,12 +647,12 @@ if __name__ == "__main__":
    parser.add_argument('--noConfirmation', action='store_true', default=False, help="Disables keyboard input befor submission")
 
    args = parser.parse_args()
-   
+      
    # Upload CMSSW and FW to dCache if running on grid
-   if args.scratchInput==False and args.copyDCache==False and args.condFileTransfer==False:
-      uploadCompressedCMSSW()
-      uploadCompressedFW()
-   
+   #  ~if args.scratchInput==False and args.copyDCache==False and args.condFileTransfer==False:
+      #  ~uploadCompressedCMSSW()
+      #  ~uploadCompressedFW()
+      
    if (args.bTagEff_complete == False and args.distributions_complete==False and args.pdf_complete==False):
       if (args.m == "TUnfold_binning"):
          if (args.tunfold_complete):

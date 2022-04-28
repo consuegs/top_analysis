@@ -46,6 +46,7 @@ static int parseCLIopt(int argc, char* argv[])
       ("fileNR", po::value<int>(&cfg.fileNR)->default_value(0), "FileNR to be processed, if zero all files are processed (filelist defined in .ini)")
       ("systematic,s", po::value<std::string>(&cfg.systematic)->default_value("Nominal"), "Systematic uncertainty to be applied (only for distributions)")
       ("dataBasePath,d", po::value<std::string>(&cfg.dataBasePath)->default_value(cfg.dataBasePath), "Alternative dataBasePath, which can be used for condor submission with inputFileTransfer")
+      ("minTreePath,m", po::value<std::string>(&cfg.minTreePath)->default_value(cfg.minTreePath), "Alternative minTreePath, which can be used for condor submission with inputFileTransfer")
       ("release",  po::bool_switch(&cfg.releaseMode)->default_value(false), "Release mode (don't draw version labels)")
       ;
    hid_desc.add_options()
