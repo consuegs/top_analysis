@@ -591,7 +591,7 @@ def submitTUnfold(args,systematics):
       getenv                  = yes
       Queue
          """.format(str(args.f),args.m,"placeholder","placeholder","placeholder",args.y,args.s,"placeholder", getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),"placeholder",checkCEjobs()))
-      #  ~subprocess.call(["condor_submit", submitFile])
+      subprocess.call(["condor_submit", submitFile])
    
    
 
