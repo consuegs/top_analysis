@@ -247,13 +247,14 @@ sample_allSyst_dict = {
 }
 
 tunfold_syst = [
-"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN",
+"Nominal","JESTotal_UP"
+#  ~"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN",
 
-"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorQCD_UP","JESFlavorQCD_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN",
+#  ~"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorQCD_UP","JESFlavorQCD_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN",
 
 #  ~"JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFlavorPureGluon_UP","JESFlavorPureGluon_DOWN","JESFlavorPureQuark_UP","JESFlavorPureQuark_DOWN","JESFlavorPureCharm_UP","JESFlavorPureCharm_DOWN","JESFlavorPureBottom_UP","JESFlavorPureBottom_DOWN",
 
-"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN"
+#  ~"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN"
 ]
 
 
@@ -562,6 +563,12 @@ def submitTUnfold(args,systematics):
             os.remove(logFile)
       
       submitFile = logpath+"/"+args.m+".submit"    #define submit file
+      
+      # get dCache path (currently 2016 is stored in Marius folder)
+      if (args.y.find("2016")>=0):
+         dCachePath = getPath("dCacheBasePath","teroerde")
+      else:
+         dCachePath = getPath("dCacheBasePath")
                         
       with open(submitFile,"w") as f:   # write condor submit
          if args.copyDCache:
@@ -580,7 +587,7 @@ def submitTUnfold(args,systematics):
       universe                = grid
       grid_resource           = condor grid-{12}-rwth.gridka.de grid-{12}-rwth.gridka.de:9619
       Executable              = runGrid.sh
-      Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {10} {11} {9}
+      Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {10} {11} {9} {13}
       Log                     = logs/{5}/{6}/{0}/{1}/{1}.log
       Output                  = logs/{5}/{6}/{0}/{1}/{1}.out
       Error                   = logs/{5}/{6}/{0}/{1}/{1}.error
@@ -590,7 +597,7 @@ def submitTUnfold(args,systematics):
       transfer_output_remaps  = "output_framework = {8}/{5}/{9}/output_framework"
       getenv                  = yes
       Queue
-         """.format(str(args.f),args.m,"placeholder","placeholder","placeholder",args.y,args.s,"placeholder", getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),"placeholder",checkCEjobs()))
+         """.format(str(args.f),args.m,"placeholder","placeholder","placeholder",args.y,args.s,"placeholder", getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),"placeholder",checkCEjobs(),dCachePath))
       subprocess.call(["condor_submit", submitFile])
    
    

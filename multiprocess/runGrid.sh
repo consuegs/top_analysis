@@ -43,8 +43,11 @@ else
    mkdir ../100.0
    cd "../100.0"
    eval `scram unsetenv -sh`;
-   gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="$7"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
-   gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="$7"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
+   gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
+   if [[ $syst != "Nominal" ]]
+   then
+      gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
+   fi
    cd ../CMSSW_10_5_0/src/
    eval `scramv1 runtime -sh`
    cd $sourceDir
@@ -69,6 +72,6 @@ fi
 if [[ $2 == "distributions" ]]
 then
    echo "Copy minTree output to dCache"
-   eval `scram unsetenv -sh`; gfal-copy -r ../minTrees/ srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="$7"/minTrees/"$4"/"$9"/minTrees/
+   eval `scram unsetenv -sh`; gfal-copy -r -f ../minTrees/ srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="$7"/minTrees/"$4"/"$9"/minTrees/
    rm -r ../minTrees/
 fi
