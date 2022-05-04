@@ -101,7 +101,7 @@ class systHists
       }
       
       void openFile(){
-         histReader_ = new io::RootFileReader(filePath_,histPath_);
+         histReader_ = new io::RootFileReader(filePath_,histPath_,true,true);
       }
       
       Systematic::Systematic systematic_;
@@ -295,6 +295,12 @@ void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systH
    std::reverse(outputSamples.begin(),outputSamples.end());
    outputSamples.push_back("MC");
    outputSamples.push_back("data");
+   
+   float mcYield_total;
+   float mcYield_total_down;
+   float mcYield_total_up;
+   std::map<TString,float> totalMap;
+   
    for (TString cat:{"ee","emu","mumu"}){    //Get the number of events per category
       TH1F* mc_total=hs->getHistogram("cutflow/"+cat,"MC");
       std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,systHists_vec,"cutflow/"+cat);
@@ -302,11 +308,15 @@ void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systH
       float mcYield = mc_total->GetBinContent(6);
       float mcYield_down = syst.first->GetBinContent(6);
       float mcYield_up = syst.second->GetBinContent(6);
+      mcYield_total += mcYield;
+      mcYield_total_down += mcYield_down;
+      mcYield_total_up += mcYield_up;
       bool isMCtotal = false;
       for (TString sample:outputSamples){
          isMCtotal = (sample=="MC");
          TH1F* temp_hist=hs->getHistogram("cutflow/"+cat,sample);
          float sampleYield = temp_hist->GetBinContent(6);
+         totalMap[sample.ReplaceAll("_","\\_")] += sampleYield;
          if(!isMCtotal){
             std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<sampleYield<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
          }
@@ -319,6 +329,19 @@ void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systH
          // ~if (sample=="MC") std::cout<<mcYield_down/mcYield*100<<"   "<<mcYield_up/mcYield*100<<std::endl;
       }
    }
+   //print channels combined
+   std::cout<<"----------------"<<"combined"<<"-----------------------"<<std::endl;
+   for (TString sample:outputSamples){
+      if(sample=="MC"){
+         TString yieldUnc = TString::Format("$%.1f^{+%.1f}_{-%.1f}$",mcYield_total,mcYield_total_up,mcYield_total_down);
+         std::cout<<"\\hline"<<std::endl;
+         std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<yieldUnc<<"&"<<std::setprecision(1)<<mcYield_total/mcYield_total*100<<"\\\\"<<std::endl;
+      }
+      else{
+         std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<totalMap[sample]<<"&"<<std::setprecision(1)<<totalMap[sample]/mcYield_total*100<<"\\\\"<<std::endl;
+      }
+   }
+   
 }
 
 // print breakdown of syst uncertainties
@@ -740,6 +763,7 @@ void run()
    }
    for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
+         /*
          // ~vecDistr.push_back({selection+channel,"Lep_e_pt",0.,600.,50});
          // ~vecDistr.push_back({selection+channel,"Lep_mu_pt",0.,600.,50});
          vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,30});
@@ -824,6 +848,7 @@ void run()
          // ~vecDistr.push_back({selection+channel,"mjj",0.,2000.,50});
          // ~vecDistr.push_back({selection+channel,"Lep1_pt*cos(Lep1_phi)",-250,250,25});
          // ~vecDistr.push_back({"baseline_GOF2D"+channel,"PuppiMET_xy*sin(PuppiMET_xy_phi)_VS_MET_xy*sin(MET_xy_phi)",0.5,36.5,36});
+         */
       }
    }
    

@@ -44,7 +44,7 @@ namespace io
    class RootFileReader
    {
    public:
-      RootFileReader(TString rootFileName,TString internalPath="",bool standardOutputDirectory=true);
+      RootFileReader(TString rootFileName,TString internalPath="",bool standardOutputDirectory=true,bool useDataBasePath=false);
       ~RootFileReader();
       template <class T> T* read(TString name) const;
       std::vector<TString> listPaths(bool lastFolder=false) const;

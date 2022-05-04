@@ -130,12 +130,15 @@ void io::RootFileSaver::save(gfx::SplitCan &obj, TString name,bool simulation,bo
  * class RootFileReader
  ******************************************************************************/
 
-io::RootFileReader::RootFileReader(TString rootFileName,TString internalPath,bool standardOutputDirectory)
+io::RootFileReader::RootFileReader(TString rootFileName,TString internalPath,bool standardOutputDirectory,bool useDataBasePath)
    : fName_(rootFileName)
    // ~, fPath_(CMAKE_SOURCE_DIR+TString::Format("/%s/",cfg.outputDirectory.Data())+fName_)
    , intPath_(internalPath)
 {
-   if (standardOutputDirectory) fPath_=TString::Format("%s/",cfg.outputDirectory.Data())+fName_;
+   if (standardOutputDirectory) {
+      if (useDataBasePath) fPath_=cfg.dataBasePath+"/../output_framework/"+fName_;
+      else fPath_=TString::Format("%s/",cfg.outputDirectory.Data())+fName_;
+   }
    else fPath_=fName_;
    ensurePathForFile(fPath_);
    file_ = new TFile(fPath_,"read");
