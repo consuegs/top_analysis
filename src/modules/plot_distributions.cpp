@@ -104,6 +104,10 @@ class systHists
          histReader_ = new io::RootFileReader(filePath_,histPath_,true,true);
       }
       
+      void combineChannel(){
+         hists_.combineChannel("/all",{"/ee","/mumu","/emu"});
+      }
+      
       Systematic::Systematic systematic_;
       TString filePath_;
       TString histPath_;
@@ -301,7 +305,7 @@ void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systH
    float mcYield_total_up;
    std::map<TString,float> totalMap;
    
-   for (TString cat:{"ee","emu","mumu"}){    //Get the number of events per category
+   for (TString cat:{"ee","emu","mumu","all"}){    //Get the number of events per category
       TH1F* mc_total=hs->getHistogram("cutflow/"+cat,"MC");
       std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,systHists_vec,"cutflow/"+cat);
       std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
@@ -329,18 +333,18 @@ void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systH
          // ~if (sample=="MC") std::cout<<mcYield_down/mcYield*100<<"   "<<mcYield_up/mcYield*100<<std::endl;
       }
    }
-   //print channels combined
-   std::cout<<"----------------"<<"combined"<<"-----------------------"<<std::endl;
-   for (TString sample:outputSamples){
-      if(sample=="MC"){
-         TString yieldUnc = TString::Format("$%.1f^{+%.1f}_{-%.1f}$",mcYield_total,mcYield_total_up,mcYield_total_down);
-         std::cout<<"\\hline"<<std::endl;
-         std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<yieldUnc<<"&"<<std::setprecision(1)<<mcYield_total/mcYield_total*100<<"\\\\"<<std::endl;
-      }
-      else{
-         std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<totalMap[sample]<<"&"<<std::setprecision(1)<<totalMap[sample]/mcYield_total*100<<"\\\\"<<std::endl;
-      }
-   }
+   // ~//print channels combined
+   // ~std::cout<<"----------------"<<"combined"<<"-----------------------"<<std::endl;
+   // ~for (TString sample:outputSamples){
+      // ~if(sample=="MC"){
+         // ~TString yieldUnc = TString::Format("$%.1f^{+%.1f}_{-%.1f}$",mcYield_total,mcYield_total_up,mcYield_total_down);
+         // ~std::cout<<"\\hline"<<std::endl;
+         // ~std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<yieldUnc<<"&"<<std::setprecision(1)<<mcYield_total/mcYield_total*100<<"\\\\"<<std::endl;
+      // ~}
+      // ~else{
+         // ~std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<totalMap[sample]<<"&"<<std::setprecision(1)<<totalMap[sample]/mcYield_total*100<<"\\\\"<<std::endl;
+      // ~}
+   // ~}
    
 }
 
@@ -910,6 +914,20 @@ void run()
       std::map<const TString,Color_t> colormap = {{"TTbar_diLepton",kRed-6},{"Diboson",kCyan-8},{"ttW/Z",kGreen-7},{"tt other",kRed-9}};
       
       plotHistograms(distr_.path,distr_.name,hs,mcSamples_merged,colormap,systHists_vec,saver,false,false);
+      
+      if (distr_.path.Contains("/emu") || distr_.name == "emu"){  //plot all channels combined
+         for (auto &current : systHists_vec){
+            current->combineChannel();
+         }
+         TString combinedPath(distr_.path);
+         combinedPath.ReplaceAll("/emu","/all");
+         if (distr_.name == "emu") {   // fot cutflow plot
+            plotHistograms(combinedPath,"all",hs,mcSamples_merged,colormap,systHists_vec,saver,false,false);
+         }
+         else {
+            plotHistograms(combinedPath,distr_.name,hs,mcSamples_merged,colormap,systHists_vec,saver,false,false);
+         }
+      }
    }
          
    // ~}

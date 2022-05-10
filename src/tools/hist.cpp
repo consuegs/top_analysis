@@ -230,6 +230,27 @@ void hist::Histograms<HIST>::combineSamples(TString const &sampleCombined, std::
 }
 
 template <class HIST>
+void hist::Histograms<HIST>::combineChannel(TString const &combinedName, std::vector<TString> const &channels)
+{
+   for (auto const &mH: mmH_){
+      if (!mH.first.Contains(channels.back())) continue;
+      TString combinedPath(mH.first);
+      combinedPath.ReplaceAll(channels.back(),combinedName);
+      if (mmH_.find(combinedPath) != mmH_.end()) continue;
+      for (auto const &s: mH.second){
+         mmH_[combinedPath][s.first]=*(HIST*)mH.second.begin()->second.Clone();
+         HIST &newH=mmH_[combinedPath][s.first];
+         newH.Reset();
+         for (auto const &channel: channels){
+            TString channelPath(mH.first);
+            channelPath.ReplaceAll(channels.back(),channel);
+            newH.Add(&mmH_[channelPath][s.first]);
+         }
+      }
+   }
+}
+
+template <class HIST>
 std::vector<TString> hist::Histograms<HIST>::getVariableNames()
 {
    std::vector<TString> vars;

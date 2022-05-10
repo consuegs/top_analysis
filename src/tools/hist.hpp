@@ -60,6 +60,7 @@ namespace hist
       void mergeOverflow(bool includeUnderflow=true); // add the overflow to the last bin (and underflow to first)
       void combineFromSubsamples(std::vector<TString> const &samples);
       void combineSamples(TString const &sampleCombined, std::vector<TString> const &samples);
+      void combineChannel(TString const &combinedName, std::vector<TString> const &channels);
       std::vector<TString> getVariableNames();
       std::vector<HIST*> getHistograms(TString const &varName,std::vector<TString> const &samples,bool divideByBinWidth=false);
       HIST* getHistogram(TString const &varName,TString const &sample,bool divideByBinWidth=false);
