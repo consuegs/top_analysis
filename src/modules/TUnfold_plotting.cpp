@@ -32,6 +32,7 @@ struct distrUnfold {
    TString title;
    TString labelFormat;
    bool is2D;
+   bool norm = false;
 };
 
 std::pair<float,int> getChi2NDF(TH1F* hist_res, TH1F* hist_true) {
@@ -117,7 +118,7 @@ void plot_response(TH2F* responseHist, TString name, io::RootFileSaver* saver) {
       can.cd();
       gPad->SetRightMargin(0.2);
       gPad->SetLeftMargin(0.13);
-      gPad->SetBottomMargin(0.11);
+      gPad->SetBottomMargin(0.15);
       
       tempHist->GetYaxis()->SetTitleOffset(1.3);
       tempHist->GetXaxis()->SetTitleOffset(0.9);
@@ -233,10 +234,23 @@ void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSav
       for (auto const& [key, val] : shiftsMap){
          float min = std::min(val.first.GetBinContent(1)*100,val.second.GetBinContent(1)*100);
          float max = std::max(val.first.GetBinContent(1)*100,val.second.GetBinContent(1)*100);
-         std::cout<<left<<setw(25)<<setfill(' ')<<key<<TString::Format("+%.2f   %.2f",max,min)<<std::endl;
+         TString systPrint(key);
+         
+         // one sided unc.
+         if (max==min){
+            if (max<0){
+               max = 0;
+            }
+            else{
+               min = 0;
+            }
+         }
+         std::cout<<std::fixed<<systPrint.ReplaceAll("_","\\_")<<"&"<<TString::Format("%.2f",abs(min))<<"&"<<TString::Format("%.2f",abs(max))<<"\\\\"<<std::endl;
       }
-      std::cout<<left<<setw(25)<<setfill(' ')<<"STAT"<<TString::Format("+%.2f   -%.2f",statShift.second.GetBinContent(1)*100,statShift.first.GetBinContent(1)*100)<<std::endl;
-      std::cout<<left<<setw(25)<<setfill(' ')<<"TOTAL"<<TString::Format("+%.2f   -%.2f",totalShift.second.GetBinContent(1)*100,totalShift.first.GetBinContent(1)*100)<<std::endl;
+      
+      std::cout<<std::fixed<<"STAT"<<"&"<<TString::Format("%.2f",abs(statShift.first.GetBinContent(1)*100))<<"&"<<TString::Format("%.2f",abs(statShift.second.GetBinContent(1)*100))<<"\\\\"<<std::endl;
+      std::cout<<"\\hline"<<std::endl;
+      std::cout<<std::fixed<<"TOTAL"<<"&"<<TString::Format("%.2f",abs(totalShift.first.GetBinContent(1)*100))<<"&"<<TString::Format("%.2f",abs(totalShift.second.GetBinContent(1)*100))<<"\\\\"<<std::endl;
       return;
    }
       
@@ -244,6 +258,8 @@ void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSav
    TCanvas can;
    can.cd();
    gPad->SetRightMargin(0.2);
+   bool is2D = true;
+   bool isNorm = false;
    
    totalShift.first.Scale(-100.);
    totalShift.second.Scale(100.);
@@ -252,8 +268,13 @@ void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSav
    totalShift.first.SetStats(false);
    if (!saver->getInternalPath().Contains("2D")){
       totalShift.first.SetTitle(TString::Format(";%s;Uncertainty(%)",var.Data()));
+      is2D = false;
    }
    else totalShift.first.SetTitle(";Signal Bin;Uncertainty(%)");
+   
+   if (saver->getInternalPath().Contains("_norm")){
+      isNorm = true;
+   }
    
    totalShift.first.SetFillColor(kOrange);
    totalShift.second.SetFillColor(kOrange);
@@ -276,7 +297,13 @@ void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSav
    statShift.first.Draw("hist same");
    statShift.second.Draw("hist same");
    
-   totalShift.first.GetYaxis()->SetRangeUser(-30,30);
+   if (is2D){
+      // ~totalShift.first.GetYaxis()->SetRangeUser(-100,100);
+      totalShift.first.GetYaxis()->SetRangeUser(-60,60);
+   }
+   else {
+      totalShift.first.GetYaxis()->SetRangeUser(-30,30);
+   }
    
    gfx::LegendEntries legE;
    legE.append(totalShift.first,"Total","f");
@@ -316,17 +343,25 @@ void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSav
    
    var.ReplaceAll("(GeV)","");
    
+   if (is2D){
+      var = "2D";
+   }
+   
+   if (isNorm){
+      var +=", normalized";
+   }
+   
    TLatex label=gfx::cornerLabel(var,1);
    label.Draw();
    TLatex label2=gfx::cornerLabel(method,3);
    label2.Draw();
    
    TLegend leg=legE.buildLegend(.80,.15,0.95,.95,1);
-   leg.SetTextSize(0.04);
+   leg.SetTextSize(0.027);
    leg.Draw();
    
    totalShift.first.Draw("axis same");
-   saver->save(can,"systBreakdown/"+name+"_"+method,true,true);
+   saver->save(can,"systBreakdown/"+name+"_"+method,true,true,true);
    
 }
 
@@ -373,7 +408,7 @@ void plot_response_diff(std::map<TString,TH2F> const &indResponse, TH2F* const &
    }
 }
 
-TH1F getCRenvelope(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up){
+TH1F getCRenvelope(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up, bool const &norm=false){
    io::RootFileReader histReader_CR1(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"CR1",cfg.processFraction*100));
    io::RootFileReader histReader_CR2(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"CR2",cfg.processFraction*100));
    io::RootFileReader histReader_ERDON(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"ERDON",cfg.processFraction*100));
@@ -382,9 +417,16 @@ TH1F getCRenvelope(TString const &path, TString const &filePath, TH1F* const &no
    TH1F* hist_CR2 = histReader_CR2.read<TH1F>(path);
    TH1F* hist_ERDON = histReader_ERDON.read<TH1F>(path);
    
-   hist_CR1->Scale(1./cfg.lumi);
-   hist_CR2->Scale(1./cfg.lumi);
-   hist_ERDON->Scale(1./cfg.lumi);
+   if(norm){
+      hist_CR1->Scale(1./hist_CR1->Integral());
+      hist_CR2->Scale(1./hist_CR2->Integral());
+      hist_ERDON->Scale(1./hist_ERDON->Integral());
+   }
+   else{
+      hist_CR1->Scale(1./cfg.lumi);
+      hist_CR2->Scale(1./cfg.lumi);
+      hist_ERDON->Scale(1./cfg.lumi);
+   }
    
    std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(nominal,{hist_CR1,hist_CR2,hist_ERDON});
    
@@ -395,7 +437,7 @@ TH1F getCRenvelope(TString const &path, TString const &filePath, TH1F* const &no
    else return env_down;
 }
 
-TH1F getPDFenvelope(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up){
+TH1F getPDFenvelope(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up, bool const &norm=false){
    
    std::vector<TH1F> histVec;
    for (int i=1; i<=50; i++){    // create reader for each shift
@@ -406,8 +448,14 @@ TH1F getPDFenvelope(TString const &path, TString const &filePath, TH1F* const &n
       TH1F temp_up = *(histReader_up.read<TH1F>(path));
       TH1F temp_down = *(histReader_down.read<TH1F>(path));
       
-      temp_up.Scale(1./cfg.lumi);
-      temp_down.Scale(1./cfg.lumi);
+      if(norm){
+         temp_up.Scale(1./temp_up.Integral());
+         temp_down.Scale(1./temp_down.Integral());
+      }
+      else{
+         temp_up.Scale(1./cfg.lumi);
+         temp_down.Scale(1./cfg.lumi);
+      }
       
       histVec.push_back(temp_up);
       histVec.push_back(temp_down);
@@ -423,10 +471,11 @@ TH1F getPDFenvelope(TString const &path, TString const &filePath, TH1F* const &n
    else return env_down;
 }
 
-TH1F getMTOPunc(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up){
+TH1F getMTOPunc(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up, bool const &norm=false){
    io::RootFileReader histReader_shift(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),(up)? "MTOP175p5" : "MTOP169p5",cfg.processFraction*100));
    TH1F* hist_shift = histReader_shift.read<TH1F>(path);
-   hist_shift->Scale(1./cfg.lumi);
+   if(norm) hist_shift->Scale(1./hist_shift->Integral());
+   else hist_shift->Scale(1./cfg.lumi);
    
    hist_shift->Add(nominal,-1.);
    hist_shift->Scale(1/3.);
@@ -435,18 +484,19 @@ TH1F getMTOPunc(TString const &path, TString const &filePath, TH1F* const &nomin
    return *hist_shift;
 }
 
-TH1F getLUMIunc(TH1F* const &nominal, bool const &up){
+TH1F getLUMIunc(TH1F* const &nominal, bool const &up, bool const &norm=false){
    TH1F hist_shift(*nominal);
    float unc = cfg.systUncFactor.at("LUMI").first;
    float sf = (up)? 1.0-unc : 1.0+unc;    //larger lumi leads to smaller xsec!!
    
-   hist_shift.Scale(sf);
+   if(norm) hist_shift.Scale(1./hist_shift.Integral());
+   else hist_shift.Scale(sf);
    
    return hist_shift;
 }
 
 std::pair<TH1F*,TH1F*> getSystUnc(TH1F* const &nominal, TString const &path, TString const &filePath, std::vector<TString> const &systVec, 
-                                    bool const &addStat, bool const &withScaleFactor, std::map<TString,TH1F> &indShifts, std::map<TString,TH2F> &indResponse){
+                                    bool const &addStat, bool const &withScaleFactor, std::map<TString,TH1F> &indShifts, std::map<TString,TH2F> &indResponse, bool const &norm=false){
    
    TH1F* hist_shiftUP = (TH1F*)nominal->Clone();
    TH1F* hist_shiftDOWN = (TH1F*)nominal->Clone();
@@ -465,21 +515,22 @@ std::pair<TH1F*,TH1F*> getSystUnc(TH1F* const &nominal, TString const &path, TSt
    for (auto &syst : systVec){
             
       if (Systematic::convertType(syst) == Systematic::CR_envelope) {   // derive CR envelope
-         tempSys = getCRenvelope(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up);
+         tempSys = getCRenvelope(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up,norm);
       }
       else if (Systematic::convertType(syst) == Systematic::mtop){      // derive mtop uncertainty
-         tempSys = getMTOPunc(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up);
+         tempSys = getMTOPunc(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up,norm);
       }
       else if (Systematic::convertType(syst) == Systematic::pdf_envelope){      // derive mtop uncertainty
-         tempSys = getPDFenvelope(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up);
+         tempSys = getPDFenvelope(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up,norm);
       }
       else if (Systematic::convertType(syst) == Systematic::lumi){      // derive lumi unc.
-         tempSys = getLUMIunc(nominal,Systematic::convertVariation(syst) == Systematic::up);
+         tempSys = getLUMIunc(nominal,Systematic::convertVariation(syst) == Systematic::up,norm);
       }
       else {   // load "nominal" syst., which need no further handling
          io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold/%s/TUnfold_%s_%.1f.root" : "TUnfold/%s/TUnfold_SF91_%s_%.1f.root",filePath.Data(),syst.Data(),cfg.processFraction*100));
          tempSys = *(histReader.read<TH1F>(path));
-         tempSys.Scale(1./cfg.lumi);
+         if (norm) tempSys.Scale(1./tempSys.Integral());
+         else tempSys.Scale(1./cfg.lumi);
          
          if (saveResponse) {
             // ~tempResponse = *(get_response(histReader.read<TH2F>(responsePath)));
@@ -573,22 +624,49 @@ void run()
    std::vector<distrUnfold> vecDistr;
    // ~vecDistr.push_back({"2D_dPhi_pTnunu",0,400.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",true});
    // ~vecDistr.push_back({"2D_dPhi_pTnunu_new",0,400.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",true});
+   // ~vecDistr.push_back({"2D_dPhi_pTnunu_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",true});
+   // ~vecDistr.push_back({"2D_dPhi_pTnunu_new_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",true});
    // ~vecDistr.push_back({"pTnunu",0,600.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",false});
    // ~vecDistr.push_back({"dPhi",0,3.2,";|#Delta#phi|(p_{T}^{#nu#nu},nearest l);#sigma (pb)","%.1f",false});
+   // ~vecDistr.push_back({"pTnunu_DNN",0,600.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",false});
+   // ~vecDistr.push_back({"dPhi_DNN",0,3.2,";|#Delta#phi|(p_{T}^{#nu#nu},nearest l);#sigma (pb)","%.1f",false});
    // ~vecDistr.push_back({"pTll",0,400,";p_{T}^{ll} (GeV);#sigma (pb)","%.1f",false});
-   vecDistr.push_back({"inclusive",0,1,";Signal Bin;#sigma (pb)","%.1f",false});
+   // ~vecDistr.push_back({"inclusive",0,1,";Signal Bin;#sigma (pb)","%.1f",false});
+   
+   vecDistr.push_back({"pTnunu_DNN",0,600.,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/dp_{T}^{#nu#nu}","%.0f",false,true});
+   vecDistr.push_back({"dPhi_DNN",0,3.2,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/d|#Delta#phi|(p_{T}^{#nu#nu},nearest l)","%.0f",false,true});
+   vecDistr.push_back({"2D_dPhi_pTnunu_new_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/dp_{T}^{#nu#nu}","%.0f",true,true});
    
    //Define syst. unc. to plot
-   // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN"};
-   // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN"};
-   // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN"};
-   std::vector<TString> systVec = {"JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN",
+   
+   // With PDF
+   // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN"};
+   
+   // Without PDF
+   // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN",};
+   
+   // Complete with split JES
+   // ~std::vector<TString> systVec = {"JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN",
    
    // ~"PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN",
       
-   "JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN",
+   // ~"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN",
+   // ~};
+   
+   // Split JES only
+   // ~std::vector<TString> systVec = {"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN"};
+   
+   // Complete with regrouped JES
+   std::vector<TString> systVec = {"JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN",
+   
+   "PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN",
+      
+   "JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN",
    };
-   // ~std::vector<TString> systVec = {"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESFlavorQCDreg_UP","JESFlavorQCDreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JER_UP","JER_DOWN"};
+   
+   // Regrouped JES only
+   // ~std::vector<TString> systVec = {"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN"};
+   
    // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN"};
    // ~std::vector<TString> systVec = {"JESFlavorQCD_UP","JESFlavorQCD_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN"};
    // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN"};
@@ -603,13 +681,13 @@ void run()
    //Define combination of syst. unc. for plotting
    std::map<TString,std::vector<TString>> systCombinations = {
       // ~{"JES/JER",{"JESAbsoluteMPFBias","JESAbsoluteScale","JESAbsoluteStat","JESFlavorRealistic","JESFragmentation","JESPileUpDataMC","JESPileUpPtBB","JESPileUpPtEC1","JESPileUpPtRef","JESRelativeBal","JESRelativeFSR","JESRelativeJEREC1","JESRelativePtBB","JESRelativePtEC1","JESRelativeSample","JESRelativeStatEC","JESRelativeStatFSR","JESSinglePionECAL","JESSinglePionHCAL","JESTimePtEta","JER"}},
-      // ~{"JES/JER",{"JESRelativeBalreg","JESFlavorQCDreg","JESRelativeSampleYear","JESAbsoluteYear","JESAbsolute","JESBBEC1Year","JESBBEC1","JER"}},
-      // ~{"JES/JER",{"JESTotal","JER"}},
-      // ~{"BTAG",{"BTAGBC","BTAGL"}},
-      // ~{"LEPTON",{"ELECTRON_ID","ELECTRON_RECO","ELECTRON_SCALESMEARING","MUON_ID","MUON_ISO","MUON_SCALE"}},
-      // ~{"PS",{"PSISRSCALE","PSFSRSCALE"}},
-      // ~{"XSEC BKG",{"XSEC_TTOTHER","XSEC_DY","XSEC_ST","XSEC_OTHER"}},
-      // ~{"MESCALE",{"MERENSCALE","MEFACSCALE"}},
+      {"JES/JER",{"JESRelativeBalreg","JESFlavorRealistic","JESRelativeSampleYear","JESAbsoluteYear","JESAbsolute","JESBBEC1Year","JESBBEC1","JER"}},
+      {"JES/JER",{"JESTotal","JER"}},
+      {"BTAG",{"BTAGBC","BTAGL"}},
+      {"LEPTON",{"ELECTRON_ID","ELECTRON_RECO","ELECTRON_SCALESMEARING","MUON_ID","MUON_ISO","MUON_SCALE"}},
+      {"PS",{"PSISRSCALE","PSFSRSCALE"}},
+      {"XSEC BKG",{"XSEC_TTOTHER","XSEC_DY","XSEC_ST","XSEC_OTHER"}},
+      {"MESCALE",{"MERENSCALE","MEFACSCALE"}},
    };
    // ~std::map<TString,std::vector<TString>> systCombinations = {
       // ~{"JES/JER",{"JESTotal","JER"}},
@@ -623,7 +701,7 @@ void run()
    
       //==============================================
       // step 1 : open output file
-      io::RootFileSaver saver(TString::Format("TUnfold/plots%.1f.root",cfg.processFraction*100),TString::Format(!withScaleFactor ? "TUnfold_plotting%.1f/%s" : "TUnfold_plotting_SF_%.1f/%s",cfg.processFraction*100,dist.varName.Data()));
+      io::RootFileSaver saver(TString::Format("TUnfold/plots%.1f.root",cfg.processFraction*100),TString::Format(!withScaleFactor ? "TUnfold_plotting%.1f/%s" : "TUnfold_plotting_SF_%.1f/%s",cfg.processFraction*100,dist.norm? (dist.varName+"_norm").Data() : dist.varName.Data()));
 
       //==============================================
       // step 2 : read binning schemes and input histograms
@@ -670,6 +748,7 @@ void run()
          std::map<TString,TH1F> indShifts_bbb;
          std::map<TString,TH2F> indResponse_bbb;
          std::pair<TH1F*,TH1F*> unfolded_bbb_total = getSystUnc(unfolded_bbb,input_loc_result+"/BBB/hist_unfoldedResult",input_loc_old,systVec,true,withScaleFactor,indShifts_bbb,indResponse_bbb);         
+         // ~std::pair<TH1F*,TH1F*> unfolded_bbb_total = getSystUnc(unfolded_bbb,input_loc_result+"/BBB/hist_unfoldedResult",input_loc_old,systVec,false,withScaleFactor,indShifts_bbb,indResponse_bbb);         
          
          std::cout<<"----------------------------------------------------------"<<std::endl;
          std::cout<<"Measured total cross section:"<<unfolded_bbb->GetBinContent(1)<<std::endl;
@@ -689,6 +768,7 @@ void run()
 
       // read histograms
       TH1F *realDis=histReader.read<TH1F>(input_loc+"/histDataTruth");
+      TH1F *realDisAlt=histReader.read<TH1F>(input_loc+"/histDataTruthAlt");
       TH1F *realDis_response=histReader.read<TH1F>(input_loc+"/histMCGenRec_projX");
       TH1F *unfolded=histReader.read<TH1F>(input_loc_result+"/hist_unfoldedResult");
       TH1F *unfolded_reg=histReader.read<TH1F>(input_loc_result+"/reg/hist_unfoldedResult");
@@ -705,12 +785,23 @@ void run()
          cout<<"problem to read input histograms\n";
       }
       
-      // divide by lumi to get xsec
-      realDis->Scale(1./cfg.lumi);
-      realDis_response->Scale(1./cfg.lumi);
-      unfolded->Scale(1./cfg.lumi);
-      unfolded_reg->Scale(1./cfg.lumi);
-      unfolded_bbb->Scale(1./cfg.lumi);
+      // divide by lumi to get xsec or by integral to get normalized xsec
+      if(dist.norm){
+         realDis->Scale(1./realDis->Integral());
+         realDisAlt->Scale(1./realDisAlt->Integral());
+         realDis_response->Scale(1./realDis_response->Integral());
+         unfolded->Scale(1./unfolded->Integral());
+         unfolded_reg->Scale(1./unfolded_reg->Integral());
+         unfolded_bbb->Scale(1./unfolded_bbb->Integral());
+      }
+      else{
+         realDis->Scale(1./cfg.lumi);
+         realDisAlt->Scale(1./cfg.lumi);
+         realDis_response->Scale(1./cfg.lumi);
+         unfolded->Scale(1./cfg.lumi);
+         unfolded_reg->Scale(1./cfg.lumi);
+         unfolded_bbb->Scale(1./cfg.lumi);
+      }
       
       // Get syst unc
       std::map<TString,TH1F> indShifts;
@@ -719,9 +810,9 @@ void run()
       std::map<TString,TH2F> indResponse;
       std::map<TString,TH2F> indResponse_reg;
       std::map<TString,TH2F> indResponse_bbb;
-      std::pair<TH1F*,TH1F*> unfolded_total = getSystUnc(unfolded,input_loc_result+"/hist_unfoldedResult",input_loc_old,systVec,true,withScaleFactor,indShifts,indResponse);
-      std::pair<TH1F*,TH1F*> unfolded_reg_total = getSystUnc(unfolded_reg,input_loc_result+"/reg/hist_unfoldedResult",input_loc_old,systVec,true,withScaleFactor,indShifts_reg,indResponse_reg);
-      std::pair<TH1F*,TH1F*> unfolded_bbb_total = getSystUnc(unfolded_bbb,input_loc_result+"/BBB/hist_unfoldedResult",input_loc_old,systVec,true,withScaleFactor,indShifts_bbb,indResponse_bbb);
+      std::pair<TH1F*,TH1F*> unfolded_total = getSystUnc(unfolded,input_loc_result+"/hist_unfoldedResult",input_loc_old,systVec,true,withScaleFactor,indShifts,indResponse,dist.norm);
+      std::pair<TH1F*,TH1F*> unfolded_reg_total = getSystUnc(unfolded_reg,input_loc_result+"/reg/hist_unfoldedResult",input_loc_old,systVec,true,withScaleFactor,indShifts_reg,indResponse_reg,dist.norm);
+      std::pair<TH1F*,TH1F*> unfolded_bbb_total = getSystUnc(unfolded_bbb,input_loc_result+"/BBB/hist_unfoldedResult",input_loc_old,systVec,true,withScaleFactor,indShifts_bbb,indResponse_bbb,dist.norm);
       
       //========================
       // Step 3: plotting
@@ -730,7 +821,7 @@ void run()
       can.can_.SetWindowSize(1800,600);
       can.pU_.SetLogy();
       can.pU_.cd();  //Use upper part of canvas
-      
+            
       //Initialize proper binning for plotting
       TVectorD binning_met(*(generatorBinning->FindNode("signal")->GetDistributionBinning(0)));
       
@@ -764,12 +855,19 @@ void run()
       unfolded->SetBins(num_bins,xbins);
       unfolded_total.first->SetBins(num_bins,xbins);
       unfolded_total.second->SetBins(num_bins,xbins);
-      unfolded_reg->SetBins(num_bins,xbins_minus);
-      unfolded_reg_total.first->SetBins(num_bins,xbins_minus);
-      unfolded_reg_total.second->SetBins(num_bins,xbins_minus);
-      unfolded_bbb->SetBins(num_bins,xbins_plus);
-      unfolded_bbb_total.first->SetBins(num_bins,xbins_plus);
-      unfolded_bbb_total.second->SetBins(num_bins,xbins_plus);
+      if (plotComparison){
+         unfolded_reg->SetBins(num_bins,xbins_minus);
+         unfolded_reg_total.first->SetBins(num_bins,xbins_minus);
+         unfolded_reg_total.second->SetBins(num_bins,xbins_minus);
+         unfolded_bbb->SetBins(num_bins,xbins_plus);
+         unfolded_bbb_total.first->SetBins(num_bins,xbins_plus);
+         unfolded_bbb_total.second->SetBins(num_bins,xbins_plus);
+      }
+      else{
+         unfolded_reg->SetBins(num_bins,xbins);
+         unfolded_reg_total.first->SetBins(num_bins,xbins);
+         unfolded_reg_total.second->SetBins(num_bins,xbins);
+      }
       
       if (!dist.is2D){ // set correct binning for plotting syst breakdown (currently only 1D)
          for(std::pair<TString,TH1F> const &shift : indShifts){
@@ -780,6 +878,7 @@ void run()
       }
       
       realDis->SetBins(num_bins,xbins);
+      realDisAlt->SetBins(num_bins,xbins);
       realDis_response->SetBins(num_bins,xbins);
       for (int i=1; i<=num_bins; i++) {  //Set proper label for x axis
          int bin_label_no = (i-1)%num_bins_met+1;
@@ -792,7 +891,8 @@ void run()
       unfolded->GetXaxis()->SetTickLength(0.);
       unfolded->GetYaxis()->SetTickLength(0.008);
       unfolded->GetXaxis()->SetTitleOffset(1.5);
-      unfolded->GetYaxis()->SetTitleOffset(0.8);
+      unfolded->GetYaxis()->SetTitleOffset(1.5);
+      unfolded->GetYaxis()->SetTitleSize(0.04);
       unfolded->GetXaxis()->CenterLabels(false);
          
       unfolded->LabelsOption("v");
@@ -839,12 +939,14 @@ void run()
       unfolded_totalGraph.SetLineWidth(1.);
       unfolded_reg_totalGraph.SetLineWidth(1.);
       unfolded_bbb_totalGraph.SetLineWidth(1.);
-      unfolded_totalGraph.SetMarkerSize(2.);
-      unfolded_reg_totalGraph.SetMarkerSize(2.);
-      unfolded_bbb_totalGraph.SetMarkerSize(2.);
+      unfolded_totalGraph.SetMarkerSize(0.2);
+      unfolded_reg_totalGraph.SetMarkerSize(0.2);
+      unfolded_bbb_totalGraph.SetMarkerSize(0.2);
       
       realDis->SetLineColor(kRed-6);
       realDis->SetFillColor(kRed-6);
+      realDisAlt->SetLineColor(kBlue-6);
+      realDisAlt->SetFillColor(kBlue-6);
       
       if (plotComparison) {
          
@@ -863,7 +965,15 @@ void run()
          unfolded_reg_totalGraph.Draw("p same");
          unfolded_bbb_totalGraph.Draw("p same");
       }
-      else unfolded->Draw("pe1");  //Draw into current canvas
+      else {
+         unfolded->Draw("axis");  //Draw into current canvas
+         
+         realDis->Draw("hist same");
+         realDisAlt->Draw("hist same");
+         
+         unfolded_reg_graph.Draw("pe2 same");
+         unfolded_reg_totalGraph.Draw("p same");
+      }
       
       realDis_response->SetLineColor(kBlue);
       realDis_response->SetFillColor(kBlue);
@@ -878,9 +988,9 @@ void run()
          aline->DrawLine(800,unfolded->GetMinimum(),800,unfolded->GetMaximum());
          aline->DrawLine(400,unfolded->GetMinimum(),400,unfolded->GetMaximum());
          aline->DrawLine(800,unfolded->GetMinimum(),800,unfolded->GetMaximum());
-         atext->DrawLatex(75,0.5*unfolded->GetMaximum(),"0<|#Delta#phi|(p_{T}^{#nu#nu},nearest l)<0.7");
-         atext->DrawLatex(475,0.5*unfolded->GetMaximum(),"0.7<|#Delta#phi|(p_{T}^{#nu#nu},nearest l)<1.4");
-         atext->DrawLatex(875,0.5*unfolded->GetMaximum(),"1.4<|#Delta#phi|(p_{T}^{#nu#nu},nearest l)<3.14");
+         atext->DrawLatex(75,0.5*unfolded->GetMaximum(),"0<|#Delta#phi|<0.64");
+         atext->DrawLatex(475,0.5*unfolded->GetMaximum(),"0.64<|#Delta#phi|<1.2");
+         atext->DrawLatex(875,0.5*unfolded->GetMaximum(),"1.2<|#Delta#phi|<3.14");
       }
       
       //Get Chi2 and NDF
@@ -899,13 +1009,19 @@ void run()
          legE.append(*unfolded_bbb,TString::Format("BBB [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair_bbb.first,Chi2Pair_bbb.second,Chi2Pair_corr_bbb.first,Chi2Pair_corr_bbb.second),"pe");
       }
       else {
-         legE.append(*unfolded,"Unfolded","pe");
-         atext->DrawLatex(30,10,TString::Format("#chi^{2}/NDF=%.1f/%i",Chi2Pair.first,Chi2Pair.second));
-         atext->DrawLatex(30,3,TString::Format("#chi^{2}/NDF(corr.)=%.1f/%i",Chi2Pair_corr.first,Chi2Pair_corr.second));
+         // ~legE.append(*unfolded,"Unfolded","pe");
+         // ~atext->DrawLatex(30,10,TString::Format("#chi^{2}/NDF=%.1f/%i",Chi2Pair.first,Chi2Pair.second));
+         // ~atext->DrawLatex(30,3,TString::Format("#chi^{2}/NDF(corr.)=%.1f/%i",Chi2Pair_corr.first,Chi2Pair_corr.second));
+         
+         auto Chi2Pair_reg = getChi2NDF(unfolded_reg,realDis);
+         auto Chi2Pair_corr_reg = getChi2NDF_withCorr(unfolded_reg,realDis,covMatrix_reg);
+         // ~legE.append(*unfolded_reg,TString::Format("Reg [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair_reg.first,Chi2Pair_reg.second,Chi2Pair_corr_reg.first,Chi2Pair_corr_reg.second),"pe");
+         legE.append(*unfolded_reg,"Unfolded","pe");
       }
-      legE.append(*realDis,"MC true ttbar","l");
+      legE.append(*realDis,"Powheg","l");
+      legE.append(*realDisAlt,"MadGraph","l");
       // ~legE.append(*realDis_response,"MC true ttbar (response)","l");
-      TLegend leg=legE.buildLegend(.10,.45,0.25,.65,1);
+      TLegend leg=legE.buildLegend(.2,.45,0.3,.6,1);
       leg.SetTextSize(0.03);
       leg.Draw();
       
@@ -917,9 +1033,10 @@ void run()
       
       //Change to lower part of canvas
       can.pL_.cd();
-      can.pL_.SetBottomMargin(0.45);
+      can.pL_.SetBottomMargin(0.57);
       can.pL_.SetTickx(0);
       TH1F ratio;
+      TH1F ratio_alt;
       TH1F ratio_response;
       TH1F ratio_unfolded;
       TH1F ratio_unfolded_reg;
@@ -927,6 +1044,7 @@ void run()
       
       // derive ratios
       ratio=hist::getRatio(*realDis,*realDis,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
+      ratio_alt=hist::getRatio(*realDisAlt,*realDis,"ratio",hist::NOERR);
       ratio_response=hist::getRatio(*realDis_response,*realDis,"ratio",hist::NOERR);
       ratio_unfolded=hist::getRatio(*unfolded,*realDis,"ratio",hist::ONLY1);
       ratio_unfolded_reg=hist::getRatio(*unfolded_reg,*realDis,"ratio",hist::ONLY1);
@@ -958,26 +1076,31 @@ void run()
       ratio_bbb_graph.SetFillColor(kMagenta-9);
       
       // setup axis
-      ratio.SetMaximum(1.5);
-      ratio.SetMinimum(0.5);
+      ratio.SetMaximum(1.39);
+      ratio.SetMinimum(0.61);
       ratio.SetLineColor(kRed-6);
       ratio.SetMarkerColor(kRed-6);
-      ratio.GetYaxis()->SetTitleOffset(0.3);
-      ratio.GetXaxis()->SetTitleOffset(1.3);
+      ratio.GetYaxis()->SetTitleOffset(0.4);
+      ratio.GetXaxis()->SetTitleOffset(1.7);
       ratio.GetXaxis()->SetTickLength(0.);
-      if (plotComparison) ratio.Draw("hist");
-      else ratio.Draw();
+      // ~if (plotComparison) ratio.Draw("hist");
+      // ~else ratio.Draw();
+      ratio.Draw("hist");
       
       ratio_response.SetLineColor(kBlue);
       ratio_response.SetMarkerColor(kBlue);
       // ~ratio_response.Draw("same");
       
+      ratio_alt.SetLineColor(kBlue-6);
+      ratio_alt.SetMarkerColor(kBlue-6);
+      ratio_alt.Draw("same");
+      
       ratio_totalGraph.SetLineWidth(1.);
       ratio_reg_totalGraph.SetLineWidth(1.);
       ratio_bbb_totalGraph.SetLineWidth(1.);
-      ratio_totalGraph.SetMarkerSize(2.);
-      ratio_reg_totalGraph.SetMarkerSize(2.);
-      ratio_bbb_totalGraph.SetMarkerSize(2.);
+      ratio_totalGraph.SetMarkerSize(0.2);
+      ratio_reg_totalGraph.SetMarkerSize(0.2);
+      ratio_bbb_totalGraph.SetMarkerSize(0.2);
       
       if (plotComparison) {
          
@@ -996,8 +1119,9 @@ void run()
          
       }
       else {
-         ratio_unfolded.SetMarkerSize(0);
-         ratio_unfolded.Draw("same");
+         ratio_reg_graph.Draw("pe2 same");
+         ratio_reg_totalGraph.Draw("p same");
+         ratio.Draw("axis same");
       }
       
       if (dist.is2D){
@@ -1007,16 +1131,21 @@ void run()
       }
       
       //Print rel. uncertainties:
+      std::cout<<"---------------------Uncertainties for "<<dist.varName<<"-------------------------------"<<std::endl;
+      float meanRelError = 0;
       for (int i=0; i<ratio_unfolded.GetNbinsX(); i++){
-         std::cout<<roundf(ratio_totalGraph.GetErrorYlow(i)*100 * 100) / 100<<"   "<<roundf(ratio_totalGraph.GetErrorYhigh(i)*100 * 100) / 100<<std::endl;
+         meanRelError = roundf((ratio_totalGraph.GetErrorYlow(i)+ratio_totalGraph.GetErrorYhigh(i))*100 * 100) / 200;
+         std::cout<<TString::Format(" %i & $%.1f$ \\\\\n",i+1,meanRelError);
       }
       std::cout<<"-----------------------"<<std::endl;
       for (int i=0; i<ratio_unfolded_reg.GetNbinsX(); i++){
-         std::cout<<roundf(ratio_reg_totalGraph.GetErrorYlow(i)*100 * 100) / 100<<"   "<<roundf(ratio_reg_totalGraph.GetErrorYhigh(i)*100 * 100) / 100<<std::endl;
+         meanRelError = roundf((ratio_reg_totalGraph.GetErrorYlow(i)+ratio_reg_totalGraph.GetErrorYhigh(i))*100 * 100) / 200;
+         std::cout<<TString::Format(" %i & $%.1f$ \\\\\n",i+1,meanRelError);
       }
       std::cout<<"-----------------------"<<std::endl;
       for (int i=0; i<ratio_unfolded_reg.GetNbinsX(); i++){
-         std::cout<<roundf(ratio_bbb_totalGraph.GetErrorYlow(i)*100 * 100) / 100<<"   "<<roundf(ratio_bbb_totalGraph.GetErrorYhigh(i)*100 * 100) / 100<<std::endl;
+         meanRelError = roundf((ratio_bbb_totalGraph.GetErrorYlow(i)+ratio_bbb_totalGraph.GetErrorYhigh(i))*100 * 100) / 200;
+         std::cout<<TString::Format(" %i & $%.1f$ \\\\\n",i+1,meanRelError);
       }
       
       //===========================
@@ -1048,7 +1177,7 @@ void run()
          saveName2D+="_PTreweight"+scale;
       }
       if (plotComparison) saveName="compareMethods/"+saveName;
-      saver.save(can,saveName);
+      saver.save(can,saveName,true,true);
       
       //Plot response matrix
       plot_response(responseMatrix,saveName,&saver);

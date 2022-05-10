@@ -212,6 +212,8 @@ class Distribution
          histDataReco_coarse=signalBinning_->CreateHistogram("histDataReco_coarse_"+varName_);
          histDataTruth=signalBinning_->CreateHistogram("histDataTruth_"+varName_);
          histDataTruth_fakes=signalBinning_->CreateHistogram("histDataTruth_fakes_"+varName_);
+         histDataTruthAlt=signalBinning_->CreateHistogram("histDataTruthAlt_"+varName_);
+         histDataTruthAlt_fakes=signalBinning_->CreateHistogram("histDataTruthAlt_fakes_"+varName_);
       }
       
       void setupMCHists(){
@@ -245,6 +247,16 @@ class Distribution
       void fillDataTruth(float const &weight){
          Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
          histDataTruth->Fill(genbinNumber,weight);
+      }
+      
+      void fillDataTruthAlt_fakes(float const &weight){
+         Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         histDataTruthAlt_fakes->Fill(genbinNumber,weight);
+      }
+      
+      void fillDataTruthAlt(float const &weight){
+         Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         histDataTruthAlt->Fill(genbinNumber,weight);
       }
       
       void fillDataReco(float const &weight){
@@ -300,6 +312,8 @@ class Distribution
          saver.save(*histDataReco_coarse,varName_+"/histDataReco_coarse");
          saver.save(*histDataTruth_fakes,varName_+"/histDataTruth_fakes");
          saver.save(*histDataTruth,varName_+"/histDataTruth");
+         saver.save(*histDataTruthAlt_fakes,varName_+"/histDataTruthAlt_fakes");
+         saver.save(*histDataTruthAlt,varName_+"/histDataTruthAlt");
       }
       
       void saveMCHists(io::RootFileSaver const &saver){
@@ -347,6 +361,8 @@ class Distribution
       TH1* histDataReco_coarse;
       TH1* histDataTruth;
       TH1* histDataTruth_fakes;
+      TH1* histDataTruthAlt;
+      TH1* histDataTruthAlt_fakes;
       
       TH2* histMCGenRec;
       TH2* histMCGenRec_purity;
@@ -400,6 +416,7 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
    
    for (TString currentSample : cfg.tunfold_InputSamples){     // loop over samples (data or pseudo data)
       bool isSignal = (currentSample == "TTbar_diLepton");
+      bool isSignalAlt = (currentSample == "TTbar_amcatnlo");
       for (int i=1; i<=cfg.getTotalFileNR(currentSample.Data()); i++){     // loop over each minTree of sample
          TFile *dataFile=new TFile(minTreePath_Nominal+currentSample+"_"+std::to_string(i)+".root","read");
          TTree *dataTree=(TTree *) dataFile->Get("ttbar_res100.0/"+currentSample);
@@ -469,6 +486,13 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
                   for(Distribution& dist : distribution_vec) dist.fillDataTruth_fakes(mcWeight);
                }
                else for(Distribution& dist : distribution_vec) dist.fillDataTruth(mcWeight);
+            }
+            else if (isSignalAlt){ // fill truth distributions with alternative MC sample (used for pseudo data)
+               if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40)) {
+                  for(Distribution& dist : distribution_vec) dist.fillDataTruthAlt_fakes(mcWeight);
+               }
+               else for(Distribution& dist : distribution_vec) dist.fillDataTruthAlt(mcWeight);
+               continue;   // not used for pseudo data input
             }
 
             // fill histogram with reconstructed quantities
