@@ -27,9 +27,24 @@ cd ../build
 
 export ANALYSIS_YEAR_CONFIG="$4"
 
-./run.x "$1" "$2" "$3" "$5" "$6" "$7"
+./run.x "$1" "$2" "$3" "$5" "$6" "$7" 2>&1 | tee $TMP/OutFile.txt
+
+#copy minTrees to dCache
+if [[ $1 != "distributions" ]]
+then
+   minTreePath=$(cat $TMP/OutFile.txt | grep minTree | tr "'" "\n"| sed -n '4p')
+   echo $minTreePath
+   minTreePathHelper="${minTreePath/output_framework/}"
+   minTreePathHelper="${minTreePathHelper/../}"
+   minTreePathHelper="${minTreePathHelper/top_analysis/+minTrees}"
+   minTreePathDcache=$(echo $minTreePathHelper | tr "+" "\n"| sed -n '2p')
+   echo $minTreePathDcache
+   echo "Copy minTree output to dCache"
+   eval `scram unsetenv -sh`; gfal-copy -r -f $minTreePath srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${11}"/$minTreePathDcache
+fi
 
 if [[ $8 != "" ]]
 then
    rm -v $TMP/*.root    #remove input from node 
+   rm -v $TMP/*.txt    #remove input from node 
 fi

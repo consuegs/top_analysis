@@ -113,7 +113,7 @@ void io::RootFileSaver::save(TObject const &obj, TString name,bool decorate,bool
       file_->cd(pathInFile);
    }
    obj.Write(nameInFile,TObject::kOverwrite);
-   io::log*"Saved '"*name*"' to '"*fName_<<"'";
+   io::log*"Saved '"*name*"' to '"*fPath_<<"'";
 }
 
 void io::RootFileSaver::save(gfx::SplitCan &obj, TString name,bool simulation,bool addPDF) const
