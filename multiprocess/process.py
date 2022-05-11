@@ -578,13 +578,14 @@ def submitTUnfold(args,systematics):
             f.write("""
       Universe                = vanilla
       Executable              = runTUnfold.sh
-      Arguments               = -f{0} {1} {2} -s{3}
+      Arguments               = -f{0} {1} {2} -s{3} {4} {5}
       Log                     = logs/{2}/{3}/{0}/{1}/{1}.log
       Output                  = logs/{2}/{3}/{0}/{1}/{1}.out
       Error                   = logs/{2}/{3}/{0}/{1}/{1}.error
       use_x509userproxy       = true
+      Requirements            = (TARGET.Machine == "lxblade33.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade34.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade35.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade36.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade37.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade38.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade39.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade40.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade41.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade42.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade43.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade44.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade45.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade46.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade47.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade48.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade49.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade50.physik.rwth-aachen.de")
       Queue
-      """.format(str(args.f),args.m,args.y,args.s),)
+      """.format(str(args.f),args.m,args.y,args.s,get_version(args.y),dCachePath),)
          else:    #grid submission
             f.write("""
       universe                = grid
