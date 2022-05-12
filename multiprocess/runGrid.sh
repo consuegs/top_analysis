@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 echo $(date)
 sourceDir=`pwd`
