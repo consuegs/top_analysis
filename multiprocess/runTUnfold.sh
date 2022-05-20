@@ -6,6 +6,11 @@ submitDir=/home/home4/institut_1b/dmeuser/top_analysis/framework/multiprocess
 export SCRAM_ARCH=slc7_amd64_gcc820
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
+#random sleep to avoid to many simultaneous copy jobs
+duration=$[ ( $RANDOM % 15 )  + 1 ]
+echo "Sleeping for "$duration" minutes"
+sleep $duration"m"
+
 # copy inputs for Unfolding from dCache
 syst="$4"
 syst=${syst:2}

@@ -68,6 +68,16 @@ else
    ./run.x "$1" "$2" "$5" -m ../
 fi
 
+#check if output directory exist
+FILE=../output_framework
+if [ -d "$FILE" ]; then
+   echo "$FILE exists."
+else
+   echo "$FILE does not exists, job fails."
+   exit 1
+fi
+
+
 #copy mintree to dCache if distribution module is running
 if [[ $2 == "distributions" ]]
 then
@@ -75,3 +85,6 @@ then
    eval `scram unsetenv -sh`; gfal-copy -r -f ../minTrees/ srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="$7"/minTrees/"$4"/"$9"/minTrees/
    rm -r ../minTrees/
 fi
+
+exit 0
+
