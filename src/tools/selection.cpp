@@ -125,7 +125,7 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
    //bJet Cut
    bool bTag=false;
    for (tree::Jet const &jet : cleanJets) {
-      if (jet.bTagDeepJet>cfg.bTagWPcut) {      //Loose working point for deepCSV
+      if (jet.bTagDeepJet>cfg.bTagWPcut) {      //Loose working point for deepJet
          bTag=true;
          bJets.push_back(jet);
       }

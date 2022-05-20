@@ -63,12 +63,12 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("BG")) return bg;
     if(type.BeginsWith("KIN")) return kin;
     if(type.BeginsWith("JetPileupID")) return jetPileupID;
-    if(type.BeginsWith("BTAGBC")) return btagBC;
-    if(type.BeginsWith("BTAGL")) return btagL;
     if(type.BeginsWith("BTAGBC_CORR")) return btagBCcorr;
     if(type.BeginsWith("BTAGBC_UNCORR")) return btagBCuncorr;
     if(type.BeginsWith("BTAGL_CORR")) return btagLcorr;
     if(type.BeginsWith("BTAGL_UNCORR")) return btagLuncorr;
+    if(type.BeginsWith("BTAGBC")) return btagBC;
+    if(type.BeginsWith("BTAGL")) return btagL;
     if(type.BeginsWith("JEREta0")) return jerEta0;
     if(type.BeginsWith("JEREta1")) return jerEta1;
     if(type.BeginsWith("JEREta2Pt0")) return jerEta2Pt0;

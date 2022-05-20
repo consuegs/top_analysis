@@ -65,6 +65,9 @@ jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, cons
    
    // Check if regrouped JES is used
    bool regrouped = (std::find(Systematic::jesTypes_regrouped.begin(), Systematic::jesTypes_regrouped.end(), type) != Systematic::jesTypes_regrouped.end());
+   
+   // Check if syst is HEM15/16
+   useHEM1516_ = (type == Systematic::Type::jesUserDefinedHEM1516);
       
    // Configure helper
    useRealisticFlav_ = false;
@@ -152,9 +155,17 @@ void jesCorrections::scaleJet(tree::Jet& jet)
    // Check if realistic flavor should be applied
    double uncert = 0.;
    if (!useRealisticFlav_){
-      uncertainty_->setJetPt(jet.p.Pt());
-      uncertainty_->setJetEta(jet.p.Eta());
-      uncert = uncertainty_->getUncertainty(up);
+      
+      if (!useHEM1516_){      // "normal" systematic scaling
+         uncertainty_->setJetPt(jet.p.Pt());
+         uncertainty_->setJetEta(jet.p.Eta());
+         uncert = uncertainty_->getUncertainty(up);
+      }
+      else{    // Shift for HEM1516 unc.
+         if((-3.00 < jet.p.Eta()) && (jet.p.Eta() < -1.30) && (-1.57 < jet.p.Phi()) && (jet.p.Phi() < -0.87)){
+            uncert = (std::abs(jet.p.Eta()) < 2.5) ? 0.20 : 0.35;
+         }
+      }
    }
    else {
       switch(abs(jet.hadronFlavour)){
@@ -257,6 +268,9 @@ const std::map<std::string, std::vector<std::string> > jesCorrections::JESUncSou
   {"JESRelativeBalreg", {"RelativeBal"}},
   {"JESFlavorQCDreg", {"FlavorQCD"}},
   {"JESRelativeSampleYear", {"RelativeSampleYear"}},
+  
+  // Placeholder for HEM1516
+  {"JESUserDefinedHEM1516",{"Total"}},
 };
 
 //////////////////////////////////// Jet Energy Resolution //////////////////////////////////////////////////////
@@ -324,11 +338,20 @@ void jerCorrections::smearJet_Hybrid(tree::Jet& jet,const float& rho)
    // Set rho for smearing
    rho_ = rho;
    
+   // Get correct SF (for split JER nominal SF should be used if JET does not match selected eta region)
+   double jer_sf = 1.0;
    if(splitJER){  // Check if split JER is used
-      if(!this->checkApplySystematic(jet.p)) return;
+      if(this->checkApplySystematic(jet.p)){
+         jer_sf = m_ScaleFactor_->getScaleFactor({{JME::Binning::JetEta, jet.p.Eta()}}, systematic_variation_);
+      }
+      else{
+         jer_sf = m_ScaleFactor_->getScaleFactor({{JME::Binning::JetEta, jet.p.Eta()}}, Variation::NOMINAL);
+      }
+   }
+   else{
+      jer_sf = m_ScaleFactor_->getScaleFactor({{JME::Binning::JetEta, jet.p.Eta()}}, systematic_variation_);
    }
    
-   double jer_sf= m_ScaleFactor_->getScaleFactor({{JME::Binning::JetEta, jet.p.Eta()}}, systematic_variation_);
    double jet_resolution= m_resolution_->getResolution({{JME::Binning::JetPt, jet.p.Pt()}, {JME::Binning::JetEta, jet.p.Eta()}, {JME::Binning::Rho, rho_}});
    float smearingFactor = 1.;
    

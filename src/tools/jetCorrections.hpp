@@ -43,6 +43,9 @@ class jesCorrections
       std::vector<int> restricttoflav_;
       bool useRestrictFlav_;
       bool useRealisticFlav_;
+      
+      /// Bool for HEM15/16 syst
+      bool useHEM1516_;
    
 };
 
