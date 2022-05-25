@@ -13,6 +13,7 @@
 #include <TRandom3.h>
 #include <TProfile.h>
 #include <TVectorD.h>
+#include <TParameter.h>
 
 #include "Config.hpp"
 #include "tools/hist.hpp"
@@ -437,6 +438,48 @@ TH1F getCRenvelope(TString const &path, TString const &filePath, TH1F* const &no
    else return env_down;
 }
 
+TH1F getMESCALEenvelope(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up, bool const &norm=false){
+   io::RootFileReader histReader_MEFACSCALE_UP(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"MEFACSCALE_UP",cfg.processFraction*100));
+   io::RootFileReader histReader_MEFACSCALE_DOWN(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"MEFACSCALE_DOWN",cfg.processFraction*100));
+   io::RootFileReader histReader_MERENSCALE_UP(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"MERENSCALE_UP",cfg.processFraction*100));
+   io::RootFileReader histReader_MERENSCALE_DOWN(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"MERENSCALE_DOWN",cfg.processFraction*100));
+   io::RootFileReader histReader_MESCALE_UP(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"MESCALE_UP",cfg.processFraction*100));
+   io::RootFileReader histReader_MESCALE_DOWN(TString::Format("TUnfold/%s/TUnfold_%s_%.1f.root",filePath.Data(),"MESCALE_DOWN",cfg.processFraction*100));
+
+   
+   TH1F* hist_MEFACSCALE_UP = histReader_MEFACSCALE_UP.read<TH1F>(path);
+   TH1F* hist_MEFACSCALE_DOWN = histReader_MEFACSCALE_DOWN.read<TH1F>(path);
+   TH1F* hist_MERENSCALE_UP = histReader_MERENSCALE_UP.read<TH1F>(path);
+   TH1F* hist_MERENSCALE_DOWN = histReader_MERENSCALE_DOWN.read<TH1F>(path);
+   TH1F* hist_MESCALE_UP = histReader_MESCALE_UP.read<TH1F>(path);
+   TH1F* hist_MESCALE_DOWN = histReader_MESCALE_DOWN.read<TH1F>(path);
+   
+   if(norm){
+      hist_MEFACSCALE_UP->Scale(1./hist_MEFACSCALE_UP->Integral());
+      hist_MEFACSCALE_DOWN->Scale(1./hist_MEFACSCALE_DOWN->Integral());
+      hist_MERENSCALE_UP->Scale(1./hist_MERENSCALE_UP->Integral());
+      hist_MERENSCALE_DOWN->Scale(1./hist_MERENSCALE_DOWN->Integral());
+      hist_MESCALE_UP->Scale(1./hist_MESCALE_UP->Integral());
+      hist_MESCALE_DOWN->Scale(1./hist_MESCALE_DOWN->Integral());
+   }
+   else{
+      hist_MEFACSCALE_UP->Scale(1./cfg.lumi);
+      hist_MEFACSCALE_DOWN->Scale(1./cfg.lumi);
+      hist_MERENSCALE_UP->Scale(1./cfg.lumi);
+      hist_MERENSCALE_DOWN->Scale(1./cfg.lumi);
+      hist_MESCALE_UP->Scale(1./cfg.lumi);
+      hist_MESCALE_DOWN->Scale(1./cfg.lumi);
+   }
+   
+   std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(nominal,{hist_MEFACSCALE_UP,hist_MEFACSCALE_DOWN,hist_MERENSCALE_UP,hist_MESCALE_UP,hist_MESCALE_DOWN});
+   
+   TH1F env_down = *envelopes.first;
+   TH1F env_up = *envelopes.second;
+               
+   if(up) return env_up;
+   else return env_down;
+}
+
 TH1F getPDFenvelope(TString const &path, TString const &filePath, TH1F* const &nominal, bool const &up, bool const &norm=false){
    
    std::vector<TH1F> histVec;
@@ -519,6 +562,9 @@ std::pair<TH1F*,TH1F*> getSystUnc(TH1F* const &nominal, TString const &path, TSt
       }
       else if (Systematic::convertType(syst) == Systematic::mtop){      // derive mtop uncertainty
          tempSys = getMTOPunc(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up,norm);
+      }
+      else if (Systematic::convertType(syst) == Systematic::meScale_envelope){      // derive mtop uncertainty
+         tempSys = getMESCALEenvelope(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up,norm);
       }
       else if (Systematic::convertType(syst) == Systematic::pdf_envelope){      // derive mtop uncertainty
          tempSys = getPDFenvelope(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up,norm);
@@ -622,47 +668,48 @@ void run()
    
    //Define distributions
    std::vector<distrUnfold> vecDistr;
-   // ~vecDistr.push_back({"2D_dPhi_pTnunu",0,400.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",true});
-   // ~vecDistr.push_back({"2D_dPhi_pTnunu_new",0,400.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",true});
-   // ~vecDistr.push_back({"2D_dPhi_pTnunu_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",true});
-   // ~vecDistr.push_back({"2D_dPhi_pTnunu_new_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",true});
-   // ~vecDistr.push_back({"pTnunu",0,600.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",false});
-   // ~vecDistr.push_back({"dPhi",0,3.2,";|#Delta#phi|(p_{T}^{#nu#nu},nearest l);#sigma (pb)","%.1f",false});
-   // ~vecDistr.push_back({"pTnunu_DNN",0,600.,";p_{T}^{#nu#nu} (GeV);#sigma (pb)","%.0f",false});
-   // ~vecDistr.push_back({"dPhi_DNN",0,3.2,";|#Delta#phi|(p_{T}^{#nu#nu},nearest l);#sigma (pb)","%.1f",false});
-   // ~vecDistr.push_back({"pTll",0,400,";p_{T}^{ll} (GeV);#sigma (pb)","%.1f",false});
-   // ~vecDistr.push_back({"inclusive",0,1,";Signal Bin;#sigma (pb)","%.1f",false});
+   // ~vecDistr.push_back({"2D_dPhi_pTnunu",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
+   // ~vecDistr.push_back({"2D_dPhi_pTnunu_new",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
+   // ~vecDistr.push_back({"2D_dPhi_pTnunu_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
+   // ~vecDistr.push_back({"2D_dPhi_pTnunu_new_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
+   // ~vecDistr.push_back({"pTnunu",0,600.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",false});
+   // ~vecDistr.push_back({"dPhi",0,3.2,";|#Delta#phi|(p_{T}^{#nu#nu},nearest l);d#sigma/d|#Delta#phi|(p_{T}^{#nu#nu},nearest l) (pb)","%.1f",false});
+   // ~vecDistr.push_back({"pTnunu_DNN",0,600.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",false});
+   // ~vecDistr.push_back({"dPhi_DNN",0,3.2,";|#Delta#phi|(p_{T}^{#nu#nu},nearest l);d#sigma/d|#Delta#phi|(p_{T}^{#nu#nu},nearest l) (pb)","%.1f",false});
+   // ~vecDistr.push_back({"pTll",0,400,";p_{T}^{ll} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.1f",false});
+   vecDistr.push_back({"inclusive",0,1,";Signal Bin;d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.1f",false});
    
-   vecDistr.push_back({"pTnunu_DNN",0,600.,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/dp_{T}^{#nu#nu}","%.0f",false,true});
-   vecDistr.push_back({"dPhi_DNN",0,3.2,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/d|#Delta#phi|(p_{T}^{#nu#nu},nearest l)","%.0f",false,true});
-   vecDistr.push_back({"2D_dPhi_pTnunu_new_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/dp_{T}^{#nu#nu}","%.0f",true,true});
+   // ~vecDistr.push_back({"pTnunu_DNN",0,600.,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/dp_{T}^{#nu#nu} (GeV^{-1})","%.0f",false,true});
+   // ~vecDistr.push_back({"dPhi_DNN",0,3.2,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/d|#Delta#phi|(p_{T}^{#nu#nu},nearest l)","%.0f",false,true});
+   // ~vecDistr.push_back({"2D_dPhi_pTnunu_new_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/dp_{T}^{#nu#nu} (GeV^{-1})","%.0f",true,true});
    
    //Define syst. unc. to plot
    
    // With PDF
-   // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN"};
+   // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MESCALE_ENVELOPE_UP","MESCALE_ENVELOPE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN"};
    
    // Without PDF
-   // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN",};
+   // ~std::vector<TString> systVec = {"JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MESCALE_ENVELOPE_UP","MESCALE_ENVELOPE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN",};
    
    // Complete with split JES
-   // ~std::vector<TString> systVec = {"JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN",
+   // ~std::vector<TString> systVec = {"JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MESCALE_ENVELOPE_UP","MESCALE_ENVELOPE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN",
    
    // ~"PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN",
       
-   // ~"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN",
+   // ~"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN","JESUserDefinedHEM1516_DOWN",
    // ~};
    
    // Split JES only
    // ~std::vector<TString> systVec = {"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN"};
    
    // Complete with regrouped JES
-   std::vector<TString> systVec = {"JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN",
+   // ~std::vector<TString> systVec = {"JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","TRIG_UP","TRIG_DOWN","MESCALE_ENVELOPE_UP","MESCALE_ENVELOPE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","LUMI_UP","LUMI_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN",
    
-   "PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN",
+   // ~"PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN",
       
-   "JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN",
-   };
+   // ~"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN",
+   // ~"JESUserDefinedHEM1516_DOWN",
+   // ~};
    
    // Regrouped JES only
    // ~std::vector<TString> systVec = {"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN"};
@@ -676,25 +723,37 @@ void run()
    // ~std::vector<TString> systVec = {"XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN",};
    // ~std::vector<TString> systVec = {"XSEC_DY_UP","XSEC_DY_DOWN"};
    // ~std::vector<TString> systVec = {"XSEC_DY_UP"};
+   // ~std::vector<TString> systVec = {"JESUserDefinedHEM1516_DOWN"};
+   // ~std::vector<TString> systVec = {"BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN"};
+   // ~std::vector<TString> systVec = {"BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN"};
+   // ~std::vector<TString> systVec = {"JER_UP","JER_DOWN"};
+   // ~std::vector<TString> systVec = {"JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN"};
+   std::vector<TString> systVec = {"MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN"};
+   // ~std::vector<TString> systVec = {"MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN"};
    // ~std::vector<TString> systVec = {};
+   
+   //Remove HEM unc. for all year except 2018
+   auto itr =std::find(systVec.begin(), systVec.end(), "JESUserDefinedHEM1516_DOWN");
+   if (itr != systVec.end() && cfg.year_int != 3){
+      systVec.erase(itr);
+   }
    
    //Define combination of syst. unc. for plotting
    std::map<TString,std::vector<TString>> systCombinations = {
       // ~{"JES/JER",{"JESAbsoluteMPFBias","JESAbsoluteScale","JESAbsoluteStat","JESFlavorRealistic","JESFragmentation","JESPileUpDataMC","JESPileUpPtBB","JESPileUpPtEC1","JESPileUpPtRef","JESRelativeBal","JESRelativeFSR","JESRelativeJEREC1","JESRelativePtBB","JESRelativePtEC1","JESRelativeSample","JESRelativeStatEC","JESRelativeStatFSR","JESSinglePionECAL","JESSinglePionHCAL","JESTimePtEta","JER"}},
-      {"JES/JER",{"JESRelativeBalreg","JESFlavorRealistic","JESRelativeSampleYear","JESAbsoluteYear","JESAbsolute","JESBBEC1Year","JESBBEC1","JER"}},
-      {"JES/JER",{"JESTotal","JER"}},
-      {"BTAG",{"BTAGBC","BTAGL"}},
-      {"LEPTON",{"ELECTRON_ID","ELECTRON_RECO","ELECTRON_SCALESMEARING","MUON_ID","MUON_ISO","MUON_SCALE"}},
-      {"PS",{"PSISRSCALE","PSFSRSCALE"}},
-      {"XSEC BKG",{"XSEC_TTOTHER","XSEC_DY","XSEC_ST","XSEC_OTHER"}},
-      {"MESCALE",{"MERENSCALE","MEFACSCALE"}},
+      // ~{"JES/JER",{"JESRelativeBalreg","JESFlavorRealistic","JESRelativeSampleYear","JESAbsoluteYear","JESAbsolute","JESBBEC1Year","JESBBEC1","JEREta0","JEREta1"}},
+      // ~{"JES/JER",{"JESTotal","JER"}},
+      // ~{"BTAG",{"BTAGBC_CORR","BTAGL_CORR","BTAGBC_UNCORR","BTAGL_UNCORR"}},
+      // ~{"LEPTON",{"ELECTRON_ID","ELECTRON_RECO","ELECTRON_SCALESMEARING","MUON_ID_STAT","MUON_ID_SYST","MUON_ISO_STAT","MUON_ISO_SYST","MUON_SCALE"}},
+      // ~{"PS",{"PSISRSCALE","PSFSRSCALE"}},
+      // ~{"XSEC BKG",{"XSEC_TTOTHER","XSEC_DY","XSEC_ST","XSEC_OTHER"}},
    };
    // ~std::map<TString,std::vector<TString>> systCombinations = {
       // ~{"JES/JER",{"JESTotal","JER"}},
       // ~{"BTAG",{"BTAGBC","BTAGL"}},
       // ~{"LEPTON",{"ELECTRON_ID","ELECTRON_RECO","ELECTRON_SCALESMEARING","MUON_ID","MUON_ISO","MUON_SCALE"}},
       // ~{"BKG",{"XSEC_TTOTHER","XSEC_DY","XSEC_ST","XSEC_OTHER"}},
-      // ~{"THEORY",{"PSISRSCALE","PSFSRSCALE","MERENSCALE","MEFACSCALE","UETUNE","MATCH","BFRAG","BSEMILEP","PDF_ALPHAS","TOP_PT","CR_ENVELOPE","MTOP","PDF_ENVELOPE",}},
+      // ~{"THEORY",{"PSISRSCALE","PSFSRSCALE","MESCALE_ENVELOPE","UETUNE","MATCH","BFRAG","BSEMILEP","PDF_ALPHAS","TOP_PT","CR_ENVELOPE","MTOP","PDF_ENVELOPE",}},
    // ~};
    
    for (distrUnfold &dist : vecDistr){
@@ -780,7 +839,8 @@ void run()
       TH2F *covMatrix_bbb=histReader.read<TH2F>(input_loc_result+"/BBB/cov_output");
       TH2F *responseMatrix=histReader.read<TH2F>(input_loc+"/histMCGenRec_sameBins");
       TH2F *responseMatrix_fine=histReader.read<TH2F>(input_loc+"/histMCGenRec");
-
+      TParameter<float> *tau_par = histReader.read<TParameter<float>>(input_loc_result+"/reg/tau");
+      
       if((!realDis)||(!realDis_response)||(!unfolded)) {
          cout<<"problem to read input histograms\n";
       }
@@ -888,6 +948,22 @@ void run()
          unfolded->GetXaxis()->SetBinLabel(i,label);
          realDis->GetXaxis()->SetBinLabel(i,label);
       }
+      
+      // Divide by bin width
+      hist::divideByBinWidth(*realDis);
+      hist::divideByBinWidth(*realDisAlt);
+      hist::divideByBinWidth(*realDis_response);
+      hist::divideByBinWidth(*unfolded_reg);
+      hist::divideByBinWidth(*unfolded_reg_total.first);
+      hist::divideByBinWidth(*unfolded_reg_total.second);
+      hist::divideByBinWidth(*unfolded_bbb);
+      hist::divideByBinWidth(*unfolded_bbb_total.first);
+      hist::divideByBinWidth(*unfolded_bbb_total.second);
+      hist::divideByBinWidth(*unfolded);
+      hist::divideByBinWidth(*unfolded_total.first);
+      hist::divideByBinWidth(*unfolded_total.second);
+      
+      // Plotting options
       unfolded->GetXaxis()->SetTickLength(0.);
       unfolded->GetYaxis()->SetTickLength(0.008);
       unfolded->GetXaxis()->SetTitleOffset(1.5);
@@ -1016,7 +1092,7 @@ void run()
          auto Chi2Pair_reg = getChi2NDF(unfolded_reg,realDis);
          auto Chi2Pair_corr_reg = getChi2NDF_withCorr(unfolded_reg,realDis,covMatrix_reg);
          // ~legE.append(*unfolded_reg,TString::Format("Reg [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair_reg.first,Chi2Pair_reg.second,Chi2Pair_corr_reg.first,Chi2Pair_corr_reg.second),"pe");
-         legE.append(*unfolded_reg,"Unfolded","pe");
+         legE.append(*unfolded_reg,TString::Format("Unfolded (#tau=%.3f)",tau_par->GetVal()),"pe");
       }
       legE.append(*realDis,"Powheg","l");
       legE.append(*realDisAlt,"MadGraph","l");

@@ -402,8 +402,10 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       dist.setupDataHists();
       if (dist.varName_ == "2D_dPhi_pTnunu") dist.setVariables(metRec,phiRec,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new") dist.setVariables(metRec,phiRec,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new40") dist.setVariables(metRec,phiRec,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);
       else if (dist.varName_ == "pTnunu_DNN") dist.setVariables(metRec_DNN,metGen);
@@ -576,7 +578,7 @@ std::tuple<TString,TString,float> getPath_SampleName_SF(TString const &sample, T
       if(!isSignal) minTreePath_current = minTreePath_nominal;
    }
    // Use nominal for other bkg in case of bFrag bSemi and MEScale (currently not working for madgraph samples)
-   else if(syst.type() == Systematic::bFrag || syst.type() == Systematic::bSemilep || syst.type() == Systematic::meFacScale || syst.type() == Systematic::meRenScale){
+   else if(syst.type() == Systematic::bFrag || syst.type() == Systematic::bSemilep || syst.type() == Systematic::meFacScale || syst.type() == Systematic::meRenScale || syst.type() == Systematic::meScale){
       if(isBKGother) minTreePath_current = minTreePath_nominal;
    }
    // Change SF for lumi and xsec uncertainties
@@ -606,8 +608,10 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
       dist.setupMCHists();
       if (dist.varName_ == "2D_dPhi_pTnunu") dist.setVariables(metRec,phiRec,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new") dist.setVariables(metRec,phiRec,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new40") dist.setVariables(metRec,phiRec,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);      
       else if (dist.varName_ == "pTnunu_DNN") dist.setVariables(metRec_DNN,metGen);
@@ -738,6 +742,12 @@ void run()
                                           {0,25,50,60,70,85,100,115,130,145,160,180,200,300},
                                           {0,0.32,0.64,0.92,1.2,2.2,3.141}
                                           ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new40",     // Fabians optimized binning for DNN with 0-40
+                                          {0,40,70,100,130,160,200},
+                                          {0,0.64,1.2,3.141},
+                                          {0,20,40,55,70,85,100,115,130,145,160,180,200,300},
+                                          {0,0.32,0.64,0.92,1.2,2.2,3.141}
+                                          ));
    distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_DNN",
                                           {0,40,80,120,160,230},
                                           {0,0.7,1.4,3.141},
@@ -748,6 +758,12 @@ void run()
                                           {0,50,70,100,130,160,200},
                                           {0,0.64,1.2,3.141},
                                           {0,25,50,60,70,85,100,115,130,145,160,180,200,300},
+                                          {0,0.32,0.64,0.92,1.2,2.2,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new40_DNN",     // Fabians optimized binning for DNN with 0-40
+                                          {0,40,70,100,130,160,200},
+                                          {0,0.64,1.2,3.141},
+                                          {0,20,40,55,70,85,100,115,130,145,160,180,200,300},
                                           {0,0.32,0.64,0.92,1.2,2.2,3.141}
                                           ));
    distribution_vec.push_back(Distribution("pTnunu",
