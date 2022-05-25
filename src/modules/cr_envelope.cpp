@@ -228,6 +228,70 @@ void produce_topmass()
    
 }
 
+void produce_meScale_envelope()
+{   
+   io::RootFileReader histReader_nom(TString::Format("multiHists/%s/histograms_merged_%s.root","Nominal",cfg.treeVersion.Data()));
+   io::RootFileReader histReader_MERENSCALE_UP(TString::Format("multiHists/%s/histograms_merged_%s.root","MERENSCALE_UP",cfg.treeVersion.Data()));
+   io::RootFileReader histReader_MERENSCALE_DOWN(TString::Format("multiHists/%s/histograms_merged_%s.root","MERENSCALE_DOWN",cfg.treeVersion.Data()));
+   io::RootFileReader histReader_MEFACSCALE_UP(TString::Format("multiHists/%s/histograms_merged_%s.root","MERENSCALE_UP",cfg.treeVersion.Data()));
+   io::RootFileReader histReader_MEFACSCALE_DOWN(TString::Format("multiHists/%s/histograms_merged_%s.root","MEFACSCALE_DOWN",cfg.treeVersion.Data()));
+   io::RootFileReader histReader_MESCALE_UP(TString::Format("multiHists/%s/histograms_merged_%s.root","MESCALE_UP",cfg.treeVersion.Data()));
+   io::RootFileReader histReader_MESCALE_DOWN(TString::Format("multiHists/%s/histograms_merged_%s.root","MESCALE_DOWN",cfg.treeVersion.Data()));
+   
+   io::RootFileSaver histSaver_ind_down(TString::Format("multiHists/%s/histograms_merged_%s.root","MESCALE_ENVELOPE_IND_DOWN",cfg.treeVersion.Data()),"");
+   io::RootFileSaver histSaver_ind_up(TString::Format("multiHists/%s/histograms_merged_%s.root","MESCALE_ENVELOPE_IND_UP",cfg.treeVersion.Data()),"");
+  
+   // Store envelope per sample
+   for (auto path : histReader_MERENSCALE_UP.listPaths()){
+      std::cout<<path<<std::endl;
+      if(path.Contains("2d")){
+         TH2F* hist_MERENSCALE_UP = histReader_MERENSCALE_UP.read<TH2F>(path);
+         TH2F* hist_MERENSCALE_DOWN = histReader_MERENSCALE_DOWN.read<TH2F>(path);
+         TH2F* hist_MEFACSCALE_UP = histReader_MEFACSCALE_UP.read<TH2F>(path);
+         TH2F* hist_MEFACSCALE_DOWN = histReader_MEFACSCALE_DOWN.read<TH2F>(path);
+         TH2F* hist_MESCALE_UP = histReader_MESCALE_UP.read<TH2F>(path);
+         TH2F* hist_MESCALE_DOWN = histReader_MESCALE_DOWN.read<TH2F>(path);
+         TH2F* hist_nom = histReader_nom.read<TH2F>(path);
+         
+         std::pair<TH2F*,TH2F*> envelopes = hist::getEnvelope(hist_nom,{hist_MERENSCALE_UP,hist_MERENSCALE_DOWN,hist_MEFACSCALE_UP,hist_MEFACSCALE_DOWN,hist_MESCALE_UP,hist_MESCALE_DOWN});
+         
+         path.ReplaceAll("/distr","distr");
+         histSaver_ind_down.save(*(envelopes.first),path);
+         histSaver_ind_up.save(*(envelopes.second),path);
+      }
+      else {
+         TH1F* hist_MERENSCALE_UP = histReader_MERENSCALE_UP.read<TH1F>(path);
+         TH1F* hist_MERENSCALE_DOWN = histReader_MERENSCALE_DOWN.read<TH1F>(path);
+         TH1F* hist_MEFACSCALE_UP = histReader_MEFACSCALE_UP.read<TH1F>(path);
+         TH1F* hist_MEFACSCALE_DOWN = histReader_MEFACSCALE_DOWN.read<TH1F>(path);
+         TH1F* hist_MESCALE_UP = histReader_MESCALE_UP.read<TH1F>(path);
+         TH1F* hist_MESCALE_DOWN = histReader_MESCALE_DOWN.read<TH1F>(path);
+         TH1F* hist_nom = histReader_nom.read<TH1F>(path);
+         
+         std::pair<TH1F*,TH1F*> envelopes = hist::getEnvelope(hist_nom,{hist_MERENSCALE_UP,hist_MERENSCALE_DOWN,hist_MEFACSCALE_UP,hist_MEFACSCALE_DOWN,hist_MESCALE_UP,hist_MESCALE_DOWN});
+                  
+         path.ReplaceAll("/distr","distr");
+         histSaver_ind_down.save(*(envelopes.first),path);
+         histSaver_ind_up.save(*(envelopes.second),path);
+      }
+   }
+   
+   histSaver_ind_down.closeFile();
+   histSaver_ind_up.closeFile();
+   
+   
+   histReader_nom.closeFile();
+   histReader_MERENSCALE_UP.closeFile();
+   histReader_MERENSCALE_DOWN.closeFile();
+   histReader_MEFACSCALE_UP.closeFile();
+   histReader_MEFACSCALE_DOWN.closeFile();
+   histReader_MESCALE_UP.closeFile();
+   histReader_MESCALE_DOWN.closeFile();
+   histSaver_ind_down.closeFile();
+   histSaver_ind_up.closeFile();
+  
+}
+
 void produce_PDF_envelope(bool onlyCutflowMuMu=false){  //currently only for 1D hists
       
    std::map<TString,std::vector<TH1F>> histMap;
@@ -284,8 +348,9 @@ void produce_PDF_envelope(bool onlyCutflowMuMu=false){  //currently only for 1D 
 extern "C"
 void run()
 {   
-   produce_cr_envelope();
+   // ~produce_cr_envelope();
    // ~produce_topmass();
+   produce_meScale_envelope();
    // ~produce_PDF_envelope();
    // ~produce_PDF_envelope(true);
   

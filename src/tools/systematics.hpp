@@ -153,6 +153,7 @@ namespace Systematic{
         CR_envelope,         // envelope for color reconnection uncertainty if enevelope is taken for sum of ttbar samples
         CR_envelope_ind,    // envelope for color reconnection uncertainty if enevelope is taken for each ttbar sample individually
         tw_ds,
+        meScale_envelope_ind,// envelope for meScale uncertainty if enevelope is taken for each ttbar sample individually
         meScale,            // Q2 scale uncertainty in process generation on Matrix Element only
         meScale_ttbb,       // Q2 scale uncertainty in process generation on Matrix Element only (ttbb process)
         meScale_ttb,        // Q2 scale uncertainty in process generation on Matrix Element only (ttb process)
@@ -345,7 +346,7 @@ namespace Systematic{
         mass,
         match,
         match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
-        meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother, meScale_z, meScale_st,
+        meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother, meScale_z, meScale_st, meScale_envelope_ind,
         meFacScale, meFacScale_ttbb, meFacScale_ttb, meFacScale_tt2b, meFacScale_ttcc, meFacScale_ttother,
         meRenScale, meRenScale_ttbb, meRenScale_ttb, meRenScale_tt2b, meRenScale_ttcc, meRenScale_ttother,
         meFacScale_tt, meFacScale_z, meFacScale_w, meFacScale_st, meFacScale_vv, meFacScale_ttv,
@@ -441,7 +442,7 @@ namespace Systematic{
         match,
         //match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
         erdon, CR1, CR2, CR_envelope, CR_envelope_ind,
-        meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother,
+        meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother, meScale_envelope_ind,
         meFacScale, meFacScale_ttbb, meFacScale_ttb, meFacScale_tt2b, meFacScale_ttcc, meFacScale_ttother,
         meRenScale, meRenScale_ttbb, meRenScale_ttb, meRenScale_tt2b, meRenScale_ttcc, meRenScale_ttother,
         psScale, psScale_ttbb, psScale_ttb, psScale_tt2b, psScale_ttcc, psScale_ttother,
