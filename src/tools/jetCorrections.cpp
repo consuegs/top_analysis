@@ -67,7 +67,7 @@ jesCorrections::jesCorrections(const std::string& jesUncertaintySourceFile, cons
    bool regrouped = (std::find(Systematic::jesTypes_regrouped.begin(), Systematic::jesTypes_regrouped.end(), type) != Systematic::jesTypes_regrouped.end());
    
    // Check if syst is HEM15/16
-   useHEM1516_ = (type == Systematic::Type::jesUserDefinedHEM1516);
+   useHEM1516_ = (type == Systematic::Type::jesUserDefinedHEM1516 && year=="2018");
       
    // Configure helper
    useRealisticFlav_ = false;
