@@ -29,7 +29,7 @@ make
 echo $(date)
 
 #random sleep to avoid to many simultaneous copy jobs
-duration=$[ ( $RANDOM % 5 )  + 1 ]
+duration=$[ ( $RANDOM % 15 )  + 1 ]
 echo "Sleeping for "$duration" minutes"
 sleep $duration"m"
 
@@ -43,10 +43,10 @@ else
    mkdir ../100.0
    cd "../100.0"
    eval `scram unsetenv -sh`;
-   gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
+   gfal-copy -r -t 7200 srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
    if [[ $syst != "Nominal" ]]
    then
-      gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
+      gfal-copy -r -t 7200 srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
    fi
    cd ../CMSSW_10_5_0/src/
    eval `scramv1 runtime -sh`
