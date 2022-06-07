@@ -129,7 +129,7 @@ namespace Systematic{
         jesHttEta0to5, jesHttEta0to3, jesHttEta3to5, jesHttEC2,
         jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear, jesRelativeBal_reg, jesFlavorQCD_reg, jesRelativeSampleYear,
         jesUserDefinedHEM1516,
-        jesFlavorRealistic,
+        jesFlavorRealistic,jesFlavorRealistic_reg,
 
         frac_tthf,          // correction factor for the fraction of tt+HF events from the template fit
         frac_ttother,       // correction factor for the fraction of tt+Other events from the template fit
@@ -154,6 +154,7 @@ namespace Systematic{
         CR_envelope_ind,    // envelope for color reconnection uncertainty if enevelope is taken for each ttbar sample individually
         tw_ds,
         meScale_envelope_ind,// envelope for meScale uncertainty if enevelope is taken for each ttbar sample individually
+        meScale_envelope,// envelope for meScale uncertainty if enevelope is taken for each ttbar sample individually
         meScale,            // Q2 scale uncertainty in process generation on Matrix Element only
         meScale_ttbb,       // Q2 scale uncertainty in process generation on Matrix Element only (ttbb process)
         meScale_ttb,        // Q2 scale uncertainty in process generation on Matrix Element only (ttb process)
@@ -338,7 +339,7 @@ namespace Systematic{
         jesFlavorZJet, jesFlavorPhotonJet, jesFlavorPureGluon, jesFlavorPureQuark, jesFlavorPureCharm, jesFlavorPureBottom, jesFlavorRealistic,
         jesCorrelationGroupMPFInSitu, jesCorrelationGroupIntercalibration, jesCorrelationGroupbJES, jesCorrelationGroupFlavor, jesCorrelationGroupUncorrelated,
         jesHttEta0to5, jesHttEta0to3, jesHttEta3to5, jesHttEC2,
-        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear, jesRelativeBal_reg, jesFlavorQCD_reg, jesRelativeSampleYear,
+        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear, jesRelativeBal_reg, jesFlavorQCD_reg, jesFlavorRealistic_reg, jesRelativeSampleYear,
         jesUserDefinedHEM1516,
         frac_tthf, frac_ttother,
         lumi,
@@ -346,7 +347,7 @@ namespace Systematic{
         mass,
         match,
         match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
-        meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother, meScale_z, meScale_st, meScale_envelope_ind,
+        meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother, meScale_z, meScale_st, meScale_envelope_ind, meScale_envelope,
         meFacScale, meFacScale_ttbb, meFacScale_ttb, meFacScale_tt2b, meFacScale_ttcc, meFacScale_ttother,
         meRenScale, meRenScale_ttbb, meRenScale_ttb, meRenScale_tt2b, meRenScale_ttcc, meRenScale_ttother,
         meFacScale_tt, meFacScale_z, meFacScale_w, meFacScale_st, meFacScale_vv, meFacScale_ttv,
@@ -396,7 +397,7 @@ namespace Systematic{
         jesFlavorZJet, jesFlavorPhotonJet, jesFlavorPureGluon, jesFlavorPureQuark, jesFlavorPureCharm, jesFlavorPureBottom, jesFlavorRealistic,
         jesCorrelationGroupMPFInSitu, jesCorrelationGroupIntercalibration, jesCorrelationGroupbJES, jesCorrelationGroupFlavor, jesCorrelationGroupUncorrelated,
         jesHttEta0to5, jesHttEta0to3, jesHttEta3to5, jesHttEC2,
-        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear, jesRelativeBal_reg, jesFlavorQCD_reg, jesRelativeSampleYear,
+        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesEC2, jesEC2Year, jesHF, jesHFYear, jesRelativeBal_reg, jesFlavorQCD_reg, jesFlavorRealistic_reg, jesRelativeSampleYear,
         jesUserDefinedHEM1516,
     };
     
@@ -407,7 +408,7 @@ namespace Systematic{
     
     /// Define jes systematics for regrouped option
     const std::vector<Type> jesTypes_regrouped{
-        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesRelativeBal_reg, jesFlavorQCD_reg, jesRelativeSampleYear,
+        jesAbsolute, jesAbsoluteYear, jesBBEC1, jesBBEC1Year, jesRelativeBal_reg, jesFlavorQCD_reg, jesFlavorRealistic_reg, jesRelativeSampleYear,
     };
     
     /// Define jer systematics
@@ -442,7 +443,7 @@ namespace Systematic{
         match,
         //match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
         erdon, CR1, CR2, CR_envelope, CR_envelope_ind,
-        meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother, meScale_envelope_ind,
+        meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother, meScale_envelope_ind, meScale_envelope,
         meFacScale, meFacScale_ttbb, meFacScale_ttb, meFacScale_tt2b, meFacScale_ttcc, meFacScale_ttother,
         meRenScale, meRenScale_ttbb, meRenScale_ttb, meRenScale_tt2b, meRenScale_ttcc, meRenScale_ttother,
         psScale, psScale_ttbb, psScale_ttb, psScale_tt2b, psScale_ttcc, psScale_ttother,

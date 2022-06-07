@@ -78,6 +78,7 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("JER")) return jer;
     if(type.BeginsWith("JESRelativeBalreg")) return jesRelativeBal_reg;
     if(type.BeginsWith("JESFlavorQCDreg")) return jesFlavorQCD_reg;
+    if(type.BeginsWith("JESFlavorRealisticreg")) return jesFlavorRealistic_reg;
     if(type.BeginsWith("JESRelativeSampleYear")) return jesRelativeSampleYear;
     if(type.BeginsWith("JESAbsoluteStat")) return jesAbsoluteStat;
     if(type.BeginsWith("JESAbsoluteScale")) return jesAbsoluteScale;
@@ -171,6 +172,7 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("ERDON")) return erdon;
     if(type.BeginsWith("DS")) return tw_ds;
     if(type.BeginsWith("MESCALE_ENVELOPE_IND")) return meScale_envelope_ind;
+    if(type.BeginsWith("MESCALE_ENVELOPE")) return meScale_envelope;
     if(type.BeginsWith("MESCALE_TTBB")) return meScale_ttbb;
     if(type.BeginsWith("MESCALE_TTB")) return meScale_ttb;
     if(type.BeginsWith("MESCALE_TT2B")) return meScale_tt2b;
@@ -416,6 +418,7 @@ TString Systematic::convertType(const Type& type)
     if(type == jesHF) return "JESHF";
     if(type == jesRelativeBal_reg) return "JESRelativeBalreg";
     if(type == jesFlavorQCD_reg) return "JESFlavorQCDreg";
+    if(type == jesFlavorRealistic_reg) return "JESFlavorRealisticreg";
     if(type == jesRelativeSampleYear) return "JESRelativeSampleYear";
     if(type == jesUserDefinedHEM1516) return "JESUserDefinedHEM1516";
 
@@ -442,6 +445,7 @@ TString Systematic::convertType(const Type& type)
     if(type == erdon) return "ERDON";
     if(type == tw_ds) return "DS";
     if(type == meScale_envelope_ind) return "MESCALE_ENVELOPE_IND";
+    if(type == meScale_envelope) return "MESCALE_ENVELOPE";
     if(type == meScale_ttbb) return "MESCALE_TTBB";
     if(type == meScale_ttb) return "MESCALE_TTB";
     if(type == meScale_tt2b) return "MESCALE_TT2B";
