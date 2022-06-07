@@ -275,6 +275,8 @@ def mergeForCombine(logPath,histPath,sampleList):
                 tempFileNames[info_syst["syst"]] = outputDir+info_syst["syst"]+".root"
                 for syst in ["CR1","CR2","ERDON","TOP_PT"]:
                     tempFileNames[syst] = outputDir+syst+"_DOWN.root"
+                for syst in ["JESUserDefinedHEM1516"]:
+                    tempFileNames[syst] = outputDir+syst+"_UP.root"
             
             isTrigg = False;
             for syst,tempFileName in tempFileNames.items():
@@ -283,7 +285,10 @@ def mergeForCombine(logPath,histPath,sampleList):
                     isTrigg = True
                 
                 if (info_syst["syst"]!=syst):   # for one sided down shift
-                    systNameCombine = "_"+syst+"Down"
+                    if syst == "JESUserDefinedHEM1516":
+                        systNameCombine = "_"+syst+"Up"
+                    else:
+                        systNameCombine = "_"+syst+"Down"
                 else:
                     systNameCombine = getSytNameCombine(info_syst["syst"])  # get correct name of systematic for combine
                 #  ~f_out = TFile(tempFileName,"RECREATE")
