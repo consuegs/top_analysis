@@ -141,6 +141,13 @@ void hist::Histograms<HIST>::fill(TString const &varName,float x,float y)
 }
 
 template <class HIST>
+void hist::Histograms<HIST>::fillweight(TString const &varName,float x,float y,float w)
+{
+   if (mmH_.count(varName)<1) {debug_io*varName>>"unkown"; throw;}
+   mmH_[varName][sCurrentSample_].Fill(x,y,w*fWeight_);
+}
+
+template <class HIST>
 void hist::Histograms<HIST>::count(TString const &varName)
 {
    mCount_[varName][sCurrentSample_]+=fWeight_;

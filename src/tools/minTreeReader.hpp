@@ -112,6 +112,11 @@ class minTreeReader {
     float ratio_vecsumpTlep_vecsumpTjet;
     float mjj;
     
+    float PhiRec_xy;
+    float PhiRecPuppi_xy;
+    float MET_xy;
+    float PuppiMET_xy;
+    
     std::map<Systematic::Type,std::pair<float,float>> systTotalWeights;
     
 };

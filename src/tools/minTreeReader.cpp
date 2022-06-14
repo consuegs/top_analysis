@@ -29,7 +29,7 @@ minTreeReader::minTreeReader(TTree &tree, const Systematic::Systematic& syst)
     tree.SetBranchAddress("genDecayMode",&genDecayMode);
     tree.SetBranchAddress("genMET",&genMet);
     tree.SetBranchAddress("PuppiMET",&PuppiMET);
-    tree.SetBranchAddress("XYcorrMET",&XYcorrMET);
+    // ~tree.SetBranchAddress("XYcorrMET",&XYcorrMET);
     tree.SetBranchAddress("HT",&HT);
     tree.SetBranchAddress("HT_phi",&HT_phi);
     tree.SetBranchAddress("MHT",&MHT);
@@ -43,7 +43,7 @@ minTreeReader::minTreeReader(TTree &tree, const Systematic::Systematic& syst)
     tree.SetBranchAddress("leadTop_pT",&leadTop_pT);
     tree.SetBranchAddress("dPhiNuNu",&dPhiNuNu);
     tree.SetBranchAddress("Phi_recPuppi",&Phi_recPuppi);
-    tree.SetBranchAddress("Phi_recXYcorr",&Phi_recXYcorr);
+    // ~tree.SetBranchAddress("Phi_recXYcorr",&Phi_recXYcorr);
     tree.SetBranchAddress("looseLeptonVeto",&looseLeptonVeto);
     tree.SetBranchAddress("nJets",&nJets);
     tree.SetBranchAddress("dPhiMETnearJet_Puppi",&dPhiMETnearJet_Puppi);
@@ -96,6 +96,11 @@ minTreeReader::minTreeReader(TTree &tree, const Systematic::Systematic& syst)
     tree.SetBranchAddress("mass_l1l2_allJet",&mass_l1l2_allJet);
     tree.SetBranchAddress("ratio_vecsumpTlep_vecsumpTjet",&ratio_vecsumpTlep_vecsumpTjet);
     tree.SetBranchAddress("mjj",&mjj);
+    
+    tree.SetBranchAddress("Phi_rec_xy",&PhiRec_xy);
+    tree.SetBranchAddress("Phi_recPuppi_xy",&PhiRecPuppi_xy);
+    tree.SetBranchAddress("MET_xy",&MET_xy);
+    tree.SetBranchAddress("PuppiMET_xy",&PuppiMET_xy);
     
     if(syst.type() == Systematic::nominal){
         tree.SetBranchAddress("weight_PU_UP",&(systTotalWeights[Systematic::pu].first));

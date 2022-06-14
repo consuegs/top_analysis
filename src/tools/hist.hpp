@@ -51,7 +51,8 @@ namespace hist
       void setFillWeight(float w);
       void fill(TString const &varName,float x); // 1d
       void fill(TString const &varName,float x,float y); // 2d   
-      void fillweight(TString const &varName,float x,float w);
+      void fillweight(TString const &varName,float x,float w); // 1d
+      void fillweight(TString const &varName,float x,float y,float w); // 2D
       void fillbin(TString const &varName,TString const &binName);
       void fillbinFake(TString const &varName,TString const &binName);
       void count(TString const &varName);
@@ -114,6 +115,8 @@ namespace hist
    void Histograms<TH2F>::fillbinFake(TString const &varName,TString const &binName)=delete;
    template <>
    void Histograms<TH1F>::fill(TString const&,float,float)=delete;
+   template <>
+   void Histograms<TH1F>::fillweight(TString const&,float,float,float)=delete;
    //~ template <>
    //~ void Histograms<TH2F>::mergeOverflow(bool)=delete;
 
