@@ -12,44 +12,49 @@ sys.path.append("../users")
 from getPath import getPath
 
 bTagEff_sample_syst_dict = {
-      #  ~"Nominal" : "TTbar_diLepton",
-      #  ~"JESTotal_UP" : "TTbar_diLepton",
-      #  ~"JESTotal_DOWN" : "TTbar_diLepton",
-      #  ~"JER_UP" : "TTbar_diLepton",
-      #  ~"JER_DOWN" : "TTbar_diLepton",
-      #  ~"JEREta0_UP" : "TTbar_diLepton",
-      #  ~"JEREta0_DOWN" : "TTbar_diLepton",
-      #  ~"JEREta1_UP" : "TTbar_diLepton",
-      #  ~"JEREta1_DOWN" : "TTbar_diLepton",
-      #  ~"UETUNE_UP" : "TTbar_diLepton_UETUNE_UP",
-      #  ~"UETUNE_DOWN" : "TTbar_diLepton_UETUNE_DOWN",
-      #  ~"MATCH_UP" : "TTbar_diLepton_MATCH_UP",
-      #  ~"MATCH_DOWN" : "TTbar_diLepton_MATCH_DOWN",
-      #  ~"ERDON" : "TTbar_diLepton_ERDON",
-      #  ~"CR1" : "TTbar_diLepton_CR1",
-      #  ~"CR2" : "TTbar_diLepton_CR2",
-      #  ~"MTOP169p5" : "TTbar_diLepton_MTOP169p5",
-      #  ~"MTOP175p5" : "TTbar_diLepton_MTOP175p5",
-      #  ~"TOP_PT" : "TTbar_diLepton",
-      #  ~"MESCALE_UP" : "TTbar_diLepton",
-      #  ~"MESCALE_DOWN" : "TTbar_diLepton",
-      #  ~"MERENSCALE_UP" : "TTbar_diLepton",
-      #  ~"MERENSCALE_DOWN" : "TTbar_diLepton",
-      #  ~"MEFACSCALE_UP" : "TTbar_diLepton",
-      #  ~"MEFACSCALE_DOWN" : "TTbar_diLepton",
-      "MESCALE_UP" : "TTbar_diLepton",
-      "MESCALE_DOWN" : "TTbar_diLepton",
-      #  ~"PSISRSCALE_UP" : "TTbar_diLepton",
-      #  ~"PSISRSCALE_DOWN" : "TTbar_diLepton",
-      #  ~"PSFSRSCALE_UP" : "TTbar_diLepton",
-      #  ~"PSFSRSCALE_DOWN" : "TTbar_diLepton",
-      #  ~"BFRAG_UP" : "TTbar_diLepton",
-      #  ~"BFRAG_DOWN" : "TTbar_diLepton",
-      #  ~"BSEMILEP_UP" : "TTbar_diLepton",
-      #  ~"BSEMILEP_DOWN" : "TTbar_diLepton",
-      #  ~"PDF_ALPHAS_UP" : "TTbar_diLepton",
-      #  ~"PDF_ALPHAS_DOWN" : "TTbar_diLepton",
-      #  ~"JESUserDefinedHEM1516_DOWN" : "TTbar_diLepton",
+      "Nominal" : "TTbar_diLepton",
+      "BSEMILEP_UP" : "TTbar_diLepton",
+      "BSEMILEP_DOWN" : "TTbar_diLepton",
+      "CR1" : "TTbar_diLepton_CR1",
+      "CR2" : "TTbar_diLepton_CR2",
+      "ERDON" : "TTbar_diLepton_ERDON",
+      "JEREta0_UP" : "TTbar_diLepton",
+      "JEREta0_DOWN" : "TTbar_diLepton",
+      "JEREta1_UP" : "TTbar_diLepton",
+      "JEREta1_DOWN" : "TTbar_diLepton",
+      "JESAbsolute_UP" : "TTbar_diLepton",
+      "JESAbsolute_DOWN" : "TTbar_diLepton",
+      "JESAbsoluteYear_UP" : "TTbar_diLepton",
+      "JESAbsoluteYear_DOWN" : "TTbar_diLepton",
+      "JESBBEC1_UP" : "TTbar_diLepton",
+      "JESBBEC1_DOWN" : "TTbar_diLepton",
+      "JESBBEC1Year_UP" : "TTbar_diLepton",
+      "JESBBEC1Year_DOWN" : "TTbar_diLepton",
+      "JESFlavorRealistic_UP" : "TTbar_diLepton",
+      "JESFlavorRealistic_DOWN" : "TTbar_diLepton",
+      "JESRelativeBalreg_UP" : "TTbar_diLepton",
+      "JESRelativeBalreg_DOWN" : "TTbar_diLepton",
+      "JESRelativeSampleYear_UP" : "TTbar_diLepton",
+      "JESRelativeSampleYear_DOWN" : "TTbar_diLepton",
+      "JESUserDefinedHEM1516_DOWN" : "TTbar_diLepton",
+      "MATCH_UP" : "TTbar_diLepton_MATCH_UP",
+      "MATCH_DOWN" : "TTbar_diLepton_MATCH_DOWN",
+      "MERENSCALE_UP" : "TTbar_diLepton",
+      "MERENSCALE_DOWN" : "TTbar_diLepton",
+      "MEFACSCALE_UP" : "TTbar_diLepton",
+      "MEFACSCALE_DOWN" : "TTbar_diLepton",
+      "MTOP169p5" : "TTbar_diLepton_MTOP169p5",
+      "MTOP175p5" : "TTbar_diLepton_MTOP175p5",
+      "PDF_ALPHAS_UP" : "TTbar_diLepton",
+      "PDF_ALPHAS_DOWN" : "TTbar_diLepton",
+      "PSISRSCALE_UP" : "TTbar_diLepton",
+      "PSISRSCALE_DOWN" : "TTbar_diLepton",
+      "PSFSRSCALE_UP" : "TTbar_diLepton",
+      "PSFSRSCALE_DOWN" : "TTbar_diLepton",
+      "TOP_PT" : "TTbar_diLepton",
+      "UETUNE_UP" : "TTbar_diLepton_UETUNE_UP",
+      "UETUNE_DOWN" : "TTbar_diLepton_UETUNE_DOWN",
+
       
       #  ~"JESAbsoluteMPFBias_UP" : "TTbar_diLepton",
       #  ~"JESAbsoluteMPFBias_DOWN" : "TTbar_diLepton",
@@ -93,32 +98,6 @@ bTagEff_sample_syst_dict = {
       #  ~"JESTimePtEta_DOWN" : "TTbar_diLepton",
       #  ~"JESFlavorRealistic_UP" : "TTbar_diLepton",
       #  ~"JESFlavorRealistic_DOWN" : "TTbar_diLepton",
-      
-      #  ~"JESFlavorRealistic_UP" : "TTbar_diLepton",
-      #  ~"JESFlavorRealistic_DOWN" : "TTbar_diLepton",
-      #  ~"JESFlavorPureGluon_UP" : "TTbar_diLepton",
-      #  ~"JESFlavorPureGluon_DOWN" : "TTbar_diLepton",
-      #  ~"JESFlavorPureQuark_UP" : "TTbar_diLepton",
-      #  ~"JESFlavorPureQuark_DOWN" : "TTbar_diLepton",
-      #  ~"JESFlavorPureCharm_UP" : "TTbar_diLepton",
-      #  ~"JESFlavorPureCharm_DOWN" : "TTbar_diLepton",
-      #  ~"JESFlavorPureBottom_UP" : "TTbar_diLepton",
-      #  ~"JESFlavorPureBottom_DOWN" : "TTbar_diLepton",
-      
-      #  ~"JESRelativeBalreg_UP" : "TTbar_diLepton",
-      #  ~"JESRelativeBalreg_DOWN" : "TTbar_diLepton",
-      #  ~"JESFlavorQCDreg_UP" : "TTbar_diLepton",
-      #  ~"JESFlavorQCDreg_DOWN" : "TTbar_diLepton",
-      #  ~"JESRelativeSampleYear_UP" : "TTbar_diLepton",
-      #  ~"JESRelativeSampleYear_DOWN" : "TTbar_diLepton",
-      #  ~"JESAbsoluteYear_UP" : "TTbar_diLepton",
-      #  ~"JESAbsoluteYear_DOWN" : "TTbar_diLepton",
-      #  ~"JESAbsolute_UP" : "TTbar_diLepton",
-      #  ~"JESAbsolute_DOWN" : "TTbar_diLepton",
-      #  ~"JESBBEC1Year_UP" : "TTbar_diLepton",
-      #  ~"JESBBEC1Year_DOWN" : "TTbar_diLepton",
-      #  ~"JESBBEC1_UP" : "TTbar_diLepton",
-      #  ~"JESBBEC1_DOWN" : "TTbar_diLepton",
    }
 
 #  ~allMC = ["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_ee","DrellYan_mumu","DrellYan_tautau","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
@@ -129,83 +108,79 @@ allData2017 = ["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"]
 allData2016 = ["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"] 
 
 sample_allSyst_dict = {
-      #  ~"JESTotal_UP" : allMC,
-      #  ~"JESTotal_DOWN" : allMC,
-      #  ~"JER_UP" : allMC,
-      #  ~"JER_DOWN" : allMC,
-      #  ~"JEREta0_UP" : allMC,
-      #  ~"JEREta0_DOWN" : allMC,
-      #  ~"JEREta1_UP" : allMC,
-      #  ~"JEREta1_DOWN" : allMC,
-      #  ~"BTAGBC_UP" : allMC,
-      #  ~"BTAGBC_DOWN" : allMC,
-      #  ~"BTAGL_UP" : allMC,
-      #  ~"BTAGL_DOWN" : allMC,
-      #  ~"BTAGBC_CORR_UP" : allMC,
-      #  ~"BTAGBC_CORR_DOWN" : allMC,
-      #  ~"BTAGBC_UNCORR_UP" : allMC,
-      #  ~"BTAGBC_UNCORR_DOWN" : allMC,
-      #  ~"BTAGL_CORR_UP" : allMC,
-      #  ~"BTAGL_CORR_DOWN" : allMC,
-      #  ~"BTAGL_UNCORR_UP" : allMC,
-      #  ~"BTAGL_UNCORR_DOWN" : allMC,
-      #  ~"ELECTRON_ID_UP" : allMC,
-      #  ~"ELECTRON_ID_DOWN" : allMC,
-      #  ~"ELECTRON_RECO_UP" : allMC,
-      #  ~"ELECTRON_RECO_DOWN" : allMC,
-      #  ~"ELECTRON_SCALESMEARING_UP" : allMC,
-      #  ~"ELECTRON_SCALESMEARING_DOWN" : allMC,
-      #  ~"MUON_ID_UP" : allMC,
-      #  ~"MUON_ID_DOWN" : allMC,
-      #  ~"MUON_ISO_UP" : allMC,
-      #  ~"MUON_ISO_DOWN" : allMC,
-      #  ~"MUON_SCALE_UP" : allMC,
-      #  ~"MUON_SCALE_DOWN" : allMC,
-      #  ~"PU_UP" : allMC,
-      #  ~"PU_DOWN" : allMC,
-      #  ~"UNCLUSTERED_UP" : allMC,
-      #  ~"UNCLUSTERED_DOWN" : allMC,
-      #  ~"UETUNE_UP" : ["TTbar_diLepton_UETUNE_UP","TTbar_diLepton_tau_UETUNE_UP","TTbar_singleLepton_UETUNE_UP","TTbar_hadronic_UETUNE_UP"],
-      #  ~"UETUNE_DOWN" : ["TTbar_diLepton_UETUNE_DOWN","TTbar_diLepton_tau_UETUNE_DOWN","TTbar_singleLepton_UETUNE_DOWN","TTbar_hadronic_UETUNE_DOWN"],
-      #  ~"MATCH_UP" : ["TTbar_diLepton_MATCH_UP","TTbar_diLepton_tau_MATCH_UP","TTbar_singleLepton_MATCH_UP","TTbar_hadronic_MATCH_UP"],
-      #  ~"MATCH_DOWN" : ["TTbar_diLepton_MATCH_DOWN","TTbar_diLepton_tau_MATCH_DOWN","TTbar_singleLepton_MATCH_DOWN","TTbar_hadronic_MATCH_DOWN"],
-      #  ~"MTOP169p5" : ["TTbar_diLepton_MTOP169p5","TTbar_diLepton_tau_MTOP169p5","TTbar_singleLepton_MTOP169p5","TTbar_hadronic_MTOP169p5"],
-      #  ~"MTOP175p5" : ["TTbar_diLepton_MTOP175p5","TTbar_diLepton_tau_MTOP175p5","TTbar_singleLepton_MTOP175p5","TTbar_hadronic_MTOP175p5"],
-      #  ~"CR1" : ["TTbar_diLepton_CR1","TTbar_diLepton_tau_CR1","TTbar_singleLepton_CR1","TTbar_hadronic_CR1"],
-      #  ~"CR2" : ["TTbar_diLepton_CR2","TTbar_diLepton_tau_CR2","TTbar_singleLepton_CR2","TTbar_hadronic_CR2"],
-      #  ~"ERDON" : ["TTbar_diLepton_ERDON","TTbar_diLepton_tau_ERDON","TTbar_singleLepton_ERDON","TTbar_hadronic_ERDON"],
-      #  ~"TRIG_UP" : allMC,
-      #  ~"TRIG_DOWN" : allMC,
-      #  ~"MERENSCALE_UP" : allMC,
-      #  ~"MERENSCALE_DOWN" : allMC,
-      #  ~"MEFACSCALE_UP" : allMC,
-      #  ~"MEFACSCALE_DOWN" : allMC,
-      "MESCALE_UP" : allMC,
-      "MESCALE_DOWN" : allMC,
-      #  ~"PSISRSCALE_UP" : allMC,
-      #  ~"PSISRSCALE_DOWN" : allMC,
-      #  ~"PSFSRSCALE_UP" : allMC,
-      #  ~"PSFSRSCALE_DOWN" : allMC,
-      #  ~"BFRAG_UP" : allMC,
-      #  ~"BFRAG_DOWN" : allMC,
-      #  ~"BSEMILEP_UP" : allMC,
-      #  ~"BSEMILEP_DOWN" : allMC,
-      #  ~"PDF_ALPHAS_UP" : allMC,
-      #  ~"PDF_ALPHAS_DOWN" : allMC,
-      #  ~"TOP_PT" : allMC,
-      #  ~"L1PREFIRING_UP" : allMC,
-      #  ~"L1PREFIRING_DOWN" : allMC,
-      #  ~"JESUserDefinedHEM1516_DOWN" : allMC,
-      
-      #  ~"MUON_ID_STAT_UP" : allMC,
-      #  ~"MUON_ID_STAT_DOWN" : allMC,
-      #  ~"MUON_ID_SYST_UP" : allMC,
-      #  ~"MUON_ID_SYST_DOWN" : allMC,
-      #  ~"MUON_ISO_STAT_UP" : allMC,
-      #  ~"MUON_ISO_STAT_DOWN" : allMC,
-      #  ~"MUON_ISO_SYST_UP" : allMC,
-      #  ~"MUON_ISO_SYST_DOWN" : allMC,
-
+      "BSEMILEP_UP" : allMC,
+      "BSEMILEP_DOWN" : allMC,
+      "BTAGBC_CORR_UP" : allMC,
+      "BTAGBC_CORR_DOWN" : allMC,
+      "BTAGBC_UNCORR_UP" : allMC,
+      "BTAGBC_UNCORR_DOWN" : allMC,
+      "BTAGL_CORR_UP" : allMC,
+      "BTAGL_CORR_DOWN" : allMC,
+      "BTAGL_UNCORR_UP" : allMC,
+      "BTAGL_UNCORR_DOWN" : allMC,
+      "CR1" : ["TTbar_diLepton_CR1","TTbar_diLepton_tau_CR1","TTbar_singleLepton_CR1","TTbar_hadronic_CR1"],
+      "CR2" : ["TTbar_diLepton_CR2","TTbar_diLepton_tau_CR2","TTbar_singleLepton_CR2","TTbar_hadronic_CR2"],
+      "ERDON" : ["TTbar_diLepton_ERDON","TTbar_diLepton_tau_ERDON","TTbar_singleLepton_ERDON","TTbar_hadronic_ERDON"],
+      "ELECTRON_ID_UP" : allMC,
+      "ELECTRON_ID_DOWN" : allMC,
+      "ELECTRON_RECO_UP" : allMC,
+      "ELECTRON_RECO_DOWN" : allMC,
+      "ELECTRON_SCALESMEARING_UP" : allMC,
+      "ELECTRON_SCALESMEARING_DOWN" : allMC,
+      "JEREta0_UP" : allMC,
+      "JEREta0_DOWN" : allMC,
+      "JEREta1_UP" : allMC,
+      "JEREta1_DOWN" : allMC,
+      "JESAbsolute_UP" : allMC,
+      "JESAbsolute_DOWN" : allMC,
+      "JESAbsoluteYear_UP" : allMC,
+      "JESAbsoluteYear_DOWN" : allMC,
+      "JESBBEC1_UP" : allMC,
+      "JESBBEC1_DOWN" : allMC,
+      "JESBBEC1Year_UP" : allMC,
+      "JESBBEC1Year_DOWN" : allMC,
+      "JESFlavorRealistic_UP" : allMC,
+      "JESFlavorRealistic_DOWN" : allMC,
+      "JESRelativeBalreg_UP" : allMC,
+      "JESRelativeBalreg_DOWN" : allMC,
+      "JESRelativeSampleYear_UP" : allMC,
+      "JESRelativeSampleYear_DOWN" : allMC,
+      "JESUserDefinedHEM1516_DOWN" : allMC,
+      "L1PREFIRING_UP" : allMC,
+      "L1PREFIRING_DOWN" : allMC,
+      "MATCH_UP" : ["TTbar_diLepton_MATCH_UP","TTbar_diLepton_tau_MATCH_UP","TTbar_singleLepton_MATCH_UP","TTbar_hadronic_MATCH_UP"],
+      "MATCH_DOWN" : ["TTbar_diLepton_MATCH_DOWN","TTbar_diLepton_tau_MATCH_DOWN","TTbar_singleLepton_MATCH_DOWN","TTbar_hadronic_MATCH_DOWN"],
+      "MERENSCALE_UP" : allMC,
+      "MERENSCALE_DOWN" : allMC,
+      "MEFACSCALE_UP" : allMC,
+      "MEFACSCALE_DOWN" : allMC,
+      "MTOP169p5" : ["TTbar_diLepton_MTOP169p5","TTbar_diLepton_tau_MTOP169p5","TTbar_singleLepton_MTOP169p5","TTbar_hadronic_MTOP169p5"],
+      "MTOP175p5" : ["TTbar_diLepton_MTOP175p5","TTbar_diLepton_tau_MTOP175p5","TTbar_singleLepton_MTOP175p5","TTbar_hadronic_MTOP175p5"],
+      "MUON_ID_STAT_UP" : allMC,
+      "MUON_ID_STAT_DOWN" : allMC,
+      "MUON_ID_SYST_UP" : allMC,
+      "MUON_ID_SYST_DOWN" : allMC,
+      "MUON_ISO_STAT_UP" : allMC,
+      "MUON_ISO_STAT_DOWN" : allMC,
+      "MUON_ISO_SYST_UP" : allMC,
+      "MUON_ISO_SYST_DOWN" : allMC,
+      "MUON_SCALE_UP" : allMC,
+      "MUON_SCALE_DOWN" : allMC,
+      "PDF_ALPHAS_UP" : allMC,
+      "PDF_ALPHAS_DOWN" : allMC,
+      "PSISRSCALE_UP" : allMC,
+      "PSISRSCALE_DOWN" : allMC,
+      "PSFSRSCALE_UP" : allMC,
+      "PSFSRSCALE_DOWN" : allMC,
+      "PU_UP" : allMC,
+      "PU_DOWN" : allMC,
+      "TOP_PT" : allMC,
+      "TRIG_UP" : allMC,
+      "TRIG_DOWN" : allMC,
+      "UETUNE_UP" : ["TTbar_diLepton_UETUNE_UP","TTbar_diLepton_tau_UETUNE_UP","TTbar_singleLepton_UETUNE_UP","TTbar_hadronic_UETUNE_UP"],
+      "UETUNE_DOWN" : ["TTbar_diLepton_UETUNE_DOWN","TTbar_diLepton_tau_UETUNE_DOWN","TTbar_singleLepton_UETUNE_DOWN","TTbar_hadronic_UETUNE_DOWN"],
+      "UNCLUSTERED_UP" : allMC,
+      "UNCLUSTERED_DOWN" : allMC,
       
       #  ~"JESAbsoluteMPFBias_UP" : allMC,
       #  ~"JESAbsoluteMPFBias_DOWN" : allMC,
@@ -249,52 +224,10 @@ sample_allSyst_dict = {
       #  ~"JESTimePtEta_DOWN" : allMC,
       #  ~"JESFlavorRealistic_UP" : allMC,
       #  ~"JESFlavorRealistic_DOWN" : allMC,
-      
-      #  ~"JESFlavorQCDreg_UP" : allMC,
-      #  ~"JESFlavorQCDreg_DOWN" : allMC,
-      #  ~"JESFlavorPureGluon_UP" : allMC,
-      #  ~"JESFlavorPureGluon_DOWN" : allMC,
-      #  ~"JESFlavorPureQuark_UP" : allMC,
-      #  ~"JESFlavorPureQuark_DOWN" : allMC,
-      #  ~"JESFlavorPureCharm_UP" : allMC,
-      #  ~"JESFlavorPureCharm_DOWN" : allMC,
-      #  ~"JESFlavorPureBottom_UP" : allMC,
-      #  ~"JESFlavorPureBottom_DOWN" : allMC,
-
-      
-      #  ~"JESRelativeBalreg_UP" : allMC,
-      #  ~"JESRelativeBalreg_DOWN" : allMC,
-      #  ~"JESFlavorRealistic_UP" : allMC,
-      #  ~"JESFlavorRealistic_DOWN" : allMC,
-      #  ~"JESRelativeSampleYear_UP" : allMC,
-      #  ~"JESRelativeSampleYear_DOWN" : allMC,
-      #  ~"JESAbsoluteYear_UP" : allMC,
-      #  ~"JESAbsoluteYear_DOWN" : allMC,
-      #  ~"JESAbsolute_UP" : allMC,
-      #  ~"JESAbsolute_DOWN" : allMC,
-      #  ~"JESBBEC1Year_UP" : allMC,
-      #  ~"JESBBEC1Year_DOWN" : allMC,
-      #  ~"JESBBEC1_UP" : allMC,
-      #  ~"JESBBEC1_DOWN" : allMC
 }
 
 tunfold_syst = [
-#  ~"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PU_UP","PU_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","UETUNE_UP","UETUNE_DOWN","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5","CR1","CR2","ERDON","TRIG_UP","TRIG_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN","BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","TOP_PT","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN",
-
-"MESCALE_UP","MESCALE_DOWN",
-
-#  ~"JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN",
-#  ~"BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN",
-#  ~"MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN",
-#  ~"JESUserDefinedHEM1516_DOWN",
-
-#  ~"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorQCD_UP","JESFlavorQCD_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN",
-
-#  ~"JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFlavorPureGluon_UP","JESFlavorPureGluon_DOWN","JESFlavorPureQuark_UP","JESFlavorPureQuark_DOWN","JESFlavorPureCharm_UP","JESFlavorPureCharm_DOWN","JESFlavorPureBottom_UP","JESFlavorPureBottom_DOWN",
-
-#  ~"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN",
-
-#  ~"JESFlavorRealistic_UP","JESFlavorRealistic_DOWN",
+"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR1","CR2","ERDON","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","MATCH_UP","MATCH_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MTOP169p5","MTOP175p5","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"
 ]
 
 
@@ -323,15 +256,19 @@ def get_version(year):      #checks config for name of file
 def get_dataBasePath_dCache(year,curl=True,dcap=False,extern=False):      #return dataBasePath on dCache for given year
    config = configparser.ConfigParser()
    config.read("../config"+year+".ini")
+   if (args.y.find("2016")>=0):
+      user="teroerde"
+   else:
+      user=None
    if dcap:
       if extern:
-         return "dcap://grid-dcap-extern.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
+         return "dcap://grid-dcap-extern.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname",user),year,config["input"]["version"])
       else:
-         return "dcap://grid-dcap.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
+         return "dcap://grid-dcap.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname",user),year,config["input"]["version"])
    elif curl:
-      return "curlsimple://grid-webdav.physik.rwth-aachen.de:2889/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
+      return "curlsimple://grid-webdav.physik.rwth-aachen.de:2889/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname",user),year,config["input"]["version"])
    else:
-      return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname"),year,config["input"]["version"])
+      return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname",user),year,config["input"]["version"])
 
 def printSubmitInfo(args):
    print "Running "+args.m
@@ -347,6 +284,15 @@ def createLogPath(args):
          if exc.errno != errno.EEXIST:
             raise
    return logpath
+
+def removeJES_HEM(year):
+   if year != "2018":
+      key = "JESUserDefinedHEM1516_DOWN"
+      tunfold_syst.remove(key)
+      if key in bTagEff_sample_syst_dict:
+         del bTagEff_sample_syst_dict[key]
+      if key in sample_allSyst_dict:
+         del sample_allSyst_dict[key]
 
 def checkCEjobs():      #check how many jobs are present in both CE and choose with CE to submit to
    out = subprocess.check_output(["condor_status", "-grid"])
@@ -622,7 +568,7 @@ def submitTUnfold(args,systematics):
       Output                  = logs/{2}/{3}/{0}/{1}/{1}.out
       Error                   = logs/{2}/{3}/{0}/{1}/{1}.error
       use_x509userproxy       = true
-      RequestMemory           = 3000
+      RequestMemory           = 5000
       Requirements            = (TARGET.Machine == "lxblade33.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade34.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade35.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade36.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade37.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade38.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade39.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade40.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade41.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade42.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade43.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade44.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade45.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade46.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade47.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade48.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade49.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade50.physik.rwth-aachen.de")
       Queue
       """.format(str(args.f),args.m,args.y,args.s,get_version(args.y),dCachePath),)
@@ -641,7 +587,7 @@ def submitTUnfold(args,systematics):
       transfer_output_remaps  = "output_framework = {8}/{5}/{9}/output_framework"
       when_to_transfer_output = ON_SUCCESS
       success_exit_code       = 0
-      RequestMemory           = 3000
+      RequestMemory           = 10000
       getenv                  = yes
       Queue
          """.format(str(args.f),args.m,"placeholder","placeholder","placeholder",args.y,args.s,"placeholder", getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),"placeholder",checkCEjobs(),dCachePath))
@@ -655,9 +601,9 @@ if __name__ == "__main__":
    # Select datasets to process
    #############################################
    #  ~toProcess_mc=["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
-   toProcess_mc=["ZZ"]
+   #  ~toProcess_mc=["ZZ"]
    #  ~toProcess_mc=["DrellYan_NLO"]
-   #  ~toProcess_mc=["TTbar_diLepton"]
+   toProcess_mc=["TTbar_diLepton"]
    #  ~toProcess_mc=["TTbar_diLepton_tau_MATCH_DOWN"]
    #  ~toProcess_mc=["TTbar_diLepton_UETUNE_UP","TTbar_diLepton_tau_UETUNE_UP","TTbar_singleLepton_UETUNE_UP","TTbar_hadronic_UETUNE_UP"]
    #  ~toProcess_mc=["TTbar_diLepton_UETUNE_DOWN","TTbar_diLepton_tau_UETUNE_DOWN","TTbar_singleLepton_UETUNE_DOWN","TTbar_hadronic_UETUNE_DOWN"]
@@ -675,8 +621,8 @@ if __name__ == "__main__":
    #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
    #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
    #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"]       #2017, 2016
-   #  ~toProcess_data=["MET"]      
-   toProcess_data=[]
+   toProcess_data=["MET"]      
+   #  ~toProcess_data=[]
          
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10"]
@@ -706,6 +652,9 @@ if __name__ == "__main__":
    if args.scratchInput==False and args.copyDCache==False and args.condFileTransfer==False:
       uploadCompressedCMSSW()
       uploadCompressedFW()
+   
+   # Remove HEM syst uncertainty for all years except 2018
+   removeJES_HEM(args.y)
       
    if (args.bTagEff_complete == False and args.distributions_complete==False and args.pdf_complete==False):
       if (args.m == "TUnfold_binning"):
