@@ -204,8 +204,8 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
                 if value==1:
                     print "resubmitting job"
                     susJobs.append(job["ClusterId"])
-        else:
-            print "job status = ", jStatus
+        #  ~else:
+            #  ~print "job status = ", jStatus
     
     if(printOutput):
         print getSummary()
@@ -251,7 +251,7 @@ def summaryJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF,modul
                         merge(distrLogPath,(mergeAll or forceMergeAll))
             else:
                 systName = getSystFromOutFile(distrLogPath)
-                idleCheck = [value for key, value in runningLogs.iteritems() if key.find(systName)>0]
+                idleCheck = [value for key, value in runningLogs.iteritems() if (key.find(systName)>0 and key.find(year)>0)]
                 nIdle = idleCheck.count(0)
                 nFailed = status[1][0]-status[1][1]-status[1][2]
                 print colored(distrLogPath,"cyan",attrs=['bold'])
