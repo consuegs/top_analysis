@@ -95,6 +95,7 @@ public:
    
    std::vector<std::string> tunfold_InputSamples;
    TString tunfold_ResponseSample;
+   TString tunfold_ResponseSampleAlt;
    std::vector<std::string> tunfold_bkgSamples_ttbar;
    std::vector<std::string> tunfold_bkgSamples_other;
    bool tunfold_withPTreweight;

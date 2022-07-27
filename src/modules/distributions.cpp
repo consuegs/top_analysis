@@ -612,7 +612,7 @@ void run()
          
          //Initialize DNN regression
          DNNregression dnnRegression(cfg.DNN_Path.Data());
-         std::vector<float> input_vec(20);
+         std::vector<float> input_vec(17);
          std::vector<float> output_vec(2);
          
          
@@ -1260,18 +1260,15 @@ void run()
                   input_vec[9]=minTree_Lep1_pt*cos(minTree_Lep1_phi);
                   input_vec[10]=minTree_Lep1_pt*sin(minTree_Lep1_phi);
                   input_vec[11]=minTree_Jet1_pt*cos(minTree_Jet1_phi);
-                  input_vec[12]=minTree_CaloMET;
-                  input_vec[13]=minTree_vecsum_pT_allJet;
-                  input_vec[14]=minTree_MT2;
-                  input_vec[15]=minTree_mjj;
-                  input_vec[16]=minTree_nJets;
-                  input_vec[17]=minTree_Jet1_E;
-                  input_vec[18]=minTree_HT;
-                  input_vec[19]=minTree_METunc_Puppi;
+                  input_vec[12]=minTree_mjj;
+                  input_vec[13]=minTree_Jet1_E;
+                  input_vec[14]=minTree_HT;
+                  input_vec[15]=minTree_Jet2_pt*sin(minTree_Jet2_phi);
+                  input_vec[16]=minTree_Jet2_pt*cos(minTree_Jet2_phi);
                                     
                   dnnRegression.evaluate(input_vec,output_vec);
-                  DNN_MET_x = minTree_PuppiMet*cos(minTree_PuppiMET_phi)-output_vec[0];
-                  DNN_MET_y = minTree_PuppiMet*sin(minTree_PuppiMET_phi)-output_vec[1];
+                  DNN_MET_x = minTree_PuppiMet_xy*cos(minTree_PuppiMET_phi)-output_vec[0];
+                  DNN_MET_y = minTree_PuppiMet_xy*sin(minTree_PuppiMET_phi)-output_vec[1];
                   
                   DNN_MET.SetXYZM(DNN_MET_x,DNN_MET_y,0.,0.);
                   DNN_MET_pT=DNN_MET.Pt();

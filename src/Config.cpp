@@ -105,6 +105,7 @@ Config::Config()
    
    tunfold_InputSamples = util::to_vector<std::string>(pt.get<std::string>("TUnfold.inputSamples"));
    tunfold_ResponseSample = pt.get<std::string>("TUnfold.responseSample");
+   tunfold_ResponseSampleAlt = pt.get<std::string>("TUnfold.responseSample_alt");
    tunfold_bkgSamples_ttbar = util::to_vector<std::string>(pt.get<std::string>("TUnfold.bkgSamples_ttbar"));
    tunfold_bkgSamples_other = util::to_vector<std::string>(pt.get<std::string>("TUnfold.bkgSamples_other"));
    tunfold_withPTreweight = pt.get<bool>("TUnfold.withPTreweight");
