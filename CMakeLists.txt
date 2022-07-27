@@ -58,6 +58,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSTANDALONE")
 ### ONNXRuntime
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lonnxruntime")
 
+## std::filesystem
+link_libraries(stdc++fs)
+
 # pass some definitions for usage in code
 add_definitions(
   -DLIBRARY_OUTPUT_PATH="${LIBRARY_OUTPUT_PATH}/"
