@@ -20,33 +20,15 @@ Config const &cfg=Config::get();
 extern "C"
 void run()
 {
-   std::vector<TString> systToPlot = {
-                                       // ~"Nominal","JESTotal_UP","JESTotal_DOWN","JER_UP","JER_DOWN","UETUNE_UP","UETUNE_DOWN",
-                                       // ~"MATCH_UP","MATCH_DOWN","ERDON","CR1","CR2","MTOP169p5","MTOP175p5","TOP_PT",
-                                       "MESCALE_UP","MESCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN",
-                                       // ~"PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","BFRAG_UP","BFRAG_DOWN",
-                                       // ~"BSEMILEP_UP","BSEMILEP_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN",
-                                       
-                                       // ~"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN",
-                                       // ~"JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorQCD_UP","JESFlavorQCD_DOWN","JESFragmentation_UP",
-                                       // ~"JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN",
-                                       // ~"JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP",
-                                       // ~"JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN",
-                                       // ~"JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP",
-                                       // ~"JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN",
-                                       // ~"JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP",
-                                       // ~"JESTimePtEta_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN",
-                                       
-                                       // ~"JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFlavorPureGluon_UP","JESFlavorPureGluon_DOWN","JESFlavorPureQuark_UP",
-                                       // ~"JESFlavorPureQuark_DOWN","JESFlavorPureCharm_UP","JESFlavorPureCharm_DOWN","JESFlavorPureBottom_UP","JESFlavorPureBottom_DOWN",
-                                       
-                                       // ~"JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESFlavorQCDreg_UP","JESFlavorQCDreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESBBEC1_UP","JESBBEC1_DOWN",
-                                       
-                                       "JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN",
-                                       
-                                       // ~"JESUserDefinedHEM1516_DOWN"
+   std::vector<TString> systToPlot = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","CR1","CR2","ERDON","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN","MATCH_UP","MATCH_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","MTOP169p5","MTOP175p5","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","TOP_PT","UETUNE_UP","UETUNE_DOWN"
                                     };
    // ~std::vector<TString> systToPlot = {"Nominal"};
+   
+   //Remove HEM unc. for all year except 2018
+   auto itr =std::find(systToPlot.begin(), systToPlot.end(), "JESUserDefinedHEM1516_DOWN");
+   if (itr != systToPlot.end() && cfg.year_int != 3){
+      systToPlot.erase(itr);
+   }
    
    for (TString systName : systToPlot){
       std::cout<<"---------------"<<systName<<"----------------"<<std::endl;

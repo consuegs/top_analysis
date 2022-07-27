@@ -212,6 +212,8 @@ class Distribution
          histDataReco_coarse=signalBinning_->CreateHistogram("histDataReco_coarse_"+varName_);
          histDataTruth=signalBinning_->CreateHistogram("histDataTruth_"+varName_);
          histDataTruth_fakes=signalBinning_->CreateHistogram("histDataTruth_fakes_"+varName_);
+         histDataRecoAlt=detectorBinning_->CreateHistogram("histDataRecoAlt_"+varName_);
+         histDataRecoAlt_coarse=signalBinning_->CreateHistogram("histDataRecoAlt_coarse_"+varName_);
          histDataTruthAlt=signalBinning_->CreateHistogram("histDataTruthAlt_"+varName_);
          histDataTruthAlt_fakes=signalBinning_->CreateHistogram("histDataTruthAlt_fakes_"+varName_);
       }
@@ -219,8 +221,12 @@ class Distribution
       void setupMCHists(){
          histMCGenRec=TUnfoldBinning::CreateHistogramOfMigrations(signalBinning_,detectorBinning_,"histMCGenRec-"+varName_);
          histMCGenRec_purity=TUnfoldBinning::CreateHistogramOfMigrations(signalBinning_,signalBinning_,"histMCGenRec_purity-"+varName_);
+         histMCGenRecAlt=TUnfoldBinning::CreateHistogramOfMigrations(signalBinning_,detectorBinning_,"histMCGenRecAlt-"+varName_);
+         histMCGenRecAlt_purity=TUnfoldBinning::CreateHistogramOfMigrations(signalBinning_,signalBinning_,"histMCGenRecAlt_purity-"+varName_);
          histMCRec_fakes=detectorBinning_->CreateHistogram("histMCRec_fakes-"+varName_);
          histMCRec_fakes_coarse=signalBinning_->CreateHistogram("histMCRec_fakes_coarse-"+varName_);
+         histMCRecAlt_fakes=detectorBinning_->CreateHistogram("histMCRecAlt_fakes-"+varName_);
+         histMCRecAlt_fakes_coarse=signalBinning_->CreateHistogram("histMCRecAlt_fakes_coarse-"+varName_);
          histMCRec_bkg=detectorBinning_->CreateHistogram("histMCRec_bkg-"+varName_);
          histMCRec_bkg_coarse=signalBinning_->CreateHistogram("histMCRec_bkg_coarse-"+varName_);
       }
@@ -267,6 +273,14 @@ class Distribution
          histDataReco_coarse->Fill(binNumber_coarse,weight);
       }
       
+      void fillDataRecoAlt(float const &weight){
+         Int_t binNumber = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
+         histDataRecoAlt->Fill(binNumber,weight);
+         
+         Int_t binNumber_coarse = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
+         histDataRecoAlt_coarse->Fill(binNumber_coarse,weight);
+      }
+      
       void fillMCbkg(float const &weight){
          Int_t recBin = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
          Int_t recBin_purity = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
@@ -279,6 +293,13 @@ class Distribution
          Int_t recBin_purity = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
          histMCRec_fakes->Fill(recBin,weight);
          histMCRec_fakes_coarse->Fill(recBin_purity,weight);
+      }
+      
+      void fillMCfakesAlt(float const &weight){
+         Int_t recBin = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
+         Int_t recBin_purity = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
+         histMCRecAlt_fakes->Fill(recBin,weight);
+         histMCRecAlt_fakes_coarse->Fill(recBin_purity,weight);
       }
       
       void fillMCGenRec(float const &mcWeight,float const &recoWeight){
@@ -295,13 +316,29 @@ class Distribution
          histMCGenRec_purity->Fill(genBin,0.,mcWeight-(mcWeight*recoWeight));
       }
       
+      void fillMCGenRecAlt(float const &mcWeight,float const &recoWeight){
+         Int_t recBin = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
+         Int_t recBin_purity = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
+         Int_t genBin = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         
+         histMCGenRecAlt->Fill(genBin,recBin,mcWeight*recoWeight);
+         histMCGenRecAlt_purity->Fill(genBin,recBin_purity,mcWeight*recoWeight);
+         
+         // count fraction of events which have a different weight on truth and reco (in reco underflow bin)
+         // this is required for TUnfold to function properly
+         histMCGenRecAlt->Fill(genBin,0.,mcWeight-(mcWeight*recoWeight));
+         histMCGenRecAlt_purity->Fill(genBin,0.,mcWeight-(mcWeight*recoWeight));
+      }
+      
       void setExpStatUnc(){
          // set reco bin error to error expected in data
          for(int i=0;i<=histDataReco->GetNbinsX()+1;i++) {
             histDataReco->SetBinError(i,sqrt(histDataReco->GetBinContent(i)));
+            histDataRecoAlt->SetBinError(i,sqrt(histDataRecoAlt->GetBinContent(i)));
          }
          for(int i=0;i<=histDataReco_coarse->GetNbinsX()+1;i++) {
             histDataReco_coarse->SetBinError(i,sqrt(histDataReco_coarse->GetBinContent(i)));
+            histDataRecoAlt_coarse->SetBinError(i,sqrt(histDataRecoAlt_coarse->GetBinContent(i)));
          }
       }
       
@@ -310,6 +347,8 @@ class Distribution
          saver.save(*signalBinning_,varName_+"/generator_binning");
          saver.save(*histDataReco,varName_+"/histDataReco");
          saver.save(*histDataReco_coarse,varName_+"/histDataReco_coarse");
+         saver.save(*histDataRecoAlt,varName_+"/histDataRecoAlt");
+         saver.save(*histDataRecoAlt_coarse,varName_+"/histDataRecoAlt_coarse");
          saver.save(*histDataTruth_fakes,varName_+"/histDataTruth_fakes");
          saver.save(*histDataTruth,varName_+"/histDataTruth");
          saver.save(*histDataTruthAlt_fakes,varName_+"/histDataTruthAlt_fakes");
@@ -319,11 +358,16 @@ class Distribution
       void saveMCHists(io::RootFileSaver const &saver){
          saver.save(*histMCGenRec,varName_+"/histMCGenRec");
          saver.save(*histMCGenRec_purity,varName_+"/histMCGenRec_sameBins");
+         saver.save(*histMCGenRecAlt,varName_+"/histMCGenRecAlt");
+         saver.save(*histMCGenRecAlt_purity,varName_+"/histMCGenRecAlt_sameBins");
          saver.save(*histMCRec_fakes,varName_+"/histMCRec_fakes");
+         saver.save(*histMCRecAlt_fakes,varName_+"/histMCRecAlt_fakes");
          saver.save(*histMCRec_bkg,varName_+"/histMCRec_bkg");
          saver.save(*histMCRec_bkg_coarse,varName_+"/histMCRec_bkg_coarse");
          saver.save(*(histMCGenRec->ProjectionX()),varName_+"/histMCGenRec_projX");
          saver.save(*(histMCGenRec->ProjectionY()),varName_+"/histMCGenRec_projY");
+         saver.save(*(histMCGenRecAlt->ProjectionX()),varName_+"/histMCGenRecAlt_projX");
+         saver.save(*(histMCGenRecAlt->ProjectionY()),varName_+"/histMCGenRecAlt_projY");
          
          //Calculate Signal fration
          TH1* hist_SignalFraction = deriveSignalFraction(histMCGenRec,histMCRec_fakes,detectorBinning_,saver,"hist_SignalFraction",varName_);
@@ -332,6 +376,14 @@ class Distribution
          //Calculate Signal fration for coarse binning
          TH1* hist_SignalFraction_coarse = deriveSignalFraction(histMCGenRec_purity,histMCRec_fakes_coarse,signalBinning_,saver,"hist_SignalFraction_coarse",varName_);
          saver.save(*hist_SignalFraction_coarse,varName_+"/hist_SignalFraction_coarse");
+         
+         //Calculate Signal fration for alt sample
+         TH1* hist_SignalFractionAlt = deriveSignalFraction(histMCGenRecAlt,histMCRecAlt_fakes,detectorBinning_,saver,"hist_SignalFractionAlt",varName_);
+         saver.save(*hist_SignalFractionAlt,varName_+"/hist_SignalFractionAlt");
+         
+         //Calculate Signal fration for coarse binning for alt sample
+         TH1* hist_SignalFractionAlt_coarse = deriveSignalFraction(histMCGenRecAlt_purity,histMCRecAlt_fakes_coarse,signalBinning_,saver,"hist_SignalFractionAlt_coarse",varName_);
+         saver.save(*hist_SignalFractionAlt_coarse,varName_+"/hist_SignalFractionAlt_coarse");
          
          //Save normalized reco distribution for fake and non fake events
          TH1D histGen_fakes=*(histMCGenRec_purity->ProjectionY("Fakes",1,1));
@@ -359,6 +411,8 @@ class Distribution
       
       TH1* histDataReco;
       TH1* histDataReco_coarse;
+      TH1* histDataRecoAlt;
+      TH1* histDataRecoAlt_coarse;
       TH1* histDataTruth;
       TH1* histDataTruth_fakes;
       TH1* histDataTruthAlt;
@@ -366,8 +420,12 @@ class Distribution
       
       TH2* histMCGenRec;
       TH2* histMCGenRec_purity;
+      TH2* histMCGenRecAlt;
+      TH2* histMCGenRecAlt_purity;
       TH1* histMCRec_fakes;
       TH1* histMCRec_fakes_coarse;
+      TH1* histMCRecAlt_fakes;
+      TH1* histMCRecAlt_fakes_coarse;
       TH1* histMCRec_bkg;
       TH1* histMCRec_bkg_coarse;
 };
@@ -409,6 +467,7 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);
       else if (dist.varName_ == "pTnunu_DNN") dist.setVariables(metRec_DNN,metGen);
+      else if (dist.varName_ == "pTnunu_new_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);
       else if (dist.varName_ == "pTll") dist.setVariables(pTllRec,pTllGen);      
       else if (dist.varName_ == "inclusive") dist.setVariables(phiRec,phiGen);      
@@ -494,12 +553,16 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
                   for(Distribution& dist : distribution_vec) dist.fillDataTruthAlt_fakes(mcWeight);
                }
                else for(Distribution& dist : distribution_vec) dist.fillDataTruthAlt(mcWeight);
-               continue;   // not used for pseudo data input
             }
 
             // fill histogram with reconstructed quantities
             if (metRec<0) continue;   //events that are not reconstructed
-            for(Distribution& dist : distribution_vec) dist.fillDataReco(mcWeight*recoWeight);
+            if (!isSignalAlt){
+               for(Distribution& dist : distribution_vec) dist.fillDataReco(mcWeight*recoWeight);
+            }
+            if (!isSignal){
+               for(Distribution& dist : distribution_vec) dist.fillDataRecoAlt(mcWeight*recoWeight);
+            }
          }
          io::log<<"";
       }
@@ -615,6 +678,7 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);      
       else if (dist.varName_ == "pTnunu_DNN") dist.setVariables(metRec_DNN,metGen);
+      else if (dist.varName_ == "pTnunu_new_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);      
       else if (dist.varName_ == "pTll") dist.setVariables(pTllRec,pTllGen);      
       else if (dist.varName_ == "inclusive") dist.setVariables(phiRec,phiGen);      
@@ -623,12 +687,14 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
    // create vector with all input samples
    std::vector<std::string> samples = cfg.tunfold_bkgSamples_ttbar;
    samples.insert(samples.begin(),cfg.tunfold_ResponseSample.Data());
+   if (syst.name().Data() == "Nominal") samples.insert(samples.begin(),cfg.tunfold_ResponseSampleAlt.Data());
    samples.insert(samples.end(),cfg.tunfold_bkgSamples_other.begin(),cfg.tunfold_bkgSamples_other.end());
    
    for (TString sample : samples){     // loop over all MC samples
-      bool isSignal = (sample == "TTbar_diLepton");
+      bool isSignal = (sample == cfg.tunfold_ResponseSample.Data());
+      bool isSignalAlt = (sample == cfg.tunfold_ResponseSampleAlt.Data());
       bool isBKGother = (std::find(cfg.tunfold_bkgSamples_other.begin(),cfg.tunfold_bkgSamples_other.end(), sample) != cfg.tunfold_bkgSamples_other.end());
-      
+            
       auto [minTreePath_current, currentSample, sfUnc] = getPath_SampleName_SF(sample,minTreePath_nominal,minTreePath_syst,isSignal,isBKGother,syst);
       
       for (int i=1; i<=cfg.getTotalFileNR(currentSample.Data()); i++){     // loop over each minTree of sample
@@ -696,13 +762,17 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
             }
             
             // store fakes and tt_other backgrounds for signal fraction
-            if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40) || !isSignal) {
-               for(Distribution& dist : distribution_vec) dist.fillMCfakes(mcWeight*recoWeight);
+            if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40) || (!isSignal && !isSignalAlt)) {
+               if (!isSignalAlt) for(Distribution& dist : distribution_vec) dist.fillMCfakes(mcWeight*recoWeight);
+               if (!isSignal) for(Distribution& dist : distribution_vec) dist.fillMCfakesAlt(mcWeight*recoWeight);
                continue;
             }
             
             // fill response matrix
-            for(Distribution& dist : distribution_vec) dist.fillMCGenRec(mcWeight,recoWeight);
+            for(Distribution& dist : distribution_vec) {
+               if (isSignal) dist.fillMCGenRec(mcWeight,recoWeight);
+               else if (isSignalAlt) dist.fillMCGenRecAlt(mcWeight,recoWeight);
+            }
          }
          io::log<<"";
       }
@@ -777,6 +847,10 @@ void run()
    distribution_vec.push_back(Distribution("pTnunu_DNN",
                                           {0,40,70,110,170,260,370},
                                           {0,20,40,55,70,90,110,140,170,215,260,315,370,435}
+                                          ));
+   distribution_vec.push_back(Distribution("pTnunu_new_DNN",            // Fabians optimzed binning for DNN
+                                          {0,40,65,95,135,195,255,315,380},
+                                          {0,20,40,52.5,65,80,95,115,135,165,195,225,255,285,315,347.5,380,440}
                                           ));
    distribution_vec.push_back(Distribution("dPhi_DNN",
                                           {0.,0.4,0.8,1.2,1.6,2.,2.4,2.8},
