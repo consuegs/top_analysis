@@ -36,8 +36,10 @@ void io::ensurePathForFile(TString fileName)
 {
    TObjArray* tokens = fileName.Tokenize("/");
    TString path("");
+   int offset = -1;
    if (fileName[0] == '/') path += "/";
-   for (int i=0; i<tokens->GetEntries() -1; i++){
+   if (fileName[fileName.Length()-1] == '/') offset = 0;
+   for (int i=0; i<tokens->GetEntries() + offset; i++){
       path += ((TObjString*)(tokens->At(i)))->GetString() + "/";
    }
    if (!path.EqualTo("")) system("mkdir -p "+path);
@@ -63,11 +65,11 @@ io::RootFileSaver::RootFileSaver(TString rootFileName,TString internalPath,bool 
    file_ = new TFile(fPath_,option);
 }
 
-io::RootFileSaver::~RootFileSaver()
-{
-   file_->Close();
-   delete file_;
-}
+// ~io::RootFileSaver::~RootFileSaver()
+// ~{
+   // ~file_->Close();
+   // ~delete file_;
+// ~}
 
 void io::RootFileSaver::closeFile() const
 {
@@ -141,7 +143,8 @@ io::RootFileReader::RootFileReader(TString rootFileName,TString internalPath,boo
    }
    else fPath_=fName_;
    ensurePathForFile(fPath_);
-   file_ = new TFile(fPath_,"read");
+   // ~file_ = new TFile(fPath_,"read");
+   file_ = TFile::Open(fPath_,"read");
    if (file_->IsZombie()) {
       debug_io << "Could not open file: "+fPath_;
       throw;
@@ -163,7 +166,7 @@ void io::RootFileReader::closeFile() const
 io::RootFileReader::~RootFileReader()
 {
    file_->Close();
-   delete file_;
+   // ~delete file_;
 }
 
 /*******************************************************************************
