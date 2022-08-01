@@ -34,6 +34,21 @@ hist::Histograms<HIST>::Histograms(std::vector<std::string> const &samples,Datas
 }
 
 template <class HIST>
+HIST hist::Histograms<HIST>::fromWidths_template(const char *name, const char *title,std::vector<float> edges, std::vector<float> widths)
+{
+   std::vector<double> xbins=getBinVector(edges, widths);
+   return HIST(name,title,xbins.size()-1,&xbins[0]);
+}
+
+template <class HIST>
+HIST hist::Histograms<HIST>::fromWidths_2d_template(const char *name, const char *title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y)
+{
+   std::vector<double> xbins=getBinVector(edges_x, widths_x);
+   std::vector<double> ybins=getBinVector(edges_y, widths_y);
+   return HIST(name,title,xbins.size()-1,&xbins[0],ybins.size()-1,&ybins[0]);
+}
+
+template <class HIST>
 void hist::Histograms<HIST>::addHist(TString const &varName,TString const &title, Int_t nbinsx, Double_t xlow, Double_t xup)
 {
    TH1::SetDefaultSumw2();
@@ -48,7 +63,7 @@ void hist::Histograms<HIST>::addHist(TString const &varName,TString const &title
    TH1::SetDefaultSumw2();
    mmH_[varName]=std::map<TString,HIST>();
    for (TString const &s: vsSamples_)
-      mmH_[varName][s]=fromWidths(varName+"_"+s+TString::Format("_%d",iInstance_),title,edges,widths);
+      mmH_[varName][s]=fromWidths_template(varName+"_"+s+TString::Format("_%d",iInstance_),title,edges,widths);
 }
 
 template <class HIST>
@@ -82,7 +97,7 @@ void hist::Histograms<HIST>::addHist(TString const &varName,TString const &title
    TH1::SetDefaultSumw2();
    mmH_[varName]=std::map<TString,HIST>();
    for (TString const &s: vsSamples_)
-      mmH_[varName][s]=fromWidths_2d(varName+"_"+s+TString::Format("_%d",iInstance_),title,edges_x,widths_x,edges_y,widths_y);
+      mmH_[varName][s]=fromWidths_2d_template(varName+"_"+s+TString::Format("_%d",iInstance_),title,edges_x,widths_x,edges_y,widths_y);
 }
 
 template <class HIST>
@@ -452,11 +467,24 @@ TH1F hist::fromWidths(const char *name, const char *title,std::vector<float> edg
    return TH1F(name,title,xbins.size()-1,&xbins[0]);
 }
 
+TH1D hist::fromWidths_TH1D(const char *name, const char *title,std::vector<float> edges, std::vector<float> widths)
+{
+   std::vector<double> xbins=getBinVector(edges, widths);
+   return TH1D(name,title,xbins.size()-1,&xbins[0]);
+}
+
 TH2F hist::fromWidths_2d(const char *name, const char *title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y)
 {
    std::vector<double> xbins=getBinVector(edges_x, widths_x);
    std::vector<double> ybins=getBinVector(edges_y, widths_y);
    return TH2F(name,title,xbins.size()-1,&xbins[0],ybins.size()-1,&ybins[0]);
+}
+
+TH2D hist::fromWidths_2d_TH2D(const char *name, const char *title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y)
+{
+   std::vector<double> xbins=getBinVector(edges_x, widths_x);
+   std::vector<double> ybins=getBinVector(edges_y, widths_y);
+   return TH2D(name,title,xbins.size()-1,&xbins[0],ybins.size()-1,&ybins[0]);
 }
 
 TProfile2D hist::ProfilefromWidths_2d(const char *name, const char *title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y)
@@ -521,6 +549,35 @@ TH1F hist::rebinned(TH1F const &h, std::vector<double> const &binedges,bool merg
    // ~return h;
 }
 
+TH1D hist::rebinned_double(TH1D const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow,bool mergeUnderflow)
+{
+   std::vector<double> binedges=getBinVector(edges, widths);
+   return rebinned_double(h,binedges,mergeOverflow,mergeUnderflow);
+}
+
+TH1D hist::rebinned_double(TH1D const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow,bool mergeUnderflow)
+{
+   std::vector<double> binedges=getBinVector(Xmin, Xmax, nBins);
+   return rebinned_double(h,binedges,mergeOverflow,mergeUnderflow);
+}
+
+TH1D hist::rebinned_double(TH1D const &h, std::vector<double> const &binedges,bool mergeOverflow,bool mergeUnderflow)
+{
+   TH1D hClone(h);
+   std::string name(hClone.GetName());
+   name+="_rebinned";
+   if (checkRebinningConistency(h.GetXaxis(),binedges)==false){
+      std::cout<<"Warning: Binning used for rebinning is not compatible:"<<hClone.GetXaxis()->GetTitle()<<std::endl;
+   }
+   TH1D *hnew=(TH1D*)hClone.Rebin(binedges.size()-1,name.c_str(),&binedges[0]);
+   if (mergeOverflow) hist::mergeOverflow(*hnew,mergeUnderflow);
+   TString yTitle=hClone.GetYaxis()->GetTitle();
+   // ~yTitle.ReplaceAll("BIN"," / bin");
+   hnew->GetYaxis()->SetTitle(yTitle);
+   return *hnew;
+   // ~return h;
+}
+
 TH2F hist::rebinned(TH2F const &h, float const &Xmin, float const &Xmax, int const &nBinsX, float const &Ymin, float const &Ymax, int const &nBinsY, bool mergeOverflow,bool mergeUnderflow)
 {
    std::vector<double> binedgesX_d = getBinVector(Xmin, Xmax, nBinsX);
@@ -540,6 +597,52 @@ TH2F hist::rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::ve
    name+="_rebinned";
    TH2F hnew=(TH2F)fromWidths_2d("","",binedges_x,getWidths(binedges_x),binedges_y,getWidths(binedges_y));
    float_t errors[hnew.GetNbinsX()+2][hnew.GetNbinsY()+2] = {};
+   TAxis *xaxis = hClone.GetXaxis();
+   TAxis *yaxis = hClone.GetYaxis();
+   TAxis *xaxis_new = hnew.GetXaxis();
+   TAxis *yaxis_new = hnew.GetYaxis();
+   for (int j=1; j<=yaxis->GetNbins();j++) {
+      for (int i=1; i<=xaxis->GetNbins();i++) {
+         hnew.Fill(xaxis->GetBinCenter(i),yaxis->GetBinCenter(j),h.GetBinContent(i,j));
+         errors[xaxis_new->FindBin(xaxis->GetBinCenter(i))][yaxis_new->FindBin(yaxis->GetBinCenter(j))] += h.GetBinError(i,j)*h.GetBinError(i,j);
+      } 
+   }
+   for (int i=0; i<hnew.GetNbinsX()+2; i++) {
+      for (int j=0; j<hnew.GetNbinsY()+2; j++) {
+         hnew.SetBinError(i,j,sqrt(errors[i][j]));
+      }
+   }
+   
+   if (mergeOverflow) hist::mergeOverflow(hnew,mergeUnderflow);
+   TString yTitle=hClone.GetYaxis()->GetTitle();
+   TString xTitle=hClone.GetXaxis()->GetTitle();
+   yTitle.ReplaceAll("BIN"," / bin");
+   hnew.GetYaxis()->SetTitle(yTitle);
+   hnew.GetXaxis()->SetTitle(xTitle);
+   hnew.SetEntries(entries);
+   return hnew;
+}
+
+TH2D hist::rebinned_double(TH2D const &h, float const &Xmin, float const &Xmax, int const &nBinsX, float const &Ymin, float const &Ymax, int const &nBinsY, bool mergeOverflow,bool mergeUnderflow)
+{
+   std::vector<double> binedgesX_d = getBinVector(Xmin, Xmax, nBinsX);
+   std::vector<double> binedgesY_d = getBinVector(Ymin, Ymax, nBinsY);
+   
+   std::vector<float> binedgesX(binedgesX_d.begin(),binedgesX_d.end());
+   std::vector<float> binedgesY(binedgesY_d.begin(),binedgesY_d.end());
+   
+   return rebinned_double(h,binedgesX,binedgesY,mergeOverflow,mergeUnderflow);
+}
+
+TH2D hist::rebinned_double(TH2D const &h, std::vector<float> const &binedges_x, std::vector<float> const &binedges_y,bool mergeOverflow,bool mergeUnderflow)
+{
+   TH2D hClone(h);
+   int entries = h.GetEntries();
+   std::string name(hClone.GetName());
+   name+="_rebinned";
+   TH2D hnew=(TH2D)fromWidths_2d_TH2D("","",binedges_x,getWidths(binedges_x),binedges_y,getWidths(binedges_y));
+   // ~float_t errors[hnew.GetNbinsX()+2][hnew.GetNbinsY()+2] = {};
+   std::vector<std::vector<float_t>> errors(hnew.GetNbinsX()+2, std::vector<float_t> (hnew.GetNbinsY()+2));
    TAxis *xaxis = hClone.GetXaxis();
    TAxis *yaxis = hClone.GetYaxis();
    TAxis *xaxis_new = hnew.GetXaxis();

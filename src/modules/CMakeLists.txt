@@ -31,7 +31,7 @@ set(MODULES
   # ~diff_fakes
   # ~plot_diff_fakes
   # ~diff_MET
-  # ~plot_metStudies
+  plot_metStudies
   # ~reweightingSF
   # ~test_TMVA
   # ~distributions_Philipp
@@ -53,13 +53,14 @@ set(MODULES
   # ~plot_leptonVeto
   # ~plot_yearComparisons
   # ~compare_powheg_amcatnlo
-  # ~binningUnfolding1D_Fabian
+  binningUnfolding1D_Fabian_OA
+  binningUnfolding2D_Fabian_OA
   bTagEff
   plot_bTagEff
   # ~distributions_KITsync
   # ~plot_yearComparisonsSebastian
   cr_envelope
-  # ~analyze_minTrees
+  analyze_minTrees
   # ~testHarvester
   # ~testHarvester_ttbar
   # ~testHarvester_ttbar_chan
