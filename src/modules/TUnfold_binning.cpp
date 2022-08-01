@@ -497,8 +497,8 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
             dataTree->SetBranchAddress("DNN_MET_pT",&metRec);
          }
          else{
-            dataTree->SetBranchAddress("Phi_recPuppi",&phiRec);
-            dataTree->SetBranchAddress("PuppiMET",&metRec);
+            dataTree->SetBranchAddress("Phi_recPuppi_xy",&phiRec);
+            dataTree->SetBranchAddress("PuppiMET_xy",&metRec);
          }
          dataTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec_DNN);
          dataTree->SetBranchAddress("DNN_MET_pT",&metRec_DNN);
@@ -716,8 +716,8 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
             signalTree->SetBranchAddress("DNN_MET_pT",&metRec);
          }
          else{
-            signalTree->SetBranchAddress("Phi_recPuppi",&phiRec);
-            signalTree->SetBranchAddress("PuppiMET",&metRec);
+            signalTree->SetBranchAddress("Phi_recPuppi_xy",&phiRec);
+            signalTree->SetBranchAddress("PuppiMET_xy",&metRec);
          }
          signalTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec_DNN);
          signalTree->SetBranchAddress("DNN_MET_pT",&metRec_DNN);
