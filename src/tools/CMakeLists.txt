@@ -19,6 +19,7 @@ set(SRCS
   mcWeights.cpp
   minTreeReader.cpp
   dnnRegression.cpp
+  tunfoldPlottingHelper.cpp
   )
 
 add_library(tools SHARED ${SRCS})
