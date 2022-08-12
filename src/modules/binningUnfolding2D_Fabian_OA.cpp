@@ -126,17 +126,28 @@ TH1D calculateStability(TH2D* const &hist2D) {
 	std::string nameRG ="N_recGen_proj_stab" + name;
 	std::string nameStab ="Stab" + name;
 	TH1D* N_Gen = hist2D->ProjectionX(nameG.c_str(), 0, Nbins);
-	TH1D* N_RecGen = hist2D->ProjectionY(nameRG.c_str(), 0, Nbins);
+	TH1D* N_RecGen = (TH1D*)N_Gen->Clone();
 
 	for (int i=1; i<= N_RecGen->GetNbinsX(); i++){
 	   N_RecGen->SetBinContent(i, hist2D->GetBinContent(i,i));
 	   N_RecGen->SetBinError(i, hist2D->GetBinError(i,i));
 	}
 	
-	TH1D* stability = hist2D->ProjectionX(nameStab.c_str(), 0, Nbins);
-	stability->Divide(N_RecGen, N_Gen);
+	N_RecGen->Divide(N_Gen);
 	
-	return *stability;
+	return *N_RecGen;
+}
+
+double calculateStability_singleBin(TH2D* const &hist2D, const int &bin) {
+	int Nbins = hist2D->GetNbinsX() * hist2D->GetNbinsY();
+	std::string name(hist2D->GetName());
+	std::string nameG ="N_gen_proj_stab" + name;
+	std::string nameRG ="N_recGen_proj_stab" + name;
+	std::string nameStab ="Stab" + name;
+	TH1D* N_Gen = hist2D->ProjectionX(nameG.c_str(), 0, Nbins);
+	double N_RecGen = hist2D->GetBinContent(bin,bin);
+	
+	return N_RecGen/N_Gen->GetBinContent(bin);
 }
 
 TH1D calculatePurity(TH2D* const &hist2D) {
@@ -146,16 +157,29 @@ TH1D calculatePurity(TH2D* const &hist2D) {
 	std::string nameRG ="N_recGen_proj_pur" + name;
 	std::string namePur ="Pur" + name;
 	TH1D* N_Rec = hist2D->ProjectionY(nameR.c_str(), 0, Nbins);
-	TH1D* N_RecGen = hist2D->ProjectionY(nameRG.c_str(), 0, Nbins);
+	TH1D* N_RecGen = (TH1D*)N_Rec->Clone();
 	
 	for (int i=1; i<= N_RecGen->GetNbinsX(); i++){
 	   N_RecGen->SetBinContent(i, hist2D->GetBinContent(i,i));
 	   N_RecGen->SetBinError(i, hist2D->GetBinError(i,i));
 	}
-	TH1D* purity= hist2D->ProjectionY(namePur.c_str(), 0, Nbins);
-	purity->Divide(N_RecGen, N_Rec);
+	N_RecGen->Divide(N_Rec);
 	
-	return *purity;
+	std::cout<<N_RecGen->GetBinContent(3,3)<<std::endl;;
+	
+	return *N_RecGen;
+}
+
+double calculatePurity_singleBin(TH2D* const &hist2D, const int &bin) {
+	int Nbins = hist2D->GetNbinsX() * hist2D->GetNbinsY();
+	std::string name(hist2D->GetName());
+	std::string nameR ="N_rec_proj_pur" + name;
+	std::string nameRG ="N_recGen_proj_pur" + name;
+	std::string namePur ="Pur" + name;
+	TH1D* N_Rec = hist2D->ProjectionY(nameR.c_str(), 0, Nbins);
+	double N_RecGen = hist2D->GetBinContent(bin,bin);
+	
+	return N_RecGen/N_Rec->GetBinContent(bin);
 }
 
 TH1D calculateEfficiency(TH1D* const &bothSel, TH1D* const &genSel) {
@@ -166,6 +190,11 @@ TH1D calculateEfficiency(TH1D* const &bothSel, TH1D* const &genSel) {
 	eff.SetName(name.c_str());
 	
 	return eff;
+}
+
+double calculateEfficiency_singleBin(TH1D* const &bothSel, TH1D* const &genSel, const int &bin) {
+	
+	return bothSel->GetBinContent(bin)/(genSel->GetBinContent(bin));
 }
 
 //Merges a phi bin (2D plot)
@@ -777,19 +806,25 @@ int getNextDirection(TH2D* const RecoGenHist, TH2D* const ResPtHist , TH2D* cons
 	std::vector<float> minVal = {p_min, s_min, N_min, eff_min};
 	
 	//Current Binning
+	std::cout<<"1"<<std::endl;
 	TH2D RecoGen = *RecoGenHist;
 	TH2D ResPt = *ResPtHist;
 	TH2D ResPhi = *ResPhiHist;
 	TH1D bothSelection = *bothSelectionHist;
 	TH1D genSelection = *genSelectionHist;
+	std::cout<<"2"<<std::endl;
 	
-	TH1D purity = calculatePurity(&RecoGen);
-	TH1D stability = calculateStability(&RecoGen);
-	TH1D efficiency = calculateEfficiency(&bothSelection, &genSelection);
+	// ~TH1D purity = calculatePurity(&RecoGen);
+	// ~TH1D stability = calculateStability(&RecoGen);
+	// ~TH1D efficiency = calculateEfficiency(&bothSelection, &genSelection);
+	std::cout<<"3"<<std::endl;
 
-	float p = purity.GetBinContent(currentBin);
-	float s = stability.GetBinContent(currentBin);
-	float eff = efficiency.GetBinContent(currentBin);
+	// ~float p = purity.GetBinContent(currentBin);
+	// ~float s = stability.GetBinContent(currentBin);
+	float p = calculatePurity_singleBin(&RecoGen,currentBin);
+	float s = calculateStability_singleBin(&RecoGen,currentBin);
+	// ~float eff = efficiency.GetBinContent(currentBin);
+	float eff = calculateEfficiency_singleBin(&bothSelection,&genSelection,currentBin);
 	float N_rec = RecoGen.ProjectionY(("yProj" + std::to_string(counter)).c_str(), 1, RecoGen.GetNbinsY())->GetBinContent(currentBin);
 	float RMS_pT = getRMS(&ResPt).GetBinContent(currentBin);
 	float RMS_Phi = getRMS(&ResPhi).GetBinContent(currentBin);
@@ -819,6 +854,8 @@ int getNextDirection(TH2D* const RecoGenHist, TH2D* const ResPtHist , TH2D* cons
 		}
 	}
 	
+	std::cout<<"4"<<std::endl;
+	
 	if(is_logging) logger << "\tRMS values of current bin are ok.\n";
 	if(s>= s_min and p >= p_min and N_rec >= N_min and eff >= eff_min) {
 		if(is_logging) logger << "->No Merge, current Bin is ok. The minVals are already fulfilled.\n";
@@ -846,6 +883,7 @@ int getNextDirection(TH2D* const RecoGenHist, TH2D* const ResPtHist , TH2D* cons
 		currentBin_PHI -= i;
 		lastPhiBin = true;
 	}
+	std::cout<<"5"<<std::endl;
 	//Merging in both directions
 	//Merge in pT direction
 	TH2D RecoGen_PT = mergePtRecoGen(*RecoGenHist, i, n);
@@ -859,16 +897,22 @@ int getNextDirection(TH2D* const RecoGenHist, TH2D* const ResPtHist , TH2D* cons
 	bothSelection_PT.SetName(("bS_PT"+ std::to_string(counter)).c_str());
 	genSelection_PT.SetName(("gS_PT"+ std::to_string(counter)).c_str());
 	
-	TH1D purity_PT = calculatePurity(&RecoGen_PT);
-	TH1D stability_PT = calculateStability(&RecoGen_PT);
-	TH1D efficiency_PT = calculateEfficiency(&bothSelection_PT, &genSelection_PT);
-	float p_PT = purity_PT.GetBinContent(currentBin_PT);
-	float s_PT = stability_PT.GetBinContent(currentBin_PT);
-	float eff_PT = efficiency_PT.GetBinContent(currentBin_PT);
+	// ~TH1D purity_PT = calculatePurity(&RecoGen_PT);
+	// ~TH1D stability_PT = calculateStability(&RecoGen_PT);
+	// ~TH1D efficiency_PT = calculateEfficiency(&bothSelection_PT, &genSelection_PT);
+	
+	// ~float p_PT = purity_PT.GetBinContent(currentBin_PT);
+	// ~float s_PT = stability_PT.GetBinContent(currentBin_PT);
+	float p_PT = calculatePurity_singleBin(&RecoGen_PT,currentBin_PT);
+	float s_PT = calculateStability_singleBin(&RecoGen_PT,currentBin_PT);
+	// ~float eff_PT = efficiency_PT.GetBinContent(currentBin_PT);
+	float eff_PT = calculateEfficiency_singleBin(&bothSelection_PT, &genSelection_PT,currentBin_PT);
 	float N_rec_PT = RecoGen_PT.ProjectionY(("yProjPT"+ std::to_string(counter)).c_str(), 1, RecoGen_PT.GetNbinsY())->GetBinContent(currentBin_PT);
 	float RMS_pT_PT = getRMS(&ResPt_PT).GetBinContent(currentBin_PT);
 	float RMS_Phi_PT = getRMS(&ResPhi_PT).GetBinContent(currentBin_PT);
 	std::vector<float> newVal_PT = {p_PT, s_PT, N_rec_PT, eff_PT};
+	
+	std::cout<<"6"<<std::endl;
 	
 	//Merge in dPhi direction
 	TH2D RecoGen_PHI = mergePhiRecoGen(*RecoGenHist, i, m);
@@ -877,13 +921,16 @@ int getNextDirection(TH2D* const RecoGenHist, TH2D* const ResPtHist , TH2D* cons
 	TH1D bothSelection_PHI = mergePhi1D(*bothSelectionHist, i, m);
 	TH1D genSelection_PHI = mergePhi1D(*genSelectionHist, i, m);
 
-	TH1D purity_PHI = calculatePurity(&RecoGen_PHI);
-	TH1D stability_PHI = calculateStability(&RecoGen_PHI);
-	TH1D efficiency_PHI = calculateEfficiency(&bothSelection_PHI, &genSelection_PHI);
+	// ~TH1D purity_PHI = calculatePurity(&RecoGen_PHI);
+	// ~TH1D stability_PHI = calculateStability(&RecoGen_PHI);
+	// ~TH1D efficiency_PHI = calculateEfficiency(&bothSelection_PHI, &genSelection_PHI);
 
-	float p_PHI = purity_PHI.GetBinContent(currentBin_PHI);
-	float s_PHI = stability_PHI.GetBinContent(currentBin_PHI);
-	float eff_PHI = efficiency_PHI.GetBinContent(currentBin_PHI);
+	// ~float p_PHI = purity_PHI.GetBinContent(currentBin_PHI);
+	// ~float s_PHI = stability_PHI.GetBinContent(currentBin_PHI);
+	float p_PHI = calculatePurity_singleBin(&RecoGen_PHI,currentBin_PHI);
+	float s_PHI = calculateStability_singleBin(&RecoGen_PHI,currentBin_PHI);
+	// ~float eff_PHI = efficiency_PHI.GetBinContent(currentBin_PHI);
+	float eff_PHI = calculateEfficiency_singleBin(&bothSelection_PHI, &genSelection_PHI,currentBin_PHI);
 	float N_rec_PHI = RecoGen_PHI.ProjectionY(("yProjPhi"+ std::to_string(counter)).c_str(), 1, RecoGen_PHI.GetNbinsY())->GetBinContent(currentBin_PHI);
 	float RMS_pT_PHI = getRMS(&ResPt_PHI).GetBinContent(currentBin_PHI);
 	float RMS_Phi_PHI = getRMS(&ResPhi_PHI).GetBinContent(currentBin_PHI);
@@ -896,6 +943,8 @@ int getNextDirection(TH2D* const RecoGenHist, TH2D* const ResPtHist , TH2D* cons
 	//Check if params are ok
 	bool ok_PT = s_PT >= s_min and p_PT >= p_min and N_rec_PT >= N_min and eff_PT >= eff_min and RMS_pT_PT<binWidthPt_PT and RMS_Phi_PT<binWidthPhi;
 	bool ok_PHI = s_PHI >= s_min and p_PHI >= p_min and N_rec_PHI >= N_min and eff_PHI >= eff_min and RMS_Phi_PHI<binWidthPhi_PHI and RMS_pT_PHI<binWidthPt;
+	
+	std::cout<<"7"<<std::endl;
 	
 	//If last Bin merge rule is etablished, additional checks have to be performed
 	if (lastBinMergeRule) {
@@ -964,6 +1013,8 @@ int getNextDirection(TH2D* const RecoGenHist, TH2D* const ResPtHist , TH2D* cons
 			}
 		}
 	}
+	
+	std::cout<<"8"<<std::endl;
 	
 	//Case: N_rec = 0 in the surronding bins, choose accordingly to the counter value		
 	if(N_rec_PT==0 and N_rec_PHI==0) {
@@ -1084,7 +1135,7 @@ int run()
     //~ {
         //~ {true, true, false},
     //~ };
-    //~ //N=10
+   //N=10
 	// ~std:: vector<vector<bool>> options{{true, false, true},};
 	
 	//Used MoI version
@@ -1092,8 +1143,9 @@ int run()
 	bool is_logging = true;
 	
 	
-	int initialBins = 40; //number of equidistant initial bins in each dimension
-	// ~int initialBins = 80; //number of equidistant initial bins in each dimension
+	// ~int initialBins = 10; //number of equidistant initial bins in each dimension
+	// ~int initialBins = 40; //number of equidistant initial bins in each dimension
+	int initialBins = 80; //number of equidistant initial bins in each dimension
 	float p_min = 0.2;
 	float s_min = 0.2;
 	float N_min = 10;
@@ -1350,24 +1402,29 @@ int run()
 			int n = 1;
 			int counter = 1;
 			
-			TH2D* RecoGen;
-			TH2D* ResPt;
-			TH2D* ResPhi;
-			TH1D* bothSel;
-			TH1D* genSel; 
+			// ~TH2D* RecoGen;
+			// ~TH2D* ResPt;
+			// ~TH2D* ResPhi;
+			// ~TH1D* bothSel;
+			// ~TH1D* genSel; 
+			TH2D RecoGen;
+			TH2D ResPt;
+			TH2D ResPhi;
+			TH1D bothSel;
+			TH1D genSel; 
 			
 			if (DNN) {
-				RecoGen = hs2D.getHistogram("DNN_MET/RecoGen", treeName);
-				ResPt = hs2D.getHistogram("DNN_MET/Resolution_pT", treeName);
-				ResPhi = hs2D.getHistogram("DNN_MET/Resolution_dPhi", treeName);
-				bothSel = hs_nW.getHistogram("PtNuNu/bothSel_nW", treeName);
-				genSel = hs_nW.getHistogram("PtNuNu/genSel_nW", treeName);
+				RecoGen = *hs2D.getHistogram("DNN_MET/RecoGen", treeName);
+				ResPt = *hs2D.getHistogram("DNN_MET/Resolution_pT", treeName);
+				ResPhi = *hs2D.getHistogram("DNN_MET/Resolution_dPhi", treeName);
+				bothSel = *hs_nW.getHistogram("PtNuNu/bothSel_nW", treeName);
+				genSel = *hs_nW.getHistogram("PtNuNu/genSel_nW", treeName);
 			} else {
-				RecoGen = hs2D.getHistogram("PuppiMET/RecoGen", treeName);
-				ResPt = hs2D.getHistogram("PuppiMET/Resolution_pT", treeName);
-				ResPhi = hs2D.getHistogram("PuppiMET/Resolution_dPhi", treeName);
-				bothSel = hs_nW.getHistogram("PtNuNu/bothSel_nW", treeName);
-				genSel = hs_nW.getHistogram("PtNuNu/genSel_nW", treeName);
+				RecoGen = *hs2D.getHistogram("PuppiMET/RecoGen", treeName);
+				ResPt = *hs2D.getHistogram("PuppiMET/Resolution_pT", treeName);
+				ResPhi = *hs2D.getHistogram("PuppiMET/Resolution_dPhi", treeName);
+				bothSel = *hs_nW.getHistogram("PtNuNu/bothSel_nW", treeName);
+				genSel = *hs_nW.getHistogram("PtNuNu/genSel_nW", treeName);
 			}	
 			
 			//used range in both dimensions
@@ -1384,20 +1441,20 @@ int run()
 					break;
 				}
 				std::cout<<"-----------------------------------------------------------------" <<std::endl;
-				std::cout<<"Begin while, cB=" + std::to_string(currentBin) + ", i=" + std::to_string(i)+ ", m=" + std::to_string(m)+ ", n=" + std::to_string(n) + ", #Bins=" + std::to_string(RecoGen->GetNbinsX())<<std::endl;
+				std::cout<<"Begin while, cB=" + std::to_string(currentBin) + ", i=" + std::to_string(i)+ ", m=" + std::to_string(m)+ ", n=" + std::to_string(n) + ", #Bins=" + std::to_string(RecoGen.GetNbinsX())<<std::endl;
 				if(is_logging){ 
-					logger << "Start cycle with properties currentBin=" + std::to_string(currentBin) + ", i=" + std::to_string(i) + ", m=" + std::to_string(m) + ", n=" + std::to_string(n) + ", Number of dPhi Bins=" + std::to_string(RecoGen->GetNbinsX()/i) + "\n";
+					logger << "Start cycle with properties currentBin=" + std::to_string(currentBin) + ", i=" + std::to_string(i) + ", m=" + std::to_string(m) + ", n=" + std::to_string(n) + ", Number of dPhi Bins=" + std::to_string(RecoGen.GetNbinsX()/i) + "\n";
 					logger << getPtEdges(edges_pT);
 					logger << getPhiEdges(edges_dPhi);
 					logger << "-> Run getNextDirection( ... )\t";
 				}
 				
 				//Make sure each Hist has a unique title in order to prevent replacing hists due to missing hist names
-				RecoGen->SetTitle(("RG" + std::to_string(counter)).c_str());
-				ResPt->SetTitle(("ResPt" + std::to_string(counter)).c_str());
-				ResPhi->SetTitle(("ResPhi" + std::to_string(counter)).c_str());
-				bothSel->SetTitle(("bS" + std::to_string(counter)).c_str());
-				genSel->SetTitle(("gS" + std::to_string(counter)).c_str());
+				RecoGen.SetTitle(("RG" + std::to_string(counter)).c_str());
+				ResPt.SetTitle(("ResPt" + std::to_string(counter)).c_str());
+				ResPhi.SetTitle(("ResPhi" + std::to_string(counter)).c_str());
+				bothSel.SetTitle(("bS" + std::to_string(counter)).c_str());
+				genSel.SetTitle(("gS" + std::to_string(counter)).c_str());
 				//Calculate the binWidths for current bins and candidates for a merge (always check if it's the last bin)
 				float binWidthPt = std::abs(edges_pT.at(n) - edges_pT.at(n-1));
 				float binWidthPhi = std::abs(edges_dPhi.at(m) - edges_dPhi.at(m-1));
@@ -1405,17 +1462,17 @@ int run()
 				float binWidthPhi_PHI=0;
 				if (not (n==i)) binWidthPt_PT = std::abs(edges_pT.at(n+1) - edges_pT.at(n-1));
 				else binWidthPt_PT = std::abs(edges_pT.at(n) - edges_pT.at(n-2));
-				if (m != RecoGen->GetNbinsX()/i) binWidthPhi_PHI = std::abs(edges_dPhi.at(m+1) - edges_dPhi.at(m-1));
+				if (m != RecoGen.GetNbinsX()/i) binWidthPhi_PHI = std::abs(edges_dPhi.at(m+1) - edges_dPhi.at(m-1));
 				else binWidthPhi_PHI = std::abs(edges_dPhi.at(m) - edges_dPhi.at(m-2));
 				
-				int nextDir = getNextDirection(RecoGen, ResPt, ResPhi, bothSel, genSel, currentBin, i, p_min, s_min, N_min, eff_min, binWidthPt, binWidthPhi, binWidthPt_PT, binWidthPhi_PHI, rangePt, rangePhi, MoI, logger, is_logging, consider_cut, merge_Overflow, alwaysConsiderMoI, lastBinMergeRule, counter);
+				int nextDir = getNextDirection(&RecoGen, &ResPt, &ResPhi, &bothSel, &genSel, currentBin, i, p_min, s_min, N_min, eff_min, binWidthPt, binWidthPhi, binWidthPt_PT, binWidthPhi_PHI, rangePt, rangePhi, MoI, logger, is_logging, consider_cut, merge_Overflow, alwaysConsiderMoI, lastBinMergeRule, counter);
 				
 				std::cout<<"nextDir=" + std::to_string(nextDir)<<std::endl;
 				std::cout<<"-----------------------------------------------------------------" <<std::endl;
 				//Case: Current bin fulfilles all requirements
 				if (nextDir == -1) {
 					//Case: It's the very last bin
-					if (currentBin == RecoGen->GetNbinsX()) {
+					if (currentBin == RecoGen.GetNbinsX()) {
 						if(is_logging) logger << "Break, all bins are processed.";
 						break;
 					}
@@ -1432,7 +1489,7 @@ int run()
 						}
 					} else {
 						//Case: The checked bin was the last dPhi bin; else: It was not the last bin
-						if (m == RecoGen->GetNbinsX()/i) {
+						if (m == RecoGen.GetNbinsX()/i) {
 							//Set the dPhi index to one and increment the pT index
 							n++;
 							m=1;
@@ -1449,26 +1506,36 @@ int run()
 				}
 				
 				//Case: Merging in pT
-				if (nextDir == 0 or nextDir == 1) {
+				else if (nextDir == 0 or nextDir == 1) {
 					//Merge and calculate the indices that way that the additional step for nextDir=1 is not yet taken into account
 					//Check if it's the last pT bin
 					if (n != i) {
-						RecoGen = (TH2D*)mergePtRecoGen(*RecoGen, i, n).Clone(("RG" + std::to_string(counter)).c_str());
-						ResPt = (TH2D*)mergePtRes(*ResPt, i, n).Clone(("ResPt" + std::to_string(counter)).c_str());
-						ResPhi = (TH2D*)mergePtRes(*ResPhi, i, n).Clone(("ResPhi" + std::to_string(counter)).c_str());
-						bothSel = (TH1D*)mergePt1D(*bothSel, i, n).Clone(("bS" + std::to_string(counter)).c_str());
-						genSel = (TH1D*)mergePt1D(*genSel, i, n).Clone(("gS" + std::to_string(counter)).c_str());
+						// ~RecoGen = (TH2D*)mergePtRecoGen(*RecoGen, i, n).Clone(("RG" + std::to_string(counter)).c_str());
+						// ~ResPt = (TH2D*)mergePtRes(*ResPt, i, n).Clone(("ResPt" + std::to_string(counter)).c_str());
+						// ~ResPhi = (TH2D*)mergePtRes(*ResPhi, i, n).Clone(("ResPhi" + std::to_string(counter)).c_str());
+						// ~bothSel = (TH1D*)mergePt1D(*bothSel, i, n).Clone(("bS" + std::to_string(counter)).c_str());
+						// ~genSel = (TH1D*)mergePt1D(*genSel, i, n).Clone(("gS" + std::to_string(counter)).c_str());
+						RecoGen = mergePtRecoGen(RecoGen, i, n);
+						ResPt = mergePtRes(ResPt, i, n);
+						ResPhi = mergePtRes(ResPhi, i, n);
+						bothSel = mergePt1D(bothSel, i, n);
+						genSel = mergePt1D(genSel, i, n);
 
 						edges_pT.erase(edges_pT.begin() + n);
 						//Correct the currentBin by number of merged pT bins in the previous dPhi bins
 						currentBin = currentBin - m + 1;
 						
 					} else {
-						RecoGen = (TH2D*)mergePtRecoGen(*RecoGen, i, n-1).Clone(("RG" + std::to_string(counter)).c_str());
-						ResPt = (TH2D*)mergePtRes(*ResPt, i, n-1).Clone(("ResPt" + std::to_string(counter)).c_str());
-						ResPhi = (TH2D*)mergePtRes(*ResPhi, i, n-1).Clone(("ResPhi" + std::to_string(counter)).c_str());
-						bothSel = (TH1D*)mergePt1D(*bothSel, i, n-1).Clone(("bS" + std::to_string(counter)).c_str());
-						genSel = (TH1D*)mergePt1D(*genSel, i, n-1).Clone(("gS" + std::to_string(counter)).c_str());
+						// ~RecoGen = (TH2D*)mergePtRecoGen(*RecoGen, i, n-1).Clone(("RG" + std::to_string(counter)).c_str());
+						// ~ResPt = (TH2D*)mergePtRes(*ResPt, i, n-1).Clone(("ResPt" + std::to_string(counter)).c_str());
+						// ~ResPhi = (TH2D*)mergePtRes(*ResPhi, i, n-1).Clone(("ResPhi" + std::to_string(counter)).c_str());
+						// ~bothSel = (TH1D*)mergePt1D(*bothSel, i, n-1).Clone(("bS" + std::to_string(counter)).c_str());
+						// ~genSel = (TH1D*)mergePt1D(*genSel, i, n-1).Clone(("gS" + std::to_string(counter)).c_str());
+						RecoGen = mergePtRecoGen(RecoGen, i, n-1);
+						ResPt = mergePtRes(ResPt, i, n-1);
+						ResPhi = mergePtRes(ResPhi, i, n-1);
+						bothSel = mergePt1D(bothSel, i, n-1);
+						genSel = mergePt1D(genSel, i, n-1);
 						
 						edges_pT.erase(edges_pT.end()-2);
 						//Correct the currentBin by number of merged pT bins in the previous and current dPhi bin and decrement the pT bin index
@@ -1480,7 +1547,7 @@ int run()
 					//Here, calculate the indices for the case that the current bin is ok. If the current bin is the last one, nothing has to be done here, 
 					if (nextDir == 1) {
 						//In case that the current bin is now the last bin, the algoritm ends because getNextDirection(...) already confirmed that this bin is ok
-						if (currentBin == RecoGen->GetNbinsX()) {
+						if (currentBin == RecoGen.GetNbinsX()) {
 							if(is_logging) logger << "Break, all bins are processed.";
 							break;
 						} 
@@ -1498,7 +1565,7 @@ int run()
 							}
 						} else {
 							//Case: The checked bin was the last dPhi bin; else: It was not the last bin
-							if (m == RecoGen->GetNbinsX()/i) {
+							if (m == RecoGen.GetNbinsX()/i) {
 								//Set the dPhi index to one and increment the pT index
 								n++;
 								m=1;
@@ -1516,24 +1583,34 @@ int run()
 				}
 				
 				//Case: Merging in dPhi
-				if (nextDir == 10 or nextDir == 11) {
+				else if (nextDir == 10 or nextDir == 11) {
 					//Merge and calculate the indices that way that the additional step for nextDir=10 is not yet taken into account
 					//Check if it's the last dPhi bin
-					if (m != RecoGen->GetNbinsX()/i) {
-						RecoGen = (TH2D*)mergePhiRecoGen(*RecoGen, i, m).Clone(("RG" + std::to_string(counter)).c_str());
-						ResPt = (TH2D*)mergePhiRes(*ResPt, i, m).Clone(("ResPt" + std::to_string(counter)).c_str());
-						ResPhi = (TH2D*)mergePhiRes(*ResPhi, i, m).Clone(("ResPhi" + std::to_string(counter)).c_str());
-						bothSel = (TH1D*)mergePhi1D(*bothSel, i, m).Clone(("bS" + std::to_string(counter)).c_str());
-						genSel = (TH1D*)mergePhi1D(*genSel, i, m).Clone(("gS" + std::to_string(counter)).c_str());
+					if (m != RecoGen.GetNbinsX()/i) {
+						// ~RecoGen = (TH2D*)mergePhiRecoGen(*RecoGen, i, m).Clone(("RG" + std::to_string(counter)).c_str());
+						// ~ResPt = (TH2D*)mergePhiRes(*ResPt, i, m).Clone(("ResPt" + std::to_string(counter)).c_str());
+						// ~ResPhi = (TH2D*)mergePhiRes(*ResPhi, i, m).Clone(("ResPhi" + std::to_string(counter)).c_str());
+						// ~bothSel = (TH1D*)mergePhi1D(*bothSel, i, m).Clone(("bS" + std::to_string(counter)).c_str());
+						// ~genSel = (TH1D*)mergePhi1D(*genSel, i, m).Clone(("gS" + std::to_string(counter)).c_str());
+						RecoGen = mergePhiRecoGen(RecoGen, i, m);
+						ResPt = mergePhiRes(ResPt, i, m);
+						ResPhi = mergePhiRes(ResPhi, i, m);
+						bothSel = mergePhi1D(bothSel, i, m);
+						genSel = mergePhi1D(genSel, i, m);
 
 						edges_dPhi.erase(edges_dPhi.begin() + m);
 						//No changes in the indices
 					} else {
-						RecoGen = (TH2D*)mergePhiRecoGen(*RecoGen, i, m-1).Clone(("RG" + std::to_string(counter)).c_str());
-						ResPt = (TH2D*)mergePhiRes(*ResPt, i, m-1).Clone(("ResPt" + std::to_string(counter)).c_str());
-						ResPhi = (TH2D*)mergePhiRes(*ResPhi, i, m-1).Clone(("ResPhi" + std::to_string(counter)).c_str());
-						bothSel = (TH1D*)mergePhi1D(*bothSel, i, m-1).Clone(("bS" + std::to_string(counter)).c_str());
-						genSel = (TH1D*)mergePhi1D(*genSel, i, m-1).Clone(("gS" + std::to_string(counter)).c_str());
+						// ~RecoGen = (TH2D*)mergePhiRecoGen(*RecoGen, i, m-1).Clone(("RG" + std::to_string(counter)).c_str());
+						// ~ResPt = (TH2D*)mergePhiRes(*ResPt, i, m-1).Clone(("ResPt" + std::to_string(counter)).c_str());
+						// ~ResPhi = (TH2D*)mergePhiRes(*ResPhi, i, m-1).Clone(("ResPhi" + std::to_string(counter)).c_str());
+						// ~bothSel = (TH1D*)mergePhi1D(*bothSel, i, m-1).Clone(("bS" + std::to_string(counter)).c_str());
+						// ~genSel = (TH1D*)mergePhi1D(*genSel, i, m-1).Clone(("gS" + std::to_string(counter)).c_str());
+						RecoGen = mergePhiRecoGen(RecoGen, i, m-1);
+						ResPt = mergePhiRes(ResPt, i, m-1);
+						ResPhi = mergePhiRes(ResPhi, i, m-1);
+						bothSel = mergePhi1D(bothSel, i, m-1);
+						genSel = mergePhi1D(genSel, i, m-1);
 						
 						edges_dPhi.erase(edges_dPhi.end()-2);
 						//currentBin is shifted left by the number of pT bins and the current dPhi bin index is decremented.
@@ -1543,7 +1620,7 @@ int run()
 					//Here, calculate the indices for the case that the current bin is ok. If the current bin is the last one, nothing has to be done here, 
 					if (nextDir == 1) {
 						//In case that the current bin is now the last bin, the algoritm ends because getNextDirection(...) already confirmed that this bin is ok
-						if (currentBin == RecoGen->GetNbinsX()) {
+						if (currentBin == RecoGen.GetNbinsX()) {
 							if(is_logging) logger << "Break, all bins are processed.";
 							break;
 						} 
@@ -1560,7 +1637,7 @@ int run()
 							}
 						} else {
 							//Case: The checked bin was the last dPhi bin; else: It was not the last bin
-							if (m == RecoGen->GetNbinsX()/i) {
+							if (m == RecoGen.GetNbinsX()/i) {
 								//Set the dPhi index to one and increment the pT index
 								n++;
 								m=1;
@@ -1586,28 +1663,28 @@ int run()
 				std::reverse(edges_pT.begin(),edges_pT.end()); 
 				std::reverse(edges_dPhi.begin(),edges_dPhi.end()); 
 				
-				TH2D* revRecoGen = (TH2D*) RecoGen->Clone("RevRecogen");
-				TH2D* revResPt = (TH2D*) ResPt->Clone("RevResPt");
-				TH2D* revResPhi = (TH2D*) ResPhi->Clone("RevResPhi");
-				TH1D* revGenSel = (TH1D*) genSel->Clone("RevGenSel");
-				TH1D* revBothSel = (TH1D*) bothSel->Clone("RevBothSel");
+				TH2D revRecoGen = RecoGen;
+				TH2D revResPt = ResPt;
+				TH2D revResPhi = ResPhi;
+				TH1D revGenSel = genSel;
+				TH1D revBothSel = bothSel;
 				
-				int Nbins = RecoGen->GetNbinsX();
+				int Nbins = RecoGen.GetNbinsX();
 				for (int j=1; j<=Nbins; j++) {
 					for (int k=1; k<=Nbins; k++) {
-						revRecoGen->SetBinContent(Nbins - j+1 , Nbins - k+1, RecoGen->GetBinContent(j, k));
-						revRecoGen->SetBinError(Nbins - j+1 , Nbins - k+1, RecoGen->GetBinError(j, k));
+						revRecoGen.SetBinContent(Nbins - j+1 , Nbins - k+1, RecoGen.GetBinContent(j, k));
+						revRecoGen.SetBinError(Nbins - j+1 , Nbins - k+1, RecoGen.GetBinError(j, k));
 					}
-					for (int k=1; k<=ResPt->GetNbinsY(); k++) {
-						revResPt->SetBinContent(Nbins - j+1 , k, ResPt->GetBinContent(j, k));
-						revResPhi->SetBinContent(Nbins - j+1 , k, ResPhi->GetBinContent(j, k));
-						revResPt->SetBinError(Nbins - j+1 , k, ResPt->GetBinContent(j, k));
-						revResPhi->SetBinError(Nbins - j+1 , k, ResPhi->GetBinContent(j, k));
+					for (int k=1; k<=ResPt.GetNbinsY(); k++) {
+						revResPt.SetBinContent(Nbins - j+1 , k, ResPt.GetBinContent(j, k));
+						revResPhi.SetBinContent(Nbins - j+1 , k, ResPhi.GetBinContent(j, k));
+						revResPt.SetBinError(Nbins - j+1 , k, ResPt.GetBinContent(j, k));
+						revResPhi.SetBinError(Nbins - j+1 , k, ResPhi.GetBinContent(j, k));
 					}
-					revGenSel->SetBinContent(Nbins - j+1, genSel->GetBinContent(j));
-					revBothSel->SetBinContent(Nbins - j+1, bothSel->GetBinContent(j));
-					revGenSel->SetBinError(Nbins - j+1, genSel->GetBinError(j));
-					revBothSel->SetBinError(Nbins - j+1, bothSel->GetBinError(j));
+					revGenSel.SetBinContent(Nbins - j+1, genSel.GetBinContent(j));
+					revBothSel.SetBinContent(Nbins - j+1, bothSel.GetBinContent(j));
+					revGenSel.SetBinError(Nbins - j+1, genSel.GetBinError(j));
+					revBothSel.SetBinError(Nbins - j+1, bothSel.GetBinError(j));
 				}
 				RecoGen = revRecoGen;
 				ResPt = revResPt;
@@ -1635,12 +1712,12 @@ int run()
 				
 			
 			PlotStatistics(&N_recRecLevel, edges_pT, edges_dPhi, false, true, dir.ReplaceAll("Logs/", "Plots/"), fileAppendix + "stat", &saver);
-			PlotRMS(&N_recRecLevel, ResPt, edges_pT, edges_dPhi, false, true ,true, dir.ReplaceAll("Logs/", "Plots/"), fileAppendix + "RMSpT", &saver);
-			PlotRMS(&N_recRecLevel, ResPhi, edges_pT, edges_dPhi, false, false ,true, dir.ReplaceAll("Logs/", "Plots/"), fileAppendix + "RMSphi", &saver);
-			PlotStabPurEff(&N_recRecLevel, RecoGen, bothSel, genSel, edges_pT, edges_dPhi, false, true, dir.ReplaceAll("Logs/", "Plots/"), fileAppendix + "SPE", &saver);
+			PlotRMS(&N_recRecLevel, &ResPt, edges_pT, edges_dPhi, false, true ,true, dir.ReplaceAll("Logs/", "Plots/"), fileAppendix + "RMSpT", &saver);
+			PlotRMS(&N_recRecLevel, &ResPhi, edges_pT, edges_dPhi, false, false ,true, dir.ReplaceAll("Logs/", "Plots/"), fileAppendix + "RMSphi", &saver);
+			PlotStabPurEff(&N_recRecLevel, &RecoGen, &bothSel, &genSel, edges_pT, edges_dPhi, false, true, dir.ReplaceAll("Logs/", "Plots/"), fileAppendix + "SPE", &saver);
 			
 			//Check if all bins fulfil the requirements
-			float stabMin = calculateStability(RecoGen).GetBinContent(calculateStability(RecoGen).GetMinimumBin());
+			float stabMin = calculateStability(&RecoGen).GetBinContent(calculateStability(&RecoGen).GetMinimumBin());
 			if (stabMin >= s_min) {
 				if(is_logging) logger << "Stability overall fulfilled. Minimal Stability=" + std::to_string(stabMin) + "\n";
 			} else {
@@ -1648,7 +1725,7 @@ int run()
 				checksOK = false;
 			}
 			
-			float purMin = calculatePurity(RecoGen).GetBinContent(calculatePurity(RecoGen).GetMinimumBin());
+			float purMin = calculatePurity(&RecoGen).GetBinContent(calculatePurity(&RecoGen).GetMinimumBin());
 			if (purMin >= p_min) {
 				if(is_logging) logger << "Purity overall fulfilled. Minimal Purity=" + std::to_string(purMin) + "\n";
 			} else {
@@ -1656,7 +1733,7 @@ int run()
 				checksOK = false;
 			}
 			
-			float effMin = calculateEfficiency(bothSel, genSel).GetBinContent(calculateEfficiency(bothSel, genSel).GetMinimumBin());
+			float effMin = calculateEfficiency(&bothSel, &genSel).GetBinContent(calculateEfficiency(&bothSel, &genSel).GetMinimumBin());
 			if (effMin >= eff_min) {
 				if(is_logging) logger << "Efficiency overall fulfilled. Minimal Efficiency=" + std::to_string(effMin) + "\n";
 			} else {
@@ -1664,7 +1741,7 @@ int run()
 				checksOK = false;
 			}
 			
-			float Nmin = RecoGen->ProjectionY("yProjCheck", 1, RecoGen->GetNbinsY())->GetBinContent(RecoGen->ProjectionY("yProjC", 1, RecoGen->GetNbinsY())->GetMinimumBin());
+			float Nmin = RecoGen.ProjectionY("yProjCheck", 1, RecoGen.GetNbinsY())->GetBinContent(RecoGen.ProjectionY("yProjC", 1, RecoGen.GetNbinsY())->GetMinimumBin());
 			if (Nmin >= N_min) {
 				if(is_logging) logger << "N_rec overall fulfilled. Minimal N_rec=" + std::to_string(Nmin) + "\n";
 			} else {
@@ -1673,17 +1750,17 @@ int run()
 			}
 			
 			bool RMSveto = false;
-			for (int j=1; j <= ResPt->GetNbinsX(); j++) {
+			for (int j=1; j <= ResPt.GetNbinsX(); j++) {
 				//Use new variables for the pT and dPhi bin
 				int pTbin = ((j-1) % i) + 1;
 				int phibin = floor( (j-1)/i ) + 1;
 				float widthPt = edges_pT.at(pTbin) - edges_pT.at(pTbin -1);
 				float widthPhi = edges_dPhi.at(phibin) - edges_dPhi.at(phibin -1);
-				if (widthPt < ResPt->GetBinContent(j)) {
+				if (widthPt < ResPt.GetBinContent(j)) {
 					if(is_logging) logger << "RMS pT too great at bin j=" + std::to_string(j) + "\n";
 					RMSveto = true;
 				}
-				if (widthPhi < ResPhi->GetBinContent(j)) {
+				if (widthPhi < ResPhi.GetBinContent(j)) {
 					if(is_logging) logger << "RMS dPhi too great at bin j=" + std::to_string(j) + "\n";
 					RMSveto = true;
 				}
@@ -1703,7 +1780,7 @@ int run()
 			
 			
 			//Ploting BSM, SBR, Ratio
-			int Nbins = RecoGen->GetNbinsX();
+			int Nbins = RecoGen.GetNbinsX();
 			
 			std::map<TString, TString> le { {"DrellYan_NLO", "DY"}, {"SingleTop", "Single t"}, {"TTbar_diLepton", "t#bar{t} ll"}, {"TTbar_diLepton_tau", "t#bar{t} ll#tau" }, {"TTbar_hadronic", "t#bar{t} hadronic"}, {"TTbar_singleLepton", "t#bar{t} single l"}, {"ttG", "ttG"}, {"ttW", "ttW"}, {"ttZ", "ttZ"}, {"WJetsToLNu", "W+jets"}, {"WW", "WW"}, {"WZ", "WZ"}, {"ZZ", "ZZ"}, {"ttX", "ttX"}, {"Diboson", "Diboson"}, {"tt other", "t#bar{t} other"}, {"T1tttt_1200_800", "T1tttt_1200_800"}, {"T2tt_650_350", "T2tt_650_350"}, {"DM_scalar_1_200", "DM_scalar_1_200"}};
 			std::vector<TString> SMtrees = {"TTbar_hadronic","ZZ", "WZ", "WW", "WJetsToLNu", "ttW", "ttZ", "ttG", "TTbar_singleLepton", "SingleTop", "DrellYan_NLO", "TTbar_diLepton_tau", "TTbar_diLepton"};

@@ -232,8 +232,8 @@ void run()
    // ~bool forward = false;
    bool forward = true;
    bool consider_cut = true;
-   bool DNN = true;
-   // ~bool DNN = false;
+   // ~bool DNN = true;
+   bool DNN = false;
       
    //Calculate Edges of the initial binning and the RMS plot
    std::vector<float> edges;

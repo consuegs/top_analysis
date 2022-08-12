@@ -833,7 +833,8 @@ void hist::setMinimum(TH1& h,std::vector<TH1F> hists,float multiplier, bool allo
 
 void hist::sqrtHist(TH1& h)
 {
-   for (int bin=0; bin<=h.GetNcells(); ++bin) {
+   // ~for (int bin=0; bin<=h.GetNcells(); ++bin) {
+   for (int bin=0; bin<=h.GetNbinsX(); ++bin) {
       float content = h.GetBinContent(bin);
       if (content >= 0){
          h.SetBinContent(bin, sqrt(content));
@@ -847,9 +848,10 @@ void hist::sqrtHist(TH1& h)
    }
 }
 
-void hist::addQuadr(TH1F &h1, TH1F const &h2)
+void hist::addQuadr(TH1F &h1, TH1F const &h2, float const &c1)
 {
    TH1F add(h2);
+   add.Scale(c1);
    h1.Multiply(&h1);
    add.Multiply(&add);
    h1.Add(&add);

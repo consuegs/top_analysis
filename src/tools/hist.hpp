@@ -188,7 +188,7 @@ namespace hist
    void mergeOverflow(TH1& h, bool includeUnderflow=true);
    void mergeOverflow(TH2& h, bool includeUnderflow=true);
    void sqrtHist(TH1& h);
-   void addQuadr(TH1F &h1, TH1F const &h2);
+   void addQuadr(TH1F &h1, TH1F const &h2, float const &c1=1.0);
 
    void setMaximum(TH1& h,std::vector<TH1F> hists,float multiplier=1.1);
    void setMinimum(TH1& h,std::vector<TH1F> hists,float multiplier=0.9,bool allowNegative=true);
