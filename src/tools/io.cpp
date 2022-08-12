@@ -65,11 +65,11 @@ io::RootFileSaver::RootFileSaver(TString rootFileName,TString internalPath,bool 
    file_ = new TFile(fPath_,option);
 }
 
-// ~io::RootFileSaver::~RootFileSaver()
-// ~{
-   // ~file_->Close();
-   // ~delete file_;
-// ~}
+io::RootFileSaver::~RootFileSaver()
+{
+   file_->Close();
+   delete file_;
+}
 
 void io::RootFileSaver::closeFile() const
 {
