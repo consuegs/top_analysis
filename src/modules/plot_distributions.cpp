@@ -322,12 +322,14 @@ void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systH
          float sampleYield = temp_hist->GetBinContent(6);
          totalMap[sample.ReplaceAll("_","\\_")] += sampleYield;
          if(!isMCtotal){
-            std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<sampleYield<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
+            // ~std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<sampleYield<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
+            std::cout<<std::fixed<<sample<<"&"<<sampleYield<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
          }
          else{
             TString yieldUnc = TString::Format("$%.1f^{+%.1f}_{-%.1f}$",sampleYield,mcYield_up,mcYield_down);
             std::cout<<"\\hline"<<std::endl;
-            std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<yieldUnc<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
+            // ~std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<yieldUnc<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
+            std::cout<<std::fixed<<sample<<"&"<<yieldUnc<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
          }
          // ~if (sample=="MC") std::cout<<mcYield_down<<"   "<<mcYield_up<<std::endl;
          // ~if (sample=="MC") std::cout<<mcYield_down/mcYield*100<<"   "<<mcYield_up/mcYield*100<<std::endl;
@@ -512,6 +514,7 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    auto hists_SM=hs->getHistograms(loc,{"TTbar_diLepton"});
    TH1F axis=*(hists_SM[0]);
    axis.SetStats(0);
+   axis.SetYTitle("Events/Bin");
    axis.Draw("same axis");
    TLegend leg=le.buildLegend(.42,.7,1-(gPad->GetRightMargin()+0.02),-1,2);
    leg.Draw();
@@ -569,14 +572,15 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    TGraphAsymmErrors expDataStatRatio = hist::getErrorGraph(&ratio_mc_expDataStatUp,&ratio_mc_expDataStatDown,&ratio_mc,false);
    
    if(sPresel.Contains("cutflow")){    // set cutflow specific axis labels
-      ratio_mc.GetXaxis()->SetBinLabel(1,"DiLepton");
+      ratio_mc.GetXaxis()->SetBinLabel(1,"diLepton");
       ratio_mc.GetXaxis()->SetBinLabel(2,"mll");
       ratio_mc.GetXaxis()->SetBinLabel(3,"jets");
       ratio_mc.GetXaxis()->SetBinLabel(4,"met");
       ratio_mc.GetXaxis()->SetBinLabel(5,"btag");
-      ratio_mc.GetXaxis()->SetBinLabel(6,"ScaleFactors");
+      ratio_mc.GetXaxis()->SetBinLabel(6,"triggerSF");
       // ~ratio_mc.GetXaxis()->SetBinLabel(7,"(addLepton veto)");
       ratio_mc.GetXaxis()->SetRangeUser(0.5,6.5);
+      ratio_mc.GetXaxis()->SetLabelOffset(0.03);
    }
    
    ratio_mc.GetYaxis()->SetTitleOffset(0.45);
@@ -587,6 +591,7 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    ratio_mc.SetMaximum(1.35);
    ratio_mc.SetMinimum(0.65);
    totalUncGraphRatio.SetFillColor(kGray);
+   totalUncGraphRatio.SetLineWidth(0);
    expDataStatRatio.SetFillColor(kBlue);
    systGraphRatio.SetFillColor(kGray+3);
    systGraphRatio.SetFillStyle(3004);
@@ -613,7 +618,7 @@ void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histogram
    le_low.append(totalUncGraphRatio,"#sigma_{tot.}","f");
    le_low.append(systGraphRatio,"#sigma_{syst.}","f");
    if(plotStatUncExpData) le_low.append(expDataStatRatio,"#sigma_{stat.(exp. data)}","f");
-   TLegend leg_low=le_low.buildLegend(.2,.8,0.5,0.95,2);
+   TLegend leg_low=le_low.buildLegend(.5,.8,0.8,0.95,2);
    leg_low.Draw();
       
    saver.save(sp_can,loc,false,true);
@@ -749,7 +754,8 @@ void run()
    //std::vector<TString> systToPlot = {"Nominal","LUMI_UP","LUMI_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESRelativeSample_DOWN"};
-   // ~std::vector<TString> systToPlot = {"Nominal","JESAbsoluteYear_UP"};
+   // ~std::vector<TString> systToPlot = {"Nominal","JESBBEC1Year_UP","JESBBEC1Year_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","JESBBEC1Year_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESUserDefinedHEM1516_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal"};
    
@@ -771,7 +777,6 @@ void run()
    }
    for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
-         /*
          // ~vecDistr.push_back({selection+channel,"Lep_e_pt",0.,600.,50});
          // ~vecDistr.push_back({selection+channel,"Lep_mu_pt",0.,600.,50});
          vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,30});
@@ -856,7 +861,6 @@ void run()
          // ~vecDistr.push_back({selection+channel,"mjj",0.,2000.,50});
          // ~vecDistr.push_back({selection+channel,"Lep1_pt*cos(Lep1_phi)",-250,250,25});
          // ~vecDistr.push_back({"baseline_GOF2D"+channel,"PuppiMET_xy*sin(PuppiMET_xy_phi)_VS_MET_xy*sin(MET_xy_phi)",0.5,36.5,36});
-         */
       }
    }
    
