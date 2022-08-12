@@ -37,18 +37,18 @@ hist::Histograms<TH2F> defineHistograms2D(std::vector<TString> const &datasets){
    hist::Histograms<TH2F> hs2D(datasets);
       
    for(TString channel:{"/ee","/mumu","/emu","/all"}){
-      hs2D.addHist(channel+"/GenMetDiffMETRel_dPhiMETLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-      hs2D.addHist(channel+"/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-      hs2D.addHist(channel+"/genMet_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);genmet",20,0,3.14,6000,0,1000);
-      hs2D.addHist(channel+"/leadTopPT_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);p_{T}(lead. top)",20,0,3.14,6000,0,1000);
+      hs2D.addHist(channel+"/GenMetDiffMETRel_dPhiMETLep"   ,";min[#Delta#phi(p_{T}^{miss},l)];|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
+      hs2D.addHist(channel+"/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";min[#Delta#phi(p_{T}^{miss},l)];|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
+      hs2D.addHist(channel+"/genMet_dPhiMETLep_Puppi"   ,";min[#Delta#phi(p_{T}^{miss},l)];genmet",20,0,3.14,6000,0,1000);
+      hs2D.addHist(channel+"/leadTopPT_dPhiMETLep_Puppi"   ,";min[#Delta#phi(p_{T}^{miss},l)];p_{T}(lead. top)",20,0,3.14,6000,0,1000);
       
-      hs2D.addHist("baseline_met120"+channel+"/GenMetDiffMETRel_dPhiMETLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-      hs2D.addHist("baseline_met120"+channel+"/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-      hs2D.addHist("baseline_met120"+channel+"/genMet_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);genmet",20,0,3.14,6000,0,1000);
-      hs2D.addHist("baseline_met120"+channel+"/leadTopPT_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);p_{T}(lead. top)",20,0,3.14,6000,0,1000);
+      hs2D.addHist("baseline_met120"+channel+"/GenMetDiffMETRel_dPhiMETLep"   ,";min[#Delta#phi(p_{T}^{miss},l)];|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
+      hs2D.addHist("baseline_met120"+channel+"/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";min[#Delta#phi(p_{T}^{miss},l)];|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
+      hs2D.addHist("baseline_met120"+channel+"/genMet_dPhiMETLep_Puppi"   ,";min[#Delta#phi(p_{T}^{miss},l)];genmet",20,0,3.14,6000,0,1000);
+      hs2D.addHist("baseline_met120"+channel+"/leadTopPT_dPhiMETLep_Puppi"   ,";min[#Delta#phi(p_{T}^{miss},l)];p_{T}(lead. top)",20,0,3.14,6000,0,1000);
       
-      hs2D.addHist("baseline_genmet120"+channel+"/GenMetDiffMETRel_dPhiMETLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
-      hs2D.addHist("baseline_genmet120"+channel+"/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
+      hs2D.addHist("baseline_genmet120"+channel+"/GenMetDiffMETRel_dPhiMETLep"   ,";min[#Delta#phi(p_{T}^{miss},l)];|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
+      hs2D.addHist("baseline_genmet120"+channel+"/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";min[#Delta#phi(p_{T}^{miss},l)];|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
    }
    
    return hs2D;
