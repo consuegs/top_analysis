@@ -55,7 +55,7 @@ void run()
             
             TTbar_profile.SetStats(0);
             TTbar_profile.SetMaximum(0.1);
-            TTbar_profile.SetMinimum(-0.5);
+            TTbar_profile.SetMinimum(-0.7);
             TTbar_profile.GetYaxis()->SetTitle("mean[(genMET-p_{T}^{miss})/genMET]");
             if (var=="GenMetDiffMETRelReco_dPhiMETLep") {
                TTbar_profile.SetMaximum(0.1);
@@ -81,7 +81,7 @@ void run()
             gfx::LegendEntries le;
             le.append(TTbar_profile,"PF","pl");
             le.append(TTbar_profile_Puppi,"Puppi","pl");
-            TLegend leg=le.buildLegend(.6,.7,1-1.5*gPad->GetRightMargin(),-1,1);
+            TLegend leg=le.buildLegend(.7,.2,1-1.5*gPad->GetRightMargin(),0.3,1);
             leg.Draw();
             
             TString stringLabel ="p_{T}^{miss}>120 GeV";
