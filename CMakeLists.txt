@@ -58,6 +58,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSTANDALONE")
 ### ONNXRuntime
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lonnxruntime")
 
+# source /cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/valgrind/3.15.0/etc/profile.d/init.sh
+# valgrind --num-callers=30 --keep-debuginfo=yes --error-limit=no --suppressions=$ROOTSYS/etc/valgrind-root.supp ./run.x TUnfold_plotting > valgrind.txt 2>&1
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
 ## std::filesystem
 link_libraries(stdc++fs)
 
