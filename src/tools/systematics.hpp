@@ -308,11 +308,9 @@ namespace Systematic{
 
     /// Convert a vector of variations from string to enum
     std::vector<TString> convertVariation(const std::vector<Variation>& variations);
-
-
-
-
-
+    
+    /// Get print name for given systematic
+    TString getPrintName(const TString& type);
 
 
     /// Define for which systematics up/down variations are allowed
@@ -553,6 +551,29 @@ namespace Systematic{
         jesAbsoluteYear, jesBBEC1Year, jesEC2Year, jesHFYear, jesRelativeSample
 
     };
+    
+    const std::vector<Type> correlatedTypes{
+        bSemilep,
+        btagBCcorr, btagLcorr,
+        CR_envelope,
+        eleID,eleReco,eleScaleSmearing,
+        jesAbsolute,jesBBEC1,jesFlavorRealistic,jesRelativeBal_reg,
+        
+        jesAbsoluteMPFBias,jesAbsoluteScale,jesFlavorQCD,jesFragmentation,jesPileUpDataMC,jesPileUpPtBB,jesPileUpPtEC1,jesPileUpPtEC2,jesPileUpPtHF,jesPileUpPtRef,jesRelativeFSR,
+        jesRelativeJERHF,jesRelativePtBB,jesRelativePtHF,jesRelativeBal,jesSinglePionECAL,jesSinglePionHCAL,
+        
+        l1prefiring,
+        match,
+        meScale_envelope,
+        mtop,
+        muonIDSyst,muonIsoSyst,muonScale,
+        pdf_envelope,alphasPdf,
+        psISRScale,psFSRScale,
+        pu,
+        topPt,
+        ueTune,
+        xsec_dy,xsec_st,xsec_ttother,xsec_other
+    };
 
     /// Class for proper handling of systematic
     class Systematic{
@@ -617,6 +638,9 @@ namespace Systematic{
     
     ///Check the number of weights types systematics taking into accout that up down types require two weights
     int numberOfWeightTypes();
+    
+    /// Check if type is correlated between years
+    bool isCorrelated(const TString& type);
     
 }
 

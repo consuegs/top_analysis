@@ -57,8 +57,11 @@ void gfx::setupAxes(TAxis &x,TAxis &y)
       y.SetTitle(yt);
    }
    if (yt.Contains("BIN")){
-      if (unit.Length()==0) unit="units";
-      unit=TString::Format("/%g ",x.GetBinWidth(1))+unit;
+      // ~if (unit.Length()==0) unit="units";
+      if (unit.Length()==0) unit="/Bin";
+      else {
+         unit=TString::Format("/%g ",x.GetBinWidth(1))+unit;
+      }
       yt.ReplaceAll("BIN",unit);
       y.SetTitle(yt);
    }

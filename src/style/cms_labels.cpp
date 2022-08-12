@@ -12,7 +12,8 @@ void style::draw_lumi(TPad &pad, bool simulation, bool drawLumiText)
 {
    TString cmsText     = "CMS";
    TString extraText=Config::get().extraText;
-   TString lumiText =Config::get().lumiText;
+   // ~TString lumiText =Config::get().lumiText;
+   TString lumiText =TString::Format((Config::get().lumi>1e5)? "%.0f fb^{-1}" : "%.1f fb^{-1}",Config::get().lumi*1e-3);
    TString sqrtsText=Config::get().sqrtsText;
 
    if (simulation){

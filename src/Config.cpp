@@ -8,8 +8,8 @@
 #include <TROOT.h>
 
 //static
-Config& Config::get(){
-   static Config instance;
+Config& Config::get(std::string config_year){
+   static Config instance(config_year);
    return instance;
 }
 
@@ -17,11 +17,17 @@ void Config::setOutput(const std::string output){
    outputDirectory=output;
 }
 
-Config::Config()
+void Config::setLumi(const float newLumi){
+   lumi=newLumi;
+}
+
+Config::Config(std::string config_year)
 {
    // ~boost::property_tree::ptree pt;
    std::string cfgFile(std::string(getenv("PWD"))+"/../");
-   std::string config_year=getenv("ANALYSIS_YEAR_CONFIG");
+   if (config_year == ""){
+      config_year=getenv("ANALYSIS_YEAR_CONFIG");
+   }
    if (config_year!=NULL){
       std::cout<<"Running on year "+config_year+" (to change set ANALYSIS_YEAR_CONFIG variable)"<<std::endl;
       cfgFile+="config"+config_year+".ini";

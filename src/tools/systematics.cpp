@@ -594,7 +594,30 @@ std::vector<TString> Systematic::convertType(const std::vector<Type>& types)
     return v_type;
 }
 
-
+TString Systematic::getPrintName(const TString& type)
+{
+    if(type == "BSEMILEP") return "B semi-leptonic BR";
+    else if(type == "BTAG") return "b tagging";
+    else if(type == "CR_ENVELOPE") return "Color reconnection";
+    else if(type == "JES") return "Jet energy scale";
+    else if(type == "JER") return "Jet energy resolution";
+    else if(type == "L1PREFIRING") return "L1 prefiring";
+    else if(type == "LEPTON") return "Lepton reconstruction";
+    else if(type == "LUMI") return "Luminosity";
+    else if(type == "MATCH") return "ME-PS matching";
+    else if(type == "MESCALE_ENVELOPE") return "ME scale";
+    else if(type == "MTOP") return "Top mass";
+    else if(type == "PDF_ALPHAS") return "PDF #alpha_{s}";
+    else if(type == "PDF_ENVELOPE") return "PDF replica";
+    else if(type == "PS") return "Parton shower";
+    else if(type == "PU") return "Pileup";
+    else if(type == "TOP_PT") return "Top p_{T}";
+    else if(type == "TRIG") return "Trigger";
+    else if(type == "UETUNE") return "Underlying event";
+    else if(type == "UNCLUSTERED") return "Unclustered energy";
+    else if(type == "XSEC BKG") return "Background cross sections";
+    else return type;       // return argument if print name not definied
+}
 
 
 
@@ -892,6 +915,15 @@ int Systematic::numberOfWeightTypes(){
         }
     }
     return count;
+}
+
+bool Systematic::isCorrelated(const TString& type){
+    if(std::find(correlatedTypes.begin(), correlatedTypes.end(), convertType(type)) != correlatedTypes.end()){
+        return true;
+    }
+    else{
+        return false;
+    }
 }
     
 // --------------------- Methods of class Systematic in namespace Systematic -------------------------

@@ -12,7 +12,7 @@
                         HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v   
                         HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v     (placeholder, since other years have more triggers)
                         HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v     (placeholder, since other years have more triggers)
-                        HLT_IsoMu27_v        !!!!!!!!!Has to changed in config for new Trees, currently HLT_IsoMu24_v is used)
+                        HLT_IsoMu27_v        
                         HLT_IsoMu27_v                                     (placeholder, since other years have more triggers)
    electronMuonTriggers:
                         HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v

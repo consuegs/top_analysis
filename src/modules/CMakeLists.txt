@@ -22,6 +22,7 @@ set(MODULES
   TUnfold_binning
   TUnfold_unfolding
   TUnfold_plotting
+  TUnfold_combineYears
   # ~TUnfold_minimalTest
   # ~RooUnfold_test
   # ~plot_metSF

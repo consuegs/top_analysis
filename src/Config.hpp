@@ -15,7 +15,7 @@ class Config
 {
 public:
    boost::property_tree::ptree pt;
-   static Config& get();
+   static Config& get(std::string = "");
    float lumi;
    TString trigger_SF;
    
@@ -119,10 +119,11 @@ public:
    
    //manipulate
    void setOutput(const std::string);
+   void setLumi(const float newLumi);
    
    int getTotalFileNR(std::string const) const;
-private:
-   Config();
+
+   Config(std::string config_year="");
 };
 
 /* Singleton-like color class for automatic colors*/

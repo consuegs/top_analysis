@@ -807,10 +807,10 @@ void run()
                                           {0,0.35,0.7,1.05,1.4,2.27,3.141}
                                           ));
    distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new",     // Fabians optimized binning for DNN
-                                          {0,50,70,100,130,160,200},
-                                          {0,0.64,1.2,3.141},
-                                          {0,25,50,60,70,85,100,115,130,145,160,180,200,300},
-                                          {0,0.32,0.64,0.92,1.2,2.2,3.141}
+                                          {0,40,65,95,125,160,200},
+                                          {0,0.64,1.28,3.141},
+                                          {0,20,40,52.5,65,80,95,110,125,142.5,160,180,200,300},
+                                          {0,0.32,0.64,0.96,1.28,2.24,3.141}
                                           ));
    distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new40",     // Fabians optimized binning for DNN with 0-40
                                           {0,40,70,100,130,160,200},
@@ -824,11 +824,11 @@ void run()
                                           {0,20,40,60,80,100,120,140,160,195,230},
                                           {0,0.35,0.7,1.05,1.4,2.27,3.141}
                                           ));
-   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_DNN",     // Fabians optimized binning for DNN
-                                          {0,50,70,100,130,160,200},
-                                          {0,0.64,1.2,3.141},
-                                          {0,25,50,60,70,85,100,115,130,145,160,180,200,300},
-                                          {0,0.32,0.64,0.92,1.2,2.2,3.141}
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_DNN",     // Optimized binning for DNN
+                                          {0,40,65,95,125,160,200},
+                                          {0,0.64,1.28,3.141},
+                                          {0,20,40,52.5,65,80,95,110,125,142.5,160,180,200,300},
+                                          {0,0.32,0.64,0.96,1.28,2.24,3.141}
                                           ));
    distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new40_DNN",     // Fabians optimized binning for DNN with 0-40
                                           {0,40,70,100,130,160,200},
@@ -848,9 +848,9 @@ void run()
                                           {0,40,70,110,170,260,370},
                                           {0,20,40,55,70,90,110,140,170,215,260,315,370,435}
                                           ));
-   distribution_vec.push_back(Distribution("pTnunu_new_DNN",            // Fabians optimzed binning for DNN
-                                          {0,40,65,95,135,195,255,315,380},
-                                          {0,20,40,52.5,65,80,95,115,135,165,195,225,255,285,315,347.5,380,440}
+   distribution_vec.push_back(Distribution("pTnunu_new_DNN",            // Optimzed binning for DNN
+                                          {0,40,68,100,140,196,260,332,410},
+                                          {0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455}
                                           ));
    distribution_vec.push_back(Distribution("dPhi_DNN",
                                           {0.,0.4,0.8,1.2,1.6,2.,2.4,2.8},
