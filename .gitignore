@@ -5,6 +5,8 @@
 /input/
 /output_v01/
 /multiprocess/logs/
+/multiprocess/inputs/
 *.pyc
 /data/bTagEff*/
 /data/Trigger*
+*.txt
