@@ -167,10 +167,10 @@ const float BTagWeights::getEventWeight(const std::vector<tree::Jet>& jets, cons
    //Derive Scale Factor following 1a (https://twiki.cern.ch/twiki/bin/view/CMS/BTagSFMethods)
    for(size_t iJet=0; iJet<jets.size(); ++iJet){
       float SF = getJetSF(jets.at(iJet).hadronFlavour, jets.at(iJet).p.Eta(), jets.at(iJet).p.Pt());
-      float eff = bTagEff_.getEff(jets.at(iJet).hadronFlavour, jets.at(iJet).p.Pt(), jets.at(iJet).p.Eta(), channel);
-            
-      float bTagValue = (isDeepJet_)? jets.at(iJet).bTagDeepJet : jets.at(iJet).bTagDeepCSV;
+      float eff = bTagEff_.getEff(jets.at(iJet).hadronFlavour, jets.at(iJet).p.Pt(), jets.at(iJet).p.Eta(), channel-1);
       
+      float bTagValue = (isDeepJet_)? jets.at(iJet).bTagDeepJet : jets.at(iJet).bTagDeepCSV;
+
       if(bTagValue > WPcut_){
          P_MC = P_MC * eff;
          P_Data = P_Data * SF * eff;
