@@ -80,6 +80,7 @@ void run()
          hs.addHist(selection+channel+"/pTsumlep"   ,";p_{T}^{ll} (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/sumpTlep"   ,";%pTl1+%pTl2 (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/pTbJet"   ,";p_{T}^{b} (GeV);EventsBIN"           ,100,0,1000);
+         hs.addHist(selection+channel+"/bJet_eta"   ,";#eta^{b};EventsBIN"           ,50,-2.5,2.5);
          hs.addHist(selection+channel+"/Jet1_pt"   ,";p_{T}^{Jet1} (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/Jet2_pt"   ,";p_{T}^{Jet2} (GeV);EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/dphi_metNearLep"   ,";|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN"           ,320,0,3.2);
@@ -1352,6 +1353,7 @@ void run()
             hs.fill("baseline/"+path_cat+"/pTsumlep"                    ,(p_l1+p_l2).Pt());
             hs.fill("baseline/"+path_cat+"/sumpTlep"                    ,p_l1.Pt()+p_l2.Pt());
             hs.fill("baseline/"+path_cat+"/pTbJet"                      ,BJets[0].p.Pt());
+            hs.fill("baseline/"+path_cat+"/bJet_eta"                    ,BJets[0].p.Eta());
             hs.fill("baseline/"+path_cat+"/Jet1_pt"                     ,cjets[0].p.Pt());
             hs.fill("baseline/"+path_cat+"/Jet2_pt"                     ,cjets[1].p.Pt());
             hs.fill("baseline/"+path_cat+"/dphi_metNearLep"             ,abs(dPhiMETnearLep));

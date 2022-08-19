@@ -307,6 +307,7 @@ void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systH
    
    for (TString cat:{"ee","emu","mumu","all"}){    //Get the number of events per category
       TH1F* mc_total=hs->getHistogram("cutflow/"+cat,"MC");
+      // ~TH1F* mc_total=hs->getHistogram("baseline/"+cat+"/nBjets","MC");
       std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,systHists_vec,"cutflow/"+cat);
       std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
       float mcYield = mc_total->GetBinContent(6);
@@ -319,6 +320,7 @@ void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systH
       for (TString sample:outputSamples){
          isMCtotal = (sample=="MC");
          TH1F* temp_hist=hs->getHistogram("cutflow/"+cat,sample);
+         // ~TH1F* temp_hist=hs->getHistogram("baseline/"+cat+"/nBjets",sample);
          float sampleYield = temp_hist->GetBinContent(6);
          totalMap[sample.ReplaceAll("_","\\_")] += sampleYield;
          if(!isMCtotal){
@@ -791,6 +793,7 @@ void run()
          // ~vecDistr.push_back({selection+channel,"pTsumlep",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"sumpTlep",0.,600.,30});
          vecDistr.push_back({selection+channel,"pTbJet",0.,600.,30});
+         vecDistr.push_back({selection+channel,"bJet_eta",-2.5,2.5,25});
          vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,30});
          vecDistr.push_back({selection+channel,"Jet2_pt",0.,400.,20});
          // ~vecDistr.push_back({selection+channel,"dPhiMETnearJet",0.,3.2,32});
