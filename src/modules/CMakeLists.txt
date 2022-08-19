@@ -55,6 +55,7 @@ set(MODULES
   # ~plot_yearComparisons
   # ~compare_powheg_amcatnlo
   binningUnfolding1D_Fabian_OA
+  binningUnfolding1D_Fabian_OA_dPhi
   binningUnfolding2D_Fabian_OA
   bTagEff
   plot_bTagEff
