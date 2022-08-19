@@ -186,6 +186,11 @@ void derivePurityStability(TH2* const histMCGenRec_purity, TUnfoldBinning* const
    saver.save(*hist_stability,varName+"/hist_stability");
 }
 
+float getPTreweight(const float &metGen, const float &slope){
+   if(metGen>0) return std::max((1.+(metGen-100.)*slope)*(1.+(metGen-100.)*slope),0.1);
+   else return 0.;
+}
+
 //small class containing all TUnfold related hist for one distribution
 class Distribution
 {
@@ -469,15 +474,22 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       else if (dist.varName_ == "pTnunu_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "pTnunu_new_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);
+      else if (dist.varName_ == "dPhi_new_DNN") dist.setVariables(phiRec_DNN,phiGen);
       else if (dist.varName_ == "pTll") dist.setVariables(pTllRec,pTllGen);      
       else if (dist.varName_ == "inclusive") dist.setVariables(phiRec,phiGen);      
    }
    
    TString minTreePath_Nominal = cfg.minTreePath+TString::Format("/100.0/%s/","Nominal");
    
+   float scale_rew = std::stof(cfg.tunfold_scalePTreweight.Data());
+   
    for (TString currentSample : cfg.tunfold_InputSamples){     // loop over samples (data or pseudo data)
       bool isSignal = (currentSample == "TTbar_diLepton");
       bool isSignalAlt = (currentSample == "TTbar_amcatnlo");
+      
+      double totalMCweight = 0.;    // total weights used to normalize reweighting study
+      double totalMCweight_rew = 0.;
+      
       for (int i=1; i<=cfg.getTotalFileNR(currentSample.Data()); i++){     // loop over each minTree of sample
          TFile *dataFile=new TFile(minTreePath_Nominal+currentSample+"_"+std::to_string(i)+".root","read");
          TTree *dataTree=(TTree *) dataFile->Get("ttbar_res100.0/"+currentSample);
@@ -509,9 +521,6 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
          dataTree->SetBranchAddress("genDecayMode",&genDecayMode);
          dataTree->SetBranchAddress("N",&mcWeight);
          dataTree->SetBranchAddress("SF",&recoWeight);
-         if(cfg.tunfold_withPTreweight) dataTree->SetBranchAddress("reweight_PTnunu",&reweight);
-         else reweight=1.0;
-         
 
          std::cout<<"loop over "<<currentSample<<i<<std::endl;
          
@@ -534,19 +543,28 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
             //ignore acceptance
             // ~if(metRec<0) continue;
             
-            //ignore fakes
-            // ~if(genDecayMode>3 || metGen<0) continue;
+            //ignore fakes and background in reweighting study
+            if (!isSignal && cfg.tunfold_withPTreweight) continue;
+            if(cfg.tunfold_withPTreweight && (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40))) continue;
             
             // ~if (metGen>0) mcWeight*=sqrt(sqrt(sqrt(sqrt(metGen))));
             
-            //reweight
-            mcWeight*=reweight;
+
             
             if (isSignal){    // fill truth distributions (used for pseudo data)
                if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40)) {
                   for(Distribution& dist : distribution_vec) dist.fillDataTruth_fakes(mcWeight);
                }
-               else for(Distribution& dist : distribution_vec) dist.fillDataTruth(mcWeight);
+               else {
+                  //reweight for reweighting studies
+                  if(cfg.tunfold_withPTreweight) {
+                     totalMCweight += mcWeight;
+                     float weight = getPTreweight(metGen,scale_rew);
+                     mcWeight *= weight;
+                     totalMCweight_rew += mcWeight;
+                  }
+                  for(Distribution& dist : distribution_vec) dist.fillDataTruth(mcWeight);
+               }
             }
             else if (isSignalAlt){ // fill truth distributions with alternative MC sample (used for pseudo data)
                if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40)) {
@@ -566,6 +584,16 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
          }
          io::log<<"";
       }
+      
+      if(cfg.tunfold_withPTreweight && isSignal){     // apply correct normalizatin for reweighting studies
+         for(Distribution& dist : distribution_vec){
+            dist.histDataReco->Scale(totalMCweight/totalMCweight_rew);
+            dist.histDataReco_coarse->Scale(totalMCweight/totalMCweight_rew);
+            dist.histDataTruth->Scale(totalMCweight/totalMCweight_rew);
+            dist.histDataTruth_fakes->Scale(totalMCweight/totalMCweight_rew);
+         }
+      }
+      
    }
    
    /*
@@ -677,6 +705,7 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);      
+      else if (dist.varName_ == "dPhi_new_DNN") dist.setVariables(phiRec_DNN,phiGen);      
       else if (dist.varName_ == "pTnunu_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "pTnunu_new_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);      
@@ -855,6 +884,10 @@ void run()
    distribution_vec.push_back(Distribution("dPhi_DNN",
                                           {0.,0.4,0.8,1.2,1.6,2.,2.4,2.8},
                                           {0.,0.2,0.4,0.6,0.8,1.,1.2,1.4,1.6,1.8,2.,2.2,2.4,2.6,2.8,3.}
+                                          ));
+   distribution_vec.push_back(Distribution("dPhi_new_DNN",              // Optimzed binning for DNN
+                                          {0.,0.4,0.88,1.36,1.84,2.36},
+                                          {0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74}
                                           ));
    distribution_vec.push_back(Distribution("pTll",
                                           {0.,40,80,100,120,150,200,250,300},

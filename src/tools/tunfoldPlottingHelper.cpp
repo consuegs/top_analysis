@@ -87,13 +87,26 @@ void tunfoldplotting::plot_response(TH2F* responseHist, TString name, io::RootFi
             
       TCanvas can;
       can.cd();
-      gPad->SetRightMargin(0.2);
-      gPad->SetLeftMargin(0.13);
-      gPad->SetBottomMargin(0.15);
       
-      tempHist->GetYaxis()->SetTitleOffset(1.3);
-      tempHist->GetXaxis()->SetTitleOffset(0.9);
-      tempHist->GetZaxis()->SetTitleOffset(1.3);
+      if(is2D){
+         can.Size(1200,600);
+         gPad->SetRightMargin(0.13);
+         gPad->SetLeftMargin(0.08);
+         gPad->SetBottomMargin(0.15);
+         tempHist->GetYaxis()->SetTitleOffset(0.5);
+         tempHist->GetZaxis()->SetTitleOffset(0.55);
+         tempHist->GetZaxis()->SetLabelOffset(0.0015);
+      }
+      else{
+         gPad->SetRightMargin(0.2);
+         gPad->SetLeftMargin(0.13);
+         gPad->SetBottomMargin(0.15);
+         tempHist->GetYaxis()->SetTitleOffset(0.9);
+         tempHist->GetXaxis()->SetTitleOffset(0.9);
+         tempHist->GetZaxis()->SetTitleOffset(0.8);
+         tempHist->GetZaxis()->SetLabelOffset(0.0015);
+      }
+      
       tempHist->GetYaxis()->SetTitleSize(0.05);
       tempHist->GetXaxis()->SetTitleSize(0.05);
       tempHist->GetZaxis()->SetTitleSize(0.05);
@@ -113,8 +126,7 @@ void tunfoldplotting::plot_response(TH2F* responseHist, TString name, io::RootFi
       
       tempHist->GetYaxis()->SetTitle("reco binNumber");
       tempHist->GetXaxis()->SetTitle("gen binNumber");
-      tempHist->GetZaxis()->SetTitleOffset(0.55);
-      tempHist->GetZaxis()->SetLabelOffset(0.0015);
+
       
       if (is2D){
          TLine line;
@@ -664,7 +676,7 @@ std::pair<TH1F*,TH1F*> tunfoldplotting::getTotalShifts(const std::map<TString,TH
 std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generatorBinning, TH1F* unfolded, TH1F* unfolded_reg, TH1F* unfolded_bbb,
                                                          std::pair<TH1F*,TH1F*> &unfolded_total, std::pair<TH1F*,TH1F*> &unfolded_reg_total, std::pair<TH1F*,TH1F*> &unfolded_bbb_total,
                                                          const float &tau_par, TH1F* realDis, TH1F* realDisAlt,const distrUnfold &dist, const bool plotComparison,
-                                                         const TString &saveName, io::RootFileSaver* saver, int &num_bins, const bool withScaleFactor, const bool divideBinWidth, const bool adaptYaxis){
+                                                         const TString &saveName, io::RootFileSaver* saver, int &num_bins, const bool rewStudy, const bool divideBinWidth, const bool adaptYaxis){
    //========================
    // Step 3: plotting
    
@@ -877,6 +889,9 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       // ~legE.append(*unfolded,TString::Format("NoReg [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair.first,Chi2Pair.second,Chi2Pair_corr.first,Chi2Pair_corr.second),"pe");
       // ~legE.append(*unfolded_reg,TString::Format("Reg [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair_reg.first,Chi2Pair_reg.second,Chi2Pair_corr_reg.first,Chi2Pair_corr_reg.second),"pe");
       // ~legE.append(*unfolded_bbb,TString::Format("BBB [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair_bbb.first,Chi2Pair_bbb.second,Chi2Pair_corr_bbb.first,Chi2Pair_corr_bbb.second),"pe");
+      // ~legE.append(*unfolded,TString::Format("NoReg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair.first,Chi2Pair.second),"pe");
+      // ~legE.append(*unfolded_reg,TString::Format("Reg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_reg.first,Chi2Pair_reg.second),"pe");
+      // ~legE.append(*unfolded_bbb,TString::Format("BBB [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_bbb.first,Chi2Pair_bbb.second),"pe");
       legE.append(unfolded_totalGraph,"NoReg","pe");
       legE.append(unfolded_reg_totalGraph,"Reg","pe");
       legE.append(unfolded_bbb_totalGraph,"BBB","pe");
@@ -892,17 +907,21 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       if(tau_par>0) legE.append(unfolded_reg_totalGraph,TString::Format("Unfolded (#tau=%.5f)",tau_par),"pe");
       else legE.append(unfolded_reg_totalGraph,"Unfolded","pe");
    }
-   legE.append(*realDis,"Powheg","l");
-   legE.append(*realDisAlt,"MadGraph","l");
+   
+   if(!rewStudy){
+      legE.append(*realDis,"Powheg","l");
+      legE.append(*realDisAlt,"MadGraph","l");
+   }
+   else{
+      std::cout<<"------------------------------------------------"<<std::endl;
+      legE.append(*realDis,"Truth","l");
+      legE.append(*realDisAlt,"Response","l");
+   }
    TLegend leg=legE.buildLegend(.16,.5,0.35,.67,1);
    leg.SetTextSize(0.03);
    leg.Draw();
    
    unfolded->Draw("axis same");
-   
-   if (withScaleFactor) {
-      atext->DrawLatex(75,10,"With ScaleFactor");
-   }
    
    //Change to lower part of canvas
    can.pL_.cd();
@@ -955,8 +974,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       ratio.SetMinimum(0.51);
    }
    else {
-      ratio.SetMaximum(1.25);
-      ratio.SetMinimum(0.75);
+      ratio.SetMaximum((rewStudy)? 1.49 : 1.25);
+      ratio.SetMinimum((rewStudy)? 0.51 : 0.75);
    }
    ratio.SetLineColor(kRed-6);
    ratio.SetMarkerColor(kRed-6);

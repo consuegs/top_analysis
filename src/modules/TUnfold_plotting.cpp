@@ -75,13 +75,14 @@ void run()
    // ~vecDistr.push_back({"2D_dPhi_pTnunu_new",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
    // ~vecDistr.push_back({"2D_dPhi_pTnunu_new40",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
    // ~vecDistr.push_back({"2D_dPhi_pTnunu_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
-   // ~vecDistr.push_back({"2D_dPhi_pTnunu_new_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
+   vecDistr.push_back({"2D_dPhi_pTnunu_new_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
    // ~vecDistr.push_back({"2D_dPhi_pTnunu_new40_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
    // ~vecDistr.push_back({"pTnunu",0,500.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",false});
    // ~vecDistr.push_back({"dPhi",0,3.2,";min[#Delta#phi(p_{T}^{#nu#nu},l)];d#sigma/dmin[#Delta#phi(p_{T}^{#nu#nu},l)] (pb)","%.1f",false});
    // ~vecDistr.push_back({"pTnunu_DNN",0,500.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",false});
    // ~vecDistr.push_back({"dPhi_DNN",0,3.2,";min[#Delta#phi(p_{T}^{#nu#nu},l)];d#sigma/dmin[#Delta#phi(p_{T}^{#nu#nu},l)] (pb)","%.1f",false});
-   // ~vecDistr.push_back({"pTnunu_new_DNN",0,500.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",false});
+   vecDistr.push_back({"dPhi_new_DNN",0,3.2,";min[#Delta#phi(p_{T}^{#nu#nu},l)];d#sigma/dmin[#Delta#phi(p_{T}^{#nu#nu},l)] (pb)","%.1f",false});
+   vecDistr.push_back({"pTnunu_new_DNN",0,500.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",false});
    // ~vecDistr.push_back({"pTll",0,400,";p_{T}^{ll} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.1f",false});
    vecDistr.push_back({"inclusive",0,1,";Signal Bin;d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.1f",false});
    
@@ -97,7 +98,7 @@ void run()
    //////////////////////////////////
    
    // Nominal
-   std::vector<TString> systVec = {"BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","LUMI_UP","LUMI_DOWN","MATCH_UP","MATCH_DOWN","MESCALE_ENVELOPE_UP","MESCALE_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
+   // ~std::vector<TString> systVec = {"BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","LUMI_UP","LUMI_DOWN","MATCH_UP","MATCH_DOWN","MESCALE_ENVELOPE_UP","MESCALE_ENVELOPE_DOWN","MTOP_UP","MTOP_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    
    // Split JES
    // ~std::vector<TString> systVec = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR1","CR2","ERDON","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","MATCH_UP","MATCH_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN","MTOP169p5","MTOP175p5","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
@@ -122,7 +123,7 @@ void run()
    // ~std::vector<TString> systVec = {"MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN"};
    // ~std::vector<TString> systVec = {"JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN"};
    // ~std::vector<TString> systVec = {"JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN"};
-   // ~std::vector<TString> systVec = {};
+   std::vector<TString> systVec = {};
    
    //Remove HEM unc. for all year except 2018
    auto itr =std::find(systVec.begin(), systVec.end(), "JESUserDefinedHEM1516_DOWN");
@@ -226,12 +227,14 @@ void run()
          realDis->Scale(cfg.lumi);
          realDisAlt->Scale(cfg.lumi);
          
-         resultSaver.save(*realDis,"Truth");
-         resultSaver.save(*realDisAlt,"TruthAlt");
-         resultSaver.save(*unfolded_bbb,"BBB/unfolded");
-         
-         for (const auto &[key, value]: indShifts_bbb){
-            resultSaver.save(indShifts_bbb[key],"BBB/unfolded_"+key);
+         if (!withPTreweight){
+            resultSaver.save(*realDis,"Truth");
+            resultSaver.save(*realDisAlt,"TruthAlt");
+            resultSaver.save(*unfolded_bbb,"BBB/unfolded");
+            
+            for (const auto &[key, value]: indShifts_bbb){
+               resultSaver.save(indShifts_bbb[key],"BBB/unfolded_"+key);
+            }
          }
          continue;
       }
@@ -301,11 +304,9 @@ void run()
       int num_bins;
       
       // Plot results
-      std::cout<<unfolded->GetBinContent(2)<<"   "<<realDis->GetBinContent(2)<<std::endl;
       std::vector<double> xbins_vec = plot_UnfoldedResult(generatorBinning,unfolded,unfolded_reg,unfolded_bbb,unfolded_total,unfolded_reg_total,unfolded_bbb_total,tau_par->GetVal(),
-                                                         realDis,realDisAlt,dist,plotComparison,saveName,&saver,num_bins,withScaleFactor);
+                                                         realDis,(withPTreweight)? realDis_response : realDisAlt,dist,plotComparison,saveName,&saver,num_bins,withPTreweight);
       
-      std::cout<<unfolded->GetBinContent(2)<<"   "<<realDis->GetBinContent(2)<<std::endl;
       Double_t* xbins = &xbins_vec[0];    //Convert binning vector to array used for setting binnings of final results
       
       
@@ -425,7 +426,7 @@ void run()
             legE_pull.append(tempRMS_reg,"Reg "+type+" RMS","p");
             legE_pull.append(*temp_bbb,"BBB "+type+" Mean","p");
             legE_pull.append(tempRMS_bbb,"BBB "+type+" RMS","p");
-            TLegend leg_pull=legE_pull.buildLegend(.10,.45,0.8,.65,2);
+            TLegend leg_pull=legE_pull.buildLegend(.2,.45,0.8,.65,2);
             leg_pull.SetTextSize(0.04);
             leg_pull.Draw();
             
@@ -468,11 +469,11 @@ void run()
             temp->Draw("hist same");
             temp_reg->Draw("hist same");
             gfx::LegendEntries legE_pull;
-            legE_pull.append(*temp,TString::Format("NoReg [#mu=%.3f #sigma=%.3f]",temp->GetMean(),temp->GetRMS()),"l");
-            legE_pull.append(*temp_reg,TString::Format("Reg [#mu=%.3f #sigma=%.3f]",temp_reg->GetMean(),temp_reg->GetRMS()),"l");
-            legE_pull.append(*temp_bbb,TString::Format("BBB [#mu=%.3f #sigma=%.3f]",temp_bbb->GetMean(),temp_bbb->GetRMS()),"l");
-            TLegend leg_pull=legE_pull.buildLegend(.10,.45,0.4,.65,1);
-            leg_pull.SetTextSize(0.04);
+            legE_pull.append(*temp,TString::Format("NoReg [#mu=%.3f #sigma=%.2f]",temp->GetMean(),temp->GetRMS()),"l");
+            legE_pull.append(*temp_reg,TString::Format("Reg [#mu=%.3f #sigma=%.2f]",temp_reg->GetMean(),temp_reg->GetRMS()),"l");
+            legE_pull.append(*temp_bbb,TString::Format("BBB [#mu=%.3f #sigma=%.2f]",temp_bbb->GetMean(),temp_bbb->GetRMS()),"l");
+            TLegend leg_pull=legE_pull.buildLegend(.62,.8,0.9,-1,1);
+            leg_pull.SetTextSize(0.03);
             leg_pull.Draw();
             
             saver.save(canToy,"toyStudies/"+saveName+"/hist"+type,true,true,true);
@@ -482,43 +483,45 @@ void run()
       
       // Store results for combination of years
       
-      //Scale with lumi to get event count
-      realDisClone->Scale(cfg.lumi);
-      realDisCloneAlt->Scale(cfg.lumi);
-      
-      if (!dist.is2D){  // for 2D Signal bins should be used
-         unfoldedClone->SetBins(num_bins,xbins);
-         unfoldedClone_reg->SetBins(num_bins,xbins);
-         unfoldedClone_bbb->SetBins(num_bins,xbins);
-         // ~realDisClone->SetBins(num_bins,xbins);
-         // ~realDisCloneAlt->SetBins(num_bins,xbins);
-      }
-      
-      resultSaver.save(*realDisClone,"Truth");
-      resultSaver.save(*realDisCloneAlt,"TruthAlt");
-      resultSaver.save(*responseMatrix,"ResponseMatrix");
-      resultSaver.save(*responseMatrix_fine,"ResponseMatrix_fine");
-      
-      //Scale with lumi to get event count
-      unfoldedClone->Scale(cfg.lumi);
-      unfoldedClone_reg->Scale(cfg.lumi);
-      unfoldedClone_bbb->Scale(cfg.lumi);
-            
-      resultSaver.save(*unfoldedClone,"NoReg/unfolded");
-      resultSaver.save(*unfoldedClone_reg,"Reg/unfolded");
-      resultSaver.save(*unfoldedClone_bbb,"BBB/unfolded");
-      
-      for (const auto &[key, value]: indShifts){
-         if (!dist.is2D){
-            indShifts_reg[key].SetBins(num_bins,xbins);
-            indShifts_bbb[key].SetBins(num_bins,xbins);
+      if(!withPTreweight){
+         //Scale with lumi to get event count
+         realDisClone->Scale(cfg.lumi);
+         realDisCloneAlt->Scale(cfg.lumi);
+         
+         if (!dist.is2D){  // for 2D Signal bins should be used
+            unfoldedClone->SetBins(num_bins,xbins);
+            unfoldedClone_reg->SetBins(num_bins,xbins);
+            unfoldedClone_bbb->SetBins(num_bins,xbins);
+            // ~realDisClone->SetBins(num_bins,xbins);
+            // ~realDisCloneAlt->SetBins(num_bins,xbins);
          }
          
-         resultSaver.save(indShifts[key],"NoReg/unfolded_"+key);
-         resultSaver.save(indShifts_reg[key],"Reg/unfolded_"+key);
-         resultSaver.save(indShifts_bbb[key],"BBB/unfolded_"+key);
+         resultSaver.save(*realDisClone,"Truth");
+         resultSaver.save(*realDisCloneAlt,"TruthAlt");
+         resultSaver.save(*responseMatrix,"ResponseMatrix");
+         resultSaver.save(*responseMatrix_fine,"ResponseMatrix_fine");
+         
+         //Scale with lumi to get event count
+         unfoldedClone->Scale(cfg.lumi);
+         unfoldedClone_reg->Scale(cfg.lumi);
+         unfoldedClone_bbb->Scale(cfg.lumi);
+               
+         resultSaver.save(*unfoldedClone,"NoReg/unfolded");
+         resultSaver.save(*unfoldedClone_reg,"Reg/unfolded");
+         resultSaver.save(*unfoldedClone_bbb,"BBB/unfolded");
+         
+         for (const auto &[key, value]: indShifts){
+            if (!dist.is2D){
+               indShifts_reg[key].SetBins(num_bins,xbins);
+               indShifts_bbb[key].SetBins(num_bins,xbins);
+            }
+            
+            resultSaver.save(indShifts[key],"NoReg/unfolded_"+key);
+            resultSaver.save(indShifts_reg[key],"Reg/unfolded_"+key);
+            resultSaver.save(indShifts_bbb[key],"BBB/unfolded_"+key);
+         }
+         
+         resultSaver.save(*generatorBinning,"generatorBinning");
       }
-      
-      resultSaver.save(*generatorBinning,"generatorBinning");
    }
 }

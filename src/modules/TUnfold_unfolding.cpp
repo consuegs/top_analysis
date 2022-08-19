@@ -44,6 +44,7 @@ std::pair<float,int> getChi2NDF_withCorr(TH1 const *hist_res, TH1 const *hist_tr
             corr[i-1][j-1]=corr_res->GetBinContent(i,j);
          }
       }
+      
       corr.Invert();
       
       TMatrixD resultMatrix(diff, TMatrixD::kTransposeMult,corr*diff);
@@ -72,17 +73,17 @@ void analyzeToy(TH1 const *hist_toy,
          hist_coverage=new TH1D(nameCoverage,title,xBins->GetSize()-1,xBins->GetArray());
          hist_pull=new TH1D(namePullHist,";Pull;Entries",50,-3,3);
          hist_res=new TH1D(nameResHist,";Residual;Entries",50,-0.1,0.1);
-         hist_chi=new TH1D(nameResHist,";#chi^{2}/ndf;Entries",50,0,3);
+         hist_chi=new TH1D(nameChiHist,";#chi^{2}/ndf;Entries",50,0,3);
       } else {
          int nBins=hist_toy->GetNbinsX();
          double x0=hist_toy->GetXaxis()->GetXmin();
          double x1=hist_toy->GetXaxis()->GetXmax();
          prof_pull=new TProfile(namePull,title,nBins,x0,x1);
-         prof_res=new TProfile(namePull,title,nBins,x0,x1);
+         prof_res=new TProfile(nameRes,title,nBins,x0,x1);
          hist_coverage=new TH1D(nameCoverage,title,nBins,x0,x1);
          hist_pull=new TH1D(namePullHist,";Pull;Entries",50,-3,3);
          hist_res=new TH1D(nameResHist,";Residual;Entries",50,-0.1,0.1);
-         hist_chi=new TH1D(nameResHist,";#chi^{2}/ndf;Entries",50,0,3);
+         hist_chi=new TH1D(nameChiHist,";#chi^{2}/ndf;Entries",50,0,3);
       }
    }
    
@@ -93,9 +94,7 @@ void analyzeToy(TH1 const *hist_toy,
       hist_pull->Fill(pullI);
       prof_res->Fill(hist_toy->GetBinCenter(i),resI);
       hist_res->Fill(resI);
-      
-      // ~std::cout<<hist_truth->GetBinContent(i)<<"   "<<hist_toy->GetBinContent(i)<<"   "<<hist_toy->GetBinCenter(i)<<std::endl;
-      
+                  
       if(TMath::Abs(pullI)<1.) {
          hist_coverage->Fill(hist_toy->GetBinCenter(i),1./nToyTotal);
       }
@@ -112,13 +111,15 @@ TH1 *generatePoissonToy(TH1 *base,int ntoy) {
    TH1 *r=(TH1 *)base->Clone(base->GetName()+TString::Format("_toy%d",ntoy));
    for(int ibin=0;ibin<=r->GetNbinsX()+1;ibin++) {
       double mu=r->GetBinContent(ibin);
+                  
       double c=0.;
       if(mu>0.) {
          c=rnd->Poisson(mu);
       }
       r->SetBinContent(ibin,c);
-      r->SetBinError(ibin,TMath::Sqrt(c));
+      if(c>0) r->SetBinError(ibin,TMath::Sqrt(c));
    }
+   
    return r;
 }
 
@@ -127,6 +128,9 @@ Config const &cfg=Config::get();
 extern "C"
 void run()
 {
+   
+   gErrorIgnoreLevel = kWarning;    // Only print warnings. Otherwise scanTau method spams a lot!
+   
    //////////////////////////////////
    // Set Systematic Uncertainties //
    //////////////////////////////////
@@ -148,10 +152,10 @@ void run()
    // ~std::vector<TString> systVec = {"Nominal","MATCH_UP","MATCH_DOWN","MTOP169p5","MTOP175p5"};
    // ~std::vector<TString> systVec = {"MEFACSCALE_UP"};
    // ~std::vector<TString> systVec = {"L1PREFIRING_UP","L1PREFIRING_DOWN"};
-   std::vector<TString> systVec = {"JESBBEC1Year_UP","JESBBEC1Year_DOWN"};
+   // ~std::vector<TString> systVec = {"JESBBEC1Year_UP","JESBBEC1Year_DOWN"};
    // ~std::vector<TString> systVec = {"BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN"};
    // ~std::vector<TString> systVec = {"MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN"};
-   // ~std::vector<TString> systVec = {"Nominal"};
+   std::vector<TString> systVec = {"Nominal"};
    
    //Remove HEM unc. for all year except 2018
    auto itr =std::find(systVec.begin(), systVec.end(), "JESUserDefinedHEM1516_DOWN");
@@ -177,10 +181,11 @@ void run()
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu","2D_dPhi_pTnunu_new","2D_dPhi_pTnunu_new40","pTnunu","dPhi","pTll","inclusive"};
    // ~std::vector<TString> distributions = {"pTll"};
    // ~std::vector<TString> distributions = {"inclusive"};
-   // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new40_DNN"};
-   // ~std::vector<TString> distributions = {"pTnunu_DNN"};
+   // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_DNN"};
+   // ~std::vector<TString> distributions = {"pTnunu_new_DNN"};
+   // ~std::vector<TString> distributions = {"dPhi_DNN"};
    // ~std::vector<TString> distributions = {"pTnunu_new_DNN","pTnunu_DNN","2D_dPhi_pTnunu_new_DNN","2D_dPhi_pTnunu_new40_DNN"};
-   std::vector<TString> distributions = {"pTnunu_new_DNN","2D_dPhi_pTnunu_new_DNN","dPhi_DNN","inclusive"};
+   std::vector<TString> distributions = {"pTnunu_new_DNN","2D_dPhi_pTnunu_new_DNN","dPhi_new_DNN","inclusive"};
    
    // ~bool verbose = false;
    bool verbose = true;
@@ -233,7 +238,8 @@ void run()
          
          // perform toys studies?
          bool toy_studies = cfg.tunfold_plotToyStudies;
-         int MAXTOY=3000;
+         int MAXTOY=5000;
+         // ~int MAXTOY=2;
          
          // switch on histogram errors
          TH1::SetDefaultSumw2();
@@ -279,13 +285,15 @@ void run()
             cout<<"problem to read input histograms\n";
          }
          
-         // substract non-ttbar background
-         histDataReco->Add(histMCRec_bkg,-1);
-         histDataReco_coarse->Add(histMCRec_bkg_coarse,-1);
-         
-         // remove fakes in reco by applying signal fraction
-         histDataReco->Multiply(histSignalFraction);
-         histDataReco_coarse->Multiply(histSignalFraction_coarse);
+         if(!withPTreweight){    //No background and signal fraction considered in reweighting study
+            // substract non-ttbar background
+            histDataReco->Add(histMCRec_bkg,-1);
+            histDataReco_coarse->Add(histMCRec_bkg_coarse,-1);
+            
+            // remove fakes in reco by applying signal fraction
+            histDataReco->Multiply(histSignalFraction);
+            histDataReco_coarse->Multiply(histSignalFraction_coarse);
+         }
          
          // ~// test with flat reco distribution
          // ~for(int i=1; i<=histDataReco->GetNbinsX(); i++) {
@@ -356,7 +364,7 @@ void run()
                // ~TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
                TH1 *hist_unfolded=unfold.GetOutput("hist_unfoldedResult",";bin",0,0,false);
                TH1 *hist_folded=unfold.GetFoldedOutput("hist_foldedResult",";bin",0,0,false);
-               TH2 *cov_input=unfold.GetEmatrixInput("cov_input",";bin",0,0,true);
+               TH2 *cov_input=unfold.GetEmatrixInput("cov_input",";bin",0,0,false);
                TH2 *cov_statResponse=unfold.GetEmatrixSysUncorr("cov_statResponse",";bin",0,0,true);
                TH2 *cov_Output=unfold.GetEmatrixTotal("cov_total",";bin",0,0,true);
                TH2 *corr_matrix=unfold.GetRhoIJtotal("Rho2D");
@@ -371,22 +379,30 @@ void run()
                   TH1 *hist_res=0;
                   TH1 *hist_chi=0;
                   TH1 *hist_unfolded_firstToy=0;
+                  TH2 *cov_input_firstToy=0;
                   for(int itoy=0;itoy<MAXTOY;itoy++) {
-                     std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
-                     // ~unfold.SetInput(generatePoissonToy(hist_folded,itoy),1.0);
+                     // ~std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
                      TH1 *reco_toy=generatePoissonToy(histDataReco_unscaled,itoy);
-                     reco_toy->Multiply(histSignalFraction);
-                     unfold.SetInput(reco_toy,1.0);
+                     
+                     if (itoy==0)unfold.SetInput(histDataReco_unscaled,1.0);
+                     else unfold.SetInput(reco_toy,1.0);
+                     
                      if (regularisation) unfold.DoUnfold(tau); //With regularization
                      else unfold.DoUnfold(0.);//Without regularization
-                     if (itoy==0)hist_unfolded_firstToy=unfold.GetOutput("",";bin",0,0,false);
-                     analyzeToy(unfold.GetOutput("","",0,0,false),
-                                   hist_unfolded,
+                     
+                     if (itoy==0){
+                        hist_unfolded_firstToy=unfold.GetOutput("",";bin",0,0,false);
+                        cov_input_firstToy=unfold.GetEmatrixInput("",";bin",0,0,false);
+                     }
+                     else analyzeToy(unfold.GetOutput("","",0,0,false),
+                                   // ~hist_unfolded,
+                                   hist_unfolded_firstToy,
                                    // ~histDataTruth,
                                    // ~cov_Output,
-                                   cov_input,
+                                   // ~cov_input,
+                                   cov_input_firstToy,
                                    prof_pull,
-                                   hist_coverage,hist_pull,prof_res,hist_res,hist_chi,MAXTOY);
+                                   hist_coverage,hist_pull,prof_res,hist_res,hist_chi,MAXTOY-1);
                   }
                   saver.save(*hist_unfolded_firstToy,saveFolder+"hist_unfolded_firstToy");
                   saver.save(*prof_pull,saveFolder+"prof_pull");
@@ -486,17 +502,27 @@ void run()
             TH1 *hist_res=0;
             TH1 *hist_chi=0;
             TH1 *hist_unfolded_firstToy=0;
+            TH2 *covBBB_firstToy;
             for(int itoy=0;itoy<MAXTOY;itoy++) {
-               std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
+               // ~std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
                TH1 *reco_toy=generatePoissonToy(histDataReco_coarse_unscaled,itoy);
-               reco_toy->Multiply(histSignalFraction_coarse);
-               RooUnfoldBinByBin bbb(&responseRooUnfold, reco_toy);
-               if (itoy==0)hist_unfolded_firstToy=bbb.Hreco(RooUnfold::kCovariance);
-               analyzeToy(bbb.Hreco(RooUnfold::kCovariance),
-                             histBBB,
-                             &covBBB,
+               
+               if (itoy==0){
+                  RooUnfoldBinByBin bbb(&responseRooUnfold, histDataReco_coarse_unscaled);
+                  hist_unfolded_firstToy=bbb.Hreco(RooUnfold::kCovariance);
+                  TMatrixD covBBB_matrix=bbb.Ereco();
+                  covBBB_firstToy = new TH2D(covBBB_matrix);
+               }
+               else {
+                  RooUnfoldBinByBin bbb(&responseRooUnfold, reco_toy);
+                  analyzeToy(bbb.Hreco(RooUnfold::kCovariance),
+                             // ~histBBB,
+                             hist_unfolded_firstToy,
+                             // ~covBBB,
+                             covBBB_firstToy,
                              prof_pull,
                              hist_coverage,hist_pull,prof_res,hist_res,hist_chi,MAXTOY);
+               }
             }
             saver.save(*hist_unfolded_firstToy,"BBB/hist_unfolded_firstToy");
             saver.save(*prof_pull,"BBB/prof_pull");
