@@ -610,7 +610,7 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
    #  ~toProcess_mc=["ZZ"]
    #  ~toProcess_mc=["DrellYan_NLO"]
-   toProcess_mc=["TTbar_diLepton"]
+   #  ~toProcess_mc=["TTbar_diLepton"]
    #  ~toProcess_mc=["TTbar_diLepton_tau_MATCH_DOWN"]
    #  ~toProcess_mc=["TTbar_diLepton_UETUNE_UP","TTbar_diLepton_tau_UETUNE_UP","TTbar_singleLepton_UETUNE_UP","TTbar_hadronic_UETUNE_UP"]
    #  ~toProcess_mc=["TTbar_diLepton_UETUNE_DOWN","TTbar_diLepton_tau_UETUNE_DOWN","TTbar_singleLepton_UETUNE_DOWN","TTbar_hadronic_UETUNE_DOWN"]
@@ -622,19 +622,20 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["TTbar_diLepton_CR2","TTbar_diLepton_tau_CR2","TTbar_singleLepton_CR2","TTbar_hadronic_CR2"]
    #  ~toProcess_mc=["TTbar_diLepton_MTOP169p5","TTbar_diLepton_tau_MTOP169p5","TTbar_singleLepton_MTOP169p5","TTbar_hadronic_MTOP169p5"]
    #  ~toProcess_mc=["TTbar_diLepton_MTOP175p5","TTbar_diLepton_tau_MTOP175p5","TTbar_singleLepton_MTOP175p5","TTbar_hadronic_MTOP175p5"]
-   #  ~toProcess_mc=[]
+   toProcess_mc=[]
    #  ~toProcess_mc=allMC
    
    #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
    #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","EGamma"]      #2018
    #  ~toProcess_data=["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"]       #2017, 2016
-   toProcess_data=["MET"]      
-   #  ~toProcess_data=[]
+   #  ~toProcess_data=["MET"]      
+   toProcess_data=[]
          
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10"]
    #  ~toProcess_signal=["T1tttt_1200_800"]
-   toProcess_signal=[]
+   toProcess_signal=["T2tt_525_438","T2tt_525_350"]
+   #  ~toProcess_signal=[]
 
    # define command line arguments
    parser = argparse.ArgumentParser()
