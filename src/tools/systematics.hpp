@@ -522,6 +522,16 @@ namespace Systematic{
 
     };
     
+    ///Define systematics that are based on the color reconnection
+    const std::vector<Type> crTypes{
+        CR_envelope,erdon, CR1, CR2
+    };
+    
+    ///Define systematics that are based on the matrix element scale
+    const std::vector<Type> meTypes{
+        meScale_envelope,meScale,meFacScale,meRenScale,
+    };
+    
     ///Define systematic that only change the event weight, not the kinematics (same events as in nominal are selected!)
     //!!!!!!!!!!!!!!!If order is changed, order of weights in minTree production (distributions.cpp) has to be changes as well!!!!!!!!!!!!!!!!!!!!!!!!!!!
     const std::vector<Type> weightTypes{
@@ -555,7 +565,7 @@ namespace Systematic{
     const std::vector<Type> correlatedTypes{
         bSemilep,
         btagBCcorr, btagLcorr,
-        CR_envelope,
+        CR_envelope,erdon, CR1, CR2,
         eleID,eleReco,eleScaleSmearing,
         jesAbsolute,jesBBEC1,jesFlavorRealistic,jesRelativeBal_reg,
         
@@ -564,7 +574,7 @@ namespace Systematic{
         
         l1prefiring,
         match,
-        meScale_envelope,
+        meScale_envelope,meScale,meFacScale,meRenScale,
         mtop,
         muonIDSyst,muonIsoSyst,muonScale,
         pdf_envelope,alphasPdf,

@@ -145,6 +145,88 @@ void tunfoldplotting::plot_response(TH2F* responseHist, TString name, io::RootFi
    }
 }
 
+void tunfoldplotting::plot_pur_stab_eff(TH1F* purity, TH1F* stability, TH1F* efficiency, TString const &name, TString const &xTitle,
+                                       const distrUnfold &dist, TUnfoldBinning* const generatorBinning, io::RootFileSaver* saver){
+   
+   bool is2D = true;
+   if (!saver->getInternalPath().Contains("2D")){
+      is2D = false;
+   }
+   
+   // Combined 1D Histogram
+   TCanvas can;
+   can.cd();
+   
+   purity->GetYaxis()->SetRangeUser(0.,1.);
+   
+   if (is2D) purity->SetXTitle(xTitle);
+   else purity->SetXTitle("Signal Bin");
+   
+   purity->SetLineColor(kBlue);
+   stability->SetLineColor(kRed);
+   efficiency->SetLineColor(kGreen);
+   
+   purity->Draw("hist");
+   stability->Draw("hist same");
+   efficiency->Draw("hist same");
+   
+   gfx::LegendEntries legE;
+   legE.append(*purity,"Purity","l");
+   legE.append(*stability,"Stability","l");
+   legE.append(*efficiency,"Efficiency","l");
+   
+   TLegend leg=legE.buildLegend(.75,.7,0.95,.9,1);
+   leg.SetTextSize(0.03);
+   leg.Draw();
+   
+   can.RedrawAxis();
+   saver->save(can,"migrations_efficiency/"+name,true,true,true);
+   
+   // Single 2D Histogram (only for 2D measurement)
+   if(is2D){
+      TVectorD binning_met(*(generatorBinning->FindNode("signal")->GetDistributionBinning(0)));
+      TVectorD binning_phi(*(generatorBinning->FindNode("signal")->GetDistributionBinning((dist.is2D)? 1 : 0)));
+      
+      binning_met.ResizeTo(binning_met.GetNoElements()+1);
+      binning_met[binning_met.GetNoElements()-1] = dist.xMax;  //Plotting end for overflow bin
+      
+      Double_t* xbins = &binning_met(0);
+      Double_t* ybins = &binning_phi(0);
+      TH2F temp2D("",dist.title,binning_met.GetNoElements()-1,xbins,binning_phi.GetNoElements()-1,ybins);
+      
+      temp2D.SetYTitle("min[#Delta#phi(p_{T}^{#nu#nu},l)]");
+      
+      for (const TH1F* tempHist : {purity,stability,efficiency}){
+         
+         // Fill from 1D hist to 2D
+         for (int i=1; i<=temp2D.GetNbinsX(); i++){
+            for (int j=1; j<=temp2D.GetNbinsY(); j++){
+               temp2D.SetBinContent(i,j,tempHist->GetBinContent((j-1)*temp2D.GetNbinsX()+i));
+            }
+         }
+      
+         TCanvas can2D;
+         can2D.cd();
+         
+         std::string zTitle = tempHist->GetName();
+         zTitle[0] = std::toupper(zTitle[0]);
+         
+         gPad->SetRightMargin(0.2);
+         gPad->SetLeftMargin(0.13);
+         temp2D.GetYaxis()->SetTitleOffset(0.8);
+         temp2D.GetZaxis()->SetLabelOffset(0.015);
+         temp2D.GetZaxis()->SetTitle(zTitle.data());
+         temp2D.SetStats(0);
+         temp2D.SetMarkerColor(kRed);
+         temp2D.SetMarkerSize(1.6);
+         
+         temp2D.Draw("colz text");
+            
+         saver->save(can2D,"migrations_efficiency/"+name+"_"+tempHist->GetName()+"_2D",true,true,true);
+      }
+   }
+}
+
 void tunfoldplotting::plot_correlation(TH2F* corrMatrix, TString name, io::RootFileSaver* saver){
    TCanvas can2D;
    can2D.cd();
@@ -317,7 +399,7 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
       std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(zeroes,{shift.second.first,shift.second.second});
       
       // unc. in %
-      envelopes.first->Scale(-100.);  // getEnvelope return abs. shifts
+      envelopes.first->Scale(100.);
       envelopes.second->Scale(100.);
       
       envelopes.first->SetLineColor(currentColor);
@@ -1061,6 +1143,58 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    
    return xbins_vec;
 }
+
+TH1F tunfoldplotting::getCRenvelopeCombined(std::vector<std::map<TString,TH1F>>& vec_systShifts, bool const &up, bool const &norm){
+   TH1F hist_CR1 = vec_systShifts[0]["CR1"];
+   TH1F hist_CR2 = vec_systShifts[0]["CR2"];
+   TH1F hist_ERDON = vec_systShifts[0]["ERDON"];
+   
+   TH1F zeroes = hist_CR1;
+   zeroes.Reset();
+   
+   for (int i=1; i<vec_systShifts.size(); i++){
+      hist_CR1.Add(&vec_systShifts[i]["CR1"]);
+      hist_CR2.Add(&vec_systShifts[i]["CR2"]);
+      hist_ERDON.Add(&vec_systShifts[i]["ERDON"]);
+   }
+   
+   std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(&zeroes,{&hist_CR1,&hist_CR2,&hist_ERDON});
+   
+   TH1F env_down = *envelopes.first;
+   TH1F env_up = *envelopes.second;
+               
+   if(up) return env_up;
+   else return env_down;
+}
+
+TH1F tunfoldplotting::getMESCALEenvelopeCombined(std::vector<std::map<TString,TH1F>>& vec_systShifts, bool const &up, bool const &norm){
+   TH1F hist_MESCALE_UP = vec_systShifts[0]["MESCALE_UP"];
+   TH1F hist_MESCALE_DOWN = vec_systShifts[0]["MESCALE_DOWN"];
+   TH1F hist_MERENSCALE_UP = vec_systShifts[0]["MERENSCALE_UP"];
+   TH1F hist_MERENSCALE_DOWN = vec_systShifts[0]["MERENSCALE_DOWN"];
+   TH1F hist_MEFACSCALE_UP = vec_systShifts[0]["MEFACSCALE_UP"];
+   TH1F hist_MEFACSCALE_DOWN = vec_systShifts[0]["MEFACSCALE_DOWN"];
+   
+   TH1F zeroes = hist_MESCALE_UP;
+   zeroes.Reset();
+   
+   for (int i=1; i<vec_systShifts.size(); i++){
+      hist_MESCALE_UP.Add(&vec_systShifts[i]["MESCALE_UP"]);
+      hist_MESCALE_DOWN.Add(&vec_systShifts[i]["MESCALE_DOWN"]);
+      hist_MERENSCALE_UP.Add(&vec_systShifts[i]["MERENSCALE_UP"]);
+      hist_MERENSCALE_DOWN.Add(&vec_systShifts[i]["MERENSCALE_DOWN"]);
+      hist_MEFACSCALE_UP.Add(&vec_systShifts[i]["MEFACSCALE_UP"]);
+      hist_MEFACSCALE_DOWN.Add(&vec_systShifts[i]["MEFACSCALE_DOWN"]);
+   }
+   
+   std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(&zeroes,{&hist_MESCALE_UP,&hist_MESCALE_DOWN,&hist_MERENSCALE_UP,&hist_MERENSCALE_DOWN,&hist_MEFACSCALE_UP,&hist_MEFACSCALE_DOWN});
+   
+   TH1F env_down = *envelopes.first;
+   TH1F env_up = *envelopes.second;
+               
+   if(up) return env_up;
+   else return env_down;
+}
       
 
 
@@ -1085,6 +1219,8 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
    };
    
    bool lumiDone = false;
+   bool useCRenvelope = false;
+   bool useMEenvelope = false;
    
    std::vector<TString> doneVec;    // vector to store syst which are already processed (used for uncorrelated combinations)
    
@@ -1139,6 +1275,25 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
       
       TH1F tempHist;
       
+      // Get CR envelope
+      if (Systematic::convertType(syst) == Systematic::CR_envelope) {
+         tempHist = getCRenvelopeCombined(vec_systShifts,Systematic::convertVariation(syst) == Systematic::up);
+         map_combinedShifts[syst] = tempHist;
+         useCRenvelope = true;
+         continue;
+      }
+      else if ((std::find(Systematic::crTypes.begin(), Systematic::crTypes.end(), Systematic::convertType(syst)) != Systematic::crTypes.end()) && useCRenvelope) continue;  //ignore shifts already used in envelope
+      
+      // Get MEscale envelope
+      if (Systematic::convertType(syst) == Systematic::meScale_envelope) {
+         tempHist = getMESCALEenvelopeCombined(vec_systShifts,Systematic::convertVariation(syst) == Systematic::up);
+         map_combinedShifts[syst] = tempHist;
+         useMEenvelope = true;
+         continue;
+      }
+      else if ((std::find(Systematic::meTypes.begin(), Systematic::meTypes.end(), Systematic::convertType(syst)) != Systematic::meTypes.end()) && useMEenvelope) continue;  //ignore shifts already used in envelope
+      
+      // Combine all other systematics
       if (Systematic::isCorrelated(syst)){   // Add correlated parts
          tempHist = vec_systShifts[0][syst];
          for (int i=1; i<vec_systShifts.size(); i++){
