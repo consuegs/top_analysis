@@ -55,6 +55,10 @@ void run()
    vecDistr.push_back({"dPhi_new_DNN",0,3.2,";min[#Delta#phi(p_{T}^{#nu#nu},l)];d#sigma/dmin[#Delta#phi(p_{T}^{#nu#nu},l)] (pb)","%.2f",false});
    vecDistr.push_back({"inclusive",0,1,";Signal Bin;d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.1f",false});
    
+   vecDistr.push_back({"2D_dPhi_pTnunu_new_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true,true});
+   vecDistr.push_back({"pTnunu_new_DNN",0,500.,";p_{T}^{#nu#nu} (GeV);1/#sigma d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",false,true});
+   vecDistr.push_back({"dPhi_new_DNN",0,3.2,";min[#Delta#phi(p_{T}^{#nu#nu},l)];1/#sigma d#sigma/dmin[#Delta#phi(p_{T}^{#nu#nu},l)] (pb)","%.2f",false,true});
+   
    //////////////////////////////////
    // Set Systematic Uncertainties //
    //////////////////////////////////
@@ -151,13 +155,13 @@ void run()
             realDisAlt.Add(&vec_realDisAlt[i]);
          }
          
-         std::map<TString,TH1F> map_combinedShifts_bbb = getCombinedUnc(vec_systShifts_bbb,systVec,unfolded_bbb,vec_Unfolded_bbb);
+         std::map<TString,TH1F> map_combinedShifts_bbb = getCombinedUnc(vec_systShifts_bbb,systVec,unfolded_bbb,vec_Unfolded_bbb,dist.norm);
          
          for (const auto &[key, value]: map_combinedShifts_bbb){
             map_combinedShifts_bbb[key].Divide(&unfolded_bbb);
          }
          
-         io::RootFileSaver saver(TString::Format("../../../Combined/%s/TUnfold/plots%.1f.root",versionString.Data(),cfg.processFraction*100),dist.varName.Data());
+         io::RootFileSaver saver(TString::Format("../../../Combined/%s/TUnfold/plots%.1f.root",versionString.Data(),cfg.processFraction*100),TString::Format("%s",dist.norm? (dist.varName+"_norm").Data() : dist.varName.Data()));
          
          std::cout<<"----------------------------------------------------------"<<std::endl;
          std::cout<<"Measured total cross section:"<<unfolded_bbb.GetBinContent(1)<<std::endl;
@@ -219,9 +223,9 @@ void run()
       }
       
       // Combined systematic uncertainties and add stat/total uncertainty
-      std::map<TString,TH1F> map_combinedShifts = getCombinedUnc(vec_systShifts,systVec,unfolded,vec_Unfolded);
-      std::map<TString,TH1F> map_combinedShifts_reg = getCombinedUnc(vec_systShifts_reg,systVec,unfolded_reg,vec_Unfolded_reg);
-      std::map<TString,TH1F> map_combinedShifts_bbb = getCombinedUnc(vec_systShifts_bbb,systVec,unfolded_bbb,vec_Unfolded_bbb);
+      std::map<TString,TH1F> map_combinedShifts = getCombinedUnc(vec_systShifts,systVec,unfolded,vec_Unfolded,dist.norm);
+      std::map<TString,TH1F> map_combinedShifts_reg = getCombinedUnc(vec_systShifts_reg,systVec,unfolded_reg,vec_Unfolded_reg,dist.norm);
+      std::map<TString,TH1F> map_combinedShifts_bbb = getCombinedUnc(vec_systShifts_bbb,systVec,unfolded_bbb,vec_Unfolded_bbb,dist.norm);
       
       //Clone hists before plotting and scaling for syst breakdown (to avoid changes)
       TH1F* unfoldedClone = (TH1F*)unfolded.Clone();
@@ -246,13 +250,20 @@ void run()
       
       // Plot combined result
       int num_bins;
-      io::RootFileSaver saver(TString::Format("../../../Combined/%s/TUnfold/plots%.1f.root",versionString.Data(),cfg.processFraction*100),dist.varName.Data());
+      io::RootFileSaver saver(TString::Format("../../../Combined/%s/TUnfold/plots%.1f.root",versionString.Data(),cfg.processFraction*100),TString::Format("%s",dist.norm? (dist.varName+"_norm").Data() : dist.varName.Data()));
       std::pair<TH1F*,TH1F*> unfolded_total = getTotalShifts(map_combinedShifts,unfolded,dist.norm,cfg.lumi);
       std::pair<TH1F*,TH1F*> unfolded_reg_total = getTotalShifts(map_combinedShifts_reg,unfolded_reg,dist.norm,cfg.lumi);
       std::pair<TH1F*,TH1F*> unfolded_bbb_total = getTotalShifts(map_combinedShifts_bbb,unfolded_bbb,dist.norm,cfg.lumi);
       plot_UnfoldedResult(&generatorBinning,&unfolded,&unfolded_reg,&unfolded_bbb,unfolded_total,unfolded_reg_total,unfolded_bbb_total,-1.,&realDis,&realDisAlt,dist,true,"CombinedResults_Compare",&saver,num_bins,false);
       plot_UnfoldedResult(&generatorBinning,&unfolded,&unfolded_reg,&unfolded_bbb,unfolded_total,unfolded_reg_total,unfolded_bbb_total,-1.,&realDis,&realDisAlt,dist,false,"CombinedResults_reg",&saver,num_bins,false,false,false);
       
+      
+
+      if(dist.norm){
+         unfoldedClone->Scale(1./unfoldedClone->Integral());
+         unfoldedClone_reg->Scale(1./unfoldedClone_reg->Integral());
+         unfoldedClone_bbb->Scale(1./unfoldedClone_bbb->Integral());
+      }
       
       // Divide by nominal for plot of relative syst uncertainties
       for (const auto &[key, value]: map_combinedShifts){
