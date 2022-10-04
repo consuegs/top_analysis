@@ -20,6 +20,7 @@ set(SRCS
   minTreeReader.cpp
   dnnRegression.cpp
   tunfoldPlottingHelper.cpp
+  distributionsPlottingHelper.cpp
   )
 
 add_library(tools SHARED ${SRCS})

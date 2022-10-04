@@ -6,6 +6,7 @@ set(MODULES
   # ~plot_diffMET
   # ~check_DM
   plot_distributions
+  plot_distributions_combined
   # ~templateFit
   # ~compare_ttMC
   # ~test_MT2
