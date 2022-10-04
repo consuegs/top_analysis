@@ -50,7 +50,7 @@ namespace tunfoldplotting
    std::pair<TH1F*,TH1F*> getSystUnc(TH1F* const &nominal, TString const &path, TString const &filePath, std::vector<TString> const &systVec, 
                                      bool const &addStat, bool const &withScaleFactor, std::map<TString,TH1F> &indShifts, std::map<TString,TH2F> &indResponse, bool const &norm=false);
                                     
-   std::map<TString,TH1F> getCombinedUnc(std::vector<std::map<TString,TH1F>>& vec_systShifts,const std::vector<TString>& systVec, const TH1F& combinedResult, std::vector<TH1F> nominalResults);
+   std::map<TString,TH1F> getCombinedUnc(std::vector<std::map<TString,TH1F>>& vec_systShifts,const std::vector<TString>& systVec, const TH1F& combinedResult, std::vector<TH1F> nominalResults, bool const &norm=false);
    TH1F getCRenvelopeCombined(std::vector<std::map<TString,TH1F>>& vec_systShifts, bool const &up, bool const &norm=false);
    TH1F getMESCALEenvelopeCombined(std::vector<std::map<TString,TH1F>>& vec_systShifts, bool const &up, bool const &norm=false);
    std::pair<TH1F*,TH1F*> getTotalShifts(const std::map<TString,TH1F> &map_combinedShifts, const TH1F &nominal, const bool isNorm, const float &scale = 1.);

@@ -157,36 +157,58 @@ void tunfoldplotting::plot_pur_stab_eff(TH1F* purity, TH1F* stability, TH1F* eff
    TCanvas can;
    can.cd();
    
-   purity->GetYaxis()->SetRangeUser(0.,1.);
+   purity->GetYaxis()->SetRangeUser(0.,0.95);
    
-   if (is2D) purity->SetXTitle(xTitle);
+   if (!is2D) purity->SetXTitle(xTitle);
    else purity->SetXTitle("Signal Bin");
    
    purity->SetLineColor(kBlue);
    stability->SetLineColor(kRed);
    efficiency->SetLineColor(kGreen);
+   purity->SetMarkerColor(kBlue);
+   stability->SetMarkerColor(kRed);
+   efficiency->SetMarkerColor(kGreen);
+   purity->SetMarkerSize(0.7);
+   stability->SetMarkerSize(0.7);
+   efficiency->SetMarkerSize(0.7);
    
-   purity->Draw("hist");
-   stability->Draw("hist same");
-   efficiency->Draw("hist same");
+   purity->SetBinError(1,1e-6);    // required to plot bin width
+   stability->SetBinError(1,1e-6);
+   efficiency->SetBinError(1,1e-6);
+   
+   purity->Draw("pe1");
+   stability->Draw("pe1 same");
+   efficiency->Draw("pe1 same");
    
    gfx::LegendEntries legE;
-   legE.append(*purity,"Purity","l");
-   legE.append(*stability,"Stability","l");
-   legE.append(*efficiency,"Efficiency","l");
+   legE.append(*purity,"Purity","pl");
+   legE.append(*stability,"Stability","pl");
+   legE.append(*efficiency,"Efficiency","pl");
    
-   TLegend leg=legE.buildLegend(.75,.7,0.95,.9,1);
-   leg.SetTextSize(0.03);
-   leg.Draw();
+   // Draw vertical lines for phi bins in 2D
+   TVectorD binning_met(*(generatorBinning->FindNode("signal")->GetDistributionBinning(0)));
+   TVectorD binning_phi(*(generatorBinning->FindNode("signal")->GetDistributionBinning((dist.is2D)? 1 : 0)));
+   if(is2D){
+      TLine * aline = new TLine();
+      int nBinsx = binning_met.GetNoElements();
+      for (int i=1; i<(binning_phi.GetNoElements()-1); i++){
+         aline->DrawLine(i*nBinsx+0.5,purity->GetMinimum(),i*nBinsx+0.5,purity->GetMaximum());
+      }
+   }
    
    can.RedrawAxis();
+   
+   // ~TLegend leg=legE.buildLegend(.2,.88,.95,.92,3);
+   TLegend leg=legE.buildLegend(gPad->GetLeftMargin(),.88,1.-gPad->GetRightMargin(),1.-gPad->GetTopMargin(),3);
+   leg.SetTextSize(0.04);
+   leg.SetBorderSize(1);
+   leg.SetFillStyle(1001);
+   leg.Draw();
+   
    saver->save(can,"migrations_efficiency/"+name,true,true,true);
    
    // Single 2D Histogram (only for 2D measurement)
    if(is2D){
-      TVectorD binning_met(*(generatorBinning->FindNode("signal")->GetDistributionBinning(0)));
-      TVectorD binning_phi(*(generatorBinning->FindNode("signal")->GetDistributionBinning((dist.is2D)? 1 : 0)));
-      
       binning_met.ResizeTo(binning_met.GetNoElements()+1);
       binning_met[binning_met.GetNoElements()-1] = dist.xMax;  //Plotting end for overflow bin
       
@@ -730,9 +752,8 @@ std::pair<TH1F*,TH1F*> tunfoldplotting::getTotalShifts(const std::map<TString,TH
       if (key.BeginsWith("TOTAL")) continue;
       
       TH1F tempShift = value;
-      tempShift.Scale(1./scale);
-      if(isNorm) tempShift.Scale(1./value.Integral());
-      
+      if(!isNorm) tempShift.Scale(1./scale);
+            
       if (key.BeginsWith("STAT_DOWN")){
          for (int i=0; i<=tempShift.GetNbinsX(); i++){
             float content = tempShift.GetBinContent(i);
@@ -1199,7 +1220,7 @@ TH1F tunfoldplotting::getMESCALEenvelopeCombined(std::vector<std::map<TString,TH
 
 
 std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TString,TH1F>>& vec_systShifts, const std::vector<TString>& systVec, const TH1F& combinedResult,
-                                                       std::vector<TH1F> nominalResults){
+                                                       std::vector<TH1F> nominalResults, bool const &norm){
    std::map<TString,TH1F>map_combinedShifts;
    
    TH1F* hist_TotalShiftUP = (TH1F*)combinedResult.Clone();
@@ -1209,6 +1230,9 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
    
    TH1F* zeroes = (TH1F*)combinedResult.Clone();
    zeroes->Reset();
+   
+   TH1F combinedResult_norm = combinedResult;
+   combinedResult_norm.Scale(1./combinedResult_norm.Integral());
    
    float lumiCorr[5][3] = {
       {1.0,0.0,0.0},
@@ -1223,9 +1247,7 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
    bool useMEenvelope = false;
    
    std::vector<TString> doneVec;    // vector to store syst which are already processed (used for uncorrelated combinations)
-   
-   std::cout<<"combined:"<<combinedResult.GetBinContent(1)<<std::endl;
-   
+      
    for (const TString& syst : systVec){
       if (syst == "JESUserDefinedHEM1516_DOWN") { // HEM only used for 2018
          map_combinedShifts[syst] = vec_systShifts[3][syst];
@@ -1337,6 +1359,16 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
       }
    }
    
+   //Apply correction for normalized distributions
+   if (norm){      
+      for (auto &[key, value]: map_combinedShifts){
+         value.Add(&combinedResult);
+         value.Scale(1./value.Integral());
+                  
+         map_combinedShifts[key] = phys::getSystShift(combinedResult_norm,value);
+      }
+   }
+   
    //Store for total uncertainty
    for (const auto &[key, value]: map_combinedShifts){
       for (int i=0; i<=value.GetNbinsX(); i++){
@@ -1347,8 +1379,15 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
    }
    
    // Add statistic uncertainty
-   map_combinedShifts["STAT_UP"] = combinedResult;
-   map_combinedShifts["STAT_DOWN"] = combinedResult;
+   if (norm){
+      map_combinedShifts["STAT_UP"] = combinedResult_norm;
+      map_combinedShifts["STAT_DOWN"] = combinedResult_norm;
+   }
+   else{
+      map_combinedShifts["STAT_UP"] = combinedResult;
+      map_combinedShifts["STAT_DOWN"] = combinedResult;
+   }
+   
    for (int i=1; i<=map_combinedShifts["STAT_UP"].GetNbinsX(); i++){
       
       float content = map_combinedShifts["STAT_UP"].GetBinError(i);
