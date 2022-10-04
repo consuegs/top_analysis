@@ -217,7 +217,8 @@ void run()
       // ~dataSamples = {"DoubleMuon","EGamma","MuonEG","SingleMuon"};
       // ~ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       // ~signalSamples = {"TTbar_diLepton"};
-      mcSamples = {"TTbar_diLepton"};
+      // ~mcSamples = {"TTbar_diLepton"};
+      mcSamples = {"T2tt_525_350"};
       dataSamples = {};
       ttbarSamples = {};
       signalSamples = {};

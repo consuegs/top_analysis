@@ -18,7 +18,10 @@ Config const &cfg=Config::get();
 extern "C"
 void run()
 {
-   io::RootFileSaver saver(TString::Format("minTree_analyze/plots%.1f.root",cfg.processFraction*100),"plot_metStudies");
+   // ~TString sampleName = "TTbar_diLepton";
+   TString sampleName = "T2tt_525_350";
+   
+   io::RootFileSaver saver(TString::Format("minTree_analyze/plots%.1f.root",cfg.processFraction*100),"plot_metStudies/"+sampleName);
    
    TCanvas can;
    can.cd();
@@ -38,8 +41,8 @@ void run()
          
          for (TString var :var_vec){
             
-            TH2F* TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+sel+"/"+var+"/TTbar_diLepton");
-            TH2F* TTbar_2D_Puppi = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+sel+"/"+var+"_Puppi/TTbar_diLepton");
+            TH2F* TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+sel+"/"+var+"/"+sampleName);
+            TH2F* TTbar_2D_Puppi = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+sel+"/"+var+"_Puppi/"+sampleName);
             
             TProfile TTbar_profile;
             TProfile TTbar_profile_Puppi;
@@ -101,10 +104,10 @@ void run()
    
    //Plotting comparison between PF and Puppi comparing full and met>120
    for (auto dummy: {1}){
-      TH2F* TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/GenMetDiffMETRel_dPhiMETLep/TTbar_diLepton");
-      TH2F* TTbar_2D_Puppi = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/GenMetDiffMETRel_dPhiMETLep_Puppi/TTbar_diLepton");
-      TH2F* TTbar_2D_full = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/GenMetDiffMETRel_dPhiMETLep/TTbar_diLepton");
-      TH2F* TTbar_2D_full_Puppi = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/GenMetDiffMETRel_dPhiMETLep_Puppi/TTbar_diLepton");
+      TH2F* TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/GenMetDiffMETRel_dPhiMETLep/"+sampleName);
+      TH2F* TTbar_2D_Puppi = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/GenMetDiffMETRel_dPhiMETLep_Puppi/"+sampleName);
+      TH2F* TTbar_2D_full = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/GenMetDiffMETRel_dPhiMETLep/"+sampleName);
+      TH2F* TTbar_2D_full_Puppi = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/GenMetDiffMETRel_dPhiMETLep_Puppi/"+sampleName);
       
       TProfile TTbar_profile;
       TProfile TTbar_profile_Puppi;
@@ -155,7 +158,7 @@ void run()
    }
    
    //Plotting genMet as a function of dPhi (met120)
-   TH2F* TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/genMet_dPhiMETLep_Puppi/TTbar_diLepton");
+   TH2F* TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/genMet_dPhiMETLep_Puppi/"+sampleName);
    TProfile TTbar_profile;
    TTbar_profile=*(TTbar_2D->ProfileX("Profile"));
    gPad->SetLeftMargin(0.15);
@@ -169,7 +172,7 @@ void run()
    saver.save(can,"genMetVSdPhi/met120",true,true,true); 
    
    //Plotting genMet as a function of dPhi
-   TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/genMet_dPhiMETLep_Puppi/TTbar_diLepton");
+   TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/genMet_dPhiMETLep_Puppi/"+sampleName);
    TTbar_profile=*(TTbar_2D->ProfileX("Profile"));
    gPad->SetLeftMargin(0.15);
    TTbar_profile.SetStats(0);
@@ -179,7 +182,7 @@ void run()
    saver.save(can,"genMetVSdPhi/baseline",true,true,true); 
    
    //Plotting lead top pT as a function of dPhi (met120)
-   TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/leadTopPT_dPhiMETLep_Puppi/TTbar_diLepton");
+   TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/leadTopPT_dPhiMETLep_Puppi/"+sampleName);
    TTbar_profile=*(TTbar_2D->ProfileX("Profile"));
    gPad->SetLeftMargin(0.15);
    TTbar_profile.SetStats(0);
@@ -190,7 +193,7 @@ void run()
    saver.save(can,"leadTopPtVSdPhi/met120",true,true,true); 
    
    //Plotting lead top pT as a function of dPhi 
-   TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/leadTopPT_dPhiMETLep_Puppi/TTbar_diLepton");
+   TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/leadTopPT_dPhiMETLep_Puppi/"+sampleName);
    TTbar_profile=*(TTbar_2D->ProfileX("Profile"));
    gPad->SetLeftMargin(0.15);
    TTbar_profile.SetStats(0);
@@ -200,7 +203,7 @@ void run()
    saver.save(can,"leadTopPtVSdPhi/baseline",true,true,true); 
    
    // ~//Plotting nVertices as a function of dPhi
-   // ~TTbar_2D = histReader.read<TH2F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+"baseline_met120/nVertex/TTbar_diLepton");
+   // ~TTbar_2D = histReader.read<TH2F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+"baseline_met120/nVertex/"+sampleName);
    // ~TTbar_profile=*(TTbar_2D->ProfileX("Profile"));
    // ~gPad->SetLeftMargin(0.13);
    // ~TTbar_profile.SetStats(0);
@@ -215,8 +218,8 @@ void run()
    gfx::SplitCan spcan;
    spcan.pU_.cd();
    gPad->SetLeftMargin(0.13);
-   TH1F* TTbar_reco = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+"baseline/dPhiMETLep/TTbar_diLepton"); 
-   TH1F* TTbar_gen = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+"baseline/dPhiMETLep_gen/TTbar_diLepton");
+   TH1F* TTbar_reco = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+"baseline/dPhiMETLep/"+sampleName); 
+   TH1F* TTbar_gen = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+"baseline/dPhiMETLep_gen/"+sampleName);
    
    TTbar_reco->Rebin(5);
    TTbar_gen->Rebin(5);
@@ -249,7 +252,7 @@ void run()
    
    //Plotting MET resolution as a function of nInteractions
    can.Clear();
-   TTbar_2D = histReader.read<TH2F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+"baseline/nVertex_vs_MetRes/TTbar_diLepton");
+   TTbar_2D = histReader.read<TH2F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+"baseline/nVertex_vs_MetRes/"+sampleName);
    TTbar_profile=*(TTbar_2D->ProfileX("Profile"));
    TProfile TTbar_profile_RMS=*(TTbar_2D->ProfileX("ProfileRMS",1,-1,"s"));
    TH1D RMS("","",100,0,100);
@@ -271,21 +274,21 @@ void run()
    /* 
    for (TString var :{"GenMetDiffMETRel_dPhiMETLep","MetSig_dPhiMETLep"}){
       
-      TH2F* TTbar_2D = histReader.read<TH2F>("diff_MET100.0/baseline_met120/"+var+"/TTbar_diLepton");
+      TH2F* TTbar_2D = histReader.read<TH2F>("diff_MET100.0/baseline_met120/"+var+"/"+sampleName);
       TH2F* OtherSample_2D = histReader.read<TH2F>("diff_MET100.0/baseline_met120/"+var+"/T2tt_650_350");
-      TH2F* TTbar_2D_Puppi = histReader.read<TH2F>("diff_MET100.0/baseline_met120/"+var+"_Puppi/TTbar_diLepton");
+      TH2F* TTbar_2D_Puppi = histReader.read<TH2F>("diff_MET100.0/baseline_met120/"+var+"_Puppi/"+sampleName);
       TH2F* OtherSample_2D_Puppi = histReader.read<TH2F>("diff_MET100.0/baseline_met120/"+var+"_Puppi/T2tt_650_350");
-      TH2F* TTbar_2D_Deep = histReader.read<TH2F>("diff_MET100.0/baseline_met120/"+var+"_Deep/TTbar_diLepton");
+      TH2F* TTbar_2D_Deep = histReader.read<TH2F>("diff_MET100.0/baseline_met120/"+var+"_Deep/"+sampleName);
       TH2F* OtherSample_2D_Deep = histReader.read<TH2F>("diff_MET100.0/baseline_met120/"+var+"_Deep/T2tt_650_350");
-      // ~TH2F* TTbar_2D = histReader.read<TH2F>("diff_MET100.0/baseline_met120_230/"+var+"/TTbar_diLepton");
+      // ~TH2F* TTbar_2D = histReader.read<TH2F>("diff_MET100.0/baseline_met120_230/"+var+"/"+sampleName);
       // ~TH2F* OtherSample_2D = histReader.read<TH2F>("diff_MET100.0/baseline_met120_230/"+var+"/T2tt_650_350");
-      // ~TH2F* TTbar_2D_Puppi = histReader.read<TH2F>("diff_MET100.0/baseline_met120_230/"+var+"_Puppi/TTbar_diLepton");
+      // ~TH2F* TTbar_2D_Puppi = histReader.read<TH2F>("diff_MET100.0/baseline_met120_230/"+var+"_Puppi/"+sampleName);
       // ~TH2F* OtherSample_2D_Puppi = histReader.read<TH2F>("diff_MET100.0/baseline_met120_230/"+var+"_Puppi/T2tt_650_350");
-      // ~TH2F* TTbar_2D = histReader.read<TH2F>("diff_MET100.0/baseline_met230/"+var+"/TTbar_diLepton");
+      // ~TH2F* TTbar_2D = histReader.read<TH2F>("diff_MET100.0/baseline_met230/"+var+"/"+sampleName);
       // ~TH2F* OtherSample_2D = histReader.read<TH2F>("diff_MET100.0/baseline_met230/"+var+"/T2tt_650_350");
-      // ~TH2F* TTbar_2D_Puppi = histReader.read<TH2F>("diff_MET100.0/baseline_met230/"+var+"_Puppi/TTbar_diLepton");
+      // ~TH2F* TTbar_2D_Puppi = histReader.read<TH2F>("diff_MET100.0/baseline_met230/"+var+"_Puppi/"+sampleName);
       // ~TH2F* OtherSample_2D_Puppi = histReader.read<TH2F>("diff_MET100.0/baseline_met230/"+var+"_Puppi/T2tt_650_350");
-      // ~TH2F* TTbar_2D_Deep = histReader.read<TH2F>("diff_MET100.0/baseline_met230/"+var+"_Deep/TTbar_diLepton");
+      // ~TH2F* TTbar_2D_Deep = histReader.read<TH2F>("diff_MET100.0/baseline_met230/"+var+"_Deep/"+sampleName);
       // ~TH2F* OtherSample_2D_Deep = histReader.read<TH2F>("diff_MET100.0/baseline_met230/"+var+"_Deep/T2tt_650_350");
       
       TProfile TTbar_profile;
@@ -360,10 +363,10 @@ void run()
       can.Clear();
       can.cd();
       // ~gPad->SetLeftMargin(0.13);
-      // ~TH1F* PFMET_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METres/TTbar_diLepton"); 
-      // ~TH1F* Puppi_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METresPuppi/TTbar_diLepton");
-      // ~TH1F* BReg_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METresBJetRegr/TTbar_diLepton");
-      // ~TH1F* BRegLB_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METresBJetLBRegr/TTbar_diLepton");
+      // ~TH1F* PFMET_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METres/"+sampleName); 
+      // ~TH1F* Puppi_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METresPuppi/"+sampleName);
+      // ~TH1F* BReg_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METresBJetRegr/"+sampleName);
+      // ~TH1F* BRegLB_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METresBJetLBRegr/"+sampleName);
       TH1F* PFMET_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METres/TTbar_diLepton_CUETP8M2"); 
       TH1F* Puppi_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METresPuppi/TTbar_diLepton_CUETP8M2");
       TH1F* BReg_res = histReader.read<TH1F>(TString::Format("diff_MET%.1f/",cfg.processFraction*100)+selection+"/METresBJetRegr/TTbar_diLepton_CUETP8M2");
