@@ -11,18 +11,23 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh
 # ~echo "Sleeping for "$duration" minutes"
 # ~sleep $duration"m"
 
+echo $TMP
+
 # copy inputs for Unfolding from dCache
 syst="$4"
 syst=${syst:2}
 mkdir $TMP/100.0
 cd "$TMP/100.0"
-eval `scram unsetenv -sh`;
-# ~gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${6}"/minTrees/"$3"/"$5"/minTrees/100.0/Nominal ./Nominal
-gfal-copy -r -t 20000 dcap://grid-dcap-extern.physik.rwth-aachen.de"${6}"/minTrees/"$3"/"$5"/minTrees/100.0/Nominal ./Nominal
+eval `scram unsetenv -sh`
+echo $TMP
+gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${6}"/minTrees/"$3"/"$5"/minTrees/100.0/Nominal ./Nominal
+# ~gfal-copy -r -t 20000 dcap://grid-dcap-extern.physik.rwth-aachen.de"${6}"/minTrees/"$3"/"$5"/minTrees/100.0/Nominal ./Nominal
+# ~gfal-copy -r -t 20000 dcap://grid-dcap.physik.rwth-aachen.de"${6}"/minTrees/"$3"/"$5"/minTrees/100.0/Nominal ./Nominal
 if [[ $syst != "Nominal" ]]
 then
-   # ~gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${6}"/minTrees/"$3"/"$5"/minTrees/100.0/$syst ./$syst
-   gfal-copy -r -t 20000 dcap://grid-dcap-extern.physik.rwth-aachen.de"${6}"/minTrees/"$3"/"$5"/minTrees/100.0/$syst ./$syst
+   gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${6}"/minTrees/"$3"/"$5"/minTrees/100.0/$syst ./$syst
+   # ~gfal-copy -r -t 20000 dcap://grid-dcap-extern.physik.rwth-aachen.de"${6}"/minTrees/"$3"/"$5"/minTrees/100.0/$syst ./$syst
+   # ~gfal-copy -r -t 20000 dcap://grid-dcap.physik.rwth-aachen.de"${6}"/minTrees/"$3"/"$5"/minTrees/100.0/$syst ./$syst
 fi
 cd /home/home4/institut_1b/dmeuser/CMSSW_10_5_0/CMSSW_10_5_0/src
 eval `scramv1 runtime -sh`
