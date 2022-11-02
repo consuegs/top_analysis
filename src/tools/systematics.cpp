@@ -170,7 +170,7 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("CR_ENVELOPE_IND")) return CR_envelope_ind;
     if(type.BeginsWith("CR_ENVELOPE")) return CR_envelope;
     if(type.BeginsWith("ERDON")) return erdon;
-    if(type.BeginsWith("DS")) return tw_ds;
+    if(type.BeginsWith("TWDS")) return tw_ds;
     if(type.BeginsWith("MESCALE_ENVELOPE_IND")) return meScale_envelope_ind;
     if(type.BeginsWith("MESCALE_ENVELOPE")) return meScale_envelope;
     if(type.BeginsWith("MESCALE_TTBB")) return meScale_ttbb;
@@ -443,7 +443,7 @@ TString Systematic::convertType(const Type& type)
     if(type == CR_envelope_ind) return "CR_ENVELOPE_IND";
     if(type == CR_envelope) return "CR_ENVELOPE";
     if(type == erdon) return "ERDON";
-    if(type == tw_ds) return "DS";
+    if(type == tw_ds) return "TWDS";
     if(type == meScale_envelope_ind) return "MESCALE_ENVELOPE_IND";
     if(type == meScale_envelope) return "MESCALE_ENVELOPE";
     if(type == meScale_ttbb) return "MESCALE_TTBB";

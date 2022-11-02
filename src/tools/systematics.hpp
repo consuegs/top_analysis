@@ -494,6 +494,7 @@ namespace Systematic{
         unclustered,
         
         pdf,
+        tw_ds,
         xsec_ttother,xsec_dy,xsec_st,xsec_other,
         l1prefiring
     };
@@ -518,7 +519,7 @@ namespace Systematic{
     
     ///Define systematics that are applied by using an alternative sample
     const std::vector<Type> altSampleTypes{
-        erdon,CR1,CR2,CR_envelope,CR_envelope_ind,ueTune,match,mTop169p5,mTop175p5,mtop,mtop_ind
+        erdon,CR1,CR2,CR_envelope,CR_envelope_ind,ueTune,match,mTop169p5,mTop175p5,mtop,mtop_ind,tw_ds
 
     };
     
@@ -581,6 +582,7 @@ namespace Systematic{
         psISRScale,psFSRScale,
         pu,
         topPt,
+        tw_ds,
         ueTune,
         xsec_dy,xsec_st,xsec_ttother,xsec_other
     };

@@ -667,10 +667,10 @@ std::pair<TH1F*,TH1F*> tunfoldplotting::getSystUnc(TH1F* const &nominal, TString
       else if (Systematic::convertType(syst) == Systematic::mtop){      // derive mtop uncertainty
          tempSys = getMTOPunc(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up,norm);
       }
-      else if (Systematic::convertType(syst) == Systematic::meScale_envelope){      // derive mtop uncertainty
+      else if (Systematic::convertType(syst) == Systematic::meScale_envelope){      // derive meScale uncertainty
          tempSys = getMESCALEenvelope(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up,norm);
       }
-      else if (Systematic::convertType(syst) == Systematic::pdf_envelope){      // derive mtop uncertainty
+      else if (Systematic::convertType(syst) == Systematic::pdf_envelope){      // derive pdf uncertainty
          tempSys = getPDFenvelope(path,filePath,nominal,Systematic::convertVariation(syst) == Systematic::up,norm);
       }
       else if (Systematic::convertType(syst) == Systematic::lumi){      // derive lumi unc.
@@ -1109,24 +1109,26 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       // ~ratio_unfolded.Draw("pex0 same");
       
       //draw stat. unc
-      ratio_graph.Draw("pe2 same");
-      ratio_reg_graph.Draw("pe2 same");
-      ratio_bbb_graph.Draw("pe2 same");
+      ratio_graph.Draw("pe20 same");
+      ratio_reg_graph.Draw("pe20 same");
+      ratio_bbb_graph.Draw("pe20 same");
       
       //draw tot. unc.
-      ratio_totalGraph.Draw("p same");
-      ratio_reg_totalGraph.Draw("p same");
-      ratio_bbb_totalGraph.Draw("p same");
+      ratio_totalGraph.Draw("p0 same");
+      ratio_reg_totalGraph.Draw("p0 same");
+      ratio_bbb_totalGraph.Draw("p0 same");
       
    }
    else {
       ratio_reg_graph.Draw("pe2 same");
       ratio_reg_totalGraph.Draw("p same");
-      ratio.Draw("axis same");
+      // ~ratio.Draw("axis same");
       
       legE_ratio.append(ratio_reg_totalGraph,"#sigma_{tot.}","e");
       legE_ratio.append(ratio_reg_graph,"#sigma_{stat.}","f");
    }
+   
+   ratio.Draw("axis same");
    
    TLegend leg_ratio=legE_ratio.buildLegend(.16,.85,0.45,.95,2);
    leg_ratio.Draw();
@@ -1245,9 +1247,7 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
    bool lumiDone = false;
    bool useCRenvelope = false;
    bool useMEenvelope = false;
-   
-   std::vector<TString> doneVec;    // vector to store syst which are already processed (used for uncorrelated combinations)
-      
+         
    for (const TString& syst : systVec){
       if (syst == "JESUserDefinedHEM1516_DOWN") { // HEM only used for 2018
          map_combinedShifts[syst] = vec_systShifts[3][syst];
@@ -1328,7 +1328,6 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
             std::cout<<"Error: Combination of non-correlated uncertainties between years not supported of uncertainty not up_down type"<<std::endl;
             exit(301);
          }
-         if (std::find(doneVec.begin(), doneVec.end(), syst) != doneVec.end()) continue;     //ignore syst which are already processed
          
          TString systName_down;
          TString systName_up;

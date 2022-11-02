@@ -470,9 +470,11 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
+      else if (dist.varName_ == "pTnunu_new") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);
       else if (dist.varName_ == "pTnunu_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "pTnunu_new_DNN") dist.setVariables(metRec_DNN,metGen);
+      else if (dist.varName_ == "pTnunu_new_singleLast_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);
       else if (dist.varName_ == "dPhi_new_DNN") dist.setVariables(phiRec_DNN,phiGen);
       else if (dist.varName_ == "pTll") dist.setVariables(pTllRec,pTllGen);      
@@ -657,11 +659,21 @@ std::tuple<TString,TString,float> getPath_SampleName_SF(TString const &sample, T
    TString currentSample = sample;
    float SF = 1.0;
    if(std::find(Systematic::altSampleTypes.begin(),Systematic::altSampleTypes.end(), syst.type()) != Systematic::altSampleTypes.end()){
-      if(!isBKGother){
-         currentSample+="_"+syst.name();
+      if(syst.type() != Systematic::tw_ds){
+         if(!isBKGother){
+            currentSample+="_"+syst.name();
+         }
+         else{
+            minTreePath_current = minTreePath_nominal;
+         }
       }
       else{
-         minTreePath_current = minTreePath_nominal;
+         if(currentSample == "SingleTop"){
+            currentSample+="_"+syst.name();
+         }
+         else{
+            minTreePath_current = minTreePath_nominal;
+         }
       }
    }
    // Use nominal for all except ttbar in case of pdf unc.
@@ -704,10 +716,12 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
+      else if (dist.varName_ == "pTnunu_new") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);      
       else if (dist.varName_ == "dPhi_new_DNN") dist.setVariables(phiRec_DNN,phiGen);      
       else if (dist.varName_ == "pTnunu_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "pTnunu_new_DNN") dist.setVariables(metRec_DNN,metGen);
+      else if (dist.varName_ == "pTnunu_new_singleLast_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);      
       else if (dist.varName_ == "pTll") dist.setVariables(pTllRec,pTllGen);      
       else if (dist.varName_ == "inclusive") dist.setVariables(phiRec,phiGen);      
@@ -869,6 +883,10 @@ void run()
                                           {0,40,70,110,170,260,370},
                                           {0,20,40,55,70,90,110,140,170,215,260,315,370,435}
                                           ));
+   distribution_vec.push_back(Distribution("pTnunu_new",            // Optimzed binning for DNN
+                                          {0,40,68,100,140,196,260,332,410},
+                                          {0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455}
+                                          ));
    distribution_vec.push_back(Distribution("dPhi",
                                           {0.,0.4,0.8,1.2,1.6,2.,2.4,2.8},
                                           {0.,0.2,0.4,0.6,0.8,1.,1.2,1.4,1.6,1.8,2.,2.2,2.4,2.6,2.8,3.}
@@ -880,6 +898,10 @@ void run()
    distribution_vec.push_back(Distribution("pTnunu_new_DNN",            // Optimzed binning for DNN
                                           {0,40,68,100,140,196,260,332,410},
                                           {0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455}
+                                          ));
+   distribution_vec.push_back(Distribution("pTnunu_new_singleLast_DNN",            // Optimzed binning for DNN
+                                          {0,40,68,100,140,196,260,332,410},
+                                          {0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410}
                                           ));
    distribution_vec.push_back(Distribution("dPhi_DNN",
                                           {0.,0.4,0.8,1.2,1.6,2.,2.4,2.8},

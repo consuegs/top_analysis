@@ -155,6 +155,9 @@ void run()
    // ~std::vector<TString> systVec = {"JESBBEC1Year_UP","JESBBEC1Year_DOWN"};
    // ~std::vector<TString> systVec = {"BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN"};
    // ~std::vector<TString> systVec = {"MUON_ID_UP","MUON_ID_DOWN","MUON_ISO_UP","MUON_ISO_DOWN"};
+   // ~std::vector<TString> systVec = {"XSEC_ST_UP"};
+   // ~std::vector<TString> systVec = {"TWDS"};
+   // ~std::vector<TString> systVec = {"Nominal","TWDS"};
    std::vector<TString> systVec = {"Nominal"};
    
    //Remove HEM unc. for all year except 2018
@@ -186,6 +189,8 @@ void run()
    // ~std::vector<TString> distributions = {"dPhi_DNN"};
    // ~std::vector<TString> distributions = {"pTnunu_new_DNN","pTnunu_DNN","2D_dPhi_pTnunu_new_DNN","2D_dPhi_pTnunu_new40_DNN"};
    std::vector<TString> distributions = {"pTnunu_new_DNN","2D_dPhi_pTnunu_new_DNN","dPhi_new_DNN","inclusive"};
+   
+   // ~std::vector<TString> distributions = {"pTnunu_new_singleLast_DNN","pTnunu_new"};
    
    // ~bool verbose = false;
    bool verbose = true;
@@ -233,8 +238,8 @@ void run()
          bool withScaleFactor = cfg.tunfold_withScaleFactor;
          
          //Use alternative pseudo data (amcAtNLO)
-         // ~bool useAltReco = true;
-         bool useAltReco = false;
+         bool useAltReco = true;
+         // ~bool useAltReco = false;
          
          // perform toys studies?
          bool toy_studies = cfg.tunfold_plotToyStudies;
@@ -333,7 +338,6 @@ void run()
 
                // density flags
                TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeBinWidth;
-               // ~TUnfoldDensity::EDensityMode densityFlags=TUnfoldDensity::kDensityModeNone;
 
                // detailed steering for regularisation
                const char *REGULARISATION_DISTRIBUTION=0;
@@ -532,6 +536,37 @@ void run()
             saver.save(*hist_res,"BBB/hist_res");
             saver.save(*hist_chi,"BBB/hist_chi");
          }
+         
+         // Condition number of response matrix
+         
+         TH2F* tempHist=(TH2F*)histMCGenRec->Clone();
+         // ~TH2F* tempHist=(TH2F*)histMCGenRec_sameBins->Clone();
+         
+         float sum = 0;
+         for (int x=1; x<=tempHist->GetNbinsX(); x++){   //Normalize to gen bin
+            sum=tempHist->Integral(x,x,0,tempHist->GetNbinsY());
+            if (sum==0) continue;
+            for (int y=1; y<=tempHist->GetNbinsY(); y++){
+               if (tempHist->GetBinContent(x,y)!=0)tempHist->SetBinContent(x,y,tempHist->GetBinContent(x,y)/sum);
+               else tempHist->SetBinContent(x,y,0.0);
+            }
+         }
+         
+         TMatrixD responseMatrix(tempHist->GetNbinsY(),tempHist->GetNbinsX());
+         // ~TMatrixD responseMatrix(28,7);
+         for(int i=1; i<=tempHist->GetNbinsX(); i++){
+            for(int j=1; j<=tempHist->GetNbinsY(); j++){
+         // ~for(int i=15; i<=tempHist->GetNbinsX(); i++){
+            // ~for(int j=57; j<=tempHist->GetNbinsY(); j++){
+               responseMatrix(j-1,i-1) = tempHist->GetBinContent(i,j);
+               // ~responseMatrix(j-57,i-15) = tempHist->GetBinContent(i,j);
+            }
+         }             
+                    
+         TDecompSVD svdMatrix(responseMatrix);
+         std::cout<<"======================================"<<std::endl;
+         std::cout<<"Condition Number of Matrix: "<<svdMatrix.Condition()<<std::endl;
+         std::cout<<"======================================"<<std::endl;
       }
       if (!verbose) std::cout.clear();;
    }
