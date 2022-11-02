@@ -51,10 +51,10 @@ void run()
     // ~float slope=-0.001;
     
     //Define binning
-    int NBIN_MET_COARSE=4;
+    int NBIN_MET_COARSE=6;
     int NBIN_PHI_COARSE=3;
-    Double_t metBinsCoarse[NBIN_MET_COARSE+1]={0,40,80,120,230};
-    Double_t phiBinsCoarse[NBIN_PHI_COARSE+1]={0,0.7,1.4,3.141};
+    Double_t metBinsCoarse[NBIN_MET_COARSE+1]= {0,40,65,95,125,160,200};
+    Double_t phiBinsCoarse[NBIN_PHI_COARSE+1]={0,0.64,1.28,3.141};
     TUnfoldBinning *generatorBinning=new TUnfoldBinning("generator");
     TUnfoldBinning *signalBinning = generatorBinning->AddBinning("signal");
     signalBinning->AddAxis("metnunugen",NBIN_MET_COARSE,metBinsCoarse,
@@ -71,8 +71,9 @@ void run()
     
     
     // ~TFile *dataFile=new TFile("/net/data_cms1b/user/dmeuser/top_analysis/output/"+TString::Format("ttbar_res%.1f.root",cfg.processFraction*100));
-    TFile *dataFile=new TFile(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/ttbar_res%.1f.root",cfg.processFraction*100),"update");
-    TTree *PowhegTree=(TTree *) dataFile->Get(TString::Format("ttbar_res%.1f",cfg.processFraction*100)+"/ttbar_res_dilepton");
+    // ~TFile *dataFile=new TFile(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2018/%s/minTrees/%.1f/Nominal/TTbar_diLepton_merged.root",cfg.treeVersion.Data(),cfg.processFraction*100),"update");
+    TFile *dataFile=new TFile(TString::Format("/net/data_cms1b/user/dmeuser/top_analysis/2018/%s/minTrees/%.1f/Nominal/TTbar_diLepton_1.root",cfg.treeVersion.Data(),cfg.processFraction*100),"update");
+    TTree *PowhegTree=(TTree *) dataFile->Get(TString::Format("ttbar_res%.1f",cfg.processFraction*100)+"/TTbar_diLepton");
     Float_t metGen,phiGen,mcWeight,metRec,genMET;
     UInt_t genDecayMode;
     ULong64_t evtNo;
@@ -84,7 +85,7 @@ void run()
     PowhegTree->SetBranchAddress("PtNuNu",&metGen);
     PowhegTree->SetBranchAddress("Phi_NuNu",&phiGen);
     PowhegTree->SetBranchAddress("genDecayMode",&genDecayMode);
-    PowhegTree->SetBranchAddress("MET",&metRec);
+    PowhegTree->SetBranchAddress("DNN_MET_pT",&metRec);
     PowhegTree->SetBranchAddress("evtNo",&evtNo);
     PowhegTree->SetBranchAddress("genMET",&genMET);
     
