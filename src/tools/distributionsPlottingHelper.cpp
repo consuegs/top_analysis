@@ -3,14 +3,16 @@
 #include <iostream>
 
 Config const &cfgDistr=Config::get();
+using namespace std::chrono;
 
-systHists::systHists(TString const &systematicName, TString filePath, TString const &histPath, std::vector<TString> const &datasets, std::vector<TString> const &datasets_ttBar, std::vector<TString> const &datasets_ttBar2L):
+systHists::systHists(TString const &systematicName, TString filePath, TString const &histPath, std::vector<TString> const &datasets, std::vector<TString> const &datasets_ttBar, std::vector<TString> const &datasets_ttBar2L, std::vector<TString> const &datasets_st):
       systematic_(Systematic::Systematic(systematicName)),
       hists_(hist::Histograms<TH1F>(datasets)),
       systematicName_(systematicName),
       datasets_(datasets),
       datasets_ttBar_(datasets_ttBar),
       datasets_ttBar2L_(datasets_ttBar2L),
+      datasets_st_(datasets_st),
       filePath_(filePath),
       histPath_(histPath)
       {
@@ -36,7 +38,11 @@ systHists::systHists(TString const &systematicName, TString filePath, TString co
          const std::vector<Systematic::Type> typeVec_alt = Systematic::altSampleTypes;
          if (std::find(typeVec_alt.begin(), typeVec_alt.end(), systematic_.type()) != typeVec_alt.end()){
             altSampleType = true;
-            datasets_ = datasets_ttBar;
+            if(systematic_.type() != Systematic::tw_ds) datasets_ = datasets_ttBar;
+            else {
+               datasets_ = datasets_st;
+               onlyST = true;
+            }
          }
          
          // Adapt datasets if syst. only changes ttbar (currently used for bFrag and bSemi) and scale unc. since not working for MadGraph Samples
@@ -64,19 +70,22 @@ void systHists::combineChannel(){
 }
 
 // Return sample vectors to import
-void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TString> &mcSamples, std::vector<TString> &dataSamples, std::vector<TString> &ttbarSamples, std::vector<TString> &signalSamples){
+void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TString> &mcSamples, std::vector<TString> &dataSamples, std::vector<TString> &ttbarSamples, std::vector<TString> &signalSamples, std::vector<TString> &stSamples, std::vector<TString> &bsmSamples){
    switch(year_int){
       case(3): //2018
       mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","EGamma","MuonEG","SingleMuon"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
+      stSamples = {"SingleTop"};
+      bsmSamples = {"T2tt_525_438","T2tt_525_350"};
       break;
       case(2): //2017
       mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
+      stSamples = {"SingleTop"};
       break;
       case(1): //2016_postVFP 
       case(0): //2016_preVFP
@@ -84,6 +93,7 @@ void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TS
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
+      stSamples = {"SingleTop"};
       break;
    }
 }
@@ -188,7 +198,7 @@ void distributionsplotting::combineAllSamples(int const &year_int, hist::Histogr
    }
 }
 
-// get up and down shift for set of systematics
+// get up and down shift for set of systematics (for individual period)
 std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal, std::vector<systHists*> const &systHists_vec, TString const loc, TString const sample, bool envelope){
    TH1F* hist_shiftUP = (TH1F*)nominal->Clone();
    TH1F* hist_shiftDOWN = (TH1F*)nominal->Clone();
@@ -198,15 +208,18 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal,
    TH1F tempShift;
    TH1F* nominal_ttbar;
    TH1F* nominal_ttbar2L;
+   TH1F* nominal_st;
    for (auto &current : systHists_vec){
       if (current->systematic_.type() == Systematic::nominal || current->systematic_.type() == Systematic::met40Cut){  //Store sum of ttBar for syst. with alt. samples
          if (sample == "") {
             nominal_ttbar = current->hists_.getSummedHist(loc,current->datasets_ttBar_);
             nominal_ttbar2L = current->hists_.getSummedHist(loc,current->datasets_ttBar2L_);   //for PDF unc.
+            nominal_st = current->hists_.getSummedHist(loc,current->datasets_st_);   //for DS unc.
          }
          else {
             nominal_ttbar = current->hists_.getHistogram(loc,sample);
             nominal_ttbar2L = current->hists_.getHistogram(loc,sample);
+            nominal_st = current->hists_.getSummedHist(loc,current->datasets_st_);   //for DS unc.
          }
          continue;
          
@@ -220,8 +233,9 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal,
       }
       else tempSys = nominal_ttbar;
             
-      if (current->altSampleType || current->onlyTTbar) tempShift= phys::getSystShift(*nominal_ttbar,*tempSys);  // Choose correct reference
+      if ((current->altSampleType && current->onlyST==false) || current->onlyTTbar) tempShift= phys::getSystShift(*nominal_ttbar,*tempSys);  // Choose correct reference
       else if (current->onlyTTbar2L) tempShift= phys::getSystShift(*nominal_ttbar2L,*tempSys);  // for PDF unc.
+      else if (current->onlyST) tempShift= phys::getSystShift(*nominal_st,*tempSys);  // for DS unc.
       else tempShift= phys::getSystShift(*nominal,*tempSys);
       
       if(envelope){
@@ -256,7 +270,7 @@ void distributionsplotting::printUnc(TString name, const float &down, const floa
 }
 
 // print total yields per contribution
-void distributionsplotting::printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systHists_vec, const std::vector<TString> &mcSamples_merged){
+void distributionsplotting::printTotalYields(hist::Histograms<TH1F>* hs, std::vector<std::vector<systHists*>> const &systHists_vec, const std::vector<TString> &mcSamples_merged){
    std::vector<TString> outputSamples(mcSamples_merged);
    std::reverse(outputSamples.begin(),outputSamples.end());
    outputSamples.push_back("MC");
@@ -270,7 +284,15 @@ void distributionsplotting::printTotalYields(hist::Histograms<TH1F>* hs, std::ve
    for (TString cat:{"ee","emu","mumu","all"}){    //Get the number of events per category
       TH1F* mc_total=hs->getHistogram("cutflow/"+cat,"MC");
       // ~TH1F* mc_total=hs->getHistogram("baseline/"+cat+"/nBjets","MC");
-      std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,systHists_vec,"cutflow/"+cat);
+      
+      std::pair<TH1F*,TH1F*> syst;
+      if (systHists_vec.size() == 1){    // single period
+         syst = getTotalSyst(mc_total,systHists_vec[0],"cutflow/"+cat);
+      }
+      else {   // combined
+         syst = getTotalSystCombined(systHists_vec,"cutflow/"+cat);
+      }
+      
       std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
       float mcYield = mc_total->GetBinContent(6);
       float mcYield_down = syst.first->GetBinContent(6);
@@ -350,56 +372,37 @@ void distributionsplotting::printShiftBySample(hist::Histograms<TH1F>* hs, std::
    }
 }
 
-void distributionsplotting::fixAxis2D(TAxis* axis){     // currently only works for 2D SR with 6x11 bins
-   axis->SetNdivisions(12);
-   axis->ChangeLabel(13,-1,-1,-1,-1,-1," ");
-   for (int i=0; i<3; i++){
+void distributionsplotting::fixAxis2D(TAxis* axis, const int &nBinsY){     // only valid for x range in met between 0 and 400
+   axis->SetNdivisions(4*nBinsY);   //for ticks per y bins
+   axis->ChangeLabel(4*nBinsY+1,-1,-1,-1,-1,-1," ");
+   for (int i=0; i<nBinsY; i++){
       axis->ChangeLabel(i*4+1,-1,-1,-1,-1,-1,"  ");
       axis->ChangeLabel(i*4+2,-1,-1,-1,-1,-1,"100");
       axis->ChangeLabel(i*4+3,-1,-1,-1,-1,-1," ");
       axis->ChangeLabel(i*4+4,-1,-1,-1,-1,-1,"300");
    }
-   // ~axis->SetNdivisions(24);
-   // ~axis->ChangeLabel(25,-1,-1,-1,-1,-1," ");
-   // ~for (int i=0; i<6; i++){
-      // ~axis->ChangeLabel(i*4+1,-1,-1,-1,-1,-1,"  ");
-      // ~axis->ChangeLabel(i*4+2,-1,-1,-1,-1,-1,"100");
-      // ~axis->ChangeLabel(i*4+3,-1,-1,-1,-1,-1," ");
-      // ~axis->ChangeLabel(i*4+4,-1,-1,-1,-1,-1,"300");
-   // ~}
 }
 
-void distributionsplotting::drawVertLines2D(float const &lowerEnd, float const &upperEnd,bool text){
+void distributionsplotting::drawVertLines2D(std::vector<float> const &binEdgesY, float const &lowerEnd, float const &upperEnd,bool text){// only valid for x range in met between 0 and 400
    TLine * aline = new TLine();
    TLatex * atext = new TLatex();
    atext->SetTextSize(0.025);
-   aline->SetLineWidth(2);
-   for (int i=1; i<3; i++){
+   aline->SetLineWidth(1.8);
+   for (int i=1; i<(binEdgesY.size()-1); i++){
       aline->DrawLine(i*400,lowerEnd,i*400,upperEnd);
+      if (text){
+         // ~atext->DrawLatex(75+((i-1)*400),1.7*lowerEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i-1],binEdgesY[i]));
+         atext->DrawLatex(75+((i-1)*400),1.7*lowerEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i-1],binEdgesY[i]));
+         if (i==(binEdgesY.size()-2)) atext->DrawLatex(75+(i*400),1.7*lowerEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i],binEdgesY[i+1]));    // for last bin
+      }
    }
-   if (text){
-      atext->DrawLatex(150,1.7*lowerEnd,"|#Delta#phi|<0.35");
-      atext->DrawLatex(500,1.7*lowerEnd,"0.7<|#Delta#phi|<1.4");
-      atext->DrawLatex(900,1.7*lowerEnd,"1.4<|#Delta#phi|");
-   }
-   // ~for (int i=1; i<6; i++){
-      // ~aline->DrawLine(i*400,lowerEnd,i*400,upperEnd);
-   // ~}
-   // ~if (text){
-      // ~atext->DrawLatex(100,1.7*lowerEnd,"|#Delta#phi|<0.35");
-      // ~atext->DrawLatex(450,1.7*lowerEnd,"0.35<|#Delta#phi|<0.7");
-      // ~atext->DrawLatex(850,1.7*lowerEnd,"0.7<|#Delta#phi|<1.05");
-      // ~atext->DrawLatex(1250,1.7*lowerEnd,"1.05<|#Delta#phi|<1.4");
-      // ~atext->DrawLatex(1650,1.7*lowerEnd,"1.4<|#Delta#phi|<2.27");
-      // ~atext->DrawLatex(2050,1.7*lowerEnd,"2.27<|#Delta#phi|");
-   // ~}
 }
 
 void distributionsplotting::plotHistograms(TString const &sPresel, TString const &sVar, hist::Histograms<TH1F>* const &hs, std::vector<TString> const &mcSamples_merged, 
-                     std::map<const TString,Color_t> const & colormap, std::vector<systHists*> const &systHists_vec, io::RootFileSaver const &saver, bool plotStatUncExpData, bool is2D){
-   TCanvas can;
-   can.SetLogy();
+                     std::map<const TString,Color_t> const & colormap, std::vector<std::vector<systHists*>> const &systHists_vec, io::RootFileSaver const &saver, bool plotStatUncExpData, bool is2D, const std::vector<float> &binEdgesY){
+   
    gfx::SplitCan sp_can;
+   if(is2D) sp_can.can_.Size(1200,600);
    sp_can.pU_.SetLogy();
    sp_can.pU_.cd();
    TString loc;
@@ -409,7 +412,13 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    
    //systematics
    TH1F* hist_mc = hs->getHistogram(loc,{"MC"});
-   std::pair<TH1F*,TH1F*> syst = getTotalSyst(hist_mc,systHists_vec,loc);
+   std::pair<TH1F*,TH1F*> syst;
+   if (systHists_vec.size() == 1){  // single period plot
+      syst = getTotalSyst(hist_mc,systHists_vec[0],loc);
+   }
+   else{    // combined plot
+      syst = getTotalSystCombined(systHists_vec,loc);
+   }
    TGraphAsymmErrors systGraph = hist::getErrorGraph(syst.first,syst.second,hist_mc,true);
    
    TString cat;   // set channel label
@@ -429,14 +438,15 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    else st_mc.SetMaximum(1e3*st_mc.GetMaximum());
    st_mc.Draw();     // draw stack
    if(sPresel.Contains("cutflow")) st_mc.GetXaxis()->SetRangeUser(0.5,6.5);
+   if(is2D) {     //needed because title is missing
+      st_mc.SetTitle(";;Events/Bin;");
+      st_mc.GetYaxis()->SetTitleOffset(0.75);
+   }
    
    systGraph.SetFillStyle(3001);
+   systGraph.SetLineWidth(0);
+   systGraph.SetFillColor(kGray);
    systGraph.Draw("same 2");    // draw syst.
-   
-   if (is2D){
-      fixAxis2D(st_mc.GetXaxis());
-      drawVertLines2D(st_mc.GetHistogram()->GetMinimum(),st_mc.GetHistogram()->GetMaximum(),true);
-   }
    
    // data plotting part
    auto hist_data = hs->getHistogram(loc,{"data"});
@@ -449,25 +459,40 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       plotData = true;
    }
    
-   //auto hists_BSM=hs->getHistograms(loc,{"TTbar_diLepton"});     //placeholder
-   //auto BSM_legend=hs->getLegendEntries();    //placeholder
-   //if (cfg.year_int==1){    //Plot BSM in 2016
-   //   hists_BSM=hs->getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
-   //   for (auto const &h: hists_BSM) {
-   //      h->Draw("same hist");
-   //      // ~h->SetLineWidth(4);
-   //   }
-   //   le+=hs->getLegendEntries();
-   //   BSM_legend=hs->getLegendEntries();
-   //}
+   // bsm plotting part
+   auto hists_BSM = hs->getHistograms(loc,{"TTbar_diLepton"});     //placeholder
+   auto BSM_legend = hs->getLegendEntries();    //placeholder
+   TH1F* sqrtB_hist = (TH1F*)hist_mc->Clone();
+   TH1F* S_sqrtB_hist;
+   hist::sqrtHist(*sqrtB_hist);
+   if (systHists_vec.size() == 1){  // single period plot
+      if (cfgDistr.year_int==3){    //Plot BSM currently only available for 2018
+         // ~hists_BSM=hs->getHistograms(loc,{"T2tt_525_438","T2tt_525_350"});
+         hists_BSM=hs->getHistograms(loc,{"T2tt_525_350"});
+         for (auto const &h: hists_BSM) {
+            h->Draw("same hist");
+            h->SetLineWidth(1.8);
+            S_sqrtB_hist = (TH1F*)h->Clone();
+            S_sqrtB_hist->Divide(sqrtB_hist);
+         }
+         le+=hs->getLegendEntries();
+         BSM_legend=hs->getLegendEntries();
+      }
+   }
+   
+   if (is2D){
+      fixAxis2D(st_mc.GetXaxis(),binEdgesY.size()-1);
+      drawVertLines2D(binEdgesY,st_mc.GetHistogram()->GetMinimum(),st_mc.GetHistogram()->GetMaximum(),true);
+   }
    
    // redraw axis, draw label and legend
-   auto hists_SM=hs->getHistograms(loc,{"TTbar_diLepton"});
-   TH1F axis=*(hists_SM[0]);
-   axis.SetStats(0);
-   axis.SetYTitle("Events/Bin");
-   axis.Draw("same axis");
-   TLegend leg=le.buildLegend(.42,.7,1-(gPad->GetRightMargin()+0.02),-1,2);
+   // ~auto hists_SM=hs->getHistograms(loc,{"TTbar_diLepton"});
+   // ~TH1F axis=*(hists_SM[0]);
+   // ~axis.SetStats(0);
+   // ~axis.SetYTitle("Events/Bin");
+   // ~axis.Draw("same axis");
+   TLegend leg=le.buildLegend(.42,.72,1-(gPad->GetRightMargin()+0.02),-1,2);
+   leg.SetFillStyle(1001);
    leg.Draw();
    label.Draw();
    
@@ -534,18 +559,22 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       ratio_mc.GetXaxis()->SetLabelOffset(0.03);
    }
    
-   ratio_mc.GetYaxis()->SetTitleOffset(0.45);
+   if(is2D){
+      ratio_mc.GetYaxis()->SetTitleOffset(0.25);
+      ratio_mc.SetMaximum(1.35);
+      ratio_mc.SetMinimum(0.65);
+   }
+   else{
+      ratio_mc.GetYaxis()->SetTitleOffset(0.45);
+      ratio_mc.SetMaximum(1.35);
+      ratio_mc.SetMinimum(0.65);
+   }
    ratio_mc.SetStats(0);
    ratio.SetLineColor(kBlack);
-   // ~ratio_mc.SetMaximum(1.04);
-   // ~ratio_mc.SetMinimum(0.9);
-   ratio_mc.SetMaximum(1.35);
-   ratio_mc.SetMinimum(0.65);
    totalUncGraphRatio.SetFillColor(kGray);
    totalUncGraphRatio.SetLineWidth(0);
    expDataStatRatio.SetFillColor(kBlue);
-   systGraphRatio.SetFillColor(kGray+3);
-   systGraphRatio.SetFillStyle(3004);
+   systGraphRatio.SetFillColor(kGray+2);
    expDataStatRatio.SetFillStyle(3005);
    expDataStatRatio.SetLineWidth(0);
    systGraphRatio.SetLineWidth(0);
@@ -561,18 +590,46 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    if(plotData) ratio.Draw("pe1 same");
    
    if(is2D){
-      fixAxis2D(ratio_mc.GetXaxis());
-      drawVertLines2D(ratio_mc.GetMinimum(),ratio_mc.GetMaximum(),false);
+      fixAxis2D(ratio_mc.GetXaxis(),binEdgesY.size()-1);
+      drawVertLines2D(binEdgesY,ratio_mc.GetMinimum(),ratio_mc.GetMaximum(),false);
    }
    
    gfx::LegendEntries le_low;
    le_low.append(totalUncGraphRatio,"#sigma_{tot.}","f");
    le_low.append(systGraphRatio,"#sigma_{syst.}","f");
    if(plotStatUncExpData) le_low.append(expDataStatRatio,"#sigma_{stat.(exp. data)}","f");
-   TLegend leg_low=le_low.buildLegend(.5,.8,0.8,0.95,2);
+   TLegend leg_low=le_low.buildLegend(.45,.8,0.75,0.95,2);
    leg_low.Draw();
       
    saver.save(sp_can,loc,false,true);
+   
+   //Draw S over sqrt(B) plots
+   if (systHists_vec.size() == 1 && cfgDistr.year_int==3){  // single period plot and year 2018
+      TCanvas can;
+      can.cd();
+      if(is2D) can.Size(1200,600);
+      
+      S_sqrtB_hist->GetYaxis()->SetTitle("S/#sqrt{B}");
+      S_sqrtB_hist->SetStats(0);
+      S_sqrtB_hist->Draw("hist");
+      
+      le.clear();
+      le.append(*S_sqrtB_hist,"T2tt_525_350","l");
+      TLegend leg_sensitivity=le.buildLegend(.5,.8,0.7,0.9,2);
+      leg_sensitivity.SetFillStyle(1001);
+      leg_sensitivity.Draw();
+      label.Draw();
+      
+      if(is2D){
+         fixAxis2D(S_sqrtB_hist->GetXaxis(),binEdgesY.size()-1);
+         S_sqrtB_hist->SetMaximum(1.0);
+         drawVertLines2D(binEdgesY,S_sqrtB_hist->GetMinimum(),S_sqrtB_hist->GetMaximum(),true);
+      }
+      
+      saver.save(can,"S_sqrtB/"+loc,true,true,true);
+   }
+   
+   
    //normalized distributions
    /*
    can.cd();
@@ -626,4 +683,195 @@ void distributionsplotting::getCombinedDistributions(hist::Histograms<TH1F> &hs_
          hs_combined.addFilledHist(loc,sample,*temp);
       }
    }
+}
+
+// get up and down shift for set of systematics for all periods combined (party copied from getCombinedUnc in tunfoldPlottingHelper)
+std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<std::vector<systHists*>> const &systHists_vec_all, TString const loc){
+   
+   // get nominal histograms per period
+   std::vector<TH1F*> nominals(4);
+   for (int i=0; i<nominals.size(); i++){
+      nominals[i] = systHists_vec_all[i][0]->hists_.getHistogram(loc,{"MC"});
+   }
+   
+   // define empty histograms to store total shifts
+   TH1F* hist_TotalShiftUP = (TH1F*)nominals[0]->Clone();
+   TH1F* hist_TotalShiftDOWN = (TH1F*)nominals[0]->Clone();
+   hist_TotalShiftUP->Reset();
+   hist_TotalShiftDOWN->Reset();
+   TH1F* zeroes = (TH1F*)nominals[0]->Clone();
+   zeroes->Reset();
+   
+   // define container for individual and combined shifts
+   std::vector<std::map<TString,TH1F>> vec_systShifts(4);
+   std::map<TString,TH1F> map_combinedShifts;
+   TH1F tempHist;
+   
+   // covariance matrix for lumi uncertainty
+   float lumiCorr[5][3] = {
+      {1.0,0.0,0.0},
+      {0.0,2.0,0.0},
+      {0.0,0.0,1.5},
+      {0.6,0.9,2.0},
+      {0.0,0.6,0.2}
+   };
+   
+   // booleans to check if lumi or envelope uncertainty was already produced
+   bool lumiDone = false;
+   bool CRenvelopeDone = false;
+   bool MEenvelopeDone = false;
+   
+   // loop over systematics to store individual shifts
+   for (int i=1; i<(systHists_vec_all[3].size()); i++){
+      
+      for (int j=0; j<nominals.size(); j++){ // loop over years
+         
+         if (i>=systHists_vec_all[j].size()) continue;   // handle different number of systematics per year (mainly for HEM)
+         
+         TString syst = systHists_vec_all[j][i]->systematicName_;
+         if (syst.BeginsWith("LUMI")) continue;    // Lumi derived differently
+
+         if (syst == "JESUserDefinedHEM1516_DOWN" && j!=3) continue; // HEM only used for 2018
+                  
+         std::vector<systHists*> tempVec = {systHists_vec_all[j][0],systHists_vec_all[j][i]};   // temp vec with only one source
+         std::pair<TH1F*,TH1F*> tempPair = getTotalSyst(nominals[j],tempVec,loc);
+         // ~for (int k=1; k<=tempPair.first->GetNbinsX(); k++){
+            // ~std::cout<<tempPair.first->GetBinContent(k)<<"   "<<tempPair.second->GetBinContent(k)<<std::endl;;
+         // ~}
+         // ~std::cout<<"--"<<std::endl;
+         tempPair.second->Add(tempPair.first,-1);   // get one histogram with up and down shifts (no cancelation since only one syst at a time is considered)
+         vec_systShifts[j][syst] = *tempPair.second;
+         
+         // ~std::cout<<syst<<std::endl;
+         // ~for (int k=1; k<=vec_systShifts[j][syst].GetNbinsX(); k++){
+            // ~std::cout<<vec_systShifts[j][syst].GetBinContent(k)<<std::endl;
+         // ~}
+         // ~std::cout<<"--------------------------"<<std::endl;
+         
+      }
+   }
+   
+   for (int i=1; i<(systHists_vec_all[3].size()); i++){
+      TString syst = systHists_vec_all[3][i]->systematicName_;
+      
+      if (syst.BeginsWith("LUMI")) { // Lumi unc correlation more complex then just (un)corr.
+         if (!lumiDone){
+            nominals[1]->Add(nominals[0]);   // add preVFP and post VFP
+            
+            // uncorrelated part
+            TH1F tempHist_uncorr = *(TH1F*)nominals[1]->Clone();
+            tempHist_uncorr.Reset();
+            tempHist_uncorr.Add(nominals[1],lumiCorr[0][0]*1e-2);
+            
+            for (int i=1; i<3; i++){
+               hist::addQuadr(tempHist_uncorr,*nominals[i+1],lumiCorr[i][i]*1e-2);
+            }
+            
+            // correlated part
+            TH1F tempHist_corr = *(TH1F*)nominals[1]->Clone();
+            tempHist_corr.Reset();
+            tempHist_corr.Add(nominals[1],lumiCorr[3][0]*1e-2);
+            for (int i=1; i<3; i++){
+               tempHist_corr.Add(nominals[i+1],lumiCorr[3][i]*1e-2);
+            }
+            
+            // correlated part (17/18)
+            TH1F tempHist_corr1718 = *(TH1F*)nominals[2]->Clone();
+            tempHist_corr1718.Reset();
+            tempHist_corr1718.Add(nominals[2],lumiCorr[4][1]*1e-2);
+            tempHist_corr1718.Add(nominals[3],lumiCorr[4][2]*1e-2);
+            
+            // combine parts
+            hist::addQuadr(tempHist_uncorr,tempHist_corr);
+            hist::addQuadr(tempHist_uncorr,tempHist_corr1718);
+            
+            map_combinedShifts["LUMI_DOWN"] = tempHist_uncorr;
+            tempHist_uncorr.Scale(-1.);
+            map_combinedShifts["LUMI_UP"] = tempHist_uncorr;
+            
+            lumiDone = true;
+         }
+         
+         continue;
+      }
+      
+      // derive CR envelope
+      if ((std::find(Systematic::crTypes.begin(), Systematic::crTypes.end(), Systematic::convertType(syst)) != Systematic::crTypes.end()) && CRenvelopeDone == false) {
+         map_combinedShifts["CR_ENVELOPE_DOWN"] = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,false);
+         map_combinedShifts["CR_ENVELOPE_UP"] = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,true);
+         CRenvelopeDone = true;
+         continue;
+      }
+      else if ((std::find(Systematic::crTypes.begin(), Systematic::crTypes.end(), Systematic::convertType(syst)) != Systematic::crTypes.end())) continue;  //ignore shifts already used in envelope
+      
+      // derive ME envelope
+      if ((std::find(Systematic::meTypes.begin(), Systematic::meTypes.end(), Systematic::convertType(syst)) != Systematic::meTypes.end()) && MEenvelopeDone == false) {
+         map_combinedShifts["MESCALE_ENVELOPE_DOWN"] = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,false);
+         map_combinedShifts["MESCALE_ENVELOPE_UP"] = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,true);
+         MEenvelopeDone = true;
+         continue;
+      }
+      else if ((std::find(Systematic::meTypes.begin(), Systematic::meTypes.end(), Systematic::convertType(syst)) != Systematic::meTypes.end())) continue;  //ignore shifts already used in envelope
+      
+      if (syst == "JESUserDefinedHEM1516_DOWN") { // HEM only used for 2018
+         map_combinedShifts[syst] = vec_systShifts[3][syst];
+         continue;
+      }
+      
+      if (Systematic::isCorrelated(syst)){   // Add correlated parts
+         tempHist = vec_systShifts[0][syst];
+         for (int i=1; i<vec_systShifts.size(); i++){
+            tempHist.Add(&vec_systShifts[i][syst]);
+         }
+         map_combinedShifts[syst] = tempHist;
+      }
+      else {   // Add non-correlated parts
+         if (std::find(Systematic::upDownTypes.begin(), Systematic::upDownTypes.end(), Systematic::convertType(syst)) == Systematic::upDownTypes.end()){
+            std::cout<<"Error: Combination of non-correlated uncertainties between years not supported of uncertainty not up_down type"<<std::endl;
+            exit(301);
+         }
+         
+         TString systName_down;
+         TString systName_up;
+         if (Systematic::convertVariation(syst) == Systematic::up){
+            systName_up = syst;
+            systName_down = syst;
+            systName_down.ReplaceAll("_UP","_DOWN");
+         }
+         else if (Systematic::convertVariation(syst) == Systematic::down){
+            systName_down = syst;
+            systName_up = syst;
+            systName_up.ReplaceAll("_DOWN","_UP");
+         }
+         
+         TH1F down(vec_systShifts[0][syst]);
+         TH1F up(vec_systShifts[0][syst]);
+         down.Reset();
+         up.Reset();
+         
+         for (int i=0; i<vec_systShifts.size(); i++){
+            std::pair<TH1F*,TH1F*> envelopes =  hist::getEnvelope(zeroes,{vec_systShifts[i][systName_down],vec_systShifts[i][systName_up]});
+            hist::addQuadr(down,*envelopes.first);
+            hist::addQuadr(up,*envelopes.second);
+         }
+         down.Scale(-1.);
+         map_combinedShifts[systName_down] = down;
+         map_combinedShifts[systName_up] = up;
+      }
+      
+   }
+   
+   //Store for total uncertainty
+   for (const auto &[key, value]: map_combinedShifts){
+      for (int i=0; i<=value.GetNbinsX(); i++){
+         float content = value.GetBinContent(i);
+         if (content>0) hist_TotalShiftUP->SetBinContent(i,hist_TotalShiftUP->GetBinContent(i)+content*content);
+         else hist_TotalShiftDOWN->SetBinContent(i,hist_TotalShiftDOWN->GetBinContent(i)+content*content);
+      }
+   }
+   hist::sqrtHist(*hist_TotalShiftUP);
+   hist::sqrtHist(*hist_TotalShiftDOWN);
+   
+   
+   return std::make_pair(hist_TotalShiftDOWN,hist_TotalShiftUP);
 }

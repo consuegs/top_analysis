@@ -98,8 +98,8 @@ void gfx::setupDrawnAxes(SplitCan const &spcan)
    size=gStyle->GetLabelSize("x")/f;
    x->SetLabelSize(size);
 
-   // ~size=gStyle->GetTickLength("x")/f;
-   // ~x->SetTickLength(size);
+   size=gStyle->GetTickLength("x")/f;
+   x->SetTickLength(size);
 
    setupDrawnAxes(spcan.pL_);
 }
@@ -158,6 +158,9 @@ std::pair<TString,TString> gfx::parseTitle(TString const &title)
       ,std::make_tuple("SIEIE","#sigma_{i#etai#eta}","")
       ,std::make_tuple("SIPIP","#sigma_{i#phii#phi}","")
       ,std::make_tuple("TREFF","Trigger Efficiency","")
+      ,std::make_tuple("%pTnunu","p_{#scale[.8]{T}}^{#scale[.8]{#nu#nu}}","GeV")
+      ,std::make_tuple("DNN_MET_pT","DNN p_{#scale[.8]{T}}^{#scale[.8]{miss}}","")
+      ,std::make_tuple("DNN_MET_dPhi_nextLep","min[#Delta#phi(DNN p_{#scale[.8]{T}}^{#scale[.8]{miss}},l)]","")
    };
 
    TString nt(title);

@@ -18,11 +18,12 @@
 #include "tools/weighters.hpp"
 #include "tools/systematics.hpp"
 #include "tools/util.hpp"
+#include "tools/tunfoldPlottingHelper.hpp"
 
 class systHists
 {
    public:
-      systHists(TString const &systematicName, TString filePath, TString const &histPath, std::vector<TString> const &datasets, std::vector<TString> const &datasets_ttBar, std::vector<TString> const &datasets_ttBar2L);
+      systHists(TString const &systematicName, TString filePath, TString const &histPath, std::vector<TString> const &datasets, std::vector<TString> const &datasets_ttBar, std::vector<TString> const &datasets_ttBar2L, std::vector<TString> const &datasets_st);
       void openFile(bool const &standardDict);
       void combineChannel();
       
@@ -34,6 +35,7 @@ class systHists
       std::vector<TString> datasets_;
       std::vector<TString> datasets_ttBar_;
       std::vector<TString> datasets_ttBar2L_;
+      std::vector<TString> datasets_st_;
       TString const systematicName_;
       float sf_ = 1.0;
       std::vector<std::string> datasets_SF;   //datasets for which the SF is applied when using the syst.
@@ -41,6 +43,7 @@ class systHists
       bool altSampleType = false;
       bool onlyTTbar = false;
       bool onlyTTbar2L = false;
+      bool onlyST = false;
 };
 
 namespace distributionsplotting
@@ -68,7 +71,7 @@ namespace distributionsplotting
       std::vector<float> binEdgesY = {};
    };
    
-   void getSampleVectors(int const &year_int, std::vector<TString> &mcSamples, std::vector<TString> &dataSamples, std::vector<TString> &ttbarSamples, std::vector<TString> &signalSamples);
+   void getSampleVectors(int const &year_int, std::vector<TString> &mcSamples, std::vector<TString> &dataSamples, std::vector<TString> &ttbarSamples, std::vector<TString> &signalSamples, std::vector<TString> &stSamples, std::vector<TString> &bsmSamples);
    
    void importHists(std::vector<systHists*> &systHists_vec, std::vector<TString> const &samplesToPlot, std::vector<TString> const &mcSamples,
                      std::vector<distr> const &vecDistr, std::vector<distr2D> const &vecDistr2D,  bool const &standardDict=true);
@@ -81,20 +84,22 @@ namespace distributionsplotting
    
    void printUnc(TString name, const float &down, const float &up, const float &nominal);
    
-   void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systHists_vec, const std::vector<TString> &mcSamples_merged);
+   void printTotalYields(hist::Histograms<TH1F>* hs, std::vector<std::vector<systHists*>> const &systHists_vec, const std::vector<TString> &mcSamples_merged);
    
    void printUncBreakDown(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systHists_vec, const std::vector<TString> &mcSamples);
    
    void printShiftBySample(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systHists_vec, const std::vector<TString> &mcSamples);
    
-   void fixAxis2D(TAxis* axis);
+   void fixAxis2D(TAxis* axis, const int &nBinsY);
    
-   void drawVertLines2D(float const &lowerEnd, float const &upperEnd,bool text);
+   void drawVertLines2D(std::vector<float> const &binEdgesY, float const &lowerEnd, float const &upperEnd,bool text);
    
    void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histograms<TH1F>* const &hs, std::vector<TString> const &mcSamples_merged, 
-                     std::map<const TString,Color_t> const & colormap, std::vector<systHists*> const &systHists_vec, io::RootFileSaver const &saver, bool plotStatUncExpData=false, bool is2D=false);
+                     std::map<const TString,Color_t> const & colormap, std::vector<std::vector<systHists*>> const &systHists_vec, io::RootFileSaver const &saver, bool plotStatUncExpData=false, bool is2D=false, const std::vector<float> &binEdgesY={});
                      
    void getCombinedDistributions(hist::Histograms<TH1F> &hs_combined, std::vector<hist::Histograms<TH1F>*> const &hs_vec, std::vector<TString> const &mcSamples_merged);
+   
+   std::pair<TH1F*,TH1F*> getTotalSystCombined(std::vector<std::vector<systHists*>> const &systHists_vec_all, TString const loc);
    
 } // namespace distributionsplotting
 
