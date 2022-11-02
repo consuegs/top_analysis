@@ -534,4 +534,32 @@ void run()
 	rebinned.Draw("colz");
 	saver.save(can,"Binning_Optimization/Optmized");
 	can.SaveAs(dir + fileAppendix + "Normalized2D.pdf");
+	
+	//Draw resolution plot of final binning
+	can.cd();
+	gPad->SetRightMargin(0.1);
+	TProfile* profile_res = rebinned_res.ProfileX("_pfx",1,-1,"s");
+	TH1D* hist_res = rebinned_res.ProjectionX();
+	hist_res->Reset();
+	TH1D* binWidths = (TH1D*)hist_res->Clone();
+	
+	for (int i=1; i<=profile_res->GetNbinsX(); i++){
+		hist_res->SetBinContent(i,profile_res->GetBinError(i));
+		binWidths->SetBinContent(i,edges_optimized[i]-edges_optimized[i-1]);
+	}
+	
+	hist_res->GetYaxis()->SetTitle("RMS or Width");
+	hist_res->SetMaximum(1.5*binWidths->GetMaximum());
+	hist_res->Draw("hist");
+	binWidths->SetLineColor(kRed);
+	binWidths->Draw("hist same");
+	
+	gfx::LegendEntries legE;
+	legE.append(*hist_res,"RMS","l");
+	legE.append(*binWidths,"Bin width","l");
+	TLegend leg=legE.buildLegend(.75,.8,0.9,.95,1);
+	leg.SetTextSize(0.035);
+	leg.Draw();
+	
+	saver.save(can,"Resolution_final",true,true,true);
 }
