@@ -54,7 +54,7 @@ set(MODULES
   # ~test_tensorflow
   # ~plot_leptonVeto
   # ~plot_yearComparisons
-  # ~compare_powheg_amcatnlo
+  compare_powheg_amcatnlo
   binningUnfolding1D_Fabian_OA
   binningUnfolding1D_Fabian_OA_dPhi
   binningUnfolding2D_Fabian_OA
