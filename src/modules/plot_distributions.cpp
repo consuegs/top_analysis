@@ -16,8 +16,11 @@ void run()
    std::vector<TString> dataSamples={};
    std::vector<TString> ttbarSamples={};
    std::vector<TString> signalSamples={};
-   getSampleVectors(cfg.year_int,mcSamples,dataSamples,ttbarSamples,signalSamples);
+   std::vector<TString> stSamples={};
+   std::vector<TString> bsmSamples={};
+   getSampleVectors(cfg.year_int,mcSamples,dataSamples,ttbarSamples,signalSamples,stSamples,bsmSamples);
    std::vector<TString> samplesToPlot = util::addVectors(mcSamples,dataSamples);
+   samplesToPlot = util::addVectors(samplesToPlot,bsmSamples);
    
    //Nominal
    // ~std::vector<TString> systToPlot = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR_ENVELOPE_IND_UP","CR_ENVELOPE_IND_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","LUMI_UP","LUMI_DOWN","MATCH_UP","MATCH_DOWN","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
@@ -45,9 +48,9 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","UNCLUSTERED_UP","UNCLUSTERED_DOWN",};
    // ~std::vector<TString> systToPlot = {"Nominal","UNCLUSTERED_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN"};
-   // ~std::vector<TString> systToPlot = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN"};
+   std::vector<TString> systToPlot = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MERENSCALE_UP","MERENSCALE_DOWN"};
-   std::vector<TString> systToPlot = {"Nominal","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MESCALE_UP","MESCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN"};
@@ -80,6 +83,7 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","JESBBEC1Year_UP","JESBBEC1Year_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESBBEC1Year_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESUserDefinedHEM1516_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","TWDS"};
    // ~std::vector<TString> systToPlot = {"Nominal"};
    
    // ~for (int i=1;i<=50;i++){
@@ -103,14 +107,11 @@ void run()
          /*
          // ~vecDistr.push_back({selection+channel,"Lep_e_pt",0.,600.,50});
          // ~vecDistr.push_back({selection+channel,"Lep_mu_pt",0.,600.,50});
-         */
          vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,30});
          vecDistr.push_back({selection+channel,"Lep2_pt",0.,300.,25});
-         /*
          // ~vecDistr.push_back({selection+channel,"MET",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,40,70,110,170,260,370,500}});
          // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,20,40,55,70,90,110,140,170,215,260,315,370,435,500}});
-         vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,9,{0,40,68,100,140,196,260,332,410,500}});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,40});
          // ~vecDistr.push_back({selection+channel,"met1000",0.,1000.,50});
@@ -118,7 +119,7 @@ void run()
          // ~vecDistr.push_back({selection+channel,"pTsumlep",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"sumpTlep",0.,600.,30});
          vecDistr.push_back({selection+channel,"pTbJet",0.,600.,30});
-         vecDistr.push_back({selection+channel,"bJet_eta",-2.5,2.5,25});
+         // ~vecDistr.push_back({selection+channel,"bJet_eta",-2.5,2.5,25});
          vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,30});
          vecDistr.push_back({selection+channel,"Jet2_pt",0.,400.,20});
          // ~vecDistr.push_back({selection+channel,"dPhiMETnearJet",0.,3.2,32});
@@ -190,31 +191,42 @@ void run()
          // ~vecDistr.push_back({selection+channel,"Lep1_pt*cos(Lep1_phi)",-250,250,25});
          // ~vecDistr.push_back({"baseline_GOF2D"+channel,"PuppiMET_xy*sin(PuppiMET_xy_phi)_VS_MET_xy*sin(MET_xy_phi)",0.5,36.5,36});
          */
+         
+         // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,9,{0,40,68,100,140,196,260,332,410,500}});
+         // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
+         // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
+         
       }
    }
    
    // 2D plots
    std::vector<distr2D> vecDistr2D;
-   for(TString selection:{"baseline"}){ //Reco 1D Histograms
+   for(TString selection:{"baseline"}){
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,40,80,120,160,230,400},{0,0.7,1.4,3.14}});
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,20,40,60,80,100,120,140,160,195,230,400},{0,0.35,0.7,1.05,1.4,2.27,3.14}});
-         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,10,0.,3.2,8});
+         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,14,0.,3.2,6,{0,20,40,52.5,65,80,95,110,125,142.5,160,180,200,300,400},{0,0.32,0.64,0.96,1.28,2.24,3.2}});
+         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,7,0.,3.2,3,{0,40,65,95,125,160,200,400},{0,0.64,1.28,3.2}});
       }
    }
    
    // Setup systematics
    std::vector<systHists*> systHists_vec;
    for (TString syst : systToPlot){
-      systHists* temp = new systHists(syst,TString::Format("multiHists/%s/histograms_merged_%s.root",syst.Data(),cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),(syst=="Nominal" || syst=="met40Cut")? samplesToPlot : mcSamples,(syst=="CR_ENVELOPE_UP" || syst=="CR_ENVELOPE_DOWN" || syst=="MTOP_DOWN" || syst=="MTOP_UP")? signalSamples : ttbarSamples, signalSamples);
+      systHists* temp = new systHists(syst,TString::Format("multiHists/%s/histograms_merged_%s.root",syst.Data(),cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),(syst=="Nominal" || syst=="met40Cut")? samplesToPlot : mcSamples,(syst=="CR_ENVELOPE_UP" || syst=="CR_ENVELOPE_DOWN" || syst=="MTOP_DOWN" || syst=="MTOP_UP")? signalSamples : ttbarSamples, signalSamples, stSamples);
       systHists_vec.push_back(temp);
    }
    
    std::vector<TString> mcSamples_merged={};
    
-   // Import hists
+   // Import hists 1D
    for (auto const & distr_ : vecDistr){
       importHists(systHists_vec,samplesToPlot,mcSamples,{distr_},{});
+   }
+   
+   // Import hists 2D
+   for (auto const & distr_ : vecDistr2D){
+      importHists(systHists_vec,samplesToPlot,mcSamples,{},{distr_});
    }
    
    // Combine lepton channels
@@ -248,6 +260,22 @@ void run()
       }
    }
    
+   // Loop over 2Ddistributions to plot
+   for (auto const & distr_ : vecDistr2D){
+      plotHistograms(distr_.path,distr_.name,hs,mcSamples_merged,colormap,{systHists_vec},saver,false,true,distr_.binEdgesY);
+      
+      if (distr_.path.Contains("/emu") || distr_.name == "emu"){  //plot all channels combined
+         TString combinedPath(distr_.path);
+         combinedPath.ReplaceAll("/emu","/all");
+         if (distr_.name == "emu") {   // fot cutflow plot
+            plotHistograms(combinedPath,"all",hs,mcSamples_merged,colormap,{systHists_vec},saver,false,true,distr_.binEdgesY);
+         }
+         else {
+            plotHistograms(combinedPath,distr_.name,hs,mcSamples_merged,colormap,{systHists_vec},saver,false,true,distr_.binEdgesY);
+         }
+      }
+   }
+   
    // ~hist::Histograms<TH1F>* hs;
    // ~hs = &(systHists_vec[0]->hists_);
    // Print total yields
@@ -258,76 +286,4 @@ void run()
       
    // Print shift per sample
    printShiftBySample(hs,systHists_vec,mcSamples);
-   
-   /*
-   //Plot 2D SignalRegion Plot (reco level)
-   for (auto &sPresel_vVars:msPresel_vVars_2D){
-      TString const &sPresel=sPresel_vVars.first;
-      for (TString sVar:sPresel_vVars.second){
-         TString loc=sPresel+sVar;
-         THStack st_mc=hs->getStack(loc,MCsamples,colormap);
-         st_mc.SetMaximum(st_mc.GetMaximum()*3);
-         st_mc.SetTitle(";p_{#scale[.8]{T}}^{#scale[.8]{miss}}(GeV);Events/Bin");
-         st_mc.Draw();
-         gfx::LegendEntries le=hs->getLegendEntries();
-         
-         //systematics
-         TH1F* hist_mc = hs->getHistogram(loc,{"MC"});
-         std::pair<TH1F*,TH1F*> syst = getTotalSyst(hist_mc,systHists_vec,loc);
-         
-         TGraphAsymmErrors systGraph = hist::getErrorGraph(syst.first,syst.second,hist_mc,true);
-         
-         systGraph.SetFillStyle(3001);
-         systGraph.Draw("same 2");
-         
-         st_mc.GetXaxis()->SetNdivisions(24);
-         st_mc.GetXaxis()->ChangeLabel(25,-1,-1,-1,-1,-1," ");
-         for (int i=0; i<=5; i++){
-            st_mc.GetXaxis()->ChangeLabel(i*4+1,-1,-1,-1,-1,-1,"  ");
-            st_mc.GetXaxis()->ChangeLabel(i*4+2,-1,-1,-1,-1,-1,"100");
-            st_mc.GetXaxis()->ChangeLabel(i*4+3,-1,-1,-1,-1,-1," ");
-            st_mc.GetXaxis()->ChangeLabel(i*4+4,-1,-1,-1,-1,-1,"300");
-         }
-         
-         // ~auto hists=hs->getHistograms(loc,{"T1tttt_1200_800","T2tt_650_350","DM_scalar_1_200"});
-         // ~for (auto const &h: hists) {
-            // ~h->SetLineWidth(4);
-            // ~h->Draw("same hist");
-         // ~}
-         // ~le+=hs->getLegendEntries();
-         
-         TLine * aline = new TLine();
-         TLatex * atext = new TLatex();
-         atext->SetTextSize(0.03);
-         aline->SetLineWidth(2);
-         float upperEnd=st_mc.GetHistogram()->GetMaximum();
-         float lowerEnd=st_mc.GetHistogram()->GetMinimum();
-         for (int i=1; i<=5; i++){
-            aline->DrawLine(i*400,lowerEnd,i*400,upperEnd);
-         }
-         atext->DrawLatex(100,0.2*upperEnd,"|#Delta#phi|<0.35");
-         atext->DrawLatex(475,0.2*upperEnd,"0.35<|#Delta#phi|<0.7");
-         atext->DrawLatex(875,0.2*upperEnd,"0.7<|#Delta#phi|<1.05");
-         atext->DrawLatex(1275,0.2*upperEnd,"1.05<|#Delta#phi|<1.4");
-         atext->DrawLatex(1675,0.2*upperEnd,"1.4<|#Delta#phi|<2.27");
-         atext->DrawLatex(2075,0.2*upperEnd,"2.27<|#Delta#phi|");
-         TString cat;
-         if (loc.Contains("ee")) cat="ee";
-         else if (loc.Contains("emu")) cat="e#mu";
-         else if (loc.Contains("mumu")) cat="#mu#mu";
-         else if (loc.Contains("all")) cat="all";
-         atext->DrawLatex(50,0.3*upperEnd,cat);
-         
-         TLegend leg=le.buildLegend(gPad->GetLeftMargin(),.9,1-gPad->GetRightMargin(),1-gPad->GetTopMargin(),10);
-         leg.SetTextSize(0.025);
-         leg.SetBorderSize(2);
-         leg.SetShadowColor(0);
-         leg.SetFillColor(kWhite);
-         leg.SetFillStyle(1001);
-         leg.Draw();
-      
-         saver.save(can,loc,true,false,true);
-      }
-   }
-   */
 }

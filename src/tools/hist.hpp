@@ -171,8 +171,10 @@ namespace hist
    TH2D fromWidths_2d_TH2D(const char *name, const char *title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y);
    TProfile2D ProfilefromWidths_2d(const char *name, const char *title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y);
    std::vector<float> getWidths(std::vector<float> const &bins);
-
-   bool checkRebinningConistency(const TAxis* axis, std::vector<float> const &newBinning);
+   
+   template <typename T>
+   bool checkRebinningConistency(const TAxis* axis, std::vector<T> const &newBinning);
+   
    TH1F rebinned(TH1F const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow=true,bool mergeUnderflow=true);
    TH1F rebinned(TH1F const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow=true,bool mergeUnderflow=true);
    TH1F rebinned(TH1F const &h, std::vector<double> const &binedges,bool mergeOverflow=true,bool mergeUnderflow=true);

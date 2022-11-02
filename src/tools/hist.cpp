@@ -503,10 +503,11 @@ std::vector<float> hist::getWidths(std::vector<float> const &bins){
    return widths;
 }
 
-bool checkRebinningConistency(const TAxis* axis, std::vector<double> const &newBinning)
+template <typename T>
+bool hist::checkRebinningConistency(const TAxis* axis, std::vector<T> const &newBinning)
 {
    int nBins_old = axis->GetNbins();
-   std::vector<double> oldBinning;
+   std::vector<T> oldBinning;
    for(int binId = 0; binId <= nBins_old; ++binId) {
      oldBinning.push_back(round( axis->GetBinLowEdge(binId+1) * 1000.0 ) / 1000.0);
    }
@@ -595,6 +596,12 @@ TH2F hist::rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::ve
    int entries = h.GetEntries();
    std::string name(hClone.GetName());
    name+="_rebinned";
+   if (checkRebinningConistency(h.GetXaxis(),binedges_x)==false){
+      std::cout<<"Warning: Binning used for rebinning is not compatible:"<<hClone.GetXaxis()->GetTitle()<<std::endl;
+   }
+   if (checkRebinningConistency(h.GetYaxis(),binedges_y)==false){
+      std::cout<<"Warning: Binning used for rebinning is not compatible:"<<hClone.GetYaxis()->GetTitle()<<std::endl;
+   }
    TH2F hnew=(TH2F)fromWidths_2d("","",binedges_x,getWidths(binedges_x),binedges_y,getWidths(binedges_y));
    float_t errors[hnew.GetNbinsX()+2][hnew.GetNbinsY()+2] = {};
    TAxis *xaxis = hClone.GetXaxis();
@@ -640,6 +647,12 @@ TH2D hist::rebinned_double(TH2D const &h, std::vector<float> const &binedges_x, 
    int entries = h.GetEntries();
    std::string name(hClone.GetName());
    name+="_rebinned";
+   if (checkRebinningConistency(h.GetXaxis(),binedges_x)==false){
+      std::cout<<"Warning: Binning used for rebinning is not compatible:"<<hClone.GetXaxis()->GetTitle()<<std::endl;
+   }
+   if (checkRebinningConistency(h.GetYaxis(),binedges_y)==false){
+      std::cout<<"Warning: Binning used for rebinning is not compatible:"<<hClone.GetYaxis()->GetTitle()<<std::endl;
+   }
    TH2D hnew=(TH2D)fromWidths_2d_TH2D("","",binedges_x,getWidths(binedges_x),binedges_y,getWidths(binedges_y));
    // ~float_t errors[hnew.GetNbinsX()+2][hnew.GetNbinsY()+2] = {};
    std::vector<std::vector<float_t>> errors(hnew.GetNbinsX()+2, std::vector<float_t> (hnew.GetNbinsY()+2));
@@ -693,6 +706,8 @@ TH1F hist::histTrafo_2D(TH2F* const &hist2D){
    
    
    TH1F* tempHist= new TH1F("", "", numBins_x*numBins_y, binedges_1d);
+   tempHist->SetYTitle(hist2D->GetZaxis()->GetTitle());
+   tempHist->SetXTitle(hist2D->GetXaxis()->GetTitle());
    int binNew = 1;
    for (int j=1; j<=numBins_y; j++){
       for (int i=1; i<=numBins_x; i++){
