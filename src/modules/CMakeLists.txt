@@ -69,6 +69,8 @@ set(MODULES
   # ~testHarvester_ttbar_chan
   # ~testHarvester_ttbar_2D
   # ~testONNX
+  datacard_harvester
+  datacard_harvester_2D
   )
 
 foreach(MODULE ${MODULES})
