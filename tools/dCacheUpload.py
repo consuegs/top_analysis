@@ -18,16 +18,18 @@ if __name__ == "__main__":
     parser.add_argument('--dryRun', action='store_true' )
     args = parser.parse_args()
     
+    sp.call(["gfal-mkdir","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target])
+    
     with open("tempFiles.txt","w") as f:
         for fileName in args.inputFiles:
             f.write(getFullPath(fileName)+"\n")
-    
-    if args.dryRun:
-        sp.call(["gfal-copy","--from-file",os.getcwd()+"/tempFiles.txt","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000","-f","--dry-run"])
-    else:
-        sp.call(["gfal-mkdir","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target])
-        sp.call(["gfal-copy","--from-file",os.getcwd()+"/tempFiles.txt","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000","-f"])
-    
+            print(getFullPath(fileName))
+            
+            if args.dryRun:
+                sp.call(["gfal-copy",getFullPath(fileName),"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000","--dry-run"])
+            else:
+                sp.call(["gfal-copy",getFullPath(fileName),"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000"])
+            
 
 
 
