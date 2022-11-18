@@ -110,7 +110,8 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
       
    //mLL Cut
    float mll_corr=(p_l1+p_l2).M();
-   if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) return selection_vec;
+   // ~if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) return selection_vec;
+   if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) selection_vec[0]=false;   // needed for syst which remoces mll cut
    else selection_vec[0]=true;
    
    //Jet Cut
