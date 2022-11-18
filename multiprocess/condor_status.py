@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import argparse
 import subprocess
 import time
@@ -13,7 +13,7 @@ sys.path.append("../users")
 from getPath import getPath
 
 def getInfos():
-    out = subprocess.check_output(["condor_q", "-long"])
+    out = subprocess.check_output(["condor_q", "-long", "-grid"])
     #  ~for jobStrings in out.split("\n\n"):
         #  ~for line in jobStrings.split("\n"):
             #  ~if line:
@@ -22,8 +22,9 @@ def getInfos():
     return [ dict([line.replace("\"","").split(" = ") for line in jobStrings.split("\n") if (" = " in line and "TransferOutputRemaps" not in line)]) for jobStrings in out.split("\n\n") if jobStrings ]
 
 def getSummary():
-    out = subprocess.check_output(["condor_q"])
-    return out.split("\n")[-3]
+    out = subprocess.check_output(["condor_q", "-constraint","JobUniverse==9"])
+    #  ~return out.split("\n")[-3]
+    return out.split("\n")[-5]
 
 def getNameFromOutFile(outFile):
     moduleName = outFile.split("/")[-2]
@@ -37,12 +38,18 @@ def getNameFromFile(fname):
     return fname.split(" ")[1]+" "+(fname.split("dataset=")[-1]).split("/")[0]
     
 def getMachineFromOut(outName):
-    logName = outName.replace(".out",".log")
-    with open(logName,"r") as f:
+    #  ~logName = outName.replace(".out",".log")
+    machine = "machine not known"
+    #  ~with open(logName,"r") as f:
+        #  ~for line in f:
+            #  ~if line.find("alias") >= 0:
+                #  ~machine = line.split("alias=")[-1]
+                #  ~machine = machine.split("&")[0]
+    with open(outName,"r") as f:
         for line in f:
-            if line.find("alias") >= 0:
-                machine = line.split("alias=")[-1]
-                machine = machine.split("&")[0]
+            if line.find("grid-") >= 0:
+                machine = line[:-1]
+                break
     return machine
     
 def getCopyTimeFromError(outName):
@@ -56,6 +63,10 @@ def getCopyTimeFromError(outName):
     return time,speed
     
 def checkErrorFile(outName):
+    with open(outName,"r") as f:
+        for line in f:
+            if line.find("ERROR (70)")>=0:
+                return False
     logName = outName.replace(".out",".error")
     if logName.find("TUnfold")>=0:
         return True
@@ -260,10 +271,10 @@ def summaryJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF,modul
                 print colored("-----Failed:{}/{}".format(nFailed,status[1][0]),"red")
                 print colored("-----Finished:{}/{}".format(status[1][2],status[1][0]),"green")
                 allFinished = False;
-    if allFinished and module == "distributions":
-        value = input("All jobs finished succesfully. For uploading the minTrees to dCache enter 1:\n")
-        if value == 1:
-            dCacheTreeUpload(year)
+    #  ~if allFinished and module == "distributions":
+        #  ~value = input("All jobs finished succesfully. For uploading the minTrees to dCache enter 1:\n")
+        #  ~if value == 1:
+            #  ~dCacheTreeUpload(year)
 
 def isDistributions(logPath):
     return logPath.find("distributions")>0
@@ -278,6 +289,7 @@ if __name__ == "__main__":
     parser.add_argument('--checkSuspended', action='store_true', help="Checks if jobs are suspended for more than 10 minutes, and offers resubmit")
     parser.add_argument('--distributions', action='store_true', help="Shows summary for distribution jobs per systematic")
     parser.add_argument('--bTagEff', action='store_true', help="Shows summary for bTaggEff jobs per systematic")
+    parser.add_argument('--triggerEff', action='store_true', help="Shows summary for triggerEff jobs per systematic")
     parser.add_argument('--TUnfold', action='store_true', help="Shows summary for TUnfold jobs per systematic")
     parser.add_argument('--resubmit', action='store_true', help="Automatic resubmit, avoids asking if job should be resubmitted for every single failed job")
     parser.add_argument('--mergeAll', action='store_true', help="Automatic merge, avoids asking if jobs should be merged")
@@ -300,6 +312,8 @@ if __name__ == "__main__":
             summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF,"bTagEff")
         elif(args.TUnfold):
             summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF,"TUnfold_binning")
+        elif(args.triggerEff):
+            summaryJobs(args.y,runningLogs,args.resubmit,args.mergeAll,args.forceMergeAll,args.ignorePDF,"triggerEff")
         
         if(args.checkCompleted != ""):
             if(os.path.exists(args.checkCompleted)):      # check status from log (does also inlcude finished jobs) and write finished names to list
