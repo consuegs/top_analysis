@@ -64,17 +64,17 @@ void run()
    hist::Histograms<TH2F> hs2d(vsDatasubsets);
    
    for(TString channel:{"ee","emu","mumu"}){
-      hs2d.addHist("baseline/"+channel+"/B_all", ";p_{T}^{b-jet} (GeV);|#eta^{b-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/B_DeepJet_loose", ";p_{T}^{b-jet} (GeV);|#eta^{b-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/B_DeepCSV_loose", ";p_{T}^{b-jet} (GeV);|#eta^{b-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/B_all", ";p_{T}^{b-jet} (GeV);|#eta^{b-jet}|;Jets/Bin" ,97,30,1000,24,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/B_DeepJet_loose", ";p_{T}^{b-jet} (GeV);|#eta^{b-jet}|;Jets/Bin" ,97,30,1000,24,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/B_DeepCSV_loose", ";p_{T}^{b-jet} (GeV);|#eta^{b-jet}|;Jets/Bin" ,97,30,1000,24,0,2.4);
       
-      hs2d.addHist("baseline/"+channel+"/C_all", ";p_{T}^{c-jet} (GeV);|#eta^{c-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/C_DeepJet_loose", ";p_{T}^{c-jet} (GeV);|#eta^{c-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/C_DeepCSV_loose", ";p_{T}^{c-jet} (GeV);|#eta^{c-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/C_all", ";p_{T}^{c-jet} (GeV);|#eta^{c-jet}|;Jets/Bin" ,97,30,1000,24,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/C_DeepJet_loose", ";p_{T}^{c-jet} (GeV);|#eta^{c-jet}|;Jets/Bin" ,97,30,1000,24,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/C_DeepCSV_loose", ";p_{T}^{c-jet} (GeV);|#eta^{c-jet}|;Jets/Bin" ,97,30,1000,24,0,2.4);
       
-      hs2d.addHist("baseline/"+channel+"/Light_all", ";p_{T}^{light-jet} (GeV);|#eta^{light-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/Light_DeepJet_loose", ";p_{T}^{light-jet} (GeV);|#eta^{light-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
-      hs2d.addHist("baseline/"+channel+"/Light_DeepCSV_loose", ";p_{T}^{light-jet} (GeV);|#eta^{light-jet}|;Jets/Bin" ,100,30,1000,100,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/Light_all", ";p_{T}^{light-jet} (GeV);|#eta^{light-jet}|;Jets/Bin" ,97,30,1000,24,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/Light_DeepJet_loose", ";p_{T}^{light-jet} (GeV);|#eta^{light-jet}|;Jets/Bin" ,97,30,1000,24,0,2.4);
+      hs2d.addHist("baseline/"+channel+"/Light_DeepCSV_loose", ";p_{T}^{light-jet} (GeV);|#eta^{light-jet}|;Jets/Bin" ,97,30,1000,24,0,2.4);
    }
    
    for (TString ds_name: cfg.datasets.getDatasetNames()){
@@ -113,7 +113,8 @@ void run()
       TTreeReaderValue<float> w_mc(reader, "mc_weight");
       TTreeReaderValue<std::vector<float>> w_pdf(reader, "pdf_weights");
       TTreeReaderValue<std::vector<float>> w_ps(reader, "ps_weights");
-      TTreeReaderValue<float> w_topPT(reader, "topPTweight");
+      // ~TTreeReaderValue<float> w_topPT(reader, "topPTweight");
+      TTreeReaderValue<float> w_topPT(reader, "topPTweightNNLO");
       TTreeReaderValue<float> fragUpWeight(reader, "weightFragUp");
       TTreeReaderValue<float> fragCentralWeight(reader, "weightFragCentral");
       TTreeReaderValue<float> fragDownWeight(reader, "weightFragDown");

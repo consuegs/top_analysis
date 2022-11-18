@@ -55,7 +55,7 @@ void run()
    
    //Read systematic from command line
    Systematic::Systematic currentSystematic(cfg.systematic);
-   bool isNominal = (currentSystematic.type()==Systematic::nominal || currentSystematic.type()==Systematic::met40Cut);
+   bool isNominal = (currentSystematic.type()==Systematic::nominal || currentSystematic.type()==Systematic::met40Cut || currentSystematic.type()==Systematic::removeMLLcut);
    
    hist::Histograms<TH1F> hs(vsDatasubsets);    //Define histograms in the following
    hist::Histograms<TH1F> hs_cutflow(vsDatasubsets);
@@ -73,6 +73,8 @@ void run()
          // ~hs.addHist(selection+channel+"/DNN_MET_pT"   ,";DNN_MET_pT (GeV);EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/DNN_MET_pT"   ,";DNN_MET_pT (GeV);EventsBIN"           ,250,0,500);
          hs.addHist(selection+channel+"/DNN_MET_dPhi_nextLep"   ,";DNN_MET_dPhi_nextLep;EventsBIN"           ,320,0,3.2);
+         hs.addHist(selection+channel+"/DeepMET_reso"   ,";%MET;EventsBIN"           ,100,0,500);
+         hs.addHist(selection+channel+"/DeepMET_resp"   ,";%MET;EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/met1000"   ,";%MET;EventsBIN"           ,100,0,1000);
          hs.addHist(selection+channel+"/Lep1_pt"   ,";%pTl1;EventsBIN"           ,100,0,600);
          hs.addHist(selection+channel+"/Lep2_pt"   ,";%pTl2;EventsBIN"           ,100,0,600);
@@ -119,6 +121,8 @@ void run()
          hs.addHist(selection+channel+"/MET_xy_phi"   ,";#phi (MET);EventsBIN"           ,100,-3.2,3.2);
          hs.addHist(selection+channel+"/CaloMET"   ,";CaloMET (GeV);EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/CaloMET_phi"   ,";#phi (CaloMET);EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/DeepMET_reso_phi"   ,";#phi (DeepMET);EventsBIN"           ,100,-3.2,3.2);
+         hs.addHist(selection+channel+"/DeepMET_resp_phi"   ,";#phi (DeepMET);EventsBIN"           ,100,-3.2,3.2);
          
          //DNN Inputs
          hs.addHist(selection+channel+"/PuppiMET*cos(PuppiMET_phi)"   ,";Puppi p_{x}^{miss} (GeV);EventsBIN"                   ,50,-250,250);
@@ -130,6 +134,10 @@ void run()
          hs.addHist(selection+channel+"/MET*sin(PFMET_phi)"           ,";PF p_{y}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
          hs.addHist(selection+channel+"/MET_xy*cos(MET_xy_phi)"           ,";PF p_{x}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
          hs.addHist(selection+channel+"/MET_xy*sin(MET_xy_phi)"           ,";PF p_{y}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
+         hs.addHist(selection+channel+"/DeepMET_reso*cos(DeepMET_reso_phi)",";Deep p_{x}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
+         hs.addHist(selection+channel+"/DeepMET_reso*sin(DeepMET_reso_phi)",";Deep p_{y}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
+         hs.addHist(selection+channel+"/DeepMET_resp*cos(DeepMET_resp_phi)",";Deep p_{x}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
+         hs.addHist(selection+channel+"/DeepMET_resp*sin(DeepMET_resp_phi)",";Deep p_{y}^{miss} (GeV);EventsBIN"                      ,50,-250,250);
          hs.addHist(selection+channel+"/vecsum_pT_allJet*cos(HT_phi)" ,";vecsum_pT_allJet_{x} (GeV);EventsBIN"                 ,80,-400,400);
          hs.addHist(selection+channel+"/vecsum_pT_allJet*sin(HT_phi)" ,";vecsum_pT_allJet_{y} (GeV);EventsBIN"                 ,80,-400,400);
          hs.addHist(selection+channel+"/nJets"                        ,";N_{jets} ;EventsBIN"                                  ,11,1.5,12.5);
@@ -232,9 +240,12 @@ void run()
    hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_Puppi", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
    hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_Puppi", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
    
-   hs2d.addHist("baseline/ee/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
-   hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
-   hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
+   // ~hs2d.addHist("baseline/ee/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
+   // ~hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
+   // ~hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
+   hs2d.addHist("baseline/ee/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,800,0,400,160,0,3.2);
+   hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,800,0,400,160,0,3.2);
+   hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,800,0,400,160,0,3.2);
    
    hs2d.addHist("genParticles/ee/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("genParticles/emu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
@@ -267,6 +278,10 @@ void run()
    dim2D_vec.push_back({"HT","H_{T} (GeV) ",0, 1200, 6});
    dim2D_vec.push_back({"Jet2_pt*cos(Jet2_phi)","p_{x}^{jet2} (GeV) ",-250, 250, 5});
    dim2D_vec.push_back({"Jet2_pt*sin(Jet2_phi)","p_{y}^{jet2} (GeV) ",-250, 250, 5});
+   dim2D_vec.push_back({"DeepMET_reso*cos(DeepMET_reso_phi)","Deep(reso) p_{x}^{miss} (GeV)",-150, 150, 6});
+   dim2D_vec.push_back({"DeepMET_reso*sin(DeepMET_reso_phi)","Deep(reso) p_{y}^{miss} (GeV)",-150, 150, 6});
+   dim2D_vec.push_back({"DeepMET_resp*cos(DeepMET_resp_phi)","Deep(resp) p_{x}^{miss} (GeV)",-150, 150, 6});
+   dim2D_vec.push_back({"DeepMET_resp*sin(DeepMET_resp_phi)","Deep(resp) p_{y}^{miss} (GeV)",-150, 150, 6});
    
    for (int i=0; i<dim2D_vec.size(); i++){
       for (int j=(i+1); j<dim2D_vec.size(); j++){
@@ -466,7 +481,7 @@ void run()
          
          //variables used for storing in minimal trees
          float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
-         minTree_PhiMetbJet, minTree_dPhiLep1Lep2, minTree_dPhiJet1Jet2, minTree_METsig, minTree_N, minTree_SF, minTree_totalWeight, minTree_genMet, minTree_PuppiMet,minTree_PuppiMet_xy,minTree_Met_xy,
+         minTree_PhiMetbJet, minTree_dPhiLep1Lep2, minTree_dPhiJet1Jet2, minTree_METsig, minTree_N, minTree_SF, minTree_totalWeight, minTree_genMet, minTree_PuppiMet,minTree_PuppiMet_xy,minTree_Met_xy,minTree_DeepMet_reso,minTree_DeepMet_resp,
          minTree_HT, minTree_HT_phi, minTree_MHT, minTree_MT, minTree_genMT, minTree_MT_nextLep, minTree_genMT_nextLep,
          minTree_PhiPtnunuMet, minTree_leadTop, minTree_dPhiNuNu, minTree_PhiRecPuppi,minTree_PhiRecPuppi_xy,minTree_PhiRec_xy, minTree_PhiMetNearJet_Puppi, minTree_PhiMetFarJet_Puppi,
          minTree_PhiMetLeadJet_Puppi, minTree_PhiMetLead2Jet_Puppi, minTree_PhiMetbJet_Puppi, minTree_dPhiLep1bJet, minTree_dPhiLep1Jet1, minTree_ratioMET_sqrtMETunc_Puppi,
@@ -475,7 +490,7 @@ void run()
          minTree_Lep2_pt, minTree_Lep2_phi, minTree_Lep2_eta, minTree_Lep2_E, minTree_Lep2_flavor,
          minTree_Jet1_pt, minTree_Jet1_phi, minTree_Jet1_eta, minTree_Jet1_E, minTree_Jet1_bTagScore, minTree_Jet1_unc,
          minTree_Jet2_pt, minTree_Jet2_phi, minTree_Jet2_eta, minTree_Jet2_E, minTree_Jet2_bTagScore, minTree_Jet2_unc,
-         minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_PuppiMET_xy_phi, minTree_MET_xy_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_PFMETxy, minTree_PFMETxy_phi, minTree_genMET_phi, minTree_PtNuNu_phi, minTree_nJets, minTree_nGenJets, minTree_n_Interactions,minTree_DNN_MET_pT, minTree_DNN_MET_phi,minTree_DNN_MET_dPhi_nextLep,
+         minTree_PFMET_phi, minTree_PuppiMET_phi, minTree_PuppiMET_xy_phi, minTree_MET_xy_phi, minTree_CaloMET, minTree_CaloMET_phi, minTree_PFMETxy, minTree_PFMETxy_phi,minTree_DeepMet_reso_phi, minTree_DeepMet_resp_phi, minTree_genMET_phi, minTree_PtNuNu_phi, minTree_nJets, minTree_nGenJets, minTree_n_Interactions,minTree_DNN_MET_pT, minTree_DNN_MET_phi,minTree_DNN_MET_dPhi_nextLep,
          minTree_mLL, minTree_PtLL, minTree_PtLLgen, minTree_MT2, minTree_vecsum_pT_allJet, minTree_vecsum_pT_l1l2_allJet, minTree_mass_l1l2_allJet, minTree_ratio_vecsumpTlep_vecsumpTjet, minTree_mjj;
          UInt_t minTree_runNo, minTree_lumNo, minTree_genDecayMode, minTree_n_Interactions_gen, minTree_looseLeptonVeto, minTree_NpromptNeutrinos, minTree_NnonpromptNeutrinos, minTree_ee, minTree_mumu, minTree_emu;
          ULong64_t minTree_evtNo;
@@ -510,6 +525,8 @@ void run()
          ttbar_res.Branch("PuppiMET",&minTree_PuppiMet,"PuppiMET/f");
          ttbar_res.Branch("PuppiMET_xy",&minTree_PuppiMet_xy,"PuppiMET_xy/f");
          ttbar_res.Branch("MET_xy",&minTree_Met_xy,"MET_xy/f");
+         ttbar_res.Branch("DeepMET_reso",&minTree_DeepMet_reso,"DeepMET_reso/f");
+         ttbar_res.Branch("DeepMET_resp",&minTree_DeepMet_resp,"DeepMET_resp/f");
          ttbar_res.Branch("HT",&minTree_HT,"HT/f");
          ttbar_res.Branch("HT_phi",&minTree_HT_phi,"HT_phi/f");
          ttbar_res.Branch("MHT",&minTree_MHT,"MHT/f");
@@ -569,6 +586,8 @@ void run()
          ttbar_res.Branch("PuppiMET_phi",&minTree_PuppiMET_phi,"PuppiMET_phi/f");
          ttbar_res.Branch("PuppiMET_xy_phi",&minTree_PuppiMET_xy_phi,"PuppiMET_xy_phi/f");
          ttbar_res.Branch("MET_xy_phi",&minTree_MET_xy_phi,"MET_xy_phi/f");
+         ttbar_res.Branch("DeepMET_reso_phi",&minTree_DeepMet_reso_phi,"DeepMET_reso_phi/f");
+         ttbar_res.Branch("DeepMET_resp_phi",&minTree_DeepMet_resp_phi,"DeepMET_resp_phi/f");
          ttbar_res.Branch("CaloMET",&minTree_CaloMET,"CaloMET/f");
          ttbar_res.Branch("CaloMET_phi",&minTree_CaloMET_phi,"CaloMET_phi/f");
          ttbar_res.Branch("genMET_phi",&minTree_genMET_phi,"genMET_phi/f");
@@ -629,7 +648,8 @@ void run()
          TTreeReaderValue<float> w_mc(reader, "mc_weight");
          TTreeReaderValue<std::vector<float>> w_pdf(reader, "pdf_weights");
          TTreeReaderValue<std::vector<float>> w_ps(reader, "ps_weights");
-         TTreeReaderValue<float> w_topPT(reader, "topPTweight");
+         // ~TTreeReaderValue<float> w_topPT(reader, "topPTweight");
+         TTreeReaderValue<float> w_topPT(reader, "topPTweightNNLO");
          TTreeReaderValue<float> fragUpWeight(reader, "weightFragUp");
          TTreeReaderValue<float> fragCentralWeight(reader, "weightFragCentral");
          TTreeReaderValue<float> fragDownWeight(reader, "weightFragDown");
@@ -650,6 +670,8 @@ void run()
          TTreeReaderValue<tree::MET> GENMET(reader, "met_gen");
          TTreeReaderValue<tree::MET> MET_Puppi(reader, "metPuppi"+metAddition);
          TTreeReaderValue<tree::MET> MET_Puppi_xy(reader, "metPuppiXYcorr"+metAddition);
+         TTreeReaderValue<tree::MET> DeepMET_reso(reader, "metDeepResolution"+metAddition);
+         TTreeReaderValue<tree::MET> DeepMET_resp(reader, "metDeepResponse"+metAddition);
          TTreeReaderValue<tree::MET> MET_Calo(reader, "metCalo");
          TTreeReaderValue<tree::MET> MET_Raw(reader, "met_raw");
          TTreeReaderValue<int> n_Interactions(reader, "nPV");
@@ -734,7 +756,7 @@ void run()
             if (*genDecayMode_pseudo==0 || (*genDecayMode_pseudo!=3 && neutrinoPair.Pt()<40)) pseudo_selection=false; //pseudo baseline selection
             
             // Construct vector of different METs for correction
-            std::vector<tree::MET*> PFMETs = {&(*MET),&(*MET_xy),&(*MET_Calo)};
+            std::vector<tree::MET*> PFMETs = {&(*MET),&(*MET_xy),&(*MET_Calo),&(*DeepMET_reso),&(*DeepMET_resp)};
             std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi),&(*MET_Puppi_xy)};
             
             // Correct and select leptons
@@ -813,8 +835,15 @@ void run()
                }
             }
             
-            //Check booleans from ttBar selection
-            if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
+            //Check booleans from ttBar selection (Apply relaxed selection with only two lepton)
+            if(currentSystematic.type()!=Systematic::removeMLLcut){
+               if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
+            }
+            else{
+               if(!std::all_of(ttbarSelection.begin()+1, ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
+            }
+            
+            // Ignore events which do not fulfill reco or gen selection
             if(rec_selection==false && pseudo_selection==false) continue;
             
             // Cross check for add. MET cut in emu
@@ -1078,6 +1107,8 @@ void run()
             minTree_PuppiMet=met_puppi;
             minTree_PuppiMet_xy=MET_Puppi_xy->p.Pt();
             minTree_Met_xy=MET_xy->p.Pt();
+            minTree_DeepMet_reso=DeepMET_reso->p.Pt();
+            minTree_DeepMet_resp=DeepMET_resp->p.Pt();
             minTree_HT=HT;
             minTree_HT_phi=MHT.Phi();
             minTree_MHT=MHT.M();
@@ -1111,6 +1142,8 @@ void run()
             minTree_PuppiMET_phi=MET_Puppi->p.Phi();
             minTree_PuppiMET_xy_phi=MET_Puppi_xy->p.Phi();
             minTree_MET_xy_phi=MET_xy->p.Phi();
+            minTree_DeepMet_reso_phi=DeepMET_reso->p.Phi();
+            minTree_DeepMet_resp_phi=DeepMET_resp->p.Phi();
             minTree_CaloMET=MET_Calo->p.Pt();
             minTree_CaloMET_phi=MET_Calo->p.Phi();
             minTree_genMET_phi=GENMET->p.Phi();
@@ -1167,6 +1200,8 @@ void run()
                minTree_PuppiMet=-1.;
                minTree_PuppiMet_xy=-1.;
                minTree_Met_xy=-1.;
+               minTree_DeepMet_reso=-1.;
+               minTree_DeepMet_resp=-1.;
                minTree_MHT=-1.;
                minTree_HT=-1.;
                minTree_HT_phi=-4.;
@@ -1215,6 +1250,8 @@ void run()
                minTree_PuppiMET_xy_phi=-5;
                minTree_MET_xy_phi=-5;
                minTree_PFMET_phi=-5;
+               minTree_DeepMet_reso_phi=-5;
+               minTree_DeepMet_resp_phi=-5;
                minTree_MT2=-1;
                minTree_vecsum_pT_allJet=-1;
                minTree_vecsum_pT_l1l2_allJet=-1;
@@ -1349,6 +1386,8 @@ void run()
             hs.fill("baseline/"+path_cat+"/met1000"                     ,met);
             hs.fill("baseline/"+path_cat+"/DNN_MET_pT"                  ,DNN_MET_pT);
             hs.fill("baseline/"+path_cat+"/DNN_MET_dPhi_nextLep"        ,DNN_MET_dPhi_nextLep);
+            hs.fill("baseline/"+path_cat+"/DeepMET_reso"                ,DeepMET_reso->p.Pt());
+            hs.fill("baseline/"+path_cat+"/DeepMET_resp"                ,DeepMET_resp->p.Pt());
             hs.fill("baseline/"+path_cat+"/Lep1_pt"                     ,p_l1.Pt());
             hs.fill("baseline/"+path_cat+"/Lep2_pt"                     ,p_l2.Pt());
             hs.fill("baseline/"+path_cat+"/pTsumlep"                    ,(p_l1+p_l2).Pt());
@@ -1391,6 +1430,8 @@ void run()
             hs.fill("baseline/"+path_cat+"/PuppiMET_phi"                ,MET_Puppi->p.Phi());
             hs.fill("baseline/"+path_cat+"/PuppiMET_xy_phi"             ,MET_Puppi_xy->p.Phi());
             hs.fill("baseline/"+path_cat+"/MET_xy_phi"                  ,MET_xy->p.Phi());
+            hs.fill("baseline/"+path_cat+"/DeepMET_reso_phi"            ,DeepMET_reso->p.Phi());
+            hs.fill("baseline/"+path_cat+"/DeepMET_resp_phi"            ,DeepMET_resp->p.Phi());
             hs.fill("baseline/"+path_cat+"/CaloMET"                     ,MET_Calo->p.Pt());
             hs.fill("baseline/"+path_cat+"/CaloMET_phi"                 ,MET_Calo->p.Phi());
             
@@ -1446,6 +1487,10 @@ void run()
             hs.fill("baseline/"+path_cat+"/MET_xy*sin(MET_xy_phi)"                     ,MET_xy->p.Pt()*sin(MET_xy->p.Phi()));
             hs.fill("baseline/"+path_cat+"/PuppiMET_xy*cos(PuppiMET_xy_phi)"           ,MET_Puppi_xy->p.Pt()*cos(MET_Puppi_xy->p.Phi()));
             hs.fill("baseline/"+path_cat+"/PuppiMET_xy*sin(PuppiMET_xy_phi)"           ,MET_Puppi_xy->p.Pt()*sin(MET_Puppi_xy->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/DeepMET_reso*cos(DeepMET_reso_phi)"         ,DeepMET_reso->p.Pt()*cos(DeepMET_reso->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/DeepMET_reso*sin(DeepMET_reso_phi)"         ,DeepMET_reso->p.Pt()*sin(DeepMET_reso->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/DeepMET_resp*cos(DeepMET_resp_phi)"         ,DeepMET_resp->p.Pt()*cos(DeepMET_resp->p.Phi()));
+            hs.fill("baseline/"+path_cat+"/DeepMET_resp*sin(DeepMET_resp_phi)"         ,DeepMET_resp->p.Pt()*sin(DeepMET_resp->p.Phi()));
             hs.fill("baseline/"+path_cat+"/MT2"                                        ,mt2);
             hs.fill("baseline/"+path_cat+"/vecsum_pT_allJet"                           ,minTree_vecsum_pT_allJet);
             hs.fill("baseline/"+path_cat+"/vecsum_pT_l1l2_allJet"                      ,minTree_vecsum_pT_l1l2_allJet);
@@ -1505,6 +1550,11 @@ void run()
             dim2D_vec[17].value = HT;
             dim2D_vec[18].value = cjets[1].p.Pt()*cos(cjets[1].p.Phi());
             dim2D_vec[19].value = cjets[1].p.Pt()*sin(cjets[1].p.Phi());
+            
+            dim2D_vec[20].value = DeepMET_reso->p.Pt()*cos(DeepMET_reso->p.Phi());
+            dim2D_vec[21].value = DeepMET_reso->p.Pt()*sin(DeepMET_reso->p.Phi());
+            dim2D_vec[22].value = DeepMET_resp->p.Pt()*cos(DeepMET_resp->p.Phi());
+            dim2D_vec[23].value = DeepMET_resp->p.Pt()*sin(DeepMET_resp->p.Phi());
             
             // Now loop over 2D hists an fill
             for (int i=0; i<dim2D_vec.size(); i++){

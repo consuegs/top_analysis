@@ -74,7 +74,8 @@ Datasubset::Datasubset(std::string filename,float xsec,TString dataBasePath,std:
          Ngen_woWeight=0;
       } else {
          // ~Ngen=h->GetBinContent(2);
-         Ngen=h->GetBinContent(3);     //initial_mc_pu_topPt_weighted
+         // ~Ngen=h->GetBinContent(3);     //initial_mc_pu_topPt_weighted
+         Ngen=h->GetBinContent(4);     //initial_mc_pu_topPtNNLO_weighted
          Ngen_woWeight=h->GetBinContent(1);
          entries=t->GetEntries();
       }
@@ -125,38 +126,48 @@ double Datasubset::getNgen_syst(const Systematic::Systematic& systematic) const
       switch(type){
          case Systematic::meFacScale:
             if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? meScaleBins[0] : meScaleBins[1]);
+            // ~else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? meScaleBins[0] : meScaleBins[1]);
+            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopnnloPU_",(upVariation)? meScaleBins[0] : meScaleBins[1]);
             break;
          case Systematic::meRenScale:
             if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? meScaleBins[2] : meScaleBins[3]);
+            // ~else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? meScaleBins[2] : meScaleBins[3]);
+            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopnnloPU_",(upVariation)? meScaleBins[2] : meScaleBins[3]);
             break;
          case Systematic::meScale:
             if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? meScaleBins[4] : meScaleBins[5]);
+            // ~else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? meScaleBins[4] : meScaleBins[5]);
+            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopnnloPU_",(upVariation)? meScaleBins[4] : meScaleBins[5]);
             break;
          case Systematic::alphasPdf:
             if(isPythiaOnly) return Ngen;    //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? 112 : 111);
+            // ~else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? 112 : 111);
+            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopnnloPU_",(upVariation)? 112 : 111);
             break;
          case Systematic::pdf:
             if (isPythiaOnly) return Ngen;  //no PDF weights available for pythiaOnly
-            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? 9+(2*systematic.variationNumber()) : 10+(2*systematic.variationNumber()));
+            // ~else return this->readNgenFromHist("hSystMCweight_PDF_timesTopPU_",(upVariation)? 9+(2*systematic.variationNumber()) : 10+(2*systematic.variationNumber()));
+            else return this->readNgenFromHist("hSystMCweight_PDF_timesTopnnloPU_",(upVariation)? 9+(2*systematic.variationNumber()) : 10+(2*systematic.variationNumber()));
             break;
          case Systematic::psISRScale:
-            return this->readNgenFromHist("hSystMCweight_PS_timesTopPU_",(upVariation)? 28 : 27);
+            // ~return this->readNgenFromHist("hSystMCweight_PS_timesTopPU_",(upVariation)? 28 : 27);
+            return this->readNgenFromHist("hSystMCweight_PS_timesTopnnloPU_",(upVariation)? 28 : 27);
             break;
          case Systematic::psFSRScale:
-            return this->readNgenFromHist("hSystMCweight_PS_timesTopPU_",(upVariation)? 6 : 5);
+            // ~return this->readNgenFromHist("hSystMCweight_PS_timesTopPU_",(upVariation)? 6 : 5);
+            return this->readNgenFromHist("hSystMCweight_PS_timesTopnnloPU_",(upVariation)? 6 : 5);
             break;
          case Systematic::bFrag:
-            return this->readNgenFromHist("hSystMCweight_bFrag_timesTopPU_",(upVariation)? 1 : 3);
+            // ~return this->readNgenFromHist("hSystMCweight_bFrag_timesTopPU_",(upVariation)? 1 : 3);
+            return this->readNgenFromHist("hSystMCweight_bFrag_timesTopnnloPU_",(upVariation)? 1 : 3);
             break;
          case Systematic::bSemilep:
-            return this->readNgenFromHist("hSystMCweight_bFrag_timesTopPU_",(upVariation)? 5 : 6);
+            // ~return this->readNgenFromHist("hSystMCweight_bFrag_timesTopPU_",(upVariation)? 5 : 6);
+            return this->readNgenFromHist("hSystMCweight_bFrag_timesTopnnloPU_",(upVariation)? 5 : 6);
             break;
          case Systematic::pu:
-            return this->readNgenFromHist("hSystMCweight_PU_timesTopPU_",(upVariation)? 2 : 3);
+            // ~return this->readNgenFromHist("hSystMCweight_PU_timesTopPU_",(upVariation)? 2 : 3);
+            return this->readNgenFromHist("hSystMCweight_PU_timesTopnnloPU_",(upVariation)? 2 : 3);
             break;
          case Systematic::topPt:
             return this->readNgenFromHist("hSystMCweight_topPt_timesTopPU_",1);

@@ -176,7 +176,8 @@ void run()
          TTreeReaderValue<ULong64_t> evtNo(reader, "evtNo");
          TTreeReaderValue<float> w_mc(reader, "mc_weight");
          TTreeReaderValue<float> fragCentralWeight(reader, "weightFragCentral");
-         TTreeReaderValue<float> w_topPT(reader, "topPTweight");
+         // ~TTreeReaderValue<float> w_topPT(reader, "topPTweight");
+         TTreeReaderValue<float> w_topPT(reader, "topPTweightNNLO");
          TTreeReaderValue<double> w_prefiring(reader, "prefiring_weight");
          TTreeReaderValue<std::vector<float>> w_pdf(reader, "pdf_weights");
          TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
