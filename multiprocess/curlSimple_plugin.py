@@ -139,8 +139,12 @@ class CurlSimplePlugin:
         curl.setopt(curl.CAPATH, os.getenv('X509_CERT_DIR'))
         curl.setopt(curl.SSLCERT, os.getenv('X509_USER_PROXY'))
         curl.setopt(curl.FOLLOWLOCATION, True)
-        curl.setopt(curl.VERBOSE, 1)
+        #  ~curl.setopt(curl.MAX_RECV_SPEED_LARGE,20000000)
+        #  ~curl.setopt(curl.MAX_RECV_SPEED_LARGE,10000000)
+        curl.setopt(curl.MAX_RECV_SPEED_LARGE,10000)
+        #  ~curl.setopt(curl.VERBOSE, 1)
         #  ~curl.setopt(curl.DEBUGFUNCTION, test)
+        #  ~curl.setopt(curl.NOPROGRESS, False)
         try:
             curl.perform()
             file_size = file.tell()
