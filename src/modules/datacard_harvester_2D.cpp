@@ -78,6 +78,10 @@ void run(){
     DNN_2Dhists_vec.push_back(tuple("HT", "HT"));
     DNN_2Dhists_vec.push_back(tuple("Jet2_pt*cos(Jet2_phi)", "Jet2_pX"));
     DNN_2Dhists_vec.push_back(tuple("Jet2_pt*sin(Jet2_phi)", "Jet2_pY"));
+    DNN_2Dhists_vec.push_back(tuple("DeepMET_reso*cos(DeepMET_reso_phi)", "DeepMET_reso_X"));
+    DNN_2Dhists_vec.push_back(tuple("DeepMET_reso*sin(DeepMET_reso_phi)", "DeepMET_reso_Y"));
+    DNN_2Dhists_vec.push_back(tuple("DeepMET_resp*cos(DeepMET_resp_phi)", "DeepMET_resp_X"));
+    DNN_2Dhists_vec.push_back(tuple("DeepMET_resp*sin(DeepMET_resp_phi)", "DeepMET_resp_Y"));
     
     
     for(int i=0; i<DNN_2Dhists_vec.size(); ++i){
@@ -131,15 +135,18 @@ void run(){
             cb.cp().process({"SingleTop"}).AddSyst(cb, "ST_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_ST").first));
             cb.cp().process({"otherBKG"}).AddSyst(cb, "other_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_OTHER").first));
             
-            // Uncertainties, that are applied to all processes:
-            // ~vector<string> shapeUncAllMC = {"BTAGBC", "BTAGL", "ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "JER", "JESTotal", "MUON_ID", "MUON_ISO", "MUON_SCALE", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "TRIG"}; 
-            // ~vector<string> shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsoluteMPFBias", "JESAbsoluteScale", "JESAbsoluteStat", "JESFlavorRealistic", "JESFragmentation", "JESPileUpDataMC", "JESPileUpPtBB", "JESPileUpPtEC1", "JESPileUpPtRef", "JESRelativeBal", "JESRelativeFSR", "JESRelativeJEREC1", "JESRelativePtBB", "JESRelativePtEC1", "JESRelativeSample", "JESRelativeStatEC", "JESRelativeStatFSR", "JESSinglePionECAL", "JESSinglePionHCAL", "JESTimePtEta", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING"};                  
+            // Uncertainties, that are applied to all processes:              
             vector<string> shapeUncAllMC; 
-            if (year=="2018"){
-                shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "JESUserDefinedHEM1516"};  
-            } else{
-                shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING"};  
-            }
+            // ~if (year=="2018"){  // Uncertainties not split into corr and uncorr
+                // ~shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE", "JESUserDefinedHEM1516"};  
+            // ~} else{
+                // ~shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE",};  
+            // ~}
+        if (year=="2018"){
+            shapeUncAllMC = {"BTAGBC_CORR", "BTAGBC_UNCORR", "BTAGL_CORR", "BTAGL_UNCORR", "JEREta0", "JEREta1", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE", "JESUserDefinedHEM1516"};  
+        } else{
+            shapeUncAllMC = {"BTAGBC_CORR", "BTAGBC_UNCORR", "BTAGL_CORR", "BTAGL_UNCORR", "JEREta0", "JEREta1", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE"};  
+        }
             for (auto systNameAll : shapeUncAllMC) {
                 cb.cp().process(ch::JoinStr({sig_procs, bkg_procs})).AddSyst(cb, systNameAll, "shape", SystMap<>::init(1.00));
             }
@@ -147,10 +154,12 @@ void run(){
             for (string eeUncAllMC : {"ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "UNCLUSTERED"}){
                 cb.cp().bin({"ee"}).AddSyst(cb, eeUncAllMC, "shape", SystMap<>::init(1.00));
             }
-            for (string emuUncAllMC : {"ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "MUON_ID", "MUON_ISO", "MUON_SCALE"}){
+            for (string emuUncAllMC : {"ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "MUON_ID_STAT", "MUON_ID_SYST", "MUON_ISO_STAT", "MUON_ISO_SYST", "MUON_SCALE"}){
+            // ~for (string emuUncAllMC : {"ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "MUON_ID", "MUON_ISO", "MUON_SCALE"}){
                 cb.cp().bin({"emu"}).AddSyst(cb, emuUncAllMC, "shape", SystMap<>::init(1.00));
             }
-            for (string mumuUncAllMC : {"MUON_ID", "MUON_ISO", "MUON_SCALE", "UNCLUSTERED"}){
+            for (string mumuUncAllMC : {"MUON_ID_STAT", "MUON_ID_SYST", "MUON_ISO_STAT", "MUON_ISO_SYST", "MUON_SCALE", "UNCLUSTERED"}){
+            // ~for (string mumuUncAllMC : {"MUON_ID", "MUON_ISO", "MUON_SCALE", "UNCLUSTERED"}){
                 cb.cp().bin({"mumu"}).AddSyst(cb, mumuUncAllMC, "shape", SystMap<>::init(1.00));
             }
             for (string bin_name : {"ee", "mumu", "emu"}){
@@ -158,15 +167,15 @@ void run(){
             }
             
             // Uncertainties, that are not applied to DY processes:
-            vector<string> shapeUncNoDY = {"MEFACSCALE", "MERENSCALE"};
-            for (auto systNameTTbar : shapeUncNoDY) {
-                cb.cp().process({"TTbar_diLepton", "TTbar_other", "SingleTop", "otherBKG"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
-                // ~cb.cp().process({"TTbar_diLepton", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
-            }
+            // ~vector<string> shapeUncNoDY = {"MEFACSCALE", "MERENSCALE", "MESCALE"};
+            // ~for (auto systNameTTbar : shapeUncNoDY) {
+                // ~cb.cp().process({"TTbar_diLepton", "TTbar_other", "SingleTop", "otherBKG"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
+            // ~}
             
             // Uncertainties, that are applied only to ttbar processes:
-            // ~vector<string> shapeUncTTbarOnly = {"BFRAG", "BSEMILEP", "CR1", "CR2", "ERDON", "MTOP"};
-            vector<string> shapeUncTTbarOnly = {"BFRAG", "BSEMILEP", "CR1", "CR2", "ERDON", "MTOP", "MATCH", "UETUNE"};
+            // ~vector<string> shapeUncTTbarOnly = {"BFRAG", "BSEMILEP", "CR1", "CR2", "ERDON", "MTOP", "MATCH", "UETUNE"};
+            vector<string> shapeUncTTbarOnly = {"BSEMILEP", "CR1", "CR2", "ERDON", "MTOP", "MATCH", "UETUNE"};
+            
             for (auto systNameTTbar : shapeUncTTbarOnly) {
                 cb.cp().process({"TTbar_diLepton", "TTbar_other"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
                 // ~cb.cp().process({"TTbar_diLepton", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));

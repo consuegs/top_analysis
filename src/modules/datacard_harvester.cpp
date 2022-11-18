@@ -63,32 +63,32 @@ void run(){
     // ~test_variables["Lep1_pt"] = tuple(linspace(0, 420, int(420/30+1)), "Lep1_pt");
     // ~test_variables["vecsum_pT_allJet"] = tuple(linspace(0, 500, 26), "vecsum_pT_allJet");
     // ~test_variables["METunc_Puppi"] = tuple(linspace(0, 40, 21, 0., 100.), "METunc_Puppi");
-    // ~test_variables["CaloMET*cos(CaloMET)"] = tuple(linspace(-150, 150, 31, -250., 250.), "CaloMET_X"); //distribution looks weird for other_bkg
-    // ~test_variables["CaloMET*sind(CaloMET)"] = tuple(linspace(-150, 150, 31, -250., 250.), "CaloMET_Y"); //distribution looks weird for other_bkg
+    // ~test_variables["CaloMET*cos(CaloMET)"] = tuple(linspace(-150, 150, 31, -250., 250.), "CaloMET_X");
+    // ~test_variables["CaloMET*sind(CaloMET)"] = tuple(linspace(-150, 150, 31, -250., 250.), "CaloMET_Y");
     // ~test_variables["n_Interactions"] = tuple(linspace(0, 80, 41, 0., 100.), "n_Interactions");
     // ~test_variables["dPhiMETleadJet_Puppi"] = tuple(linspace(0, 3.2, 33), "dPhiMETleadJet_Puppi");
     // ~test_variables["Lep2_pt*cos(Lep2_phi)"] = tuple(linspace(-250, 250, 26), "Lep2_pX");
     // ~test_variables["Lep2_pt*sin(Lep2_phi)"] = tuple(linspace(-250, 250, 26), "Lep2_pY");
-    // ~test_variables["PuppiMET*cos(PuppiMET_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_X"); //distribution looks weird for other_bkg
-    // ~test_variables["PuppiMET*sin(PuppiMET_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_Y"); //distribution looks weird for other_bkg
-    // ~test_variables["MET*cos(PFMET_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_X"); //distribution looks weird for other_bkg
-    // ~test_variables["MET*sin(PFMET_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_Y"); //distribution looks weird for other_bkg
+    // ~test_variables["PuppiMET*cos(PuppiMET_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_X");
+    // ~test_variables["PuppiMET*sin(PuppiMET_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_Y");
+    // ~test_variables["MET*cos(PFMET_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_X");
+    // ~test_variables["MET*sin(PFMET_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_Y");
     
     // DNN input variables:
     
-    test_variables["PuppiMET_xy*cos(PuppiMET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_xy_X"); //distribution looks weird for other_bkg
-    test_variables["PuppiMET_xy*sin(PuppiMET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_xy_Y"); //distribution looks weird for other_bkg
-    test_variables["MET_xy*cos(MET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_xy_X"); //distribution looks weird for other_bkg
-    test_variables["MET_xy*sin(MET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_xy_Y"); //distribution looks weird for other_bkg
-    test_variables["vecsum_pT_allJet*cos(HT_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "vecsum_pT_allJet_X"); //still missing in combineInputs
-    test_variables["vecsum_pT_allJet*sin(HT_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "vecsum_pT_allJet_Y"); //still missing in combineInputs
+    test_variables["PuppiMET_xy*cos(PuppiMET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_xy_X");
+    test_variables["PuppiMET_xy*sin(PuppiMET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_xy_Y");
+    test_variables["MET_xy*cos(MET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_xy_X");
+    test_variables["MET_xy*sin(MET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_xy_Y");
+    test_variables["vecsum_pT_allJet*cos(HT_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "vecsum_pT_allJet_X");
+    test_variables["vecsum_pT_allJet*sin(HT_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "vecsum_pT_allJet_Y");
     test_variables["mass_l1l2_allJet"] = tuple(linspace(120, 1800, 29, 0.), "mass_l1l2_allJet");
-    test_variables["Jet1_pt*sin(Jet1_phi)"] = tuple(linspace(-400, 400, 41), "Jet1_pY"); //distribution looks weird for other_bkg
+    test_variables["Jet1_pt*sin(Jet1_phi)"] = tuple(linspace(-400, 400, 41), "Jet1_pY");
     test_variables["MHT"] = tuple(linspace(60, 1800, 30, 0., 2000.), "MHT");
     test_variables["Lep1_pt*cos(Lep1_phi)"] = tuple(linspace(-250, 250, 26), "Lep1_pX");
     test_variables["Lep1_pt*sin(Lep1_phi)"] = tuple(linspace(-250, 250, 26), "Lep1_pY");
-    test_variables["Jet1_pt*cos(Jet1_phi)"] = tuple(linspace(-400, 400, 41), "Jet1_pX"); //distribution looks weird for other_bkg
-    test_variables["CaloMET"] = tuple(linspace(0, 200, 41, 0., 500.), "CaloMET"); //distribution looks weird for other_bkg
+    test_variables["Jet1_pt*cos(Jet1_phi)"] = tuple(linspace(-400, 400, 41), "Jet1_pX");
+    test_variables["CaloMET"] = tuple(linspace(0, 200, 41, 0., 500.), "CaloMET");
     test_variables["MT2"] = tuple(linspace(0, 160, 41, 0., 200.), "MT2");
     test_variables["mjj"] = tuple(linspace(60, 1800, 30, 0., 2000.), "mjj");
     test_variables["nJets"] = tuple(linspace(1.5, 8.5, 8, 1.5, 12.5), "nJets");
@@ -96,6 +96,10 @@ void run(){
     test_variables["HT"] = tuple(linspace(50, 1200, 24, 0., 2500.), "HT");
     test_variables["Jet2_pt*cos(Jet2_phi)"] = tuple(linspace(-250, 250, 26), "Jet2_pX");
     test_variables["Jet2_pt*sin(Jet2_phi)"] = tuple(linspace(-250, 250, 26), "Jet2_pY");
+    test_variables["DeepMET_reso*cos(DeepMET_reso_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_reso_X");
+    test_variables["DeepMET_reso*sin(DeepMET_reso_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_reso_Y");
+    test_variables["DeepMET_resp*cos(DeepMET_resp_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_resp_X");
+    test_variables["DeepMET_resp*sin(DeepMET_resp_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_resp_Y");
 
 
     map<string,tuple<vector<double>,string>>::iterator it;
@@ -144,14 +148,17 @@ void run(){
         cb.cp().process({"SingleTop"}).AddSyst(cb, "ST_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_ST").first));
         cb.cp().process({"otherBKG"}).AddSyst(cb, "other_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_OTHER").first));
         
-        // Uncertainties, that are applied to all processes:
-        // ~vector<string> shapeUncAllMC = {"BTAGBC", "BTAGL", "ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "JER", "JESTotal", "MUON_ID", "MUON_ISO", "MUON_SCALE", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "TRIG", "UNCLUSTERED", "L1PREFIRING"}; 
-        // ~vector<string> shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsoluteMPFBias", "JESAbsoluteScale", "JESAbsoluteStat", "JESFlavorRealistic", "JESFragmentation", "JESPileUpDataMC", "JESPileUpPtBB", "JESPileUpPtEC1", "JESPileUpPtRef", "JESRelativeBal", "JESRelativeFSR", "JESRelativeJEREC1", "JESRelativePtBB", "JESRelativePtEC1", "JESRelativeSample", "JESRelativeStatEC", "JESRelativeStatFSR", "JESSinglePionECAL", "JESSinglePionHCAL", "JESTimePtEta", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING"};                 
+        // Uncertainties, that are applied to all processes:               
         vector<string> shapeUncAllMC; 
+        // ~if (year=="2018"){  // Uncertainties not split into corr and uncorr
+            shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE", "JESUserDefinedHEM1516"};  
+        // ~} else{
+            // ~shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE",};  
+        // ~}
         if (year=="2018"){
-            shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "JESUserDefinedHEM1516"};  
+            shapeUncAllMC = {"BTAGBC_CORR", "BTAGBC_UNCORR", "BTAGL_CORR", "BTAGL_UNCORR", "JEREta0", "JEREta1", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE", "JESUserDefinedHEM1516"};  
         } else{
-            shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING"};  
+            shapeUncAllMC = {"BTAGBC_CORR", "BTAGBC_UNCORR", "BTAGL_CORR", "BTAGL_UNCORR", "JEREta0", "JEREta1", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE"};  
         }
         for (auto systNameAll : shapeUncAllMC) {
             cb.cp().process(ch::JoinStr({sig_procs, bkg_procs})).AddSyst(cb, systNameAll, "shape", SystMap<>::init(1.00));
@@ -160,10 +167,12 @@ void run(){
         for (string eeUncAllMC : {"ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "UNCLUSTERED"}){
             cb.cp().bin({"ee"}).AddSyst(cb, eeUncAllMC, "shape", SystMap<>::init(1.00));
         }
-        for (string emuUncAllMC : {"ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "MUON_ID", "MUON_ISO", "MUON_SCALE"}){
+        for (string emuUncAllMC : {"ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "MUON_ID_STAT", "MUON_ID_SYST", "MUON_ISO_STAT", "MUON_ISO_SYST", "MUON_SCALE"}){
+        // ~for (string emuUncAllMC : {"ELECTRON_ID", "ELECTRON_RECO", "ELECTRON_SCALESMEARING", "MUON_ID", "MUON_ISO", "MUON_SCALE"}){
             cb.cp().bin({"emu"}).AddSyst(cb, emuUncAllMC, "shape", SystMap<>::init(1.00));
         }
-        for (string mumuUncAllMC : {"MUON_ID", "MUON_ISO", "MUON_SCALE", "UNCLUSTERED"}){
+        for (string mumuUncAllMC : {"MUON_ID_STAT", "MUON_ID_SYST", "MUON_ISO_STAT", "MUON_ISO_SYST", "MUON_SCALE", "UNCLUSTERED"}){
+        // ~for (string mumuUncAllMC : {"MUON_ID", "MUON_ISO", "MUON_SCALE", "UNCLUSTERED"}){
             cb.cp().bin({"mumu"}).AddSyst(cb, mumuUncAllMC, "shape", SystMap<>::init(1.00));
         }
         for (string bin_name : {"ee", "mumu", "emu"}){
@@ -172,15 +181,15 @@ void run(){
         
         
         // Uncertainties, that are not applied to DY processes:
-        vector<string> shapeUncNoDY = {"MEFACSCALE", "MERENSCALE"};
-        for (auto systNameTTbar : shapeUncNoDY) {
-            cb.cp().process({"TTbar_diLepton", "TTbar_other", "SingleTop", "otherBKG"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
-            // ~cb.cp().process({"TTbar_diLepton", "TTbar_diLepton_tau", "TTbar_singleLepton", "TTbar_hadronic"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
-        }
+        // ~vector<string> shapeUncNoDY = {"MEFACSCALE", "MERENSCALE", "MESCALE"};
+        // ~for (auto systNameTTbar : shapeUncNoDY) {
+            // ~cb.cp().process({"TTbar_diLepton", "TTbar_other", "SingleTop", "otherBKG"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
+        // ~}
+        
         
         // Uncertainties, that are applied only to ttbar processes:
-        // ~vector<string> shapeUncTTbarOnly = {"BFRAG", "BSEMILEP", "CR1", "CR2", "ERDON", "MTOP"};
-        vector<string> shapeUncTTbarOnly = {"BFRAG", "BSEMILEP", "CR1", "CR2", "ERDON", "MTOP", "MATCH", "UETUNE"};
+        // ~vector<string> shapeUncTTbarOnly = {"BFRAG", "BSEMILEP", "CR1", "CR2", "ERDON", "MTOP", "MATCH", "UETUNE"};
+        vector<string> shapeUncTTbarOnly = {"BSEMILEP", "CR1", "CR2", "ERDON", "MTOP", "MATCH", "UETUNE"};
         
         for (auto systNameTTbar : shapeUncTTbarOnly) {
             cb.cp().process({"TTbar_diLepton", "TTbar_other"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
