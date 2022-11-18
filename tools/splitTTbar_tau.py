@@ -92,7 +92,10 @@ if __name__ == "__main__":
     #  ~parser.add_argument("inputSamples", nargs='+', help='<Required> List of input samples')
     parser.add_argument("year", type=str, help='<Required> Year for which samples should be processed')
     parser.add_argument("--singleSample", type=str, default="", help='Option to run on a single sample, instead of all samples of a year')
+    parser.add_argument("--force", action='store_true', help='Force splitting even though sample might alreay exist')
     args = parser.parse_args()
+    
+    print("!!!!!!!!!!!!!!!!!!!!!!!!Renaming of new samples was buggy, please fix!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         
     if args.singleSample == "":
         inputSamples = getAllSamples(args.year)
@@ -107,7 +110,7 @@ if __name__ == "__main__":
         inputFiles = getInputFiles(sample)
         targetFolder = getTargets(inputFiles[0])[1]
         
-        if os.path.exists(targetFolder):
+        if os.path.exists(targetFolder) and args.force==False:
             runAnyway = input("Already found tau samples connected to {}\n If you still want to continue, input 1 :\n".format(sample))
             if runAnyway!= "1":
                 continue
