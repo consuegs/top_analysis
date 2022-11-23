@@ -82,6 +82,7 @@ def getInputFiles(sample):
         if f.find("tau") == -1:
             files.append(f)
     
+    files.sort()
     return files
     
 
@@ -94,9 +95,7 @@ if __name__ == "__main__":
     parser.add_argument("--singleSample", type=str, default="", help='Option to run on a single sample, instead of all samples of a year')
     parser.add_argument("--force", action='store_true', help='Force splitting even though sample might alreay exist')
     args = parser.parse_args()
-    
-    print("!!!!!!!!!!!!!!!!!!!!!!!!Renaming of new samples was buggy, please fix!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        
+            
     if args.singleSample == "":
         inputSamples = getAllSamples(args.year)
     else:
@@ -109,7 +108,7 @@ if __name__ == "__main__":
         
         inputFiles = getInputFiles(sample)
         targetFolder = getTargets(inputFiles[0])[1]
-        
+                
         if os.path.exists(targetFolder) and args.force==False:
             runAnyway = input("Already found tau samples connected to {}\n If you still want to continue, input 1 :\n".format(sample))
             if runAnyway!= "1":
@@ -130,9 +129,7 @@ if __name__ == "__main__":
         mergingScheme = getMergingScheme(localFiles)
         for outputNr in mergingScheme:
             outputFile = inputFiles[0].split("_1.root")[0]
+            print outputFile
             if sp.call(["hadd","-f",outputFile+"_tau_"+str(outputNr)+".root"]+mergingScheme[outputNr]):
                 sys.exit(1)
     
-
-
-
