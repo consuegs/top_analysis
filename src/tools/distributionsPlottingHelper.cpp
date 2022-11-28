@@ -45,9 +45,8 @@ systHists::systHists(TString const &systematicName, TString filePath, TString co
             }
          }
          
-         // Adapt datasets if syst. only changes ttbar (currently used for bFrag and bSemi) and scale unc. since not working for MadGraph Samples
-         if (systematic_.type() == Systematic::bFrag || systematic_.type() == Systematic::bSemilep || systematic_.type() == Systematic::meFacScale || systematic_.type() == Systematic::meRenScale || systematic_.type() == Systematic::meScale || systematic_.type() == Systematic::meScale_envelope_ind){
-         // ~if (systematic_.type() == Systematic::bFrag || systematic_.type() == Systematic::bSemilep){
+         // Adapt datasets if syst. only changes ttbar (currently used for bFrag and bSemi)
+         if (systematic_.type() == Systematic::bFrag || systematic_.type() == Systematic::bSemilep){
             onlyTTbar = true;
             datasets_ = datasets_ttBar;
          }
