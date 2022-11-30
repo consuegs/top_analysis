@@ -538,16 +538,14 @@ TH1F hist::rebinned(TH1F const &h, std::vector<double> const &binedges,bool merg
    TH1F hClone(h);
    std::string name(hClone.GetName());
    name+="_rebinned";
+   hClone.SetName(name.c_str());
    if (checkRebinningConistency(h.GetXaxis(),binedges)==false){
       std::cout<<"Warning: Binning used for rebinning is not compatible:"<<hClone.GetXaxis()->GetTitle()<<std::endl;
    }
-   TH1F *hnew=(TH1F*)hClone.Rebin(binedges.size()-1,name.c_str(),&binedges[0]);
-   if (mergeOverflow) hist::mergeOverflow(*hnew,mergeUnderflow);
+   hClone.Rebin(binedges.size()-1,"",&binedges[0]);
+   if (mergeOverflow) hist::mergeOverflow(hClone,mergeUnderflow);
    TString yTitle=hClone.GetYaxis()->GetTitle();
-   // ~yTitle.ReplaceAll("BIN"," / bin");
-   hnew->GetYaxis()->SetTitle(yTitle);
-   return *hnew;
-   // ~return h;
+   return hClone;
 }
 
 TH1D hist::rebinned_double(TH1D const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow,bool mergeUnderflow)
@@ -567,16 +565,14 @@ TH1D hist::rebinned_double(TH1D const &h, std::vector<double> const &binedges,bo
    TH1D hClone(h);
    std::string name(hClone.GetName());
    name+="_rebinned";
+   hClone.SetName(name.c_str());
    if (checkRebinningConistency(h.GetXaxis(),binedges)==false){
       std::cout<<"Warning: Binning used for rebinning is not compatible:"<<hClone.GetXaxis()->GetTitle()<<std::endl;
    }
-   TH1D *hnew=(TH1D*)hClone.Rebin(binedges.size()-1,name.c_str(),&binedges[0]);
-   if (mergeOverflow) hist::mergeOverflow(*hnew,mergeUnderflow);
+   hClone.Rebin(binedges.size()-1,"",&binedges[0]);
+   if (mergeOverflow) hist::mergeOverflow(hClone,mergeUnderflow);
    TString yTitle=hClone.GetYaxis()->GetTitle();
-   // ~yTitle.ReplaceAll("BIN"," / bin");
-   hnew->GetYaxis()->SetTitle(yTitle);
-   return *hnew;
-   // ~return h;
+   return hClone;
 }
 
 TH2F hist::rebinned(TH2F const &h, float const &Xmin, float const &Xmax, int const &nBinsX, float const &Ymin, float const &Ymax, int const &nBinsY, bool mergeOverflow,bool mergeUnderflow)

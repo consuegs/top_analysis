@@ -104,8 +104,9 @@ void distributionsplotting::importHists(std::vector<systHists*> &systHists_vec, 
       std::vector<TString> inputSamples = current->datasets_;
       current->openFile(standardDict);
       
+      std::cout<<"Import "<<current->systematicName_<<std::endl;
+      
       for (TString sSample : inputSamples){
-         // ~auto start = high_resolution_clock::now();
          current->hists_.setCurrentSample(sSample);
          TString sSample_alt = sSample;
          if (current->altSampleType) sSample_alt = sSample+"_"+current->systematicName_;    // get correct Sample name if alternative Sample Type
@@ -115,6 +116,7 @@ void distributionsplotting::importHists(std::vector<systHists*> &systHists_vec, 
             loc=distr_.path+distr_.name;
             TH1F* tempHist=current->histReader_->read<TH1F>(loc+"/"+sSample_alt);
             
+            // ~auto start = high_resolution_clock::now();
             TH1F rebinHist;   //rebin hist
             if (distr_.binEdges.empty()) {   // use same bin width
                rebinHist = hist::rebinned(*tempHist,distr_.xMin,distr_.xMax,distr_.nBins);
@@ -122,6 +124,9 @@ void distributionsplotting::importHists(std::vector<systHists*> &systHists_vec, 
             else{
                rebinHist = hist::rebinned(*tempHist,distr_.binEdges);
             }
+            // ~auto stop = high_resolution_clock::now();
+            // ~auto duration = duration_cast<microseconds>(stop - start);
+            // ~std::cout<<duration.count()<<std::endl;
                         
             if (!current->hasRootFile_){     //rescale only if dataset is affected
                if (std::find(current->datasets_SF.begin(),current->datasets_SF.end(),sSample) != current->datasets_SF.end()){
@@ -129,6 +134,7 @@ void distributionsplotting::importHists(std::vector<systHists*> &systHists_vec, 
                }
             }
             current->hists_.addFilledHist(loc,sSample,rebinHist);
+
          }
          //import 2D Hists
          for (auto const &distr_:vecDistr2D){
@@ -149,9 +155,6 @@ void distributionsplotting::importHists(std::vector<systHists*> &systHists_vec, 
             if (!current->hasRootFile_) trafoHist.Scale(current->sf_);
             current->hists_.addFilledHist(loc,sSample,trafoHist);
          }
-         // ~auto stop = high_resolution_clock::now();
-         // ~auto duration = duration_cast<milliseconds>(stop - start);
-         // ~std::cout<<sSample<<"   "<<duration.count()<<std::endl;
       }
      current->histReader_->closeFile();
    }
