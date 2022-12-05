@@ -88,7 +88,7 @@ namespace hist
 
       std::vector<TString> vsSamples_;
       std::string sCurrentSample_;
-      std::map<TString,std::map<TString,HIST>> mmH_; // [var][sample]
+      std::map<const TString,std::map<const TString,HIST>> mmH_; // [var][sample]
       std::map<TString,std::map<TString,float>> mCount_; // [var][sample]
       std::map<TString,std::map<TString,float>> mCountError2_; // [var][sample]
 

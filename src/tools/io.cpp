@@ -166,7 +166,7 @@ void io::RootFileReader::closeFile() const
 io::RootFileReader::~RootFileReader()
 {
    file_->Close();
-   // ~delete file_;
+   delete file_;
 }
 
 /*******************************************************************************

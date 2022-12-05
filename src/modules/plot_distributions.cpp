@@ -11,6 +11,7 @@ extern "C"
 void run()
 {
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot_distributions");
+   // ~io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"plot_distributions_noMLL");
    
    std::vector<TString> mcSamples={};
    std::vector<TString> dataSamples={};
@@ -25,7 +26,7 @@ void run()
    //Nominal
    // ~std::vector<TString> systToPlot = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR_ENVELOPE_IND_UP","CR_ENVELOPE_IND_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","LUMI_UP","LUMI_DOWN","MATCH_UP","MATCH_DOWN","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    
-   // ~std::vector<TString> systToPlot = {"Nominal","JESFlavorPureGluon_UP","JESFlavorPureGluon_DOWN","JESFlavorPureQuark_UP","JESFlavorPureQuark_DOWN","JESFlavorPureCharm_UP","JESFlavorPureCharm_DOWN","JESFlavorPureBottom_UP","JESFlavorPureBottom_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN"};
@@ -48,9 +49,9 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","UNCLUSTERED_UP","UNCLUSTERED_DOWN",};
    // ~std::vector<TString> systToPlot = {"Nominal","UNCLUSTERED_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN"};
-   std::vector<TString> systToPlot = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MERENSCALE_UP","MERENSCALE_DOWN"};
-   // ~std::vector<TString> systToPlot = {"Nominal","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN"};
+   std::vector<TString> systToPlot = {"Nominal","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MESCALE_UP","MESCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN"};
@@ -77,7 +78,8 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","PDF_50_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","XSEC_ST_UP","XSEC_ST_DOWN"};
-   //std::vector<TString> systToPlot = {"Nominal","LUMI_UP","LUMI_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","XSEC_DY_UP","XSEC_DY_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","LUMI_UP","LUMI_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESRelativeSample_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESBBEC1Year_UP","JESBBEC1Year_DOWN"};
@@ -104,11 +106,11 @@ void run()
    }
    for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
-         /*
          // ~vecDistr.push_back({selection+channel,"Lep_e_pt",0.,600.,50});
          // ~vecDistr.push_back({selection+channel,"Lep_mu_pt",0.,600.,50});
          vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,30});
-         vecDistr.push_back({selection+channel,"Lep2_pt",0.,300.,25});
+         // ~vecDistr.push_back({selection+channel,"Lep2_pt",0.,300.,25});
+         /*
          // ~vecDistr.push_back({selection+channel,"MET",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,40,70,110,170,260,370,500}});
          // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,20,40,55,70,90,110,140,170,215,260,315,370,435,500}});
@@ -195,7 +197,6 @@ void run()
          // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,9,{0,40,68,100,140,196,260,332,410,500}});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
-         
       }
    }
    
@@ -206,7 +207,7 @@ void run()
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,40,80,120,160,230,400},{0,0.7,1.4,3.14}});
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,20,40,60,80,100,120,140,160,195,230,400},{0,0.35,0.7,1.05,1.4,2.27,3.14}});
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,14,0.,3.2,6,{0,20,40,52.5,65,80,95,110,125,142.5,160,180,200,300,400},{0,0.32,0.64,0.96,1.28,2.24,3.2}});
-         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,7,0.,3.2,3,{0,40,65,95,125,160,200,400},{0,0.64,1.28,3.2}});
+         vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,7,0.,3.2,3,{0,40,65,95,125,160,200,400},{0,0.64,1.28,3.2}});
       }
    }
    
@@ -220,14 +221,7 @@ void run()
    std::vector<TString> mcSamples_merged={};
    
    // Import hists 1D
-   for (auto const & distr_ : vecDistr){
-      importHists(systHists_vec,samplesToPlot,mcSamples,{distr_},{});
-   }
-   
-   // Import hists 2D
-   for (auto const & distr_ : vecDistr2D){
-      importHists(systHists_vec,samplesToPlot,mcSamples,{},{distr_});
-   }
+   importHists(systHists_vec,samplesToPlot,mcSamples,vecDistr,vecDistr2D);
    
    // Combine lepton channels
    for (auto &current : systHists_vec){

@@ -29,6 +29,7 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","MESCALE_ENVELOPE_UP","MESCALE_ENVELOPE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MTOP_IND_UP","MTOP_IND_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","ERDON"};
+   // ~std::vector<TString> systToPlot = {"Nominal","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal"};
    
    // 1D plots
@@ -40,7 +41,7 @@ void run()
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          // ~vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,30});
          // ~vecDistr.push_back({selection+channel,"Lep2_pt",0.,300.,25});
-         vecDistr.push_back({selection+channel,"mLL",0,200,25});
+         // ~vecDistr.push_back({selection+channel,"mLL",0,200,25});
          // ~vecDistr.push_back({selection+channel,"pTbJet",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"Jet2_pt",0.,400.,20});
@@ -49,7 +50,18 @@ void run()
          // ~vecDistr.push_back({selection+channel,"Lep1_eta",-2.5,2.5,25});
          // ~vecDistr.push_back({selection+channel,"Lep2_eta",-2.5,2.5,25});
          // ~vecDistr.push_back({selection+channel,"Jet1_eta",-2.5,2.5,25});
-         // ~vecDistr.push_back({selection+channel,"Jet2_eta",-2.5,2.5,25});
+         // ~vecDistr.push_back({selection+channel,"Jet2_eta",-2.5,2.5,1});
+         // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
+         // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
+      }
+   }
+   
+   // 2D plots
+   std::vector<distr2D> vecDistr2D;
+   for(TString selection:{"baseline"}){
+      for(TString channel:{"/ee/","/mumu/","/emu/"}){
+         vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,14,0.,3.2,6,{0,20,40,52.5,65,80,95,110,125,142.5,160,180,200,300,400},{0,0.32,0.64,0.96,1.28,2.24,3.2}});
+         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,7,0.,3.2,3,{0,40,65,95,125,160,200,400},{0,0.64,1.28,3.2}});
       }
    }
    
@@ -101,7 +113,7 @@ void run()
       }
       
       // Import histograms
-      importHists(systHists_vec_all[i],samplesToPlot,mcSamples,vecDistr,{},false);
+      importHists(systHists_vec_all[i],samplesToPlot,mcSamples,vecDistr,vecDistr2D,false);
       
       // Combine lepton channels
       for (auto &current : systHists_vec_all[i]){
@@ -116,7 +128,6 @@ void run()
       
    }
    
-   
    // combine years (nominals)
    std::vector<TString> samples_merged = util::addVectors(mcSamples_merged,{"data","MC"});
    hist::Histograms<TH1F> hs_combined(samples_merged);
@@ -127,6 +138,7 @@ void run()
    
    io::RootFileSaver saver(TString::Format("../../../Combined/%s/Distributions/plots%.1f.root",versionString.Data(),cfg.processFraction*100),"plot_distributions");
    
+   // plot 1D distributions
    for (auto const & distr_ : vecDistr){
       
       // get combined syst uncertainty
@@ -146,8 +158,29 @@ void run()
       }
    }
    
+   // plot 2D distributions
+   for (auto const & distr_ : vecDistr2D){
+      // get combined syst uncertainty
+      getTotalSystCombined(systHists_vec_all,distr_.path+distr_.name);
+      
+      plotHistograms(distr_.path,distr_.name,&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,true,distr_.binEdgesY);
+      
+      if (distr_.path.Contains("/emu") || distr_.name == "emu"){  //plot all channels combined
+         TString combinedPath(distr_.path);
+         combinedPath.ReplaceAll("/emu","/all");
+         if (distr_.name == "emu") {   // for cutflow plot
+            plotHistograms(combinedPath,"all",&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,true,distr_.binEdgesY);
+         }
+         else {
+            plotHistograms(combinedPath,distr_.name,&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,true,distr_.binEdgesY);
+         }
+      }
+   }
+   
+   /*
    // Print total yields
    printTotalYields(&hs_combined,systHists_vec_all,mcSamples_merged);
+   */
    
    /*
    // Print uncertainties

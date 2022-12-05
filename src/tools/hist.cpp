@@ -52,7 +52,7 @@ template <class HIST>
 void hist::Histograms<HIST>::addHist(TString const &varName,TString const &title, Int_t nbinsx, Double_t xlow, Double_t xup)
 {
    TH1::SetDefaultSumw2();
-   mmH_[varName]=std::map<TString,HIST>();
+   mmH_[varName]=std::map<const TString,HIST>();
    for (TString const &s: vsSamples_)
       mmH_[varName][s]=HIST(varName+"_"+s+TString::Format("_%d",iInstance_),title,nbinsx,xlow,xup);
 }
@@ -61,7 +61,7 @@ template <class HIST>
 void hist::Histograms<HIST>::addHist(TString const &varName,TString const &title, std::vector<float> edges, std::vector<float> widths)
 {
    TH1::SetDefaultSumw2();
-   mmH_[varName]=std::map<TString,HIST>();
+   mmH_[varName]=std::map<const TString,HIST>();
    for (TString const &s: vsSamples_)
       mmH_[varName][s]=fromWidths_template(varName+"_"+s+TString::Format("_%d",iInstance_),title,edges,widths);
 }
@@ -70,7 +70,7 @@ template <class HIST>
 void hist::Histograms<HIST>::addFilledHist(TString const &varName,TString const &s,TH1F const &filledHist)
 {
    TH1::SetDefaultSumw2();
-   if (mmH_.find(varName)==mmH_.end()) mmH_[varName]=std::map<TString,HIST>();
+   if (mmH_.find(varName)==mmH_.end()) mmH_[varName]=std::map<const TString,HIST>();
    mmH_[varName][s]=filledHist;
 }
 
@@ -78,7 +78,7 @@ template <class HIST>
 void hist::Histograms<HIST>::addFilledHist(TString const &varName,TString const &s,TH2F const &filledHist)
 {
    TH1::SetDefaultSumw2();
-   if (mmH_.find(varName)==mmH_.end()) mmH_[varName]=std::map<TString,HIST>();
+   if (mmH_.find(varName)==mmH_.end()) mmH_[varName]=std::map<const TString,HIST>();
    mmH_[varName][s]=filledHist;
 }
 
@@ -86,7 +86,7 @@ template <class HIST>
 void hist::Histograms<HIST>::addHist(TString const &varName,TString const &title, Int_t nbinsx, Double_t xlow, Double_t xup, Int_t nbinsy, Double_t ylow, Double_t yup)
 {
    TH1::SetDefaultSumw2();
-   mmH_[varName]=std::map<TString,HIST>();
+   mmH_[varName]=std::map<const TString,HIST>();
    for (TString const &s: vsSamples_)
       mmH_[varName][s]=HIST(varName+"_"+s+TString::Format("_%d",iInstance_),title,nbinsx,xlow,xup,nbinsy,ylow,yup);
 }
@@ -95,7 +95,7 @@ template <class HIST>
 void hist::Histograms<HIST>::addHist(TString const &varName,TString const &title, std::vector<float> edges_x, std::vector<float> widths_x, std::vector<float> edges_y, std::vector<float> widths_y)
 {
    TH1::SetDefaultSumw2();
-   mmH_[varName]=std::map<TString,HIST>();
+   mmH_[varName]=std::map<const TString,HIST>();
    for (TString const &s: vsSamples_)
       mmH_[varName][s]=fromWidths_2d_template(varName+"_"+s+TString::Format("_%d",iInstance_),title,edges_x,widths_x,edges_y,widths_y);
 }
@@ -702,6 +702,7 @@ TH1F hist::histTrafo_2D(TH2F* const &hist2D){
    
    
    TH1F* tempHist= new TH1F("", "", numBins_x*numBins_y, binedges_1d);
+   tempHist->SetDirectory(nullptr);    // fixes invalid free() when closing TFile
    tempHist->SetYTitle(hist2D->GetZaxis()->GetTitle());
    tempHist->SetXTitle(hist2D->GetXaxis()->GetTitle());
    int binNew = 1;
