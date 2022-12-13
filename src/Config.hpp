@@ -69,6 +69,10 @@ public:
    float muonDYunc;
    float electronDYunc;
    
+   TString jetPileupID_file;
+   TString jetPileupID_effHist;
+   TString jetPileupID_sfHist;
+   
    bool applyDNN;
    TString DNN_Path;
 

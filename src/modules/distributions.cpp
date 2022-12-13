@@ -11,6 +11,7 @@
 #include "tools/triggerSF.hpp"
 #include "tools/mcWeights.hpp"
 #include "tools/dnnRegression.hpp"
+#include "tools/jetPileupIDSF.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -55,7 +56,8 @@ void run()
    
    //Read systematic from command line
    Systematic::Systematic currentSystematic(cfg.systematic);
-   bool isNominal = (currentSystematic.type()==Systematic::nominal || currentSystematic.type()==Systematic::met40Cut || currentSystematic.type()==Systematic::removeMLLcut);
+   //Set boolean for running nominal (also used when testing different selections)
+   bool isNominal = (currentSystematic.type()==Systematic::nominal || currentSystematic.type()==Systematic::met40Cut || currentSystematic.type()==Systematic::removeMLLcut || currentSystematic.type()==Systematic::jetPileupIDapplied);
    
    hist::Histograms<TH1F> hs(vsDatasubsets);    //Define histograms in the following
    hist::Histograms<TH1F> hs_cutflow(vsDatasubsets);
@@ -71,7 +73,7 @@ void run()
          hs.addHist(selection+channel+"/PuppiMET_xy"   ,";%MET;EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/MET_xy"   ,";%MET;EventsBIN"           ,100,0,500);
          // ~hs.addHist(selection+channel+"/DNN_MET_pT"   ,";DNN_MET_pT (GeV);EventsBIN"           ,100,0,500);
-         hs.addHist(selection+channel+"/DNN_MET_pT"   ,";DNN_MET_pT (GeV);EventsBIN"           ,250,0,500);
+         hs.addHist(selection+channel+"/DNN_MET_pT"   ,";DNN_MET_pT (GeV);EventsBIN"           ,500,0,500);
          hs.addHist(selection+channel+"/DNN_MET_dPhi_nextLep"   ,";DNN_MET_dPhi_nextLep;EventsBIN"           ,320,0,3.2);
          hs.addHist(selection+channel+"/DeepMET_reso"   ,";%MET;EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/DeepMET_resp"   ,";%MET;EventsBIN"           ,100,0,500);
@@ -337,6 +339,11 @@ void run()
          jesCorrections jesCorrector = jesCorrections(cfg.getJESPath(runEra,false).Data(),cfg.jes_UNC_mc_regrouped,currentSystematic,cfg.year);
          jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(runEra,true).Data(),cfg.jes_UNC_mc_puppi_regrouped,currentSystematic,cfg.year);
          jerCorrections jerCorrector = jerCorrections(isData? cfg.jer_SF_data.Data() : cfg.jer_SF_mc.Data(),isData? cfg.jer_RES_data.Data() : cfg.jer_RES_mc.Data(),currentSystematic);
+         
+         // Configure pileupID application
+         bool applyPileupID = (currentSystematic.type() == Systematic::jetPileupIDapplied);
+         JetPileupIDWeights jetPileupIDWeighter = JetPileupIDWeights(cfg.jetPileupID_file.Data(),cfg.jetPileupID_sfHist.Data(),cfg.jetPileupID_effHist.Data(),currentSystematic);
+         if(applyPileupID) std::cout<<"!!!!!!!!!!!!!!!JetPileupID is applied!!!!!!!!!!!!!!!!!!!"<<std::endl;
          
          // Configure lepton Correction
          leptonCorrections leptonCorretor = leptonCorrections(currentSystematic);
@@ -738,7 +745,7 @@ void run()
                io::log*".";
                io::log.flush();
             }
-                        
+                                                
             //Booleans for reco and pseudo selection
             bool rec_selection=false;
             bool pseudo_selection=true;
@@ -776,7 +783,7 @@ void run()
             
             rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2,cat,muonLead);
             if(rec_selection==false && pseudo_selection==false) continue;
-            
+                        
             //Trigger selection
             std::vector<bool> diElectronTriggers={*eleTrigg1,*eleTrigg2,*singleEleTrigg};
             std::vector<bool> diMuonTriggers={*muonTrigg1,*muonTrigg2,*muonTrigg3,*muonTrigg4,*singleMuonTrigg1,*singleMuonTrigg2};
@@ -790,7 +797,7 @@ void run()
             else{
                if(!selection::triggerSelection(diElectronTriggers,diMuonTriggers,electronMuonTriggers,channel,true,year_int,PD,Run2016H,Run2017AB)) continue;
             }
-            
+                        
             if (triggerMC==false) rec_selection=false;
             if(rec_selection==false && pseudo_selection==false) continue;
             
@@ -821,7 +828,7 @@ void run()
             if(rec_selection) hs_cutflow.fillweight("cutflow/"+cat,1,cutFlow_weight);
             
             // Get cleaned and smeared jets and apply ttBar selection
-            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho);
+            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho,applyPileupID);
             std::vector<tree::Jet> BJets;
             std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi_xy,channel,*jets,cjets,BJets);
             
@@ -859,6 +866,10 @@ void run()
                else if (channel[2]) channelID = 3;
                if (!isData) bTagWeight = bTagWeighter.getEventWeight(cjets,channelID);
             }
+            
+            //Get jet pileup ID weight
+            float jetPileupIDWeight = 1.;
+            if (!isData && rec_selection && applyPileupID) jetPileupIDWeight = jetPileupIDWeighter.getEventWeight(cjets);
  
             // end reco baseline selection
                         
@@ -875,7 +886,7 @@ void run()
             if(!isData){
                if(rec_selection) triggerSF = triggerSFcalc.getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);
                fEventWeight=*w_pu * mcWeight * *w_topPT;     //Set event weight 
-               SFWeight=leptonSFweight * bTagWeight * triggerSF * *w_prefiring;     //Set combined SF weight
+               SFWeight=leptonSFweight * bTagWeight * jetPileupIDWeight * triggerSF * *w_prefiring;     //Set combined SF weight
                hs.setFillWeight(fEventWeight*SFWeight);
                hs2d.setFillWeight(fEventWeight*SFWeight);
                hs2d_GOF.setFillWeight(fEventWeight*SFWeight);
@@ -887,13 +898,13 @@ void run()
                hs_cutflow.setFillWeight(1);
             }
             if(rec_selection){
-               hs_cutflow.fillweight("cutflow/"+cat,5,(isData)? cutFlow_weight : cutFlow_weight * bTagWeight);
+               hs_cutflow.fillweight("cutflow/"+cat,5,(isData)? cutFlow_weight : cutFlow_weight * bTagWeight * jetPileupIDWeight);
                if(isData) hs_cutflow.fillweight("cutflow/"+cat,6,1);
-               else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * mcWeight * leptonSFweight * *w_prefiring * bTagWeight * *w_topPT *triggerSF);
+               else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * mcWeight * leptonSFweight * *w_prefiring * bTagWeight * jetPileupIDWeight * *w_topPT *triggerSF);
             }
             if(rec_selection && !*addLepton){
                if(isData) hs_cutflow.fillweight("cutflow/"+cat,7,1);
-               else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * mcWeight * leptonSFweight * *w_prefiring * bTagWeight * *w_topPT *triggerSF);
+               else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * mcWeight * leptonSFweight * *w_prefiring * bTagWeight * jetPileupIDWeight * *w_topPT *triggerSF);
             }
             
             //Fill syst. weights to minimal tree if nominal
@@ -901,15 +912,15 @@ void run()
                if (rec_selection){
                   int currentPos = 0;
                   for (int i=0; i<leptonSF_vec.size(); i++){
-                     minTree_systWeights[i] = lumi_weight * fEventWeight * bTagWeight * triggerSF * *w_prefiring * leptonSF_vec[i].getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
+                     minTree_systWeights[i] = lumi_weight * fEventWeight * bTagWeight * jetPileupIDWeight * triggerSF * *w_prefiring * leptonSF_vec[i].getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
                   }
                   currentPos += leptonSF_vec.size(); 
                   for (int i=0; i<bTagWeighter_vec.size(); i++){
-                     minTree_systWeights[currentPos+i] = lumi_weight * fEventWeight * triggerSF * leptonSFweight * *w_prefiring * bTagWeighter_vec[i].getEventWeight(cjets,channelID);
+                     minTree_systWeights[currentPos+i] = lumi_weight * fEventWeight * triggerSF * leptonSFweight * *w_prefiring * jetPileupIDWeight * bTagWeighter_vec[i].getEventWeight(cjets,channelID);
                   }
                   currentPos += bTagWeighter_vec.size();
                   for (int i=0; i<triggerSF_vec.size(); i++){
-                     minTree_systWeights[currentPos+i] = lumi_weight * fEventWeight * bTagWeight * leptonSFweight * *w_prefiring * triggerSF_vec[i].getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);
+                     minTree_systWeights[currentPos+i] = lumi_weight * fEventWeight * bTagWeight * jetPileupIDWeight * leptonSFweight * *w_prefiring * triggerSF_vec[i].getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);
                   }
                   currentPos += triggerSF_vec.size();
                   for (int i=0; i<mcWeighter_vec.size(); i++){
@@ -1595,7 +1606,6 @@ void run()
       }  // datasubset loop
       
    } // dataset loop
-   
    
    std::vector<TString> samplesToCombine=cfg.datasets.getDatasetNames();
    hs.combineFromSubsamples(samplesToCombine);

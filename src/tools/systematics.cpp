@@ -62,7 +62,7 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("DY")) return dy;
     if(type.BeginsWith("BG")) return bg;
     if(type.BeginsWith("KIN")) return kin;
-    if(type.BeginsWith("JetPileupID")) return jetPileupID;
+    if(type.BeginsWith("JETPILEUPID")) return jetPileupID;
     if(type.BeginsWith("BTAGBC_CORR")) return btagBCcorr;
     if(type.BeginsWith("BTAGBC_UNCORR")) return btagBCuncorr;
     if(type.BeginsWith("BTAGL_CORR")) return btagLcorr;
@@ -337,7 +337,7 @@ TString Systematic::convertType(const Type& type)
     if(type == bg) return "BG";
     if(type == dynorm) return "DYNORM";
     if(type == kin) return "KIN";
-    if(type == jetPileupID) return "JetPileupID";
+    if(type == jetPileupID) return "JETPILEUPID";
     if(type == btagBC) return "BTAGBC";
     if(type == btagL) return "BTAGL";
     if(type == btagBCcorr) return "BTAGBC_CORR";

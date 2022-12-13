@@ -497,7 +497,8 @@ namespace Systematic{
         pdf,
         tw_ds,
         xsec_ttother,xsec_dy,xsec_st,xsec_other,
-        l1prefiring
+        l1prefiring,
+        jetPileupID
     };
     
     ///Define systematics that are applied by varying the nominal MC weight

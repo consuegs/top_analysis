@@ -21,6 +21,7 @@ set(SRCS
   dnnRegression.cpp
   tunfoldPlottingHelper.cpp
   distributionsPlottingHelper.cpp
+  jetPileupIDSF.cpp
   )
 
 add_library(tools SHARED ${SRCS})

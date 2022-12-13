@@ -9,7 +9,7 @@
 
 namespace phys
 {
-   std::vector<tree::Jet> getCleanedJets(std::vector<tree::Jet> &jets,TLorentzVector const &p_l1,TLorentzVector const &p_l2,jerCorrections &jerCorrector,const float& rho);
+   std::vector<tree::Jet> getCleanedJets(std::vector<tree::Jet> &jets,TLorentzVector const &p_l1,TLorentzVector const &p_l2,jerCorrections &jerCorrector,const float& rho, const bool& applyPileupID=false);
    std::vector<tree::Jet> getCleanedJets_looseID(std::vector<tree::Jet> const &jets);
    float computeHT(std::vector<tree::Jet> const &jets);
    float METoverSqrtHT(float MET, float HT); // returns inf for HT=0.0

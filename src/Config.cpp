@@ -96,6 +96,10 @@ Config::Config(std::string config_year)
    muonDYunc=pt.get<float>("leptonSF.muonDYextrapolationunc");
    electronDYunc=pt.get<float>("leptonSF.electronDYextrapolationunc");
    
+   jetPileupID_file=pt.get<std::string>("jetPileupID.jetPileupID_file");
+   jetPileupID_effHist=pt.get<std::string>("jetPileupID.jetPileupID_effHist");
+   jetPileupID_sfHist=pt.get<std::string>("jetPileupID.jetPileupID_sfHist");
+   
    applyDNN=pt.get<bool>("DNN.applyDNN");
    DNN_Path=pt.get<std::string>("DNN.DNN_Path");
 

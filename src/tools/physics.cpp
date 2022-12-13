@@ -3,11 +3,14 @@
 #include <limits>
 #include <iostream>
 
-std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> &jets,TLorentzVector const &p_l1,TLorentzVector const &p_l2,jerCorrections &jerCorrector,const float& rho)
+std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> &jets,TLorentzVector const &p_l1,TLorentzVector const &p_l2,jerCorrections &jerCorrector,const float& rho,const bool& applyPileupID)
 {
    std::vector<tree::Jet> cjets;
    for (tree::Jet &j: jets){
       if (!j.TightIDlepVeto || fabs(j.p.Eta())>2.4) continue;
+      
+      // In case pileupID should be applied
+      if (applyPileupID && !j.PileupIDloose) continue;
       
       // Check overlap with selected leptons
       if(j.p.DeltaR(p_l1)<0.4) continue;
@@ -21,18 +24,6 @@ std::vector<tree::Jet> phys::getCleanedJets(std::vector<tree::Jet> &jets,TLorent
    sort(cjets.begin(), cjets.end(), tree::PtGreater);
    return cjets;
 }
-
-// ~std::vector<tree::Jet> phys::getCleanedJets_looseID(std::vector<tree::Jet> const &jets)
-// ~{
-   // ~std::vector<tree::Jet> cjets;
-   // ~for (tree::Jet j: jets){
-      // ~if (!j.isLoose || j.p.Pt()<30 || fabs(j.p.Eta())>2.4) continue;
-      // ~if (j.hasElectronMatch || j.hasMuonMatch) continue;
-      // ~cjets.push_back(j);
-   // ~}
-   // ~sort(cjets.begin(), cjets.end(), tree::PtGreater);
-   // ~return cjets;
-// ~}
 
 
 /*
