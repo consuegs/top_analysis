@@ -115,8 +115,8 @@ void distributionsplotting::importHists(std::vector<systHists*> &systHists_vec, 
             TString loc;
             loc=distr_.path+distr_.name;
             TH1F* tempHist=current->histReader_->read<TH1F>(loc+"/"+sSample_alt);
+            tempHist->SetDirectory(nullptr);
             
-            // ~auto start = high_resolution_clock::now();
             TH1F rebinHist;   //rebin hist
             if (distr_.binEdges.empty()) {   // use same bin width
                rebinHist = hist::rebinned(*tempHist,distr_.xMin,distr_.xMax,distr_.nBins);
@@ -124,9 +124,6 @@ void distributionsplotting::importHists(std::vector<systHists*> &systHists_vec, 
             else{
                rebinHist = hist::rebinned(*tempHist,distr_.binEdges);
             }
-            // ~auto stop = high_resolution_clock::now();
-            // ~auto duration = duration_cast<microseconds>(stop - start);
-            // ~std::cout<<duration.count()<<std::endl;
                         
             if (!current->hasRootFile_){     //rescale only if dataset is affected
                if (std::find(current->datasets_SF.begin(),current->datasets_SF.end(),sSample) != current->datasets_SF.end()){
@@ -141,7 +138,8 @@ void distributionsplotting::importHists(std::vector<systHists*> &systHists_vec, 
             TString loc;
             loc=distr_.path+distr_.name;
             TH2F* tempHist=current->histReader_->read<TH2F>(loc+"/"+sSample_alt);
-            
+            tempHist->SetDirectory(nullptr);
+                        
             TH2F rebinHist;   //rebin hist
             if (distr_.binEdgesX.empty()) {   // use same bin width
                rebinHist = hist::rebinned(*tempHist,distr_.xMin,distr_.xMax,distr_.nBinsX,distr_.yMin,distr_.yMax,distr_.nBinsY);
@@ -152,8 +150,14 @@ void distributionsplotting::importHists(std::vector<systHists*> &systHists_vec, 
             
             TH1F trafoHist = hist::histTrafo_2D(&rebinHist);
             
-            if (!current->hasRootFile_) trafoHist.Scale(current->sf_);
+            if (!current->hasRootFile_){     //rescale only if dataset is affected
+               if (std::find(current->datasets_SF.begin(),current->datasets_SF.end(),sSample) != current->datasets_SF.end()){
+                  trafoHist.Scale(current->sf_);
+               }
+            }
+            
             current->hists_.addFilledHist(loc,sSample,trafoHist);
+            
          }
       }
      current->histReader_->closeFile();
@@ -687,8 +691,10 @@ void distributionsplotting::getCombinedDistributions(hist::Histograms<TH1F> &hs_
    }
 }
 
-// get up and down shift for set of systematics for all periods combined (party copied from getCombinedUnc in tunfoldPlottingHelper)
+// get up and down shift for set of systematics for all periods combined (partly copied from getCombinedUnc in tunfoldPlottingHelper)
 std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<std::vector<systHists*>> const &systHists_vec_all, TString const loc){
+   
+   auto start = high_resolution_clock::now();
    
    // get nominal histograms per period
    std::vector<TH1F*> nominals(4);
@@ -731,24 +737,16 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<s
          if (i>=systHists_vec_all[j].size()) continue;   // handle different number of systematics per year (mainly for HEM)
          
          TString syst = systHists_vec_all[j][i]->systematicName_;
+                  
          if (syst.BeginsWith("LUMI")) continue;    // Lumi derived differently
 
          if (syst == "JESUserDefinedHEM1516_DOWN" && j!=3) continue; // HEM only used for 2018
                   
          std::vector<systHists*> tempVec = {systHists_vec_all[j][0],systHists_vec_all[j][i]};   // temp vec with only one source
          std::pair<TH1F*,TH1F*> tempPair = getTotalSyst(nominals[j],tempVec,loc);
-         // ~for (int k=1; k<=tempPair.first->GetNbinsX(); k++){
-            // ~std::cout<<tempPair.first->GetBinContent(k)<<"   "<<tempPair.second->GetBinContent(k)<<std::endl;;
-         // ~}
-         // ~std::cout<<"--"<<std::endl;
+
          tempPair.second->Add(tempPair.first,-1);   // get one histogram with up and down shifts (no cancelation since only one syst at a time is considered)
          vec_systShifts[j][syst] = *tempPair.second;
-         
-         // ~std::cout<<syst<<std::endl;
-         // ~for (int k=1; k<=vec_systShifts[j][syst].GetNbinsX(); k++){
-            // ~std::cout<<vec_systShifts[j][syst].GetBinContent(k)<<std::endl;
-         // ~}
-         // ~std::cout<<"--------------------------"<<std::endl;
          
       }
    }
@@ -874,6 +872,9 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<s
    hist::sqrtHist(*hist_TotalShiftUP);
    hist::sqrtHist(*hist_TotalShiftDOWN);
    
+   auto stop = high_resolution_clock::now();
+   auto duration = duration_cast<microseconds>(stop - start);
+   std::cout<<duration.count()<<std::endl;
    
    return std::make_pair(hist_TotalShiftDOWN,hist_TotalShiftUP);
 }

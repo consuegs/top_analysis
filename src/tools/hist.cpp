@@ -521,19 +521,19 @@ bool hist::checkRebinningConistency(const TAxis* axis, std::vector<T> const &new
    return true;
 }
 
-TH1F hist::rebinned(TH1F const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow,bool mergeUnderflow)
+TH1F& hist::rebinned(TH1F const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow,bool mergeUnderflow)
 {
    std::vector<double> binedges=getBinVector(edges, widths);
    return rebinned(h,binedges,mergeOverflow,mergeUnderflow);
 }
 
-TH1F hist::rebinned(TH1F const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow,bool mergeUnderflow)
+TH1F& hist::rebinned(TH1F const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow,bool mergeUnderflow)
 {
    std::vector<double> binedges=getBinVector(Xmin, Xmax, nBins);
    return rebinned(h,binedges,mergeOverflow,mergeUnderflow);
 }
 
-TH1F hist::rebinned(TH1F const &h, std::vector<double> const &binedges,bool mergeOverflow,bool mergeUnderflow)
+TH1F& hist::rebinned(TH1F const &h, std::vector<double> const &binedges,bool mergeOverflow,bool mergeUnderflow)
 {
    TH1F hClone(h);
    std::string name(hClone.GetName());
@@ -543,24 +543,23 @@ TH1F hist::rebinned(TH1F const &h, std::vector<double> const &binedges,bool merg
       std::cout<<"Warning: Binning used for rebinning is not compatible:"<<hClone.GetXaxis()->GetTitle()<<std::endl;
    }
    TH1F *hnew=(TH1F*)hClone.Rebin(binedges.size()-1,"",&binedges[0]);
-   if (mergeOverflow) hist::mergeOverflow(hClone,mergeUnderflow);
-   TString yTitle=hnew->GetYaxis()->GetTitle();
+   if (mergeOverflow) hist::mergeOverflow(*hnew,mergeUnderflow);
    return *hnew;
 }
 
-TH1D hist::rebinned_double(TH1D const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow,bool mergeUnderflow)
+TH1D& hist::rebinned_double(TH1D const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow,bool mergeUnderflow)
 {
    std::vector<double> binedges=getBinVector(edges, widths);
    return rebinned_double(h,binedges,mergeOverflow,mergeUnderflow);
 }
 
-TH1D hist::rebinned_double(TH1D const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow,bool mergeUnderflow)
+TH1D& hist::rebinned_double(TH1D const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow,bool mergeUnderflow)
 {
    std::vector<double> binedges=getBinVector(Xmin, Xmax, nBins);
    return rebinned_double(h,binedges,mergeOverflow,mergeUnderflow);
 }
 
-TH1D hist::rebinned_double(TH1D const &h, std::vector<double> const &binedges,bool mergeOverflow,bool mergeUnderflow)
+TH1D& hist::rebinned_double(TH1D const &h, std::vector<double> const &binedges,bool mergeOverflow,bool mergeUnderflow)
 {
    TH1D hClone(h);
    std::string name(hClone.GetName());
@@ -570,8 +569,7 @@ TH1D hist::rebinned_double(TH1D const &h, std::vector<double> const &binedges,bo
       std::cout<<"Warning: Binning used for rebinning is not compatible:"<<hClone.GetXaxis()->GetTitle()<<std::endl;
    }
    TH1D *hnew=(TH1D*)hClone.Rebin(binedges.size()-1,"",&binedges[0]);
-   if (mergeOverflow) hist::mergeOverflow(hClone,mergeUnderflow);
-   TString yTitle=hnew->GetYaxis()->GetTitle();
+   if (mergeOverflow) hist::mergeOverflow(*hnew,mergeUnderflow);
    return *hnew;
 }
 

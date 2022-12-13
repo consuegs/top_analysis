@@ -1,4 +1,4 @@
-//Script to combine and plot distributions from distributions.cpp for all periods (taking correct correlations into account)
+//Script to combine and plot distributions from distributions.cpp for all periods (taking correct correlations into account) Since reading of inputs histograms is slowing down with progress, one should only plot 1-2 distributions at a time
 
 #include "tools/distributionsPlottingHelper.hpp"
 
@@ -13,14 +13,14 @@ void run()
    // Define systematics
    
    //Nominal
-   std::vector<TString> systToPlot = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","LUMI_UP","LUMI_DOWN","MATCH_UP","MATCH_DOWN","MESCALE_ENVELOPE_UP","MESCALE_ENVELOPE_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR_ENVELOPE_UP","CR_ENVELOPE_DOWN","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","LUMI_UP","LUMI_DOWN","MATCH_UP","MATCH_DOWN","MESCALE_ENVELOPE_UP","MESCALE_ENVELOPE_DOWN","MTOP_IND_UP","MTOP_IND_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PDF_ENVELOPE_UP","PDF_ENVELOPE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    
    // ~std::vector<TString> systToPlot = {"Nominal","PU_UP","PU_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","XSEC_ST_UP","XSEC_ST_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","XSEC_ST_UP"};
    // ~std::vector<TString> systToPlot = {"Nominal","ELECTRON_ID_UP","ELECTRON_ID_DOWN"};
-   // ~std::vector<TString> systToPlot = {"Nominal","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN"};
+   std::vector<TString> systToPlot = {"Nominal","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","ELECTRON_ID_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESUserDefinedHEM1516_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","LUMI_UP"};
@@ -41,7 +41,7 @@ void run()
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          // ~vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,30});
          // ~vecDistr.push_back({selection+channel,"Lep2_pt",0.,300.,25});
-         // ~vecDistr.push_back({selection+channel,"mLL",0,200,25});
+         vecDistr.push_back({selection+channel,"mLL",0,200,25});
          // ~vecDistr.push_back({selection+channel,"pTbJet",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"Jet2_pt",0.,400.,20});
@@ -60,7 +60,7 @@ void run()
    std::vector<distr2D> vecDistr2D;
    for(TString selection:{"baseline"}){
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
-         vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,14,0.,3.2,6,{0,20,40,52.5,65,80,95,110,125,142.5,160,180,200,300,400},{0,0.32,0.64,0.96,1.28,2.24,3.2}});
+         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,14,0.,3.2,6,{0,20,40,52.5,65,80,95,110,125,142.5,160,180,200,300,400},{0,0.32,0.64,0.96,1.28,2.24,3.2}});
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,7,0.,3.2,3,{0,40,65,95,125,160,200,400},{0,0.64,1.28,3.2}});
       }
    }
@@ -142,9 +142,12 @@ void run()
    for (auto const & distr_ : vecDistr){
       
       // get combined syst uncertainty
-      getTotalSystCombined(systHists_vec_all,distr_.path+distr_.name);
-      
+      // ~auto start = high_resolution_clock::now();      
       plotHistograms(distr_.path,distr_.name,&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,false);
+      
+      // ~auto stop = high_resolution_clock::now();
+      // ~auto duration = duration_cast<microseconds>(stop - start);
+      // ~std::cout<<duration.count()<<std::endl;
       
       if (distr_.path.Contains("/emu") || distr_.name == "emu"){  //plot all channels combined
          TString combinedPath(distr_.path);
@@ -160,8 +163,6 @@ void run()
    
    // plot 2D distributions
    for (auto const & distr_ : vecDistr2D){
-      // get combined syst uncertainty
-      getTotalSystCombined(systHists_vec_all,distr_.path+distr_.name);
       
       plotHistograms(distr_.path,distr_.name,&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,true,distr_.binEdgesY);
       
@@ -176,6 +177,7 @@ void run()
          }
       }
    }
+   
    
    /*
    // Print total yields

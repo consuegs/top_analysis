@@ -175,12 +175,12 @@ namespace hist
    template <typename T>
    bool checkRebinningConistency(const TAxis* axis, std::vector<T> const &newBinning);
    
-   TH1F rebinned(TH1F const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow=true,bool mergeUnderflow=true);
-   TH1F rebinned(TH1F const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow=true,bool mergeUnderflow=true);
-   TH1F rebinned(TH1F const &h, std::vector<double> const &binedges,bool mergeOverflow=true,bool mergeUnderflow=true);
-   TH1D rebinned_double(TH1D const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow=true,bool mergeUnderflow=true);
-   TH1D rebinned_double(TH1D const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow=true,bool mergeUnderflow=true);
-   TH1D rebinned_double(TH1D const &h, std::vector<double> const &binedges,bool mergeOverflow=true,bool mergeUnderflow=true);
+   TH1F& rebinned(TH1F const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow=true,bool mergeUnderflow=true);
+   TH1F& rebinned(TH1F const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow=true,bool mergeUnderflow=true);
+   TH1F& rebinned(TH1F const &h, std::vector<double> const &binedges,bool mergeOverflow=true,bool mergeUnderflow=true);
+   TH1D& rebinned_double(TH1D const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow=true,bool mergeUnderflow=true);
+   TH1D& rebinned_double(TH1D const &h, float const &Xmin, float const &Xmax, int const &nBins,bool mergeOverflow=true,bool mergeUnderflow=true);
+   TH1D& rebinned_double(TH1D const &h, std::vector<double> const &binedges,bool mergeOverflow=true,bool mergeUnderflow=true);
    TH2F rebinned(TH2F const &h, float const &Xmin, float const &Xmax, int const &nBinsX, float const &Ymin, float const &Ymax, int const &nBinsY, bool mergeOverflow=true,bool mergeUnderflow=true);
    TH2F rebinned(TH2F const &h, std::vector<float> const &binedges_x, std::vector<float> const &binedges_y,bool mergeOverflow=true,bool mergeUnderflow=true);
    TH2D rebinned_double(TH2D const &h, float const &Xmin, float const &Xmax, int const &nBinsX, float const &Ymin, float const &Ymax, int const &nBinsY, bool mergeOverflow=true,bool mergeUnderflow=true);

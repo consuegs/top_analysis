@@ -51,7 +51,7 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","JESTotal_UP","JESTotal_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MERENSCALE_UP","MERENSCALE_DOWN"};
-   std::vector<TString> systToPlot = {"Nominal","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN"};
+   // ~std::vector<TString> systToPlot = {"Nominal","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MESCALE_UP","MESCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","MESCALE_ENVELOPE_IND_UP","MESCALE_ENVELOPE_IND_DOWN"};
@@ -86,7 +86,7 @@ void run()
    // ~std::vector<TString> systToPlot = {"Nominal","JESBBEC1Year_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","JESUserDefinedHEM1516_DOWN"};
    // ~std::vector<TString> systToPlot = {"Nominal","TWDS"};
-   // ~std::vector<TString> systToPlot = {"Nominal"};
+   std::vector<TString> systToPlot = {"Nominal"};
    
    // ~for (int i=1;i<=50;i++){
        // ~systToPlot.push_back(TString::Format("PDF_%i_UP",i));
@@ -207,7 +207,7 @@ void run()
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,40,80,120,160,230,400},{0,0.7,1.4,3.14}});
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,20,40,60,80,100,120,140,160,195,230,400},{0,0.35,0.7,1.05,1.4,2.27,3.14}});
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,14,0.,3.2,6,{0,20,40,52.5,65,80,95,110,125,142.5,160,180,200,300,400},{0,0.32,0.64,0.96,1.28,2.24,3.2}});
-         vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,7,0.,3.2,3,{0,40,65,95,125,160,200,400},{0,0.64,1.28,3.2}});
+         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,7,0.,3.2,3,{0,40,65,95,125,160,200,400},{0,0.64,1.28,3.2}});
       }
    }
    
