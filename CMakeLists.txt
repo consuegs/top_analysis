@@ -59,7 +59,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSTANDALONE")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lonnxruntime")
 
 # source /cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/valgrind/3.15.0/etc/profile.d/init.sh
-# valgrind --num-callers=30 --keep-debuginfo=yes --error-limit=no --suppressions=$ROOTSYS/etc/valgrind-root.supp ./run.x TUnfold_plotting > valgrind.txt 2>&1
+# valgrind --num-callers=30 --keep-debuginfo=yes --error-limit=no --undef-value-errors=no --tool=memcheck --leak-check=full --suppressions=$ROOTSYS/etc/valgrind-root.supp ./run.x plot_distributions_combined > valgrind.txt 2>&1
+
+# enable address sanatizer
+# ~set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
+# ~set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 ## std::filesystem
