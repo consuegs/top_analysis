@@ -53,6 +53,7 @@ namespace tunfoldplotting
    std::map<TString,TH1F> getCombinedUnc(std::vector<std::map<TString,TH1F>>& vec_systShifts,const std::vector<TString>& systVec, const TH1F& combinedResult, std::vector<TH1F> nominalResults, bool const &norm=false);
    TH1F getCRenvelopeCombined(std::vector<std::map<TString,TH1F>>& vec_systShifts, bool const &up, bool const &norm=false);
    TH1F getMESCALEenvelopeCombined(std::vector<std::map<TString,TH1F>>& vec_systShifts, bool const &up, bool const &norm=false);
+   TH1F getMTOPuncCombined(std::vector<std::map<TString,TH1F>>& vec_systShifts, bool const &up, bool const &norm=false);
    std::pair<TH1F*,TH1F*> getTotalShifts(const std::map<TString,TH1F> &map_combinedShifts, const TH1F &nominal, const bool isNorm, const float &scale = 1.);
    
    std::vector<double> plot_UnfoldedResult(TUnfoldBinning* generatorBinning, TH1F* unfolded, TH1F* unfolded_reg, TH1F* unfolded_bbb,

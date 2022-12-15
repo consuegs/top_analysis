@@ -75,6 +75,7 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("JEREta2Pt1")) return jerEta2Pt1;
     if(type.BeginsWith("JEREta3Pt0")) return jerEta3Pt0;
     if(type.BeginsWith("JEREta3Pt1")) return jerEta3Pt1;
+    if(type.BeginsWith("JERMET")) return jerMET;
     if(type.BeginsWith("JER")) return jer;
     if(type.BeginsWith("JESRelativeBalreg")) return jesRelativeBal_reg;
     if(type.BeginsWith("JESFlavorQCDreg")) return jesFlavorQCD_reg;
@@ -283,6 +284,7 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("jetLooseCleaningApplied")) return jetLooseCleaningApplied;
     if(type.BeginsWith("met40Cut")) return met40Cut;
     if(type.BeginsWith("removeMLLcut")) return removeMLLcut;
+    if(type.BeginsWith("applyJerMET")) return applyJerMET;
     if(!quiet) std::cout<<"Warning in Systematic::convertType()! Following conversion is not implemented: "
              <<type<<std::endl<<std::endl;
     return undefinedType;
@@ -351,6 +353,7 @@ TString Systematic::convertType(const Type& type)
     if(type == jerEta3Pt0) return "JEREta3Pt0";
     if(type == jerEta3Pt1) return "JEREta3Pt1";
     if(type == jer) return "JER";
+    if(type == jerMET) return "JERMET";
     if(type == jesTotal) return "JESTotal";
     if(type == jesAbsoluteStat) return "JESAbsoluteStat";
     if(type == jesAbsoluteScale) return "JESAbsoluteScale";
@@ -559,6 +562,7 @@ TString Systematic::convertType(const Type& type)
     if(type == jetLooseCleaningApplied) return "jetLooseCleaningApplied";
     if(type == met40Cut) return "met40Cut";
     if(type == removeMLLcut) return "removeMLLcut";
+    if(type == applyJerMET) return "applyJerMET";
     
     std::cerr<<"Error in Systematic::convertType()! Conversion is not implemented\n...break\n"<<std::endl;
     exit(99);

@@ -400,13 +400,15 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
    }
    
    if (is2D){
-      totalShift.first.GetYaxis()->SetRangeUser(-55,55);
+      // ~totalShift.first.GetYaxis()->SetRangeUser(-55,55);
+      totalShift.first.GetYaxis()->SetRangeUser(-75,75);
    }
    else if(saver->getInternalPath().Contains("dPhi")){
       totalShift.first.GetYaxis()->SetRangeUser(-10,10);
    }
    else {
-      totalShift.first.GetYaxis()->SetRangeUser(-30,30);
+      // ~totalShift.first.GetYaxis()->SetRangeUser(-30,30);
+      totalShift.first.GetYaxis()->SetRangeUser(-50,50);
    }
    
    int currentColor = 2;
@@ -1218,6 +1220,25 @@ TH1F tunfoldplotting::getMESCALEenvelopeCombined(std::vector<std::map<TString,TH
    if(up) return env_up;
    else return env_down;
 }
+
+TH1F tunfoldplotting::getMTOPuncCombined(std::vector<std::map<TString,TH1F>>& vec_systShifts, bool const &up, bool const &norm){
+   TH1F hist_MTOP_UP = vec_systShifts[0]["MTOP175p5"];
+   TH1F hist_MTOP_DOWN = vec_systShifts[0]["MTOP169p5"];
+   
+   TH1F zeroes = hist_MTOP_UP;
+   zeroes.Reset();
+   
+   for (int i=1; i<vec_systShifts.size(); i++){
+      hist_MTOP_UP.Add(&vec_systShifts[i]["MTOP175p5"]);
+      hist_MTOP_DOWN.Add(&vec_systShifts[i]["MTOP169p5"]);
+   }
+   
+   hist_MTOP_UP.Scale(1/3.);
+   hist_MTOP_DOWN.Scale(1/3.);
+               
+   if(up) return hist_MTOP_UP;
+   else return hist_MTOP_DOWN;
+}
       
 
 
@@ -1247,6 +1268,7 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
    bool lumiDone = false;
    bool useCRenvelope = false;
    bool useMEenvelope = false;
+   bool useMTop = false;
          
    for (const TString& syst : systVec){
       if (syst == "JESUserDefinedHEM1516_DOWN") { // HEM only used for 2018
@@ -1314,6 +1336,15 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
          continue;
       }
       else if ((std::find(Systematic::meTypes.begin(), Systematic::meTypes.end(), Systematic::convertType(syst)) != Systematic::meTypes.end()) && useMEenvelope) continue;  //ignore shifts already used in envelope
+      
+      // Get MTop uncertainty
+      if (Systematic::convertType(syst) == Systematic::mtop) {
+         tempHist = getMTOPuncCombined(vec_systShifts,Systematic::convertVariation(syst) == Systematic::up);
+         map_combinedShifts[syst] = tempHist;
+         useMTop = true;
+         continue;
+      }
+      else if ((std::find(Systematic::mTopTypes.begin(), Systematic::mTopTypes.end(), Systematic::convertType(syst)) != Systematic::mTopTypes.end()) && useMTop) continue;  //ignore shifts already used in envelope
       
       // Combine all other systematics
       if (Systematic::isCorrelated(syst)){   // Add correlated parts

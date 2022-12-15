@@ -55,9 +55,9 @@ class jerCorrections
       jerCorrections(const std::string&, const std::string&, const Systematic::Systematic&);
       
       /// Smear the jet collection based on hybrid method
-      void smearCollection_Hybrid(std::vector<tree::Jet>&, const float&);
+      void smearCollection_Hybrid(std::vector<tree::Jet>&, const float&, std::vector<tree::MET*>&);
       /// Smear jet based on hybrid method
-      void smearJet_Hybrid(tree::Jet&, const float&);
+      void smearJet_Hybrid(tree::Jet&, const float&, std::vector<tree::MET*>&);
    
    private:
       JME::JetResolution* m_resolution_;
@@ -71,6 +71,9 @@ class jerCorrections
       
       /// Use split JER unc
       bool splitJER;
+      
+      /// Propagate to METs
+      bool propagateMETs;
       
       /// Check if jet has to be taken into account for systematic
       bool checkApplySystematic(const TLorentzVector&);

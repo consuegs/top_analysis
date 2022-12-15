@@ -166,6 +166,7 @@ void run()
          // Construct vector of different METs for correction
          std::vector<tree::MET*> PFMETs = {&(*MET)};
          std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi_xy)};
+         std::vector<tree::MET*> allMETs = {&(*MET_Puppi_xy),&(*MET)};
          
          // Correct and select leptons
          *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
@@ -196,12 +197,13 @@ void run()
          jesCorrector.applySystematics(*jets,PFMETs);
          jesCorrector_puppi.applySystematics(*jets_puppi,PuppiMETs);    // Needed for correction of Puppi MET
          
+         std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho,allMETs);
+         std::vector<tree::Jet> BJets;
+         
          float met=MET->p.Pt();
          float const met_puppi=MET_Puppi_xy->p.Pt();
          float const genMet=GENMET->p.Pt();
          
-         std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho);
-         std::vector<tree::Jet> BJets;
          std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
          
          // Perform selection up to bTag requirement (last entry in bool vector)

@@ -73,6 +73,7 @@ namespace Systematic{
         jerEta3Pt0, // scale jet energy resolution scale factors (pt/eta bin4)
         jerEta3Pt1, // scale jet energy resolution scale factors (pt/eta bin5)
         jer,        // scale jet energy resolution scale factors
+        jerMET,     // scale jet energy resolution scale factors and propagate to met
         jesTotal,        // scale jet energy scale scale factors
         jesAbsoluteStat, //0
         jesAbsoluteScale,//1
@@ -268,8 +269,8 @@ namespace Systematic{
         jetPileupIDapplied,             // Check impact of jetPileupID
         jetLooseCleaningApplied,        // Check impact of loose cleaning
         met40Cut,                       // Check impact of MET>40GeV in emu channel
-        removeMLLcut                    // Check impact if selection is relaxed by removing mllCut
-        
+        removeMLLcut,                   // Check impact if selection is relaxed by removing mllCut
+        applyJerMET                     // Check impact of applying JER propagation to MET
     };
 
 
@@ -326,7 +327,7 @@ namespace Systematic{
         dynorm,
         jetPileupID,
         btagBC, btagL, btagBCcorr, btagBCuncorr, btagLcorr, btagLuncorr,
-        jer, jerEta0, jerEta1, jerEta2Pt0, jerEta2Pt1, jerEta3Pt0, jerEta3Pt1,
+        jer, jerEta0, jerEta1, jerEta2Pt0, jerEta2Pt1, jerEta3Pt0, jerEta3Pt1, jerMET,
         jesTotal, jesAbsoluteStat, jesAbsoluteScale, jesAbsoluteFlavMap, jesAbsoluteMPFBias, jesFragmentation, jesSinglePionECAL,
         jesSinglePionHCAL, jesFlavorQCD, jesTimePtEta, jesRelativeJEREC1, jesRelativeJEREC2, jesRelativeJERHF, jesRelativePtBB, jesRelativePtEC1,
         jesRelativePtEC2, jesRelativePtHF, jesRelativeBal, jesRelativeSample, jesRelativeFSR, jesRelativeStatFSR, jesRelativeStatEC, jesRelativeStatHF, jesPileUpDataMC,
@@ -412,7 +413,7 @@ namespace Systematic{
     
     /// Define jer systematics
     const std::vector<Type> jerTypes{
-        jer, jerEta0, jerEta1, jerEta2Pt0, jerEta2Pt1, jerEta3Pt0, jerEta3Pt1
+        jer, jerEta0, jerEta1, jerEta2Pt0, jerEta2Pt1, jerEta3Pt0, jerEta3Pt1, jerMET
     };
     
     /// Define lepton scale and resolution systematics
@@ -535,6 +536,11 @@ namespace Systematic{
         meScale_envelope,meScale,meFacScale,meRenScale,
     };
     
+    ///Define systematics that are based on the top mass
+    const std::vector<Type> mTopTypes{
+        mTop169p5,mTop175p5
+    };
+    
     ///Define systematic that only change the event weight, not the kinematics (same events as in nominal are selected!)
     //!!!!!!!!!!!!!!!If order is changed, order of weights in minTree production (distributions.cpp) has to be changes as well!!!!!!!!!!!!!!!!!!!!!!!!!!!
     const std::vector<Type> weightTypes{
@@ -557,7 +563,7 @@ namespace Systematic{
     };
 
     const std::vector<Type> uncorrelatedTypes{
-        jer, jerEta0, jerEta1, jerEta2Pt0, jerEta2Pt1, jerEta3Pt0, jerEta3Pt1,
+        jer, jerEta0, jerEta1, jerEta2Pt0, jerEta2Pt1, jerEta3Pt0, jerEta3Pt1, jerMET,
         jesAbsoluteStat, jesRelativeStatEC, jesRelativeStatFSR,
         jesRelativeJEREC1, jesRelativeJEREC2,
         jesRelativePtEC1, jesRelativePtEC2, jesTimePtEta,
@@ -587,6 +593,16 @@ namespace Systematic{
         tw_ds,
         ueTune,
         xsec_dy,xsec_st,xsec_ttother,xsec_other
+    };
+    
+    ///Define pseudo systematics that are essentially no shifts but changes in the selection (mostly for additional studies)
+    const std::vector<Type> nominalTypes{
+        nominal,
+        jetPileupIDapplied,
+        jetLooseCleaningApplied,
+        met40Cut,
+        removeMLLcut,
+        applyJerMET
     };
 
     /// Class for proper handling of systematic

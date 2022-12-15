@@ -80,7 +80,9 @@ namespace distributionsplotting
    
    void combineAllSamples(int const &year_int, hist::Histograms<TH1F>* hs, std::vector<TString> &mcSamples_merged);
    
-   std::pair<TH1F*,TH1F*> getTotalSyst(TH1F* const &nominal, std::vector<systHists*> const &systHists_vec, TString const loc, TString const sample="", bool envelope=false);
+   void addShifts(const TH1F &tempShift,TH1F* hist_shiftUP,TH1F* hist_shiftDOWN);
+   
+   std::pair<TH1F*,TH1F*> getTotalSyst(TH1F* const &nominal, std::vector<systHists*> const &systHists_vec, TString const loc, TString const sample="", bool run2Combi=false, bool envelope=false);
    
    void printUnc(TString name, const float &down, const float &up, const float &nominal);
    

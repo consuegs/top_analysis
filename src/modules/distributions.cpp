@@ -57,7 +57,7 @@ void run()
    //Read systematic from command line
    Systematic::Systematic currentSystematic(cfg.systematic);
    //Set boolean for running nominal (also used when testing different selections)
-   bool isNominal = (currentSystematic.type()==Systematic::nominal || currentSystematic.type()==Systematic::met40Cut || currentSystematic.type()==Systematic::removeMLLcut || currentSystematic.type()==Systematic::jetPileupIDapplied);
+   bool isNominal = (std::find(Systematic::nominalTypes.begin(), Systematic::nominalTypes.end(), currentSystematic.type()) != Systematic::nominalTypes.end());
    
    hist::Histograms<TH1F> hs(vsDatasubsets);    //Define histograms in the following
    hist::Histograms<TH1F> hs_cutflow(vsDatasubsets);
@@ -765,6 +765,7 @@ void run()
             // Construct vector of different METs for correction
             std::vector<tree::MET*> PFMETs = {&(*MET),&(*MET_xy),&(*MET_Calo),&(*DeepMET_reso),&(*DeepMET_resp)};
             std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi),&(*MET_Puppi_xy)};
+            std::vector<tree::MET*> allMETs = {&(*MET_Puppi),&(*MET_Puppi_xy),&(*MET),&(*MET_xy),&(*MET_Calo),&(*DeepMET_reso),&(*DeepMET_resp)};
             
             // Correct and select leptons
             *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
@@ -818,6 +819,11 @@ void run()
             if(isSignal || !applytopPTreweighting) *w_topPT=1.;  //Set top weight for signals or if topPTsystematic to 1 
             float cutFlow_weight=(isData)? 1: *w_pu * mcWeight * *w_topPT * leptonSFweight * *w_prefiring;
             
+            if(rec_selection) hs_cutflow.fillweight("cutflow/"+cat,1,cutFlow_weight);
+            
+            // Get cleaned and smeared jets
+            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho,allMETs,applyPileupID);
+            
             //Set some met variables
             float met=MET->p.Pt();
             float const met_puppi=MET_Puppi->p.Pt();
@@ -825,10 +831,7 @@ void run()
             float const genMet=GENMET->p.Pt();
             float mt2 = phys::MT2(p_l1,p_l2,MET_Puppi->p);
             
-            if(rec_selection) hs_cutflow.fillweight("cutflow/"+cat,1,cutFlow_weight);
-            
-            // Get cleaned and smeared jets and apply ttBar selection
-            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho,applyPileupID);
+            // Apply ttBar selection
             std::vector<tree::Jet> BJets;
             std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi_xy,channel,*jets,cjets,BJets);
             

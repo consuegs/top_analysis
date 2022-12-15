@@ -204,8 +204,16 @@ void distributionsplotting::combineAllSamples(int const &year_int, hist::Histogr
    }
 }
 
+void distributionsplotting::addShifts(const TH1F &tempShift,TH1F* hist_shiftUP,TH1F* hist_shiftDOWN){
+   for (int i=0; i<=tempShift.GetNbinsX(); i++){
+      float content = tempShift.GetBinContent(i);
+      if (content>0) hist_shiftUP->SetBinContent(i,hist_shiftUP->GetBinContent(i)+content*content);
+      else hist_shiftDOWN->SetBinContent(i,hist_shiftDOWN->GetBinContent(i)+content*content);
+   }
+}
+
 // get up and down shift for set of systematics (for individual period)
-std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal, std::vector<systHists*> const &systHists_vec, TString const loc, TString const sample, bool envelope){
+std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal, std::vector<systHists*> const &systHists_vec, TString const loc, TString const sample, bool run2Combi, bool envelope){
    TH1F* hist_shiftUP = (TH1F*)nominal->Clone();
    TH1F* hist_shiftDOWN = (TH1F*)nominal->Clone();
    hist_shiftUP->Reset();
@@ -215,8 +223,14 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal,
    TH1F* nominal_ttbar;
    TH1F* nominal_ttbar2L;
    TH1F* nominal_st;
+   
+   std::vector<std::map<TString,TH1F>> vec_systShifts(1);   //needed for envelopes and top mass
+   bool useCRenvelope = false;
+   bool useMEenvelope = false;
+   bool useMTop = false;
+   
    for (auto &current : systHists_vec){
-      if (current->systematic_.type() == Systematic::nominal || current->systematic_.type() == Systematic::met40Cut){  //Store sum of ttBar for syst. with alt. samples
+      if (std::find(Systematic::nominalTypes.begin(), Systematic::nominalTypes.end(), current->systematic_.type()) != Systematic::nominalTypes.end()){  //Store sum of ttBar for syst. with alt. samples
          if (sample == "") {
             nominal_ttbar = current->hists_.getSummedHist(loc,current->datasets_ttBar_);
             nominal_ttbar2L = current->hists_.getSummedHist(loc,current->datasets_ttBar2L_);   //for PDF unc.
@@ -244,6 +258,26 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal,
       else if (current->onlyST) tempShift= phys::getSystShift(*nominal_st,*tempSys);  // for DS unc.
       else tempShift= phys::getSystShift(*nominal,*tempSys);
       
+      // Part of deriving ME envelope, CR envelope and MTOP (only for single year plotting, otherwise done in getTotalSystCombined)
+      if (!run2Combi){  // Store individual shifts to combine in the following
+         if(std::find(Systematic::meTypes.begin(), Systematic::meTypes.end(), current->systematic_.type()) != Systematic::meTypes.end()){
+            vec_systShifts[0][current->systematicName_] = tempShift;
+            useMEenvelope = true;
+            continue;
+         }
+         if(std::find(Systematic::crTypes.begin(), Systematic::crTypes.end(), current->systematic_.type()) != Systematic::crTypes.end()){
+            vec_systShifts[0][current->systematicName_] = tempShift;
+            useCRenvelope = true;
+            continue;
+         }
+         if(std::find(Systematic::mTopTypes.begin(), Systematic::mTopTypes.end(), current->systematic_.type()) != Systematic::mTopTypes.end()){
+            vec_systShifts[0][current->systematicName_] = tempShift;
+            useMTop = true;
+            continue;
+         } 
+      }
+                
+      
       if(envelope){
          for (int i=0; i<=tempShift.GetNbinsX(); i++){
             float content = tempShift.GetBinContent(i);
@@ -252,12 +286,28 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal,
          }
       }
       else{
-         for (int i=0; i<=tempShift.GetNbinsX(); i++){
-            float content = tempShift.GetBinContent(i);
-            if (content>0) hist_shiftUP->SetBinContent(i,hist_shiftUP->GetBinContent(i)+content*content);
-            else hist_shiftDOWN->SetBinContent(i,hist_shiftDOWN->GetBinContent(i)+content*content);
-         }
+         addShifts(tempShift,hist_shiftUP,hist_shiftDOWN);
       }
+   }
+   
+   //Derive envelopes and mTOP uncertainty
+   if(useMEenvelope){
+      TH1F MEenvelope_down = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,false);
+      addShifts(MEenvelope_down,hist_shiftUP,hist_shiftDOWN);
+      TH1F MEenvelope_up = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,true);
+      addShifts(MEenvelope_up,hist_shiftUP,hist_shiftDOWN);
+   }
+   if(useCRenvelope){
+      TH1F CRenvelope_down = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,false);
+      addShifts(CRenvelope_down,hist_shiftUP,hist_shiftDOWN);
+      TH1F CRenvelope_up = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,true);
+      addShifts(CRenvelope_up,hist_shiftUP,hist_shiftDOWN);
+   }
+   if(useMTop){
+      TH1F mTOP_down = tunfoldplotting::getMTOPuncCombined(vec_systShifts,false);
+      addShifts(mTOP_down,hist_shiftUP,hist_shiftDOWN);
+      TH1F mTOP_up = tunfoldplotting::getMTOPuncCombined(vec_systShifts,true);
+      addShifts(mTOP_up,hist_shiftUP,hist_shiftDOWN);
    }
    
    if(!envelope){
@@ -332,6 +382,7 @@ void distributionsplotting::printTotalYields(hist::Histograms<TH1F>* hs, std::ve
 // print breakdown of syst uncertainties
 void distributionsplotting::printUncBreakDown(hist::Histograms<TH1F>* hs, std::vector<systHists*> &systHists_vec, const std::vector<TString> &mcSamples) {
    std::cout<<std::endl<<"-----------------Uncertainties-------------------"<<std::endl;
+   std::cout<<"!!!!!!!!!!!!!!!Uncertainty breakdown does not take ME and CR envelopes and mTop unc correctly into accout!!!!!!!!!!!!!!!!"<<std::endl;
    for (TString cat:{"ee","emu","mumu"}){
       std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
       TH1F* mc_total=hs->getHistogram("cutflow/"+cat,"MC");
@@ -340,7 +391,7 @@ void distributionsplotting::printUncBreakDown(hist::Histograms<TH1F>* hs, std::v
          if ((i+1)<systHists_vec.size()){    // check if still room for up and down shift
             if (systHists_vec[i]->systematic_.type_str()==systHists_vec[i+1]->systematic_.type_str()){     // check if up and down shift
                std::vector<systHists*> tempVec = {systHists_vec[0],systHists_vec[i],systHists_vec[i+1]};
-               std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat);
+               std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat,"",true);
                // ~std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat,"DrellYan_NLO");
                printUnc(systHists_vec[i]->systematic_.type_str(),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
                i++;
@@ -348,7 +399,7 @@ void distributionsplotting::printUncBreakDown(hist::Histograms<TH1F>* hs, std::v
             }
          }
          std::vector<systHists*> tempVec = {systHists_vec[0],systHists_vec[i]};   // print unc. without up and down shift
-         std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat);
+         std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat,"",true);
          // ~std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat,"DrellYan_NLO");
          printUnc(systHists_vec[i]->systematic_.type_str(),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
       }
@@ -464,6 +515,26 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       le.append(*hist_data,"data","lep");
       plotData = true;
    }
+   // ~else if (!is2D && !sPresel.Contains("GOF2D")) {    // for MET distributions only plot up to pT=140
+      // ~for (int i=1; i<=hist_data->GetNbinsX(); i++){
+         // ~if (hist_data->GetXaxis()->GetBinUpEdge(i)>140) hist_data->SetBinContent(i,0.);
+      // ~}
+      // ~hist_data->Draw("same");
+      // ~le.append(*hist_data,"data","lep");
+      // ~plotData = true;
+   // ~}
+   // ~else if (is2D){
+      // ~int width_index = hist_data->GetNbinsX()/(binEdgesY.size()-1);
+      // ~float width = hist_data->GetXaxis()->GetBinUpEdge(width_index);      //width of one dPhi bin in MET
+      // ~int dphi_bin = 1;
+      // ~for (int i=1; i<=hist_data->GetNbinsX(); i++){
+         // ~if (i>dphi_bin*width_index) dphi_bin++;
+         // ~if (hist_data->GetXaxis()->GetBinUpEdge(i)-(width*(dphi_bin-1))>140) hist_data->SetBinContent(i,0.);
+      // ~}
+      // ~hist_data->Draw("same");
+      // ~le.append(*hist_data,"data","lep");
+      // ~plotData = true;
+   // ~}
    
    // bsm plotting part
    auto hists_BSM = hs->getHistograms(loc,{"TTbar_diLepton"});     //placeholder
@@ -728,6 +799,7 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<s
    bool lumiDone = false;
    bool CRenvelopeDone = false;
    bool MEenvelopeDone = false;
+   bool MTopDone = false;
    
    // loop over systematics to store individual shifts
    for (int i=1; i<(systHists_vec_all[3].size()); i++){
@@ -743,7 +815,7 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<s
          if (syst == "JESUserDefinedHEM1516_DOWN" && j!=3) continue; // HEM only used for 2018
                   
          std::vector<systHists*> tempVec = {systHists_vec_all[j][0],systHists_vec_all[j][i]};   // temp vec with only one source
-         std::pair<TH1F*,TH1F*> tempPair = getTotalSyst(nominals[j],tempVec,loc);
+         std::pair<TH1F*,TH1F*> tempPair = getTotalSyst(nominals[j],tempVec,loc,"",true);
 
          tempPair.second->Add(tempPair.first,-1);   // get one histogram with up and down shifts (no cancelation since only one syst at a time is considered)
          vec_systShifts[j][syst] = *tempPair.second;
@@ -812,6 +884,15 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<s
          continue;
       }
       else if ((std::find(Systematic::meTypes.begin(), Systematic::meTypes.end(), Systematic::convertType(syst)) != Systematic::meTypes.end())) continue;  //ignore shifts already used in envelope
+      
+      // derive mTop uncertainty
+      if ((std::find(Systematic::mTopTypes.begin(), Systematic::mTopTypes.end(), Systematic::convertType(syst)) != Systematic::mTopTypes.end()) && MTopDone == false) {
+         map_combinedShifts["MTOP_DOWN"] = tunfoldplotting::getMTOPuncCombined(vec_systShifts,false);
+         map_combinedShifts["MTOP_UP"] = tunfoldplotting::getMTOPuncCombined(vec_systShifts,true);
+         MTopDone = true;
+         continue;
+      }
+      else if ((std::find(Systematic::mTopTypes.begin(), Systematic::mTopTypes.end(), Systematic::convertType(syst)) != Systematic::mTopTypes.end())) continue;  //ignore shifts already used in envelope
       
       if (syst == "JESUserDefinedHEM1516_DOWN") { // HEM only used for 2018
          map_combinedShifts[syst] = vec_systShifts[3][syst];

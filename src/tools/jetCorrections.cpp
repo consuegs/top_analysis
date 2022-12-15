@@ -314,7 +314,10 @@ jerCorrections::jerCorrections(const std::string& jerSFSourceFile, const std::st
    }
    
    // Check if split JER unc is used
-   splitJER = !(systematic_variation_==Variation::NOMINAL || systematic_.type()==Systematic::jer);
+   splitJER = !(systematic_variation_==Variation::NOMINAL || systematic_.type()==Systematic::jer || systematic_.type()==Systematic::jerMET);
+   
+   // Check if uncertainty in smearing should be propagated to METS
+   propagateMETs = (systematic_.type()==Systematic::jerMET || systematic_.type()==Systematic::applyJerMET);
    
    // Print which systematic is used and set boolean
    if(systematic_variation_ == Variation::UP) {std::cout<<"Apply systematic variation: up\n";}
@@ -323,17 +326,17 @@ jerCorrections::jerCorrections(const std::string& jerSFSourceFile, const std::st
 
 }
 
-void jerCorrections::smearCollection_Hybrid(std::vector<tree::Jet>& Jets, const float& rho)
+void jerCorrections::smearCollection_Hybrid(std::vector<tree::Jet>& Jets, const float& rho, std::vector<tree::MET*>& METs)
 {
    // Set rho for smearing
    // ~rho_ = rho;
    
    for(size_t iJet=0; iJet<Jets.size(); ++iJet){
-      this->smearJet_Hybrid(Jets.at(iJet),rho);
+      this->smearJet_Hybrid(Jets.at(iJet),rho,METs);
    }
 }
 
-void jerCorrections::smearJet_Hybrid(tree::Jet& jet,const float& rho)
+void jerCorrections::smearJet_Hybrid(tree::Jet& jet, const float& rho, std::vector<tree::MET*>& METs)
 {
    // Set rho for smearing
    rho_ = rho;
@@ -360,14 +363,6 @@ void jerCorrections::smearJet_Hybrid(tree::Jet& jet,const float& rho)
    const bool match_DR = (jet.p.DeltaR(jet.matchedGenJet) < (0.5 * radius));
    const bool match_Dpt = (fabs(jet.p.Pt() - jet.matchedGenJet.Pt()) < (3. * jet_resolution * jet.p.Pt()));
    
-   // ~const bool valid_genjet = true;
-   // ~const bool match_DR = true;
-   // ~const bool match_Dpt = true;
-   
-   // ~std::cout<<"Set genJET and seed manually for debugging"<<std::endl;
-   // ~jet.seed = 1000;
-   // ~jet.matchedGenJet.SetPtEtaPhiM(50.,1.2,2.5,100.);
-   
    if(valid_genjet && match_DR && match_Dpt){
       smearingFactor = std::max(0., (1. + ((jer_sf - 1.) * ((jet.p.Pt() - jet.matchedGenJet.Pt()) / jet.p.Pt()))));
    }
@@ -379,7 +374,16 @@ void jerCorrections::smearJet_Hybrid(tree::Jet& jet,const float& rho)
       smearingFactor = std::max(0., (1. + (random_gauss * sqrt(std::max(((jer_sf*jer_sf) - 1.), 0.)))));
    }
    
+   //Propagate uncertainty in smearing to METs
+   if(propagateMETs){
+      for (tree::MET* MET : METs){ MET->p = MET->p + jet.p;}
+   }
+   
    jet.p *= smearingFactor;
+   
+   if(propagateMETs){
+      for (tree::MET* MET : METs){ MET->p = MET->p - jet.p;}
+   }
 }
 
 TRandom* jerCorrections::randomGen() const

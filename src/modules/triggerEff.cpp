@@ -227,9 +227,6 @@ void run()
                io::log.flush();
             }
             
-            float met=MET->p.Pt();
-            float const met_puppi=MET_Puppi_xy->p.Pt();
-            
             //Do not use tau events in signal sample
             if (ttBar_dilepton && *genDecayMode>3) continue;
             
@@ -239,6 +236,7 @@ void run()
             // Construct vector of different METs for correction
             std::vector<tree::MET*> PFMETs = {&(*MET)};
             std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi_xy)};
+            std::vector<tree::MET*> allMETs = {&(*MET_Puppi_xy),&(*MET)};
             
             // Correct and select leptons
             *muons = leptonCorretor.correctMuons(*muons,PFMETs,PuppiMETs);
@@ -257,7 +255,11 @@ void run()
             
             rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2,cat,muonLead);
                   
-            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho);
+            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho,allMETs);
+            
+            float met=MET->p.Pt();
+            float const met_puppi=MET_Puppi_xy->p.Pt();
+            
             std::vector<tree::Jet> BJets;
             std::vector<bool> ttbarSelection=selection::ttbarSelection(p_l1,p_l2,met_puppi,channel,*jets,cjets,BJets);
             if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
