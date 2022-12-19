@@ -285,6 +285,7 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("met40Cut")) return met40Cut;
     if(type.BeginsWith("removeMLLcut")) return removeMLLcut;
     if(type.BeginsWith("applyJerMET")) return applyJerMET;
+    if(type.BeginsWith("applyJetVetoMaps")) return applyJetVetoMaps;
     if(!quiet) std::cout<<"Warning in Systematic::convertType()! Following conversion is not implemented: "
              <<type<<std::endl<<std::endl;
     return undefinedType;
@@ -563,6 +564,7 @@ TString Systematic::convertType(const Type& type)
     if(type == met40Cut) return "met40Cut";
     if(type == removeMLLcut) return "removeMLLcut";
     if(type == applyJerMET) return "applyJerMET";
+    if(type == applyJetVetoMaps) return "applyJetVetoMaps";
     
     std::cerr<<"Error in Systematic::convertType()! Conversion is not implemented\n...break\n"<<std::endl;
     exit(99);

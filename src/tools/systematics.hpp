@@ -270,7 +270,8 @@ namespace Systematic{
         jetLooseCleaningApplied,        // Check impact of loose cleaning
         met40Cut,                       // Check impact of MET>40GeV in emu channel
         removeMLLcut,                   // Check impact if selection is relaxed by removing mllCut
-        applyJerMET                     // Check impact of applying JER propagation to MET
+        applyJerMET,                    // Check impact of applying JER propagation to MET
+        applyJetVetoMaps                // Check impact of applying jet veto maps
     };
 
 
@@ -499,7 +500,8 @@ namespace Systematic{
         tw_ds,
         xsec_ttother,xsec_dy,xsec_st,xsec_other,
         l1prefiring,
-        jetPileupID
+        jetPileupID,
+        applyJetVetoMaps
     };
     
     ///Define systematics that are applied by varying the nominal MC weight
@@ -602,7 +604,8 @@ namespace Systematic{
         jetLooseCleaningApplied,
         met40Cut,
         removeMLLcut,
-        applyJerMET
+        applyJerMET,
+        applyJetVetoMaps
     };
 
     /// Class for proper handling of systematic

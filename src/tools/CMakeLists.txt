@@ -22,6 +22,7 @@ set(SRCS
   tunfoldPlottingHelper.cpp
   distributionsPlottingHelper.cpp
   jetPileupIDSF.cpp
+  jetVetoMaps.cpp
   )
 
 add_library(tools SHARED ${SRCS})

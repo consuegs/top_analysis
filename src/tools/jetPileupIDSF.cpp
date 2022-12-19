@@ -58,7 +58,7 @@ void JetPileupIDWeights::prepareHists(const std::string& sf_fileName, const std:
       exit(202);
    }
 
-   // Store histogram in memory and close file
+   // Store histogram in memory
    sf_hist_->SetDirectory(0);
    sfUnc_hist_->SetDirectory(0);    //stored as absolute shifts
    eff_hist_->SetDirectory(0);

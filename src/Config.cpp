@@ -100,6 +100,10 @@ Config::Config(std::string config_year)
    jetPileupID_effHist=pt.get<std::string>("jetPileupID.jetPileupID_effHist");
    jetPileupID_sfHist=pt.get<std::string>("jetPileupID.jetPileupID_sfHist");
    
+   jetVetoMap_file=pt.get<std::string>("jetVetoMap.jetVetoMap_file");
+   jetVetoMap_vetoMapHist=pt.get<std::string>("jetVetoMap.jetVetoMap_vetoMapHist");
+   jetVetoMap_vetoMapHist_MC16=pt.get_optional<std::string>("jetVetoMap.jetVetoMap_vetoMapHist_MC16");
+   
    applyDNN=pt.get<bool>("DNN.applyDNN");
    DNN_Path=pt.get<std::string>("DNN.DNN_Path");
 

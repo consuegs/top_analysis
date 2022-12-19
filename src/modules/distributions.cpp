@@ -12,6 +12,7 @@
 #include "tools/mcWeights.hpp"
 #include "tools/dnnRegression.hpp"
 #include "tools/jetPileupIDSF.hpp"
+#include "tools/jetVetoMaps.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -344,6 +345,11 @@ void run()
          bool applyPileupID = (currentSystematic.type() == Systematic::jetPileupIDapplied);
          JetPileupIDWeights jetPileupIDWeighter = JetPileupIDWeights(cfg.jetPileupID_file.Data(),cfg.jetPileupID_sfHist.Data(),cfg.jetPileupID_effHist.Data(),currentSystematic);
          if(applyPileupID) std::cout<<"!!!!!!!!!!!!!!!JetPileupID is applied!!!!!!!!!!!!!!!!!!!"<<std::endl;
+         
+         //Configure jet veto maps
+         bool applyJetVetoMaps = (currentSystematic.type() == Systematic::applyJetVetoMaps);
+         JetVetoMaps jetVetoMaps = JetVetoMaps(cfg.jetVetoMap_file.Data(),cfg.jetVetoMap_vetoMapHist.Data(),cfg.jetVetoMap_vetoMapHist_MC16.is_initialized()? cfg.jetVetoMap_vetoMapHist_MC16.get() : "",currentSystematic);
+         if(applyJetVetoMaps) std::cout<<"!!!!!!!!!!!!!!!JetVetoMaps are applied!!!!!!!!!!!!!!!!!!!"<<std::endl;
          
          // Configure lepton Correction
          leptonCorrections leptonCorretor = leptonCorrections(currentSystematic);
@@ -808,6 +814,11 @@ void run()
                jesCorrector.applySystematics(*jets,PFMETs);
                jesCorrector_puppi.applySystematics(*jets_puppi,PuppiMETs);    // Needed for correction of Puppi MET
             }
+            
+            //Apply jeto veto map if selected
+            if(applyJetVetoMaps) {
+               if(jetVetoMaps.checkVetoMap(*jets) == false) rec_selection=false;
+            } 
                         
             // Get leptonSF weight
             float leptonSFweight =(isData)? 1. : leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);

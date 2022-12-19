@@ -508,33 +508,33 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    // data plotting part
    auto hist_data = hs->getHistogram(loc,{"data"});
    hist_data->SetLineColor(kBlack);
-   hist_data->SetMarkerSize(0.5);
+   hist_data->SetMarkerSize((is2D)? 0.4 : 0.5);
    bool plotData = false;
    if(sPresel.Contains("GOF2D") || !(sVar.Contains("MET") || sVar.Contains("met1000")|| sVar.Contains("dphi_metNearLep")|| sVar.Contains("C_em")|| sVar.Contains("Met"))) {
       hist_data->Draw("same");
       le.append(*hist_data,"data","lep");
       plotData = true;
    }
-   // ~else if (!is2D && !sPresel.Contains("GOF2D")) {    // for MET distributions only plot up to pT=140
-      // ~for (int i=1; i<=hist_data->GetNbinsX(); i++){
-         // ~if (hist_data->GetXaxis()->GetBinUpEdge(i)>140) hist_data->SetBinContent(i,0.);
-      // ~}
-      // ~hist_data->Draw("same");
-      // ~le.append(*hist_data,"data","lep");
-      // ~plotData = true;
-   // ~}
-   // ~else if (is2D){
-      // ~int width_index = hist_data->GetNbinsX()/(binEdgesY.size()-1);
-      // ~float width = hist_data->GetXaxis()->GetBinUpEdge(width_index);      //width of one dPhi bin in MET
-      // ~int dphi_bin = 1;
-      // ~for (int i=1; i<=hist_data->GetNbinsX(); i++){
-         // ~if (i>dphi_bin*width_index) dphi_bin++;
-         // ~if (hist_data->GetXaxis()->GetBinUpEdge(i)-(width*(dphi_bin-1))>140) hist_data->SetBinContent(i,0.);
-      // ~}
-      // ~hist_data->Draw("same");
-      // ~le.append(*hist_data,"data","lep");
-      // ~plotData = true;
-   // ~}
+   else if (!is2D && !sPresel.Contains("GOF2D")) {    // for MET distributions only plot up to pT=140
+      for (int i=1; i<=hist_data->GetNbinsX(); i++){
+         if (hist_data->GetXaxis()->GetBinUpEdge(i)>140) hist_data->SetBinContent(i,0.);
+      }
+      hist_data->Draw("same");
+      le.append(*hist_data,"data","lep");
+      plotData = true;
+   }
+   else if (is2D){
+      int width_index = hist_data->GetNbinsX()/(binEdgesY.size()-1);
+      float width = hist_data->GetXaxis()->GetBinUpEdge(width_index);      //width of one dPhi bin in MET
+      int dphi_bin = 1;
+      for (int i=1; i<=hist_data->GetNbinsX(); i++){
+         if (i>dphi_bin*width_index) dphi_bin++;
+         if (hist_data->GetXaxis()->GetBinUpEdge(i)-(width*(dphi_bin-1))>140) hist_data->SetBinContent(i,0.);
+      }
+      hist_data->Draw("same");
+      le.append(*hist_data,"data","lep");
+      plotData = true;
+   }
    
    // bsm plotting part
    auto hists_BSM = hs->getHistograms(loc,{"TTbar_diLepton"});     //placeholder
@@ -652,6 +652,7 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    totalUncGraphRatio.SetLineWidth(0);
    expDataStatRatio.SetFillColor(kBlue);
    systGraphRatio.SetFillColor(kGray+2);
+   systGraphRatio.SetFillStyle(3004);
    expDataStatRatio.SetFillStyle(3005);
    expDataStatRatio.SetLineWidth(0);
    systGraphRatio.SetLineWidth(0);
@@ -662,7 +663,10 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    systGraphRatio.Draw("same e2");
    if(plotStatUncExpData) expDataStatRatio.Draw("same e2");
    ratio_mc.Draw("axis same");
-   // ~ratio.SetMarkerSize(4);
+   if(is2D){
+      ratio.SetMarkerSize(0.2);
+      ratio.SetLineWidth(1.5);
+   }
    gPad->RedrawAxis("g");
    if(plotData) ratio.Draw("pe1 same");
    

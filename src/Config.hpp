@@ -73,6 +73,10 @@ public:
    TString jetPileupID_effHist;
    TString jetPileupID_sfHist;
    
+   TString jetVetoMap_file;
+   TString jetVetoMap_vetoMapHist;
+   boost::optional<std::string> jetVetoMap_vetoMapHist_MC16;
+   
    bool applyDNN;
    TString DNN_Path;
 
