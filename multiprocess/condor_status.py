@@ -13,7 +13,8 @@ sys.path.append("../users")
 from getPath import getPath
 
 def getInfos():
-    out = subprocess.check_output(["condor_q", "-long", "-grid"])
+    #  ~out = subprocess.check_output(["condor_q", "-long", "-grid"])
+    out = subprocess.check_output(["condor_q", "-long"])
     #  ~for jobStrings in out.split("\n\n"):
         #  ~for line in jobStrings.split("\n"):
             #  ~if line:
