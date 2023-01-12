@@ -448,13 +448,16 @@ TString getSavePath(){
    return save_path;
 }
 
-void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver const &saver){
+void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver const &saver, Systematic::Systematic const &syst){
    
    TString sample = cfg.tunfold_InputSamples[0];
    
    if (cfg.tunfold_withPTreweight) {
       sample+="_PTreweight"+cfg.tunfold_scalePTreweight;
    }
+   
+   //check if syst is nominal type
+   bool isNominal = (std::find(Systematic::nominalTypes.begin(), Systematic::nominalTypes.end(), syst.type()) != Systematic::nominalTypes.end());
    
    // define variables for reading tree
    Float_t phiRec,metRec,phiRec_DNN,metRec_DNN,phiGen,metGen,pTllRec,pTllGen,mcWeight,recoWeight,genMET,reweight;
@@ -481,7 +484,7 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       else if (dist.varName_ == "inclusive") dist.setVariables(phiRec,phiGen);      
    }
    
-   TString minTreePath_Nominal = cfg.minTreePath+TString::Format("/100.0/%s/","Nominal");
+   TString minTreePath_Nominal = cfg.minTreePath+TString::Format("/100.0/%s/",(isNominal)? syst.name().Data() : "Nominal");
    
    float scale_rew = std::stof(cfg.tunfold_scalePTreweight.Data());
    
@@ -698,8 +701,10 @@ std::tuple<TString,TString,float> getPath_SampleName_SF(TString const &sample, T
 }
 
 void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver const &saver, Systematic::Systematic const &syst){
+   //check if syst is nominal type
+   bool isNominal = (std::find(Systematic::nominalTypes.begin(), Systematic::nominalTypes.end(), syst.type()) != Systematic::nominalTypes.end());
    //set correct paths for nominal and current syst
-   TString minTreePath_nominal = cfg.minTreePath+TString::Format("/100.0/%s/","Nominal");
+   TString minTreePath_nominal = cfg.minTreePath+TString::Format("/100.0/%s/",(isNominal)? syst.name().Data() : "Nominal");
    TString minTreePath_syst = cfg.minTreePath+TString::Format("/100.0/%s/",syst.name().Data());
    
    // define variables for reading tree
@@ -730,7 +735,7 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
    // create vector with all input samples
    std::vector<std::string> samples = cfg.tunfold_bkgSamples_ttbar;
    samples.insert(samples.begin(),cfg.tunfold_ResponseSample.Data());
-   if (syst.name().Data() == "Nominal") samples.insert(samples.begin(),cfg.tunfold_ResponseSampleAlt.Data());
+   if (isNominal) samples.insert(samples.begin(),cfg.tunfold_ResponseSampleAlt.Data());
    samples.insert(samples.end(),cfg.tunfold_bkgSamples_other.begin(),cfg.tunfold_bkgSamples_other.end());
    
    for (TString sample : samples){     // loop over all MC samples
@@ -831,7 +836,7 @@ void run()
 {
    //Read systematic from command line
    Systematic::Systematic currentSystematic(cfg.systematic);
-   bool isNominal = (currentSystematic.type()==Systematic::nominal);
+   bool isNominal = (std::find(Systematic::nominalTypes.begin(), Systematic::nominalTypes.end(), currentSystematic.type()) != Systematic::nominalTypes.end());
       
    //=======================================================
    // Step 1: open file to save histograms and binning schemes
@@ -926,7 +931,7 @@ void run()
    //=======================================================
    // Step 3: book and fill data histograms (only for nominal case)
    if (isNominal) {
-      loopDataEvents(distribution_vec,saver);
+      loopDataEvents(distribution_vec,saver,currentSystematic);
    }
    
    //=======================================================

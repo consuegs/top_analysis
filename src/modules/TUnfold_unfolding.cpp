@@ -158,7 +158,9 @@ void run()
    // ~std::vector<TString> systVec = {"XSEC_ST_UP"};
    // ~std::vector<TString> systVec = {"TWDS"};
    // ~std::vector<TString> systVec = {"Nominal","TWDS"};
-   std::vector<TString> systVec = {"Nominal"};
+   // ~std::vector<TString> systVec = {"Nominal"};
+   // ~std::vector<TString> systVec = {"applyGenLevel_DeltaRcut"};
+   std::vector<TString> systVec = {"applyJetVetoMaps"};
    
    //Remove HEM unc. for all year except 2018
    auto itr =std::find(systVec.begin(), systVec.end(), "JESUserDefinedHEM1516_DOWN");
@@ -206,7 +208,7 @@ void run()
       }
       
       Systematic::Systematic currentSystematic(syst);
-      bool isNominal = (currentSystematic.type()==Systematic::nominal);
+      bool isNominal = (std::find(Systematic::nominalTypes.begin(), Systematic::nominalTypes.end(), currentSystematic.type()) != Systematic::nominalTypes.end());
       
       for (auto varName : distributions){
          
@@ -238,8 +240,8 @@ void run()
          bool withScaleFactor = cfg.tunfold_withScaleFactor;
          
          //Use alternative pseudo data (amcAtNLO)
-         bool useAltReco = true;
-         // ~bool useAltReco = false;
+         // ~bool useAltReco = true;
+         bool useAltReco = false;
          
          // perform toys studies?
          bool toy_studies = cfg.tunfold_plotToyStudies;
@@ -258,7 +260,7 @@ void run()
          if (withDNN) input_loc+="_DNN";
          if (withSameBins) input_loc+="_SameBins";
          if (withPTreweight) input_loc+="_PTreweight"+scale;
-         io::RootFileReader histReader(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/%s/TUnfold_%s_%.1f.root" : "TUnfold/%s/TUnfold_SF91_%s_%.1f.root",input_loc.Data(),"Nominal",cfg.processFraction*100));
+         io::RootFileReader histReader(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/%s/TUnfold_%s_%.1f.root" : "TUnfold/%s/TUnfold_SF91_%s_%.1f.root",input_loc.Data(),(isNominal)? currentSystematic.name().Data() : "Nominal",cfg.processFraction*100));
          io::RootFileReader histReader_syst(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/%s/TUnfold_%s_%.1f.root" : "TUnfold/%s/TUnfold_SF91_%s_%.1f.root",input_loc.Data(),currentSystematic.name().Data(),cfg.processFraction*100));
          
          // ~TString input_loc_old = (useAltReco)? "TUnfold_binning_TTbar_amcatnlo_"+sample_response : input_loc;
