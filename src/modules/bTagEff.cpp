@@ -18,11 +18,6 @@
 #include <iostream>
 #include <fstream>
 
-#include "TMVA/Factory.h"
-#include "TMVA/Reader.h"
-#include "TMVA/DataLoader.h"
-#include "TMVA/PyMethodBase.h"
-
 #include "tools/leptonSF.hpp"
 #include "tools/leptonCorrections.hpp"
 #include "tools/triggerSF.hpp"

@@ -27,14 +27,6 @@
 #include <chrono>
 #include <numeric>
 
-#include "TMVA/Factory.h"
-#include "TMVA/Reader.h"
-#include "TMVA/DataLoader.h"
-#include "TMVA/PyMethodBase.h"
-
-#include "cppflow/ops.h"
-#include "cppflow/model.h"
-
 using namespace std::chrono;
 
 Config const &cfg=Config::get();

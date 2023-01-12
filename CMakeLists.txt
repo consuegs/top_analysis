@@ -43,6 +43,8 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 set(BOOST_INCLUDEDIR "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/boost/1.67.0/include/")
 set(Boost_LIBRARY_DIR "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/boost/1.67.0/lib/")
 find_package(Boost 1.67 COMPONENTS program_options REQUIRED)
+include_directories(${BOOST_INCLUDEDIR})
+include_directories(${Boost_LIBRARY_DIR})
 
 # add CombineHarvester
 FIND_PACKAGE( CombineHarvester )
