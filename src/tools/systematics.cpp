@@ -283,9 +283,16 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("jetPileupIDapplied")) return jetPileupIDapplied;
     if(type.BeginsWith("jetLooseCleaningApplied")) return jetLooseCleaningApplied;
     if(type.BeginsWith("met40Cut")) return met40Cut;
+    if(type.BeginsWith("removeMetCut")) return removeMetCut;
     if(type.BeginsWith("removeMLLcut")) return removeMLLcut;
     if(type.BeginsWith("applyJerMET")) return applyJerMET;
+    if(type.BeginsWith("applyJetVetoMaps_leading")) return applyJetVetoMaps_leading;
+    if(type.BeginsWith("applyJetVetoMaps_subleading")) return applyJetVetoMaps_subleading;
+    if(type.BeginsWith("applyJetVetoMaps_cleanedJets")) return applyJetVetoMaps_cleanedJets;
     if(type.BeginsWith("applyJetVetoMaps")) return applyJetVetoMaps;
+    if(type.BeginsWith("applyGenLevel_DeltaRcut")) return applyGenLevel_DeltaRcut;
+    if(type.BeginsWith("useDNNnoMETcut")) return useDNNnoMETcut;
+    if(type.BeginsWith("useDNNmumu")) return useDNNmumu;
     if(!quiet) std::cout<<"Warning in Systematic::convertType()! Following conversion is not implemented: "
              <<type<<std::endl<<std::endl;
     return undefinedType;
@@ -562,9 +569,16 @@ TString Systematic::convertType(const Type& type)
     if(type == jetPileupIDapplied) return "jetPileupIDapplied";
     if(type == jetLooseCleaningApplied) return "jetLooseCleaningApplied";
     if(type == met40Cut) return "met40Cut";
+    if(type == removeMetCut) return "removeMetCut";
     if(type == removeMLLcut) return "removeMLLcut";
     if(type == applyJerMET) return "applyJerMET";
+    if(type == applyJetVetoMaps_leading) return "applyJetVetoMaps_leading";
+    if(type == applyJetVetoMaps_subleading) return "applyJetVetoMaps_subleading";
+    if(type == applyJetVetoMaps_cleanedJets) return "applyJetVetoMaps_cleanedJets";
     if(type == applyJetVetoMaps) return "applyJetVetoMaps";
+    if(type == applyGenLevel_DeltaRcut) return "applyGenLevel_DeltaRcut";
+    if(type == useDNNnoMETcut) return "useDNNnoMETcut";
+    if(type == useDNNmumu) return "useDNNmumu";
     
     std::cerr<<"Error in Systematic::convertType()! Conversion is not implemented\n...break\n"<<std::endl;
     exit(99);

@@ -110,17 +110,16 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
       
    //mLL Cut
    float mll_corr=(p_l1+p_l2).M();
-   // ~if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) return selection_vec;
-   if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) selection_vec[0]=false;   // needed for syst which remoces mll cut
+   if(mll_corr<20 || ((channel[0] || channel[1]) && mll_corr<106 && mll_corr>76)) selection_vec[0]=false;
    else selection_vec[0]=true;
    
    //Jet Cut
    // ~cleanJets=phys::getCleanedJets(jets, p_l1, p_l2);
-   if(cleanJets.size()<2) return selection_vec;
+   if(cleanJets.size()<2) selection_vec[1]=false;
    else selection_vec[1]=true;
    
    //MET Cut
-   if ((channel[0] || channel[1]) && met<40) return selection_vec;
+   if ((channel[0] || channel[1]) && met<40) selection_vec[2]=false;
    else selection_vec[2]=true;
    
    //bJet Cut
@@ -137,6 +136,7 @@ std::vector<bool> selection::ttbarSelection(TLorentzVector const &p_l1, TLorentz
       selection_vec[3]=true;
       return selection_vec;
    }
+   return selection_vec;
 }
 
 /*

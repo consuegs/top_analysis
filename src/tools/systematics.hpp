@@ -269,9 +269,16 @@ namespace Systematic{
         jetPileupIDapplied,             // Check impact of jetPileupID
         jetLooseCleaningApplied,        // Check impact of loose cleaning
         met40Cut,                       // Check impact of MET>40GeV in emu channel
+        removeMetCut,                   // Selection with MET cut removed (used for study in DNN training)
         removeMLLcut,                   // Check impact if selection is relaxed by removing mllCut
         applyJerMET,                    // Check impact of applying JER propagation to MET
-        applyJetVetoMaps                // Check impact of applying jet veto maps
+        applyJetVetoMaps,               // Check impact of applying jet veto maps
+        applyJetVetoMaps_leading,       // Check impact of applying jet veto maps to leading jet
+        applyJetVetoMaps_subleading,    // Check impact of applying jet veto maps to leading and subleading jet
+        applyJetVetoMaps_cleanedJets,   // Check impact of applying jet veto maps to cleaned jets
+        applyGenLevel_DeltaRcut,        // Apply gen level dR cut between bJets and leptons
+        useDNNnoMETcut,                 // Use a DNN which is trained with events without MET cut
+        useDNNmumu                      // Use a DNN which is trained with mumu events only
     };
 
 
@@ -488,7 +495,7 @@ namespace Systematic{
         btagLcorr,btagLuncorr,
         eleID,eleReco,
         muonID,muonIDStat,muonIDSyst,muonIso,muonIsoStat,muonIsoSyst,
-        jetPileupIDapplied,jetLooseCleaningApplied,met40Cut,removeMLLcut,
+        jetPileupIDapplied,jetLooseCleaningApplied,met40Cut,removeMLLcut,removeMetCut,
         trig,
         pu,
                 
@@ -501,7 +508,13 @@ namespace Systematic{
         xsec_ttother,xsec_dy,xsec_st,xsec_other,
         l1prefiring,
         jetPileupID,
-        applyJetVetoMaps
+        applyJetVetoMaps,
+        applyJetVetoMaps_leading,
+        applyJetVetoMaps_subleading,
+        applyJetVetoMaps_cleanedJets,
+        applyGenLevel_DeltaRcut,
+        useDNNnoMETcut,
+        useDNNmumu
     };
     
     ///Define systematics that are applied by varying the nominal MC weight
@@ -605,7 +618,13 @@ namespace Systematic{
         met40Cut,
         removeMLLcut,
         applyJerMET,
-        applyJetVetoMaps
+        applyJetVetoMaps,
+        applyJetVetoMaps_leading,
+        applyJetVetoMaps_subleading,
+        applyJetVetoMaps_cleanedJets,
+        applyGenLevel_DeltaRcut,
+        useDNNnoMETcut,
+        useDNNmumu
     };
 
     /// Class for proper handling of systematic

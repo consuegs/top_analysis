@@ -348,8 +348,11 @@ void run()
          
          //Configure jet veto maps
          bool applyJetVetoMaps = (currentSystematic.type() == Systematic::applyJetVetoMaps);
+         bool applyJetVetoMaps_leading = (currentSystematic.type() == Systematic::applyJetVetoMaps_leading);
+         bool applyJetVetoMaps_subleading = (currentSystematic.type() == Systematic::applyJetVetoMaps_subleading);
+         bool applyJetVetoMaps_cleanedJets = (currentSystematic.type() == Systematic::applyJetVetoMaps_cleanedJets);
          JetVetoMaps jetVetoMaps = JetVetoMaps(cfg.jetVetoMap_file.Data(),cfg.jetVetoMap_vetoMapHist.Data(),cfg.jetVetoMap_vetoMapHist_MC16.is_initialized()? cfg.jetVetoMap_vetoMapHist_MC16.get() : "",currentSystematic);
-         if(applyJetVetoMaps) std::cout<<"!!!!!!!!!!!!!!!JetVetoMaps are applied!!!!!!!!!!!!!!!!!!!"<<std::endl;
+         if(applyJetVetoMaps || applyJetVetoMaps_leading || applyJetVetoMaps_subleading || applyJetVetoMaps_cleanedJets) std::cout<<"!!!!!!!!!!!!!!!JetVetoMaps are applied!!!!!!!!!!!!!!!!!!!"<<std::endl;
          
          // Configure lepton Correction
          leptonCorrections leptonCorretor = leptonCorrections(currentSystematic);
@@ -491,6 +494,9 @@ void run()
          bool Run2017AB=false;
          if (dss.name.find("Run2017A")!=std::string::npos) Run2017AB=true;
          else if (dss.name.find("Run2017B")!=std::string::npos) Run2017AB=true;
+         
+         //Check if gen level deltaR cut should be applied
+         bool applyDeltaRgen = (currentSystematic.type() == Systematic::applyGenLevel_DeltaRcut);
          
          //variables used for storing in minimal trees
          float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
@@ -645,7 +651,14 @@ void run()
          } 
          
          //Initialize DNN regression
-         DNNregression dnnRegression(cfg.DNN_Path.Data());
+         TString dnnPath = cfg.DNN_Path;
+         if(currentSystematic.type() == Systematic::useDNNnoMETcut){
+            dnnPath = "../data/DNN/Inlusive_noMetCut_amcatnlo_xyComponent_JetLepXY_50EP__diff_xy_2018_20230111-1004genMETweighted";
+         }
+         else if (currentSystematic.type() == Systematic::useDNNmumu){
+            dnnPath = "../data/DNN/Inlusive_amcatnlo_xyComponent_JetLepXY_50EP_mumuOnly__diff_xy_2018_20230112-1124genMETweighted";
+         }
+         DNNregression dnnRegression(dnnPath.Data());
          std::vector<float> input_vec(17);
          std::vector<float> output_vec(2);
          
@@ -768,6 +781,11 @@ void run()
             
             if (*genDecayMode_pseudo==0 || (*genDecayMode_pseudo!=3 && neutrinoPair.Pt()<40)) pseudo_selection=false; //pseudo baseline selection
             
+            // Apply gen level delta Rcut between bJets and leptons
+            if (applyDeltaRgen && pseudo_selection){
+               if(genB->DeltaR(*genLepton)<0.4 || genB->DeltaR(*genAntiLepton)<0.4 || genAntiB->DeltaR(*genLepton)<0.4 || genAntiB->DeltaR(*genAntiLepton)<0.4) pseudo_selection=false;
+            }
+            
             // Construct vector of different METs for correction
             std::vector<tree::MET*> PFMETs = {&(*MET),&(*MET_xy),&(*MET_Calo),&(*DeepMET_reso),&(*DeepMET_resp)};
             std::vector<tree::MET*> PuppiMETs = {&(*MET_Puppi),&(*MET_Puppi_xy)};
@@ -815,7 +833,7 @@ void run()
                jesCorrector_puppi.applySystematics(*jets_puppi,PuppiMETs);    // Needed for correction of Puppi MET
             }
             
-            //Apply jeto veto map if selected
+            //Apply jeto veto map if selected (for all jets)
             if(applyJetVetoMaps) {
                if(jetVetoMaps.checkVetoMap(*jets) == false) rec_selection=false;
             } 
@@ -834,6 +852,23 @@ void run()
             
             // Get cleaned and smeared jets
             std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho,allMETs,applyPileupID);
+            
+            //Apply jeto veto map if selected (for leading or leading+subleading jets)
+            if(applyJetVetoMaps_subleading) {
+               if(cjets.size()>1){
+                  if(jetVetoMaps.checkVetoMap({cjets.begin(), cjets.begin()+2}) == false) rec_selection=false;
+               }
+            }
+            else if(applyJetVetoMaps_leading){
+               if(cjets.size()>1){
+                  if(jetVetoMaps.checkVetoMap({cjets.begin(),cjets.begin()+1}) == false) rec_selection=false;
+               }  
+            }
+            else if(applyJetVetoMaps_cleanedJets){
+               if(cjets.size()>1){
+                  if(jetVetoMaps.checkVetoMap(cjets) == false) rec_selection=false;
+               }  
+            }
             
             //Set some met variables
             float met=MET->p.Pt();
@@ -856,12 +891,15 @@ void run()
                }
             }
             
-            //Check booleans from ttBar selection (Apply relaxed selection with only two lepton)
-            if(currentSystematic.type()!=Systematic::removeMLLcut){
+            //Check booleans from ttBar selection (Apply relaxed selection with only two lepton or met cut removed)
+            if(currentSystematic.type()!=Systematic::removeMLLcut && currentSystematic.type()!=Systematic::removeMetCut){
                if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
             }
-            else{
+            else if(currentSystematic.type()==Systematic::removeMLLcut){
                if(!std::all_of(ttbarSelection.begin()+1, ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
+            }
+            else{ // no MET cut
+               if(!ttbarSelection[0] || !ttbarSelection[1] || !ttbarSelection[3]) rec_selection=false;
             }
             
             // Ignore events which do not fulfill reco or gen selection
