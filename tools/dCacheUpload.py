@@ -18,6 +18,7 @@ if __name__ == "__main__":
     parser.add_argument('target', type=str, help='<Required> Target on dCache starting at "mergedNtuple" (e.g. 2018/v06)')
     parser.add_argument('--dryRun', action='store_true', help='Run gfal-copy in dry-run mode (no copying, but only saying what would be done)')
     parser.add_argument('--srmcp', action='store_true', help='Use srmcp instead of gfal-copy')
+    parser.add_argument('--overwrite', action='store_true', help='Overwrite existing files (currently only for gfal-copy')
     args = parser.parse_args()
     
     sp.call(["gfal-mkdir","srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target])
@@ -42,9 +43,15 @@ if __name__ == "__main__":
                 print("Copy took {}s".format(round(stop_time-start_time,1)))
             else:
                 if args.dryRun:
-                    sp.call(["gfal-copy",getFullPath(pathName),"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000","--dry-run"])
+                    if args.overwrite:
+                        sp.call(["gfal-copy",getFullPath(pathName),"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000","-f","--dry-run"])
+                    else:
+                        sp.call(["gfal-copy",getFullPath(pathName),"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000","--dry-run"])
                 else:
-                    sp.call(["gfal-copy",getFullPath(pathName),"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000"])
+                    if args.overwrite:
+                        sp.call(["gfal-copy",getFullPath(pathName),"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000","-f"])
+                    else:
+                        sp.call(["gfal-copy",getFullPath(pathName),"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/mergedNtuple/".format(getPath("dCacheBasePath"))+args.target,"-t 36000"])
             
 
 
