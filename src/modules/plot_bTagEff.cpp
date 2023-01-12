@@ -20,12 +20,13 @@ Config const &cfg=Config::get();
 extern "C"
 void run()
 {
-   // ~std::vector<TString> systToPlot = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","CR1","CR2","ERDON","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN","MATCH_UP","MATCH_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","MESCALE_UP","MESCALE_DOWN","MTOP169p5","MTOP175p5","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","TOP_PT","UETUNE_UP","UETUNE_DOWN"
-                                    // ~};
+   // ~std::vector<TString> systToPlot = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","CR1","CR2","ERDON","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JESUserDefinedHEM1516_DOWN","MATCH_UP","MATCH_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","MESCALE_UP","MESCALE_DOWN","MTOP169p5","MTOP175p5","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","TOP_PT","UETUNE_UP","UETUNE_DOWN"};
+   
    // ~std::vector<TString> systToPlot = {"JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorQCD_UP","JESFlavorQCD_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN",
                                     // ~};
    // ~std::vector<TString> systToPlot = {"Nominal"};
-   std::vector<TString> systToPlot = {"JESBBEC1Year_DOWN"};
+   // ~std::vector<TString> systToPlot = {"JER_UP","JER_DOWN","JERMET_UP","JERMET_DOWN","applyJerMET"};
+   std::vector<TString> systToPlot = {"JERMET_UP","JERMET_DOWN"};
    
    //Remove HEM unc. for all year except 2018
    auto itr =std::find(systToPlot.begin(), systToPlot.end(), "JESUserDefinedHEM1516_DOWN");
@@ -84,14 +85,14 @@ void run()
                eff_hist->GetZaxis()->SetLabelOffset(0.02);
                if(flavor=="B"){
                   eff_hist->SetMaximum(1.0);
-                  eff_hist->SetMinimum(0.6);
+                  eff_hist->SetMinimum(0.8);
                }
                else if(flavor=="C"){
-                  eff_hist->SetMaximum(0.7);
-                  eff_hist->SetMinimum(0.1);
+                  eff_hist->SetMaximum(0.6);
+                  eff_hist->SetMinimum(0.3);
                }
                else {
-                  eff_hist->SetMaximum(0.5);
+                  eff_hist->SetMaximum(0.3);
                   eff_hist->SetMinimum(0.0);
                }
                eff_hist->SetMarkerSize(1.2);

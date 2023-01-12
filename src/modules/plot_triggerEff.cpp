@@ -477,6 +477,11 @@ void finalSFunc(io::RootFileReader const &sFReader, io::RootFileSaver const &sav
 extern "C"
 void run()
 {  
+   
+   std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
+   std::cout<<"!MET and TTbar_diLepton have to be defined in config!"<<std::endl;
+   std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
+   
    Systematic::Systematic currentSystematic(cfg.systematic);
    
    TString inputLoc = TString::Format("triggerEff/%s/%s_merged_%s.root",currentSystematic.name().Data(),"histograms",cfg.treeVersion.Data());
