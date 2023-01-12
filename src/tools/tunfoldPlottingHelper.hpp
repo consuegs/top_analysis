@@ -59,7 +59,9 @@ namespace tunfoldplotting
    std::vector<double> plot_UnfoldedResult(TUnfoldBinning* generatorBinning, TH1F* unfolded, TH1F* unfolded_reg, TH1F* unfolded_bbb,
                             std::pair<TH1F*,TH1F*> &unfolded_total, std::pair<TH1F*,TH1F*> &unfolded_reg_total, std::pair<TH1F*,TH1F*> &unfolded_bbb_total,
                             const float &tau_par, TH1F* realDis, TH1F* realDisAlt,const distrUnfold &dist, const bool plotComparison, const TString &saveName,
-                            io::RootFileSaver* saver, int &num_bins, const bool rewStudy, const bool divideBinWidth=true, const bool adaptYaxis=true);
+                            io::RootFileSaver* saver, int &num_bins, const bool rewStudy, const bool onlyTheo, const bool divideBinWidth=true, const bool adaptYaxis=true);
+   
+   std::pair<TH1F,TGraphAsymmErrors> readFixedOrderPred(TString const &filePath,bool const &is2D,bool const &norm,bool const &isNNLO);
 } // namespace tunfoldplotting
 
 #endif /* TUNFOLDPLOTTINGHELPER_HPP__ */

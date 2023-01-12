@@ -1,0 +1,48 @@
+NNLO QCD corrections to leptonic observables in top-quark pair production and decay
+
+Fiducial phase space corresponding to section 3.3 in JHEP 05 (2021) 212 (arxiv:2008.11133)
+Plus pT(nnbar) > 40 GeV requirement
+
+Authors: Czakon, Generet, Mitov, Poncelet
+
+Contact:  mczakon@physik.rwth-aachen.de
+	  terry.generet@rwth-aachen.de
+          adm74@cam.ac.uk
+          poncelet@hep.phy.cam.ac.uk
+
+Model parameters:
+mt = 172.5 GeV
+mW = 80.385 GeV
+mZ = 91.1876 GeV
+GW = 2.0928 GeV
+Gt = (1.48063 - 1.18*aS - 2.65*aS^2) GeV
+GF = 1.166379*10^-5 GeV^-2
+nf = 5 (massless b-quarks)
+
+PDF:
+  LO   : NNPDF31_lo_as_0118
+  NLO  : NNPDF31_nlo_as_0118
+  NNLO : NNPDF31_nnlo_as_0118
+
+Scales: muR = HT/4, muF = HT/4
+
+All histograms are given as a list of bins with the data format in case of absolute distributions ([X]: energy unit of observable; the last two columns are only present at NNLO):
+
+Units : [X]      [X]       pb/[X]        pb/[X]   pb/[X]     pb/[X]        pb/[X]  pb/[X]
+Values: edge-low edge-high scale_central scale_up scale_down mcerr_central PDF_up  PDF_down
+
+in case of 2D:
+
+Units : [X]           [X]            [Y]           [Y]            pb/[X]/[Y]    pb/[X]/[Y] pb/[X]/[Y] pb/[X]/[Y]    pb/[X]/[Y] pb/[X]/[Y]
+Values: edge-dim1-low edge-dim1-high edge-dim2-low edge-dim2-high scale_central scale_up   scale_down mcerr_central PDF_up     PDF_down
+
+Each file name is constructed after the pattern: <phasespace>_<order>_mt<mass>_<scale>_<pdf>_<obs>.dat  
+<phasespace> : fid
+<order>      : LO,NLO,NNLO
+<mass>       : 172.5
+<scale>      : HT4
+<pdf>        : NNPDF31
+<obs>        :
+  pTnnbar
+  dphilnnbar
+  pTnnbar_x_dphilnnbar

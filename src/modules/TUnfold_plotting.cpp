@@ -63,8 +63,20 @@ void run()
    bool plotToyStudies = cfg.tunfold_plotToyStudies;
    
    //Use alternative pseudo data (amcAtNLO)
-   bool useAltReco = true;
-   // ~bool useAltReco = false;
+   // ~bool useAltReco = true;
+   bool useAltReco = false;
+   
+   //Plot only theory prediction (also MC)
+   // ~bool onlyTheo = true;
+   bool onlyTheo = false;
+   
+   //Use deltaR gen level cut
+   // ~bool deltaRgen = true;
+   bool deltaRgen = false;
+   
+   //Use deltaR gen level cut
+   bool jetVetoMaps = true;
+   // ~bool jetVetoMaps = false;
    
    //////////////////////////
    // Define Distributions //
@@ -157,10 +169,13 @@ void run()
    
       //==============================================
       // step 1 : open output file
-      io::RootFileSaver saver(TString::Format("TUnfold/plots%.1f.root",cfg.processFraction*100),TString::Format(!withScaleFactor ? "TUnfold_plotting%.1f/%s" : "TUnfold_plotting_SF_%.1f/%s",cfg.processFraction*100,dist.norm? (dist.varName+"_norm").Data() : dist.varName.Data()));
+      TString extraStoreFolder = "";
+      if (deltaRgen) extraStoreFolder = "applyGenLevel_DeltaRcut/";
+      else if (jetVetoMaps) extraStoreFolder = "applyJetVetoMaps/";
+      io::RootFileSaver saver(TString::Format("TUnfold/plots%.1f.root",cfg.processFraction*100),TString::Format(!withScaleFactor ? "TUnfold_plotting%.1f/%s%s" : "TUnfold_plotting_SF_%.1f/%s%s",cfg.processFraction*100,extraStoreFolder.Data(),dist.norm? (dist.varName+"_norm").Data() : dist.varName.Data()));
       
       // Saver for result used for combination of years
-      io::RootFileSaver resultSaver(TString::Format("TUnfold/results%.1f.root",cfg.processFraction*100),TString::Format("%s",dist.norm? (dist.varName+"_norm").Data() : dist.varName.Data()));
+      io::RootFileSaver resultSaver(TString::Format("TUnfold/results%.1f.root",cfg.processFraction*100),TString::Format("%s%s",extraStoreFolder.Data(),dist.norm? (dist.varName+"_norm").Data() : dist.varName.Data()));
 
       //==============================================
       // step 2 : read binning schemes and input histograms
@@ -205,7 +220,12 @@ void run()
          saveName2D+="_PTreweight"+scale;
       }
       if (plotComparison) saveName="compareMethods/"+saveName;
-      io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold/%s/TUnfold_Nominal_%.1f.root" : "TUnfold/%s/TUnfold_SF91_Nominal_%.1f.root",input_loc.Data(),cfg.processFraction*100));
+      if (onlyTheo) saveName="theoryComparison/"+saveName;
+      
+      TString inputName = "Nominal";
+      if (deltaRgen) inputName = "applyGenLevel_DeltaRcut";
+      else if (jetVetoMaps) inputName = "applyJetVetoMaps";
+      io::RootFileReader histReader(TString::Format(!withScaleFactor ? "TUnfold/%s/TUnfold_%s_%.1f.root" : "TUnfold/%s/TUnfold_SF91_%s_%.1f.root",input_loc.Data(),inputName.Data(),cfg.processFraction*100));
       
       TString input_loc_old = input_loc;
       input_loc += "/"+dist.varName;
@@ -318,7 +338,7 @@ void run()
       
       // Plot results
       std::vector<double> xbins_vec = plot_UnfoldedResult(generatorBinning,unfolded,unfolded_reg,unfolded_bbb,unfolded_total,unfolded_reg_total,unfolded_bbb_total,tau_par->GetVal(),
-                                                         realDis,(withPTreweight)? realDis_response : realDisAlt,dist,plotComparison,saveName,&saver,num_bins,withPTreweight);
+                                                         realDis,(withPTreweight)? realDis_response : realDisAlt,dist,plotComparison,saveName,&saver,num_bins,withPTreweight,onlyTheo);
       
       Double_t* xbins = &xbins_vec[0];    //Convert binning vector to array used for setting binnings of final results
       

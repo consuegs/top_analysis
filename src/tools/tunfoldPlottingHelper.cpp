@@ -1,6 +1,9 @@
 #include "tunfoldPlottingHelper.hpp"
 #include "Config.hpp"
 #include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <iterator>
 
 using namespace Systematic;
 
@@ -781,7 +784,7 @@ std::pair<TH1F*,TH1F*> tunfoldplotting::getTotalShifts(const std::map<TString,TH
 std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generatorBinning, TH1F* unfolded, TH1F* unfolded_reg, TH1F* unfolded_bbb,
                                                          std::pair<TH1F*,TH1F*> &unfolded_total, std::pair<TH1F*,TH1F*> &unfolded_reg_total, std::pair<TH1F*,TH1F*> &unfolded_bbb_total,
                                                          const float &tau_par, TH1F* realDis, TH1F* realDisAlt,const distrUnfold &dist, const bool plotComparison,
-                                                         const TString &saveName, io::RootFileSaver* saver, int &num_bins, const bool rewStudy, const bool divideBinWidth, const bool adaptYaxis){
+                                                         const TString &saveName, io::RootFileSaver* saver, int &num_bins, const bool rewStudy, const bool onlyTheo, const bool divideBinWidth, const bool adaptYaxis){
    //========================
    // Step 3: plotting
    
@@ -790,6 +793,18 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    can.can_.Size(1000,600);
    can.pU_.SetLogy();
    can.pU_.cd();  //Use upper part of canvas
+   
+   //Get fixed order prediction
+   std::pair<TH1F,TGraphAsymmErrors> fixedOrderNNLOpair;
+   std::pair<TH1F,TGraphAsymmErrors> fixedOrderNLOpair;
+   if(dist.is2D){
+      fixedOrderNNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NNLO_mt172.5_HT4_NNPDF31_pTnnbar_x_dphilnnbar.dat",true,dist.norm,true);
+      fixedOrderNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NLO_mt172.5_HT4_NNPDF31_pTnnbar_x_dphilnnbar.dat",true,dist.norm,false);
+   }
+   else if (dist.varName.Contains("pTnunu")){
+      fixedOrderNNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NNLO_mt172.5_HT4_NNPDF31_pTnnbar.dat",false,dist.norm,true);
+      fixedOrderNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NLO_mt172.5_HT4_NNPDF31_pTnnbar.dat",false,dist.norm,false);
+   }
          
    //Initialize proper binning for plotting
    TVectorD binning_met(*(generatorBinning->FindNode("signal")->GetDistributionBinning(0)));
@@ -841,6 +856,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    
    realDis->SetBins(num_bins,xbins);
    realDisAlt->SetBins(num_bins,xbins);
+   if(dist.is2D){
+      fixedOrderNNLOpair.first.SetBins(num_bins,xbins);
+      fixedOrderNLOpair.first.SetBins(num_bins,xbins);
+   }
    std::vector<TString> labelVec;
    for (int i=1; i<=num_bins; i++) {  //Set proper label for x axis
       int bin_label_no = (i-1)%num_bins_met+1;
@@ -868,6 +887,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       hist::divideByBinWidth(*unfolded);
       hist::divideByBinWidth(*unfolded_total.first);
       hist::divideByBinWidth(*unfolded_total.second);
+      if(dist.is2D){
+         hist::divideByBinWidth(fixedOrderNNLOpair.first);
+         hist::divideByBinWidth(fixedOrderNLOpair.first);
+      }
    }
    
    // Plotting options
@@ -936,7 +959,16 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    realDisAlt->SetLineColor(kBlue-6);
    realDisAlt->SetFillColor(kBlue-6);
    
-   if (plotComparison) {
+   fixedOrderNLOpair.first.SetLineColor(kGreen+2);
+   
+   if (onlyTheo){
+      unfolded->Draw("axis");
+      realDis->Draw("hist same");   //Draw into current canvas (axis are not drawn again due to "same")
+      realDisAlt->Draw("hist same");
+      fixedOrderNNLOpair.first.Draw("hist same");
+      fixedOrderNLOpair.first.Draw("hist same");
+   }
+   else if (plotComparison) {
       
       // first draw used for axis and stuff
       // ~unfolded->Draw("px0");
@@ -944,6 +976,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       
       realDis->Draw("hist same");   //Draw into current canvas (axis are not drawn again due to "same")
       realDisAlt->Draw("hist same");
+      fixedOrderNNLOpair.first.Draw("hist same");
+      fixedOrderNLOpair.first.Draw("hist same");
       
       //draw stat. unc.
       unfolded_graph.Draw("pe2 same");
@@ -986,7 +1020,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    
    //Draw legend
    gfx::LegendEntries legE;
-   if (plotComparison) {
+   if (plotComparison && !onlyTheo) {
       auto Chi2Pair_reg = getChi2NDF(unfolded_reg,realDis);
       // ~auto Chi2Pair_corr_reg = getChi2NDF_withCorr(unfolded_reg,realDis,covMatrix_reg);
       auto Chi2Pair_bbb = getChi2NDF(unfolded_bbb,realDis);
@@ -1001,7 +1035,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       legE.append(unfolded_reg_totalGraph,"Reg","pe");
       legE.append(unfolded_bbb_totalGraph,"BBB","pe");
    }
-   else {
+   else if (!onlyTheo) {
       // ~legE.append(*unfolded,"Unfolded","pe");
       // ~atext->DrawLatex(30,10,TString::Format("#chi^{2}/NDF=%.1f/%i",Chi2Pair.first,Chi2Pair.second));
       // ~atext->DrawLatex(30,3,TString::Format("#chi^{2}/NDF(corr.)=%.1f/%i",Chi2Pair_corr.first,Chi2Pair_corr.second));
@@ -1016,6 +1050,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    if(!rewStudy){
       legE.append(*realDis,"Powheg","l");
       legE.append(*realDisAlt,"MadGraph","l");
+      legE.append(fixedOrderNNLOpair.first,"NNLO","l");
+      legE.append(fixedOrderNLOpair.first,"NLO","l");
    }
    else{
       std::cout<<"------------------------------------------------"<<std::endl;
@@ -1034,6 +1070,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    can.pL_.SetTickx(0);
    TH1F ratio;
    TH1F ratio_alt;
+   TH1F ratio_NNLO;
+   TH1F ratio_NLO;
    TH1F ratio_unfolded;
    TH1F ratio_unfolded_reg;
    TH1F ratio_unfolded_bbb;
@@ -1041,6 +1079,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    // derive ratios
    ratio=hist::getRatio(*realDis,*realDis,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
    ratio_alt=hist::getRatio(*realDisAlt,*realDis,"ratio",hist::NOERR);
+   ratio_NNLO=hist::getRatio(fixedOrderNNLOpair.first,*realDis,"ratio",hist::ONLY1);
+   ratio_NLO=hist::getRatio(fixedOrderNLOpair.first,*realDis,"ratio",hist::ONLY1);
    ratio_unfolded=hist::getRatio(*unfolded,*realDis,"ratio",hist::ONLY1);
    ratio_unfolded_reg=hist::getRatio(*unfolded_reg,*realDis,"ratio",hist::ONLY1);
    ratio_unfolded_bbb=hist::getRatio(*unfolded_bbb,*realDis,"ratio",hist::ONLY1);
@@ -1096,6 +1136,12 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    ratio_alt.SetMarkerColor(kBlue-6);
    ratio_alt.Draw("same");
    
+   ratio_NNLO.SetMarkerSize(0);
+   ratio_NLO.SetMarkerSize(0);
+   ratio_NLO.SetLineColor(kGreen+2);
+   ratio_NNLO.Draw("same hist");
+   ratio_NLO.Draw("same hist");
+   
    ratio_totalGraph.SetLineWidth(1.);
    ratio_reg_totalGraph.SetLineWidth(1.);
    ratio_bbb_totalGraph.SetLineWidth(1.);
@@ -1105,7 +1151,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    
    gfx::LegendEntries legE_ratio;
    
-   if (plotComparison) {
+   if (plotComparison && !onlyTheo) {
       
       // first draw used for axis and stuff
       // ~ratio_unfolded.Draw("pex0 same");
@@ -1121,7 +1167,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       ratio_bbb_totalGraph.Draw("p0 same");
       
    }
-   else {
+   else if(!onlyTheo){
       ratio_reg_graph.Draw("pe2 same");
       ratio_reg_totalGraph.Draw("p same");
       // ~ratio.Draw("axis same");
@@ -1436,5 +1482,105 @@ std::map<TString,TH1F> tunfoldplotting::getCombinedUnc(std::vector<std::map<TStr
    map_combinedShifts["TOTAL_DOWN"] = *hist_TotalShiftDOWN;
    
    return map_combinedShifts;
+}
+
+std::pair<TH1F,TGraphAsymmErrors> tunfoldplotting::readFixedOrderPred(TString const &filePath,bool const &is2D,bool const &norm,bool const &isNNLO){
+   
+   ///////////////////////////////////////////////////////
+   //Uncertainty for normalized result not yet correct!!//
+   ///////////////////////////////////////////////////////
+   std::ifstream inputFile(filePath.Data());
+   if(!inputFile.is_open()){
+      std::cout<<"File not found: "<<filePath.Data()<<std::endl;
+      exit(400);
+   }
+   std::string line;
+   std::vector<std::vector<float>> inputData((is2D&&isNNLO)? 10: ((is2D||isNNLO )? 8: 6));
+   
+   int numBins = 0;
+   while (std::getline(inputFile, line)){    //loop over inputs and write to array
+      std::istringstream iss(line);
+      std::vector<std::string> stringSplit((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());   //split by space
+      for(int i=0; i<stringSplit.size();i++){
+         inputData[i].push_back(std::stof(stringSplit[i]));
+      }
+      numBins++;
+   }
+   inputFile.close();
+   
+   TH1F outHist;
+   TGraphAsymmErrors outGraph;
+   int binOffset = 1;
+      
+   if(is2D){
+      TH1F temp("","",numBins+3,0.5,numBins+3.5);
+      TH1F temp_UP(temp);
+      TH1F temp_DOWN(temp);
+      float currentBinWidth = 1.;
+      for (int i=1; i<=temp.GetNbinsX(); i++){
+         if(i%7==0){    //handle missing overflow bins
+            binOffset++;
+            continue;
+         }
+         currentBinWidth = (inputData[3][i-binOffset]-inputData[2][i-binOffset])*(inputData[1][i-binOffset]-inputData[0][i-binOffset]);
+         temp.SetBinContent(i,inputData[4][i-binOffset]*currentBinWidth);
+         if(isNNLO){
+            temp_UP.SetBinContent(i,std::sqrt(std::pow(abs(inputData[4][i-binOffset]-inputData[5][i-binOffset])*currentBinWidth,2)+std::pow(abs(inputData[4][i-binOffset]-inputData[8][i-binOffset])*currentBinWidth,2)+std::pow(inputData[7][i-binOffset]*currentBinWidth,2)));
+            temp_DOWN.SetBinContent(i,std::sqrt(std::pow(abs(inputData[4][i-binOffset]-inputData[6][i-binOffset])*currentBinWidth,2)+std::pow(abs(inputData[4][i-binOffset]-inputData[9][i-binOffset])*currentBinWidth,2)+std::pow(inputData[7][i-binOffset]*currentBinWidth,2)));
+         }
+         else {
+            temp_UP.SetBinContent(i,std::sqrt(std::pow(abs(inputData[4][i-binOffset]-inputData[5][i-binOffset])*currentBinWidth,2)+std::pow(inputData[7][i-binOffset]*currentBinWidth,2)));
+            temp_DOWN.SetBinContent(i,std::sqrt(std::pow(abs(inputData[4][i-binOffset]-inputData[6][i-binOffset])*currentBinWidth,2)+std::pow(inputData[7][i-binOffset]*currentBinWidth,2)));
+         }
+         temp.SetBinError(i,0.5*(temp_UP.GetBinContent(i)+temp_DOWN.GetBinContent(i)));
+      }
+      
+      if(norm){   //for normalized distributions
+         temp.Scale(1./temp.Integral());
+         temp_UP.Scale(1./temp_UP.Integral());
+         temp_DOWN.Scale(1./temp_DOWN.Integral());
+         for (int i=1; i<=temp.GetNbinsX(); i++){
+            temp.SetBinError(i,0.5*(temp_UP.GetBinContent(i)+temp_DOWN.GetBinContent(i)));
+         }
+      }
+      
+      outGraph = hist::getErrorGraph(&temp_DOWN,&temp_UP,&temp,true,false);
+      outHist = temp;
+      
+   }
+   else{
+      std::vector<float> edges(inputData[0]);
+      edges.push_back(inputData[1].back());  // add last upper edge
+      edges.push_back(500);   // only required as long as not overflow bins available in prediction
+      
+      TH1F temp("","",numBins+1,&edges[0]);
+      TH1F temp_UP(temp);
+      TH1F temp_DOWN(temp);
+      for (int i=1; i<=temp.GetNbinsX(); i++){
+         temp.SetBinContent(i,inputData[2][i-1]);
+         if(isNNLO){
+            temp_UP.SetBinContent(i,std::sqrt(std::pow(abs(inputData[2][i-1]-inputData[3][i-1]),2)+std::pow(abs(inputData[2][i-1]-inputData[6][i-1]),2)+std::pow(inputData[5][i-1],2)));
+            temp_DOWN.SetBinContent(i,std::sqrt(std::pow(abs(inputData[2][i-1]-inputData[4][i-1]),2)+std::pow(abs(inputData[2][i-1]-inputData[7][i-1]),2)+std::pow(inputData[5][i-1],2)));
+         }
+         else {
+            temp_UP.SetBinContent(i,std::sqrt(std::pow(abs(inputData[2][i-1]-inputData[3][i-1]),2)+std::pow(inputData[5][i-1],2)));
+            temp_DOWN.SetBinContent(i,std::sqrt(std::pow(abs(inputData[2][i-1]-inputData[4][i-1]),2)+std::pow(inputData[5][i-1],2)));
+         }
+         temp.SetBinError(i,0.5*(temp_UP.GetBinContent(i)+temp_DOWN.GetBinContent(i)));
+      }
+      
+      if(norm){   //for normalized distributions
+         temp.Scale(1./temp.Integral("width"));
+         temp_UP.Scale(1./temp_UP.Integral("width"));
+         temp_DOWN.Scale(1./temp_DOWN.Integral("width"));
+         for (int i=1; i<=temp.GetNbinsX(); i++){
+            temp.SetBinError(i,0.5*(temp_UP.GetBinContent(i)+temp_DOWN.GetBinContent(i)));
+         }
+      }
+      outGraph = hist::getErrorGraph(&temp_DOWN,&temp_UP,&temp,true,false);
+      outHist = temp;
+   }
+   
+   return std::make_pair(outHist,outGraph);
 }
             
