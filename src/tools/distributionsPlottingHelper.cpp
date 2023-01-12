@@ -73,6 +73,7 @@ void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TS
    switch(year_int){
       case(3): //2018
       mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","EGamma","MuonEG","SingleMuon"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
@@ -81,6 +82,7 @@ void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TS
       break;
       case(2): //2017
       mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
@@ -178,6 +180,7 @@ void distributionsplotting::add_Categories(TString const path, io::RootFileReade
 void distributionsplotting::combineAllSamples(int const &year_int, hist::Histograms<TH1F>* hs, std::vector<TString> &mcSamples_merged){
    hs->combineSamples("Diboson",{"WW","WZ","ZZ"});
    hs->combineSamples("DrellYan_comb",{"DrellYan_NLO","DrellYan_M10to50"});
+   // ~hs->combineSamples("DrellYan_comb",{"DrellYan_NLO","DrellYan_M10to50_NLO"});
    hs->combineSamples("ttZ",{"ttZ_2L","ttZ_QQ"});
    hs->combineSamples("ttW/Z",{"ttW","ttZ"});
    hs->combineSamples("tt other",{"TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"});
