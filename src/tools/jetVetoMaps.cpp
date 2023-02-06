@@ -2,7 +2,7 @@
 #include "Config.hpp"
 #include <iostream>
 
-JetVetoMaps::JetVetoMaps(const std::string& map_fileName, const std::string& map_histName, const std::string& map_histName_MC16, const Systematic::Systematic& systematic, const bool is2016) :
+JetVetoMaps::JetVetoMaps(const std::string& map_fileName, const std::string& map_histName, const std::string& map_histName_MC16, const Systematic::Systematic& systematic, const int year_int, const bool is2016) :
    systematic_(systematic),
    vetoMap_hist_(0),
    vetoMap_hist_MC16_(0),
@@ -15,6 +15,9 @@ JetVetoMaps::JetVetoMaps(const std::string& map_fileName, const std::string& map
       <<"VetoMap file does not exist\n...break\n"<<std::endl;
    exit(220);
    }
+   
+   // ~HEM1516only = (systematic.type()==Systematic::applyJetVetoMaps_HEM1516);
+   HEM1516only = (year_int==3);  //apply HEM1516 only if UL18 is used
       
    // Read required histogram
    this->prepareHists(map_fileName,map_histName,map_histName_MC16,vetoMap_hist_,vetoMap_hist_MC16_);
@@ -43,6 +46,9 @@ void JetVetoMaps::prepareHists(const std::string& map_fileName, const std::strin
 const bool JetVetoMaps::checkVetoMap(const std::vector<tree::Jet>& jets)
 {
    for(size_t iJet=0; iJet<jets.size(); ++iJet){
+      if(HEM1516only){
+         if (jets.at(iJet).p.Eta()>0 || jets.at(iJet).p.Phi()>0) continue;    // Dirty fix to take only the part of the vetomaps, where HEM1516 is shown
+      }
       if (vetoMap_hist_->GetBinContent(vetoMap_hist_->GetXaxis()->FindBin(jets.at(iJet).p.Eta()),vetoMap_hist_->GetYaxis()->FindBin(jets.at(iJet).p.Phi()))>0) return false;
       if (is2016_){
          if (vetoMap_hist_MC16_->GetBinContent(vetoMap_hist_MC16_->GetXaxis()->FindBin(jets.at(iJet).p.Eta()),vetoMap_hist_MC16_->GetYaxis()->FindBin(jets.at(iJet).p.Phi()))>0) return false;

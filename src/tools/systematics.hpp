@@ -273,11 +273,14 @@ namespace Systematic{
         removeMLLcut,                   // Check impact if selection is relaxed by removing mllCut
         applyJerMET,                    // Check impact of applying JER propagation to MET
         applyJetVetoMaps,               // Check impact of applying jet veto maps
+        applyJetVetoMaps_loose,         // Check impact of applying loosest jet veto maps
         applyJetVetoMaps_leading,       // Check impact of applying jet veto maps to leading jet
         applyJetVetoMaps_subleading,    // Check impact of applying jet veto maps to leading and subleading jet
         applyJetVetoMaps_cleanedJets,   // Check impact of applying jet veto maps to cleaned jets
+        applyJetVetoMaps_HEM1516,       // Check impact of applying veto for HEM1516
         applyGenLevel_DeltaRcut,        // Apply gen level dR cut between bJets and leptons
         useDNNnoMETcut,                 // Use a DNN which is trained with events without MET cut
+        useDNNnoMetCutDY,               // Use a DNN which is trained with events without MET cut adding DY events in training
         useDNNmumu                      // Use a DNN which is trained with mumu events only
     };
 
@@ -507,13 +510,15 @@ namespace Systematic{
         tw_ds,
         xsec_ttother,xsec_dy,xsec_st,xsec_other,
         l1prefiring,
-        jetPileupID,
         applyJetVetoMaps,
+        applyJetVetoMaps_loose,
         applyJetVetoMaps_leading,
         applyJetVetoMaps_subleading,
         applyJetVetoMaps_cleanedJets,
+        applyJetVetoMaps_HEM1516,
         applyGenLevel_DeltaRcut,
         useDNNnoMETcut,
+        useDNNnoMetCutDY,
         useDNNmumu
     };
     
@@ -619,12 +624,15 @@ namespace Systematic{
         removeMLLcut,
         applyJerMET,
         applyJetVetoMaps,
+        applyJetVetoMaps_loose,
         applyJetVetoMaps_leading,
         applyJetVetoMaps_subleading,
         applyJetVetoMaps_cleanedJets,
+        applyJetVetoMaps_HEM1516,
         applyGenLevel_DeltaRcut,
         useDNNnoMETcut,
-        useDNNmumu
+        useDNNmumu,
+        useDNNnoMetCutDY
     };
 
     /// Class for proper handling of systematic

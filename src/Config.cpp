@@ -102,6 +102,7 @@ Config::Config(std::string config_year)
    
    jetVetoMap_file=pt.get<std::string>("jetVetoMap.jetVetoMap_file");
    jetVetoMap_vetoMapHist=pt.get<std::string>("jetVetoMap.jetVetoMap_vetoMapHist");
+   jetVetoMap_vetoMapHist_loose=pt.get<std::string>("jetVetoMap.jetVetoMap_vetoMapHist_loose");
    jetVetoMap_vetoMapHist_MC16=pt.get_optional<std::string>("jetVetoMap.jetVetoMap_vetoMapHist_MC16");
    
    applyDNN=pt.get<bool>("DNN.applyDNN");

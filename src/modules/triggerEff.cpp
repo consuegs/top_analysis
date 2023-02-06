@@ -9,6 +9,8 @@
 #include "tools/jetCorrections.hpp"
 #include "tools/bTagWeights.hpp"
 #include "tools/leptonSF.hpp"
+#include "tools/jetPileupIDSF.hpp"
+#include "tools/jetVetoMaps.hpp"
 
 #include <TFile.h>
 #include <TGraphErrors.h>
@@ -126,6 +128,14 @@ void run()
          
          // Configure JER Corrections
          jerCorrections jerCorrector = jerCorrections(isData? cfg.jer_SF_data.Data() : cfg.jer_SF_mc.Data(),isData? cfg.jer_RES_data.Data() : cfg.jer_RES_mc.Data(),currentSystematic);
+         
+         // Configure pileupID application (applied in nominal selection)
+         bool applyPileupID = true;
+         JetPileupIDWeights jetPileupIDWeighter = JetPileupIDWeights(cfg.jetPileupID_file.Data(),cfg.jetPileupID_sfHist.Data(),cfg.jetPileupID_effHist.Data(),currentSystematic);
+   
+         // Configure JetVetoMaps
+         bool applyJetVetoMaps = (cfg.year_int==3);    // apply for UL18 only
+         JetVetoMaps jetVetoMaps = JetVetoMaps(cfg.jetVetoMap_file.Data(),(currentSystematic.type() == Systematic::applyJetVetoMaps_loose)? cfg.jetVetoMap_vetoMapHist_loose.Data():cfg.jetVetoMap_vetoMapHist.Data(),cfg.jetVetoMap_vetoMapHist_MC16.is_initialized()? cfg.jetVetoMap_vetoMapHist_MC16.get() : "",currentSystematic,cfg.year_int);
          
          // Configure lepton Correction
          leptonCorrections leptonCorretor = leptonCorrections(currentSystematic);
@@ -253,9 +263,14 @@ void run()
             std::vector<bool> channel={false,false,false};     //ee, mumu, emu
             TString cat="";
             
+            //Apply jeto veto map if selected (for all jets)
+            if(applyJetVetoMaps) {
+               if(jetVetoMaps.checkVetoMap(*jets) == false) continue;
+            }
+            
             rec_selection=selection::diLeptonSelection(*electrons,*muons,channel,p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2,cat,muonLead);
                   
-            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho,allMETs);
+            std::vector<tree::Jet> cjets = phys::getCleanedJets(*jets, p_l1, p_l2,jerCorrector,*rho,allMETs,applyPileupID);
             
             float met=MET->p.Pt();
             float const met_puppi=MET_Puppi_xy->p.Pt();

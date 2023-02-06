@@ -15,7 +15,7 @@ class JetVetoMaps
 {
    public:
       
-      JetVetoMaps(const std::string& map_fileName, const std::string& map_histName, const std::string& map_histName_MC16, const Systematic::Systematic& systematic, const bool is2016=false);
+      JetVetoMaps(const std::string& map_fileName, const std::string& map_histName, const std::string& map_histName_MC16, const Systematic::Systematic& systematic, const int year_int, const bool is2016=false);
       
       /// Check Veto application (false if veto should be applied)
       const bool checkVetoMap(const std::vector<tree::Jet>& jets);
@@ -31,6 +31,9 @@ class JetVetoMaps
       
       /// Bool to store if 2016 is running (has two maps)
       bool is2016_;
+      
+      /// Bool to store if HEM1516 is only considered (without result from hot/cold zone study)
+      bool HEM1516only;
       
       /// Histogram with veto map
       TH2* vetoMap_hist_;

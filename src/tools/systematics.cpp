@@ -289,8 +289,11 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("applyJetVetoMaps_leading")) return applyJetVetoMaps_leading;
     if(type.BeginsWith("applyJetVetoMaps_subleading")) return applyJetVetoMaps_subleading;
     if(type.BeginsWith("applyJetVetoMaps_cleanedJets")) return applyJetVetoMaps_cleanedJets;
+    if(type.BeginsWith("applyJetVetoMaps_loose")) return applyJetVetoMaps_loose;
+    if(type.BeginsWith("applyJetVetoMaps_HEM1516")) return applyJetVetoMaps_HEM1516;
     if(type.BeginsWith("applyJetVetoMaps")) return applyJetVetoMaps;
     if(type.BeginsWith("applyGenLevel_DeltaRcut")) return applyGenLevel_DeltaRcut;
+    if(type.BeginsWith("useDNNnoMetCutDY")) return useDNNnoMetCutDY;
     if(type.BeginsWith("useDNNnoMETcut")) return useDNNnoMETcut;
     if(type.BeginsWith("useDNNmumu")) return useDNNmumu;
     if(!quiet) std::cout<<"Warning in Systematic::convertType()! Following conversion is not implemented: "
@@ -575,8 +578,11 @@ TString Systematic::convertType(const Type& type)
     if(type == applyJetVetoMaps_leading) return "applyJetVetoMaps_leading";
     if(type == applyJetVetoMaps_subleading) return "applyJetVetoMaps_subleading";
     if(type == applyJetVetoMaps_cleanedJets) return "applyJetVetoMaps_cleanedJets";
+    if(type == applyJetVetoMaps_loose) return "applyJetVetoMaps_loose";
+    if(type == applyJetVetoMaps_HEM1516) return "applyJetVetoMaps_HEM1516";
     if(type == applyJetVetoMaps) return "applyJetVetoMaps";
     if(type == applyGenLevel_DeltaRcut) return "applyGenLevel_DeltaRcut";
+    if(type == useDNNnoMetCutDY) return "useDNNnoMetCutDY";
     if(type == useDNNnoMETcut) return "useDNNnoMETcut";
     if(type == useDNNmumu) return "useDNNmumu";
     

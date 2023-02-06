@@ -75,6 +75,7 @@ public:
    
    TString jetVetoMap_file;
    TString jetVetoMap_vetoMapHist;
+   TString jetVetoMap_vetoMapHist_loose;
    boost::optional<std::string> jetVetoMap_vetoMapHist_MC16;
    
    bool applyDNN;

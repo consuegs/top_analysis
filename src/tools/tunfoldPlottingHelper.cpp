@@ -784,7 +784,7 @@ std::pair<TH1F*,TH1F*> tunfoldplotting::getTotalShifts(const std::map<TString,TH
 std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generatorBinning, TH1F* unfolded, TH1F* unfolded_reg, TH1F* unfolded_bbb,
                                                          std::pair<TH1F*,TH1F*> &unfolded_total, std::pair<TH1F*,TH1F*> &unfolded_reg_total, std::pair<TH1F*,TH1F*> &unfolded_bbb_total,
                                                          const float &tau_par, TH1F* realDis, TH1F* realDisAlt,const distrUnfold &dist, const bool plotComparison,
-                                                         const TString &saveName, io::RootFileSaver* saver, int &num_bins, const bool rewStudy, const bool onlyTheo, const bool divideBinWidth, const bool adaptYaxis){
+                                                         const TString &saveName, io::RootFileSaver* saver, int &num_bins, const bool rewStudy, const bool onlyTheo, const bool plotTheo, const bool divideBinWidth, const bool adaptYaxis){
    //========================
    // Step 3: plotting
    
@@ -797,13 +797,15 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    //Get fixed order prediction
    std::pair<TH1F,TGraphAsymmErrors> fixedOrderNNLOpair;
    std::pair<TH1F,TGraphAsymmErrors> fixedOrderNLOpair;
-   if(dist.is2D){
-      fixedOrderNNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NNLO_mt172.5_HT4_NNPDF31_pTnnbar_x_dphilnnbar.dat",true,dist.norm,true);
-      fixedOrderNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NLO_mt172.5_HT4_NNPDF31_pTnnbar_x_dphilnnbar.dat",true,dist.norm,false);
-   }
-   else if (dist.varName.Contains("pTnunu")){
-      fixedOrderNNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NNLO_mt172.5_HT4_NNPDF31_pTnnbar.dat",false,dist.norm,true);
-      fixedOrderNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NLO_mt172.5_HT4_NNPDF31_pTnnbar.dat",false,dist.norm,false);
+   if(plotTheo){
+      if(dist.is2D){
+         fixedOrderNNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NNLO_mt172.5_HT4_NNPDF31_pTnnbar_x_dphilnnbar.dat",true,dist.norm,true);
+         fixedOrderNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NLO_mt172.5_HT4_NNPDF31_pTnnbar_x_dphilnnbar.dat",true,dist.norm,false);
+      }
+      else if (dist.varName.Contains("pTnunu")){
+         fixedOrderNNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NNLO_mt172.5_HT4_NNPDF31_pTnnbar.dat",false,dist.norm,true);
+         fixedOrderNLOpair = readFixedOrderPred("../data/theoryPredictions/fid_NLO_mt172.5_HT4_NNPDF31_pTnnbar.dat",false,dist.norm,false);
+      }
    }
          
    //Initialize proper binning for plotting
@@ -856,7 +858,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    
    realDis->SetBins(num_bins,xbins);
    realDisAlt->SetBins(num_bins,xbins);
-   if(dist.is2D){
+   if(dist.is2D && plotTheo){
       fixedOrderNNLOpair.first.SetBins(num_bins,xbins);
       fixedOrderNLOpair.first.SetBins(num_bins,xbins);
    }
@@ -887,7 +889,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       hist::divideByBinWidth(*unfolded);
       hist::divideByBinWidth(*unfolded_total.first);
       hist::divideByBinWidth(*unfolded_total.second);
-      if(dist.is2D){
+      if(dist.is2D && plotTheo){
          hist::divideByBinWidth(fixedOrderNNLOpair.first);
          hist::divideByBinWidth(fixedOrderNLOpair.first);
       }
@@ -976,8 +978,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       
       realDis->Draw("hist same");   //Draw into current canvas (axis are not drawn again due to "same")
       realDisAlt->Draw("hist same");
-      fixedOrderNNLOpair.first.Draw("hist same");
-      fixedOrderNLOpair.first.Draw("hist same");
+      if(plotTheo){
+         fixedOrderNNLOpair.first.Draw("hist same");
+         fixedOrderNLOpair.first.Draw("hist same");
+      }
       
       //draw stat. unc.
       unfolded_graph.Draw("pe2 same");
@@ -1028,12 +1032,12 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       // ~legE.append(*unfolded,TString::Format("NoReg [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair.first,Chi2Pair.second,Chi2Pair_corr.first,Chi2Pair_corr.second),"pe");
       // ~legE.append(*unfolded_reg,TString::Format("Reg [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair_reg.first,Chi2Pair_reg.second,Chi2Pair_corr_reg.first,Chi2Pair_corr_reg.second),"pe");
       // ~legE.append(*unfolded_bbb,TString::Format("BBB [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair_bbb.first,Chi2Pair_bbb.second,Chi2Pair_corr_bbb.first,Chi2Pair_corr_bbb.second),"pe");
-      // ~legE.append(*unfolded,TString::Format("NoReg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair.first,Chi2Pair.second),"pe");
-      // ~legE.append(*unfolded_reg,TString::Format("Reg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_reg.first,Chi2Pair_reg.second),"pe");
-      // ~legE.append(*unfolded_bbb,TString::Format("BBB [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_bbb.first,Chi2Pair_bbb.second),"pe");
-      legE.append(unfolded_totalGraph,"NoReg","pe");
-      legE.append(unfolded_reg_totalGraph,"Reg","pe");
-      legE.append(unfolded_bbb_totalGraph,"BBB","pe");
+      legE.append(*unfolded,TString::Format("NoReg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair.first,Chi2Pair.second),"pe");
+      legE.append(*unfolded_reg,TString::Format("Reg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_reg.first,Chi2Pair_reg.second),"pe");
+      legE.append(*unfolded_bbb,TString::Format("BBB [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_bbb.first,Chi2Pair_bbb.second),"pe");
+      // ~legE.append(unfolded_totalGraph,"NoReg","pe");
+      // ~legE.append(unfolded_reg_totalGraph,"Reg","pe");
+      // ~legE.append(unfolded_bbb_totalGraph,"BBB","pe");
    }
    else if (!onlyTheo) {
       // ~legE.append(*unfolded,"Unfolded","pe");
@@ -1050,8 +1054,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    if(!rewStudy){
       legE.append(*realDis,"Powheg","l");
       legE.append(*realDisAlt,"MadGraph","l");
-      legE.append(fixedOrderNNLOpair.first,"NNLO","l");
-      legE.append(fixedOrderNLOpair.first,"NLO","l");
+      if(plotTheo){
+         legE.append(fixedOrderNNLOpair.first,"NNLO","l");
+         legE.append(fixedOrderNLOpair.first,"NLO","l");
+      }
    }
    else{
       std::cout<<"------------------------------------------------"<<std::endl;
@@ -1079,8 +1085,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    // derive ratios
    ratio=hist::getRatio(*realDis,*realDis,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
    ratio_alt=hist::getRatio(*realDisAlt,*realDis,"ratio",hist::NOERR);
-   ratio_NNLO=hist::getRatio(fixedOrderNNLOpair.first,*realDis,"ratio",hist::ONLY1);
-   ratio_NLO=hist::getRatio(fixedOrderNLOpair.first,*realDis,"ratio",hist::ONLY1);
+   if(plotTheo){
+      ratio_NNLO=hist::getRatio(fixedOrderNNLOpair.first,*realDis,"ratio",hist::ONLY1);
+      ratio_NLO=hist::getRatio(fixedOrderNLOpair.first,*realDis,"ratio",hist::ONLY1);
+   }
    ratio_unfolded=hist::getRatio(*unfolded,*realDis,"ratio",hist::ONLY1);
    ratio_unfolded_reg=hist::getRatio(*unfolded_reg,*realDis,"ratio",hist::ONLY1);
    ratio_unfolded_bbb=hist::getRatio(*unfolded_bbb,*realDis,"ratio",hist::ONLY1);
@@ -1136,11 +1144,13 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    ratio_alt.SetMarkerColor(kBlue-6);
    ratio_alt.Draw("same");
    
-   ratio_NNLO.SetMarkerSize(0);
-   ratio_NLO.SetMarkerSize(0);
-   ratio_NLO.SetLineColor(kGreen+2);
-   ratio_NNLO.Draw("same hist");
-   ratio_NLO.Draw("same hist");
+   if(plotTheo){
+      ratio_NNLO.SetMarkerSize(0);
+      ratio_NLO.SetMarkerSize(0);
+      ratio_NLO.SetLineColor(kGreen+2);
+      ratio_NNLO.Draw("same hist");
+      ratio_NLO.Draw("same hist");
+   }
    
    ratio_totalGraph.SetLineWidth(1.);
    ratio_reg_totalGraph.SetLineWidth(1.);

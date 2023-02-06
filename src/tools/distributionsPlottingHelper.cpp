@@ -73,6 +73,7 @@ void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TS
    switch(year_int){
       case(3): //2018
       mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","EGamma","MuonEG","SingleMuon"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
@@ -83,6 +84,7 @@ void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TS
       case(2): //2017
       mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
@@ -91,6 +93,7 @@ void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TS
       case(1): //2016_postVFP 
       case(0): //2016_preVFP
       mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
@@ -180,6 +183,7 @@ void distributionsplotting::add_Categories(TString const path, io::RootFileReade
 void distributionsplotting::combineAllSamples(int const &year_int, hist::Histograms<TH1F>* hs, std::vector<TString> &mcSamples_merged){
    hs->combineSamples("Diboson",{"WW","WZ","ZZ"});
    hs->combineSamples("DrellYan_comb",{"DrellYan_NLO","DrellYan_M10to50"});
+   // ~hs->combineSamples("DrellYan_comb",{"DrellYan","DrellYan_M10to50"});
    // ~hs->combineSamples("DrellYan_comb",{"DrellYan_NLO","DrellYan_M10to50_NLO"});
    hs->combineSamples("ttZ",{"ttZ_2L","ttZ_QQ"});
    hs->combineSamples("ttW/Z",{"ttW","ttZ"});
@@ -353,9 +357,9 @@ void distributionsplotting::printTotalYields(hist::Histograms<TH1F>* hs, std::ve
       }
       
       std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
-      float mcYield = mc_total->GetBinContent(6);
-      float mcYield_down = syst.first->GetBinContent(6);
-      float mcYield_up = syst.second->GetBinContent(6);
+      float mcYield = mc_total->GetBinContent(5);
+      float mcYield_down = syst.first->GetBinContent(5);
+      float mcYield_up = syst.second->GetBinContent(5);
       mcYield_total += mcYield;
       mcYield_total_down += mcYield_down;
       mcYield_total_up += mcYield_up;
@@ -364,7 +368,7 @@ void distributionsplotting::printTotalYields(hist::Histograms<TH1F>* hs, std::ve
          isMCtotal = (sample=="MC");
          TH1F* temp_hist=hs->getHistogram("cutflow/"+cat,sample);
          // ~TH1F* temp_hist=hs->getHistogram("baseline/"+cat+"/nBjets",sample);
-         float sampleYield = temp_hist->GetBinContent(6);
+         float sampleYield = temp_hist->GetBinContent(5);
          totalMap[sample.ReplaceAll("_","\\_")] += sampleYield;
          if(!isMCtotal){
             // ~std::cout<<std::fixed<<sample.ReplaceAll("_","\\_")<<"&"<<sampleYield<<"&"<<std::setprecision(1)<<sampleYield/mcYield*100<<"\\\\"<<std::endl;
@@ -396,7 +400,7 @@ void distributionsplotting::printUncBreakDown(hist::Histograms<TH1F>* hs, std::v
                std::vector<systHists*> tempVec = {systHists_vec[0],systHists_vec[i],systHists_vec[i+1]};
                std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat,"",true);
                // ~std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat,"DrellYan_NLO");
-               printUnc(systHists_vec[i]->systematic_.type_str(),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
+               printUnc(systHists_vec[i]->systematic_.type_str(),syst.first->GetBinContent(5),syst.second->GetBinContent(5),mc_total->GetBinContent(5));
                i++;
                continue;
             }
@@ -404,12 +408,12 @@ void distributionsplotting::printUncBreakDown(hist::Histograms<TH1F>* hs, std::v
          std::vector<systHists*> tempVec = {systHists_vec[0],systHists_vec[i]};   // print unc. without up and down shift
          std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat,"",true);
          // ~std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,tempVec,"cutflow/"+cat,"DrellYan_NLO");
-         printUnc(systHists_vec[i]->systematic_.type_str(),syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
+         printUnc(systHists_vec[i]->systematic_.type_str(),syst.first->GetBinContent(5),syst.second->GetBinContent(5),mc_total->GetBinContent(5));
       }
       std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,systHists_vec,"cutflow/"+cat);     // print total uncertainty
       // ~std::pair<TH1F*,TH1F*> syst = getTotalSyst(mc_total,systHists_vec,"cutflow/"+cat,"DrellYan_NLO");     // print total uncertainty
       std::cout<<"\\hline"<<std::endl;
-      printUnc("TOTAL",syst.first->GetBinContent(6),syst.second->GetBinContent(6),mc_total->GetBinContent(6));
+      printUnc("TOTAL",syst.first->GetBinContent(5),syst.second->GetBinContent(5),mc_total->GetBinContent(5));
    }
 }
 
@@ -419,13 +423,13 @@ void distributionsplotting::printShiftBySample(hist::Histograms<TH1F>* hs, std::
    for (TString cat:{"ee","emu","mumu"}){
       std::cout<<"----------------"<<cat<<"-----------------------"<<std::endl;
       TH1F* mc_total=hs->getHistogram("cutflow/"+cat,"MC");
-      float mcYield = mc_total->GetBinContent(6);
+      float mcYield = mc_total->GetBinContent(5);
       for (TString sample:mcSamples){
          TH1F* temp_hist=hs->getHistogram("cutflow/"+cat,sample);
          std::pair<TH1F*,TH1F*> syst = getTotalSyst(temp_hist,systHists_vec,"cutflow/"+cat,sample);
-         float sampleYield = temp_hist->GetBinContent(6);
-         float sampleYield_down = syst.first->GetBinContent(6);
-         float sampleYield_up = syst.second->GetBinContent(6);
+         float sampleYield = temp_hist->GetBinContent(5);
+         float sampleYield_down = syst.first->GetBinContent(5);
+         float sampleYield_up = syst.second->GetBinContent(5);
          std::cout<<sample<<"   "<<sampleYield_down<<"   "<<sampleYield_up<<std::endl;
          std::cout<<sample<<"   "<<sampleYield_down/sampleYield*100<<"   "<<sampleYield_up/sampleYield*100<<std::endl;
       }
@@ -631,9 +635,8 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       ratio_mc.GetXaxis()->SetBinLabel(1,"diLepton");
       ratio_mc.GetXaxis()->SetBinLabel(2,"mll");
       ratio_mc.GetXaxis()->SetBinLabel(3,"jets");
-      ratio_mc.GetXaxis()->SetBinLabel(4,"met");
-      ratio_mc.GetXaxis()->SetBinLabel(5,"btag");
-      ratio_mc.GetXaxis()->SetBinLabel(6,"triggerSF");
+      ratio_mc.GetXaxis()->SetBinLabel(4,"btag");
+      ratio_mc.GetXaxis()->SetBinLabel(5,"DNN MET");
       // ~ratio_mc.GetXaxis()->SetBinLabel(7,"(addLepton veto)");
       ratio_mc.GetXaxis()->SetRangeUser(0.5,6.5);
       ratio_mc.GetXaxis()->SetLabelOffset(0.03);
@@ -706,7 +709,7 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       
       if(is2D){
          fixAxis2D(S_sqrtB_hist->GetXaxis(),binEdgesY.size()-1);
-         S_sqrtB_hist->SetMaximum(1.0);
+         S_sqrtB_hist->SetMaximum(1.5);
          drawVertLines2D(binEdgesY,S_sqrtB_hist->GetMinimum(),S_sqrtB_hist->GetMaximum(),true);
       }
       
@@ -772,7 +775,7 @@ void distributionsplotting::getCombinedDistributions(hist::Histograms<TH1F> &hs_
 // get up and down shift for set of systematics for all periods combined (partly copied from getCombinedUnc in tunfoldPlottingHelper)
 std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<std::vector<systHists*>> const &systHists_vec_all, TString const loc){
    
-   auto start = high_resolution_clock::now();
+   // ~auto start = high_resolution_clock::now();
    
    // get nominal histograms per period
    std::vector<TH1F*> nominals(4);
@@ -960,9 +963,9 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<s
    hist::sqrtHist(*hist_TotalShiftUP);
    hist::sqrtHist(*hist_TotalShiftDOWN);
    
-   auto stop = high_resolution_clock::now();
-   auto duration = duration_cast<microseconds>(stop - start);
-   std::cout<<duration.count()<<std::endl;
+   // ~auto stop = high_resolution_clock::now();
+   // ~auto duration = duration_cast<microseconds>(stop - start);
+   // ~std::cout<<duration.count()<<std::endl;
    
    return std::make_pair(hist_TotalShiftDOWN,hist_TotalShiftUP);
 }

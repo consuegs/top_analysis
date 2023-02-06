@@ -471,6 +471,11 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40") dist.setVariables(metRec,phiRec,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_mergedBins_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur12Bins_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins14_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins16_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "pTnunu_new") dist.setVariables(metRec,metGen);
@@ -719,6 +724,11 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40") dist.setVariables(metRec,phiRec,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_mergedBins_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur12Bins_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins14_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins16_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "pTnunu_new") dist.setVariables(metRec,metGen);
@@ -877,6 +887,36 @@ void run()
                                           {0,0.64,1.28,3.141},
                                           {0,20,40,52.5,65,80,95,110,125,142.5,160,180,200,300},
                                           {0,0.32,0.64,0.96,1.28,2.24,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_mergedBins_DNN",     // Optimized binning for DNN with bins merged by hand
+                                          {0,40,95,200},
+                                          {0,0.64,1.28,3.141},
+                                          {0,20,40,67.5,95,147.5,200,300},
+                                          {0,0.32,0.64,0.96,1.28,2.24,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_30StabPur_DNN",     // Optimized binning for DNN with 30% stability and purity
+                                          {0,70,120,150,195},
+                                          {0,0.56,1.08,3.141},
+                                          {0,40,70,95,120,135,150,172.5,195,297.5},
+                                          {0,0.28,0.56,0.82,1.08,2.14,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_30StabPur12Bins_DNN",     // Optimized binning for DNN with 30% stability and purity
+                                          {0,70,125,200},
+                                          {0,0.56,1.08,3.141},
+                                          {0,40,70,97.5,125,162.5,200,300},
+                                          {0,0.28,0.56,0.82,1.08,2.14,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_30StabPur2PhiBins14_DNN",     // Optimized binning for DNN with 30% stability and purity
+                                          {0,65,95,135,175,250,295},
+                                          {0,0.64,3.141},
+                                          {0,40,65,80,95,115,135,155,175,212.5,250,272.5,295,347.5},
+                                          {0,0.32,0.64,1.92,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_30StabPur2PhiBins16_DNN",     // Optimized binning for DNN with 30% stability and purity
+                                          {0,70,100,140,180,225,270,315},
+                                          {0,0.64,3.141},
+                                          {0,40,70,85,100,120,140,160,180,202.5,225,247.5,270,292.5,315,357.5},
+                                          {0,0.32,0.64,1.92,3.141}
                                           ));
    distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new40_DNN",     // Fabians optimized binning for DNN with 0-40
                                           {0,40,70,100,130,160,200},

@@ -1116,18 +1116,18 @@ extern "C"
 int run()
 {	// Loop over varioues options to test them subsequently without running the scribt for each set of options separatly
 	//The varied options are 'forward/backward', 'nextBinPt/nextBinPhi' and '(n)acMoI' 
-	std:: vector<vector<bool>> options
-    {
-        {false, false, false},
-        {false, false, true},
-        {false, true, false},
-        {false, true, true},
-        {true, false, false},
-        {true, false, true},
-        {true, true, false},
-        {true, true, true},
-    };
-    std::vector<int> MoI_IDs = {3, 4, 5, 12, 13, 14, 15};
+	// ~std:: vector<vector<bool>> options
+    // ~{
+        // ~{false, false, false},
+        // ~{false, false, true},
+        // ~{false, true, false},
+        // ~{false, true, true},
+        // ~{true, false, false},
+        // ~{true, false, true},
+        // ~{true, true, false},
+        // ~{true, true, true},
+    // ~};
+    // ~std::vector<int> MoI_IDs = {3, 4, 5, 12, 13, 14, 15};
     
     //Used optimized binnings in the thesis
     //N=25
@@ -1136,18 +1136,20 @@ int run()
         //~ {true, true, false},
     //~ };
    //N=10
-	// ~std:: vector<vector<bool>> options{{true, false, true},};
+	std:: vector<vector<bool>> options{{false, false, true},};
 	
 	//Used MoI version
-    // ~std::vector<int> MoI_IDs = {5};
+    std::vector<int> MoI_IDs = {4};
 	bool is_logging = true;
 	
 	
 	// ~int initialBins = 10; //number of equidistant initial bins in each dimension
 	// ~int initialBins = 40; //number of equidistant initial bins in each dimension
 	int initialBins = 80; //number of equidistant initial bins in each dimension
-	float p_min = 0.2;
-	float s_min = 0.2;
+	// ~float p_min = 0.2;
+	// ~float s_min = 0.2;
+	float p_min = 0.3;
+	float s_min = 0.3;
 	float N_min = 10;
 	float eff_min = 0.2;
 	// ~bool merge_Overflow = false; //Currently not used

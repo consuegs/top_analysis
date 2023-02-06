@@ -65,7 +65,6 @@ void run()
          hs.addHist(selection+channel+"/PuppiMET"   ,";%MET;EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/PuppiMET_xy"   ,";%MET;EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/MET_xy"   ,";%MET;EventsBIN"           ,100,0,500);
-         // ~hs.addHist(selection+channel+"/DNN_MET_pT"   ,";DNN_MET_pT (GeV);EventsBIN"           ,100,0,500);
          hs.addHist(selection+channel+"/DNN_MET_pT"   ,";DNN_MET_pT (GeV);EventsBIN"           ,500,0,500);
          hs.addHist(selection+channel+"/DNN_MET_dPhi_nextLep"   ,";DNN_MET_dPhi_nextLep;EventsBIN"           ,320,0,3.2);
          hs.addHist(selection+channel+"/DeepMET_reso"   ,";%MET;EventsBIN"           ,100,0,500);
@@ -333,17 +332,19 @@ void run()
          jesCorrections jesCorrector_puppi = jesCorrections(cfg.getJESPath(runEra,true).Data(),cfg.jes_UNC_mc_puppi_regrouped,currentSystematic,cfg.year);
          jerCorrections jerCorrector = jerCorrections(isData? cfg.jer_SF_data.Data() : cfg.jer_SF_mc.Data(),isData? cfg.jer_RES_data.Data() : cfg.jer_RES_mc.Data(),currentSystematic);
          
-         // Configure pileupID application
-         bool applyPileupID = (currentSystematic.type() == Systematic::jetPileupIDapplied);
+         // Configure pileupID application (applied in nominal selection)
+         // ~bool applyPileupID = (currentSystematic.type() == Systematic::jetPileupIDapplied);
+         bool applyPileupID = true;
          JetPileupIDWeights jetPileupIDWeighter = JetPileupIDWeights(cfg.jetPileupID_file.Data(),cfg.jetPileupID_sfHist.Data(),cfg.jetPileupID_effHist.Data(),currentSystematic);
          if(applyPileupID) std::cout<<"!!!!!!!!!!!!!!!JetPileupID is applied!!!!!!!!!!!!!!!!!!!"<<std::endl;
          
-         //Configure jet veto maps
-         bool applyJetVetoMaps = (currentSystematic.type() == Systematic::applyJetVetoMaps);
+         //Configure jet veto maps (applied for UL18 only using HEM1516 region)
+         // ~bool applyJetVetoMaps = (currentSystematic.type() == Systematic::applyJetVetoMaps || currentSystematic.type() == Systematic::applyJetVetoMaps_loose || currentSystematic.type() == Systematic::applyJetVetoMaps_HEM1516);
          bool applyJetVetoMaps_leading = (currentSystematic.type() == Systematic::applyJetVetoMaps_leading);
          bool applyJetVetoMaps_subleading = (currentSystematic.type() == Systematic::applyJetVetoMaps_subleading);
          bool applyJetVetoMaps_cleanedJets = (currentSystematic.type() == Systematic::applyJetVetoMaps_cleanedJets);
-         JetVetoMaps jetVetoMaps = JetVetoMaps(cfg.jetVetoMap_file.Data(),cfg.jetVetoMap_vetoMapHist.Data(),cfg.jetVetoMap_vetoMapHist_MC16.is_initialized()? cfg.jetVetoMap_vetoMapHist_MC16.get() : "",currentSystematic);
+         bool applyJetVetoMaps = (year_int==3);    // apply for UL18 only
+         JetVetoMaps jetVetoMaps = JetVetoMaps(cfg.jetVetoMap_file.Data(),(currentSystematic.type() == Systematic::applyJetVetoMaps_loose)? cfg.jetVetoMap_vetoMapHist_loose.Data():cfg.jetVetoMap_vetoMapHist.Data(),cfg.jetVetoMap_vetoMapHist_MC16.is_initialized()? cfg.jetVetoMap_vetoMapHist_MC16.get() : "",currentSystematic,year_int);
          if(applyJetVetoMaps || applyJetVetoMaps_leading || applyJetVetoMaps_subleading || applyJetVetoMaps_cleanedJets) std::cout<<"!!!!!!!!!!!!!!!JetVetoMaps are applied!!!!!!!!!!!!!!!!!!!"<<std::endl;
          
          // Configure lepton Correction
@@ -650,6 +651,9 @@ void run()
          else if (currentSystematic.type() == Systematic::useDNNmumu){
             dnnPath = "../data/DNN/Inlusive_amcatnlo_xyComponent_JetLepXY_50EP_mumuOnly__diff_xy_2018_20230112-1124genMETweighted";
          }
+         else if (currentSystematic.type() == Systematic::useDNNnoMetCutDY){
+            dnnPath = "../data/DNN/Inlusive_noMetCut_amcatnlo_DrellYan_xyComponent_JetLepXY_50EP__diff_xy_2018_20230113-1059genMETweighted";
+         }
          DNNregression dnnRegression(dnnPath.Data());
          std::vector<float> input_vec(17);
          std::vector<float> output_vec(2);
@@ -877,20 +881,14 @@ void run()
                hs_cutflow.fillweight("cutflow/"+cat,2,cutFlow_weight);
                if(ttbarSelection[1]){
                   hs_cutflow.fillweight("cutflow/"+cat,3,cutFlow_weight);
-                  if(ttbarSelection[2]){
-                     hs_cutflow.fillweight("cutflow/"+cat,4,cutFlow_weight);
-                  }
                }
             }
             
-            //Check booleans from ttBar selection (Apply relaxed selection with only two lepton or met cut removed)
-            if(currentSystematic.type()!=Systematic::removeMLLcut && currentSystematic.type()!=Systematic::removeMetCut){
-               if(!std::all_of(ttbarSelection.begin(), ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
-            }
-            else if(currentSystematic.type()==Systematic::removeMLLcut){
+            //Check booleans from ttBar selection (Apply relaxed selection with only two lepton) 
+            if(currentSystematic.type()==Systematic::removeMLLcut){
                if(!std::all_of(ttbarSelection.begin()+1, ttbarSelection.end(), [](bool v) { return v; })) rec_selection=false;
             }
-            else{ // no MET cut
+            else{ // no MET cut on Puppi because MET cut is performed for DNN MET further below
                if(!ttbarSelection[0] || !ttbarSelection[1] || !ttbarSelection[3]) rec_selection=false;
             }
             
@@ -942,13 +940,8 @@ void run()
                hs_cutflow.setFillWeight(1);
             }
             if(rec_selection){
-               hs_cutflow.fillweight("cutflow/"+cat,5,(isData)? cutFlow_weight : cutFlow_weight * bTagWeight * jetPileupIDWeight);
-               if(isData) hs_cutflow.fillweight("cutflow/"+cat,6,1);
-               else hs_cutflow.fillweight("cutflow/"+cat,6,*w_pu * mcWeight * leptonSFweight * *w_prefiring * bTagWeight * jetPileupIDWeight * *w_topPT *triggerSF);
-            }
-            if(rec_selection && !*addLepton){
-               if(isData) hs_cutflow.fillweight("cutflow/"+cat,7,1);
-               else hs_cutflow.fillweight("cutflow/"+cat,7,*w_pu * mcWeight * leptonSFweight * *w_prefiring * bTagWeight * jetPileupIDWeight * *w_topPT *triggerSF);
+               if(isData) hs_cutflow.fillweight("cutflow/"+cat,4,1);
+               else hs_cutflow.fillweight("cutflow/"+cat,4,*w_pu * mcWeight * leptonSFweight * *w_prefiring * bTagWeight * jetPileupIDWeight * *w_topPT *triggerSF);
             }
             
             //Fill syst. weights to minimal tree if nominal
@@ -1380,10 +1373,18 @@ void run()
                }
             }
             
+            //apply MET cut for SF channels based on DNN MET (not applied if syst removeMetCut, which is used for DNN training)
+            if (currentSystematic.type()!=Systematic::removeMetCut){
+               if ((channel[0] || channel[1]) && DNN_MET_pT<40) rec_selection=false;
+            }
+            
             //fill event in minimal tree
             ttbar_res.Fill();
             
             if(rec_selection==false) continue;  //fill the following histograms only with events selected by the reco baseline selection
+            
+            if(isData) hs_cutflow.fillweight("cutflow/"+cat,5,1);
+            else hs_cutflow.fillweight("cutflow/"+cat,5,*w_pu * mcWeight * leptonSFweight * *w_prefiring * bTagWeight * jetPileupIDWeight * *w_topPT *triggerSF);
             
             
             // Bjet and angular variables

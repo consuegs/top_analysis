@@ -158,9 +158,9 @@ void run()
    // ~std::vector<TString> systVec = {"XSEC_ST_UP"};
    // ~std::vector<TString> systVec = {"TWDS"};
    // ~std::vector<TString> systVec = {"Nominal","TWDS"};
-   // ~std::vector<TString> systVec = {"Nominal"};
+   std::vector<TString> systVec = {"Nominal"};
    // ~std::vector<TString> systVec = {"applyGenLevel_DeltaRcut"};
-   std::vector<TString> systVec = {"applyJetVetoMaps"};
+   // ~std::vector<TString> systVec = {"applyJetVetoMaps"};
    
    //Remove HEM unc. for all year except 2018
    auto itr =std::find(systVec.begin(), systVec.end(), "JESUserDefinedHEM1516_DOWN");
@@ -189,6 +189,10 @@ void run()
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_DNN"};
    // ~std::vector<TString> distributions = {"pTnunu_new_DNN"};
    // ~std::vector<TString> distributions = {"dPhi_DNN"};
+   // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur_DNN"};
+   // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_mergedBins_DNN"};
+   // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
+   // ~std::vector<TString> distributions = {"pTnunu_new_DNN","2D_dPhi_pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN","2D_dPhi_pTnunu_new_mergedBins_DNN","2D_dPhi_pTnunu_new_30StabPur2PhiBins16_DNN","2D_dPhi_pTnunu_new_30StabPur2PhiBins14_DNN"};
    // ~std::vector<TString> distributions = {"pTnunu_new_DNN","pTnunu_DNN","2D_dPhi_pTnunu_new_DNN","2D_dPhi_pTnunu_new40_DNN"};
    std::vector<TString> distributions = {"pTnunu_new_DNN","2D_dPhi_pTnunu_new_DNN","dPhi_new_DNN","inclusive"};
    
@@ -240,8 +244,8 @@ void run()
          bool withScaleFactor = cfg.tunfold_withScaleFactor;
          
          //Use alternative pseudo data (amcAtNLO)
-         // ~bool useAltReco = true;
-         bool useAltReco = false;
+         bool useAltReco = true;
+         // ~bool useAltReco = false;
          
          // perform toys studies?
          bool toy_studies = cfg.tunfold_plotToyStudies;
