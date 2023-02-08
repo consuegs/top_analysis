@@ -1378,7 +1378,81 @@ void run()
                if ((channel[0] || channel[1]) && DNN_MET_pT<40) rec_selection=false;
             }
             
-            //fill event in minimal tree
+            //fill event in minimal tree and set reco values to non physical values if rec selection is not fulfilled
+            if(rec_selection==false && pseudo_selection==false) continue; //fill minTrees only with reco or gen selected events
+            if(!rec_selection){
+               minTree_MET=-1.;
+               minTree_PhiRec=-1.;
+               minTree_PhiMetNearJet=-1.;
+               minTree_PhiMetFarJet=-1.;
+               minTree_PhiMetLeadJet=-1.;
+               minTree_PhiMetLead2Jet=-1.;
+               minTree_PhiMetbJet=-1.;
+               minTree_PhiMetbJet=-1.;
+               minTree_METsig=-1.;
+               minTree_PuppiMet=-1.;
+               minTree_PuppiMet_xy=-1.;
+               minTree_Met_xy=-1.;
+               minTree_DeepMet_reso=-1.;
+               minTree_DeepMet_resp=-1.;
+               minTree_MHT=-1.;
+               minTree_HT=-1.;
+               minTree_HT_phi=-4.;
+               minTree_MT=-1.;
+               minTree_MT_nextLep=-1.;
+               minTree_SF=0.;
+               minTree_totalWeight=minTree_N;
+               minTree_PhiPtnunuMet=-1;
+               minTree_PhiRecPuppi=-1;
+               minTree_PhiRecPuppi_xy=-1;
+               minTree_PhiRec_xy=-1;
+               minTree_n_Interactions=0;
+               minTree_looseLeptonVeto=5;
+               minTree_nJets=-1;
+               minTree_ratioMET_sqrtMETunc_Puppi=-20;
+               minTree_ratio_pTj1_vecsum_pT_l1_l2_bjet=-1;
+               minTree_METunc_PF=-1;
+               minTree_METunc_Puppi=-1;
+               minTree_absmetres_PUPPI=-1;
+               minTree_Lep1_pt=-1;
+               minTree_Lep1_phi=-5;
+               minTree_Lep1_eta=-3;
+               minTree_Lep1_E=-1;
+               minTree_Lep1_flavor=-1;
+               minTree_Lep2_pt=-1;
+               minTree_Lep2_phi=-5;
+               minTree_Lep2_eta=-3;
+               minTree_Lep2_E=-1;
+               minTree_Lep2_flavor=-1;
+               minTree_Jet1_pt=-1;
+               minTree_Jet1_phi=-5;
+               minTree_Jet1_eta=-3;
+               minTree_Jet1_E=-1;
+               minTree_Jet1_bTagScore=-5;
+               minTree_Jet1_unc=-1;
+               minTree_Jet2_pt=-1;
+               minTree_Jet2_phi=-5;
+               minTree_Jet2_eta=-3;
+               minTree_Jet2_E=-1;
+               minTree_Jet2_unc=-1;
+               minTree_CaloMET=-1;
+               minTree_CaloMET_phi=-5;
+               minTree_PFMETxy=-1;
+               minTree_PFMETxy_phi=-5;
+               minTree_PuppiMET_phi=-5;
+               minTree_PuppiMET_xy_phi=-5;
+               minTree_MET_xy_phi=-5;
+               minTree_PFMET_phi=-5;
+               minTree_DeepMet_reso_phi=-5;
+               minTree_DeepMet_resp_phi=-5;
+               minTree_MT2=-1;
+               minTree_vecsum_pT_allJet=-1;
+               minTree_vecsum_pT_l1l2_allJet=-1;
+               minTree_mass_l1l2_allJet=-1;
+               minTree_ratio_vecsumpTlep_vecsumpTjet=-1;
+               minTree_mjj=-1;
+               minTree_PtLL=-1;
+            }
             ttbar_res.Fill();
             
             if(rec_selection==false) continue;  //fill the following histograms only with events selected by the reco baseline selection
