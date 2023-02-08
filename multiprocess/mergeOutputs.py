@@ -201,7 +201,7 @@ def getSytNameCombine(systName):    # correct syst name for combine (needs "Up" 
     # fix naming for syst with own samples
     if systName=="Nominal" :
         return ""
-    elif systName.find("UP")>0 :
+    elif systName.find("UP")>0 and (systName.find("PILEUPID_DOWN")>0)==False:
         return "_"+systName.replace("_UP","Up")
     elif systName.find("DOWN")>0 :
         return "_"+systName.replace("_DOWN","Down")
@@ -376,7 +376,7 @@ if __name__ == "__main__":
                         mergeHist(dataset,args.logPath,histPath)
         
         
-        mergeHists_forSamples(args.logPath,histPath,datasetList,["DrellYan_M10to50","DrellYan_NLO"],"DrellYan_comb")    # merge samples for datacards
+        mergeHists_forSamples(args.logPath,histPath,datasetList,["DrellYan_M10to50_NLO","DrellYan_NLO"],"DrellYan_comb")    # merge samples for datacards
         mergeHists_forSamples(args.logPath,histPath,datasetList,["TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"],"TTbar_other")
         mergeHists_forSamples(args.logPath,histPath,datasetList,["WJetsToLNu","WW","WZ","ZZ","ttZ_QQ","ttZ_2L","ttW"],"otherBKG")
         mergeHists_forSamples(args.logPath,histPath,datasetList,["DoubleMuon","EGamma","MuonEG","SingleMuon"],"data_obs") # 2018

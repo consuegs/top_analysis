@@ -11,7 +11,8 @@ echo $HOSTNAME
 
 #get CMSSW from dCache and setup environment
 echo $(date)
-dccp dcap://grid-dcap.physik.rwth-aachen.de"$7"/gridJobInputs/CMSSW_10_5_0.tgz ./
+# ~dccp dcap://grid-dcap.physik.rwth-aachen.de"$7"/gridJobInputs/CMSSW_10_5_0.tgz ./
+dccp dcap://grid-dcap-extern.physik.rwth-aachen.de"$7"/gridJobInputs/CMSSW_10_5_0.tgz ./
 tar -xf CMSSW_10_5_0.tgz
 cd CMSSW_10_5_0/src/
 scramv1 b ProjectRename
@@ -21,7 +22,8 @@ cd $sourceDir
 
 #get FW from dCache and compile
 echo $(date)
-dccp dcap://grid-dcap.physik.rwth-aachen.de"$7"/gridJobInputs/FW.tgz ./
+# ~dccp dcap://grid-dcap.physik.rwth-aachen.de"$7"/gridJobInputs/FW.tgz ./
+dccp dcap://grid-dcap-extern.physik.rwth-aachen.de"$7"/gridJobInputs/FW.tgz ./
 tar -xf FW.tgz
 mkdir build
 cd build
@@ -45,10 +47,16 @@ else
    mkdir ../100.0
    cd "../100.0"
    eval `scram unsetenv -sh`;
-   gfal-copy -r -t 7200 dcap://grid-dcap-extern.physik.rwth-aachen.de"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
+   gfal-copy -r davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/dmeuser/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
+   # ~gfal-copy -r dcap://grid-dcap-extern.physik.rwth-aachen.de"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
+   # ~gfal-copy -r -t 7200 dcap://grid-dcap-extern.physik.rwth-aachen.de"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
+   # ~gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal   #not working
    if [[ $syst != "Nominal" ]]
    then
-      gfal-copy -r -t 7200 dcap://grid-dcap-extern.physik.rwth-aachen.de"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
+      gfal-copy -r davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/dmeuser/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
+      # ~gfal-copy -r dcap://grid-dcap-extern.physik.rwth-aachen.de"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
+      # ~gfal-copy -r -t 7200 dcap://grid-dcap-extern.physik.rwth-aachen.de"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
+      # ~gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst    # not working
    fi
    cd ../CMSSW_10_5_0/src/
    eval `scramv1 runtime -sh`

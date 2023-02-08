@@ -23,7 +23,8 @@ def getInfos():
     return [ dict([line.replace("\"","").split(" = ") for line in jobStrings.split("\n") if (" = " in line and "TransferOutputRemaps" not in line)]) for jobStrings in out.split("\n\n") if jobStrings ]
 
 def getSummary():
-    out = subprocess.check_output(["condor_q", "-constraint","JobUniverse==9"])
+    #  ~out = subprocess.check_output(["condor_q", "-constraint","JobUniverse==9"])
+    out = subprocess.check_output(["condor_q"])
     #  ~return out.split("\n")[-3]
     return out.split("\n")[-5]
 
@@ -66,7 +67,7 @@ def getCopyTimeFromError(outName):
 def checkErrorFile(outName):
     with open(outName,"r") as f:
         for line in f:
-            if line.find("ERROR (70)")>=0:
+            if line.find("ERROR (70)")>=0 or line.find("ERROR (110)")>=0:
                 return False
     logName = outName.replace(".out",".error")
     if logName.find("TUnfold")>=0:
