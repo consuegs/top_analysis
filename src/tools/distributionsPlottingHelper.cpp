@@ -72,9 +72,7 @@ void systHists::combineChannel(){
 void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TString> &mcSamples, std::vector<TString> &dataSamples, std::vector<TString> &ttbarSamples, std::vector<TString> &signalSamples, std::vector<TString> &stSamples, std::vector<TString> &bsmSamples){
    switch(year_int){
       case(3): //2018
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
-      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
-      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","EGamma","MuonEG","SingleMuon"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
@@ -82,9 +80,7 @@ void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TS
       bsmSamples = {"T2tt_525_438","T2tt_525_350"};
       break;
       case(2): //2017
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
-      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
-      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
@@ -92,8 +88,7 @@ void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TS
       break;
       case(1): //2016_postVFP 
       case(0): //2016_preVFP
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
-      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
@@ -182,9 +177,7 @@ void distributionsplotting::add_Categories(TString const path, io::RootFileReade
 //Function to combine samples to combined backgrounds
 void distributionsplotting::combineAllSamples(int const &year_int, hist::Histograms<TH1F>* hs, std::vector<TString> &mcSamples_merged){
    hs->combineSamples("Diboson",{"WW","WZ","ZZ"});
-   hs->combineSamples("DrellYan_comb",{"DrellYan_NLO","DrellYan_M10to50"});
-   // ~hs->combineSamples("DrellYan_comb",{"DrellYan","DrellYan_M10to50"});
-   // ~hs->combineSamples("DrellYan_comb",{"DrellYan_NLO","DrellYan_M10to50_NLO"});
+   hs->combineSamples("DrellYan_comb",{"DrellYan_NLO","DrellYan_M10to50_NLO"});
    hs->combineSamples("ttZ",{"ttZ_2L","ttZ_QQ"});
    hs->combineSamples("ttW/Z",{"ttW","ttZ"});
    hs->combineSamples("tt other",{"TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"});
@@ -501,7 +494,7 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    if (is2D) st_mc.SetMaximum(5e3*st_mc.GetMaximum());
    else st_mc.SetMaximum(1e3*st_mc.GetMaximum());
    st_mc.Draw();     // draw stack
-   if(sPresel.Contains("cutflow")) st_mc.GetXaxis()->SetRangeUser(0.5,6.5);
+   if(sPresel.Contains("cutflow")) st_mc.GetXaxis()->SetRangeUser(0.5,5.5);
    if(is2D) {     //needed because title is missing
       st_mc.SetTitle(";;Events/Bin;");
       st_mc.GetYaxis()->SetTitleOffset(0.75);
@@ -638,7 +631,7 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       ratio_mc.GetXaxis()->SetBinLabel(4,"btag");
       ratio_mc.GetXaxis()->SetBinLabel(5,"DNN MET");
       // ~ratio_mc.GetXaxis()->SetBinLabel(7,"(addLepton veto)");
-      ratio_mc.GetXaxis()->SetRangeUser(0.5,6.5);
+      ratio_mc.GetXaxis()->SetRangeUser(0.5,5.5);
       ratio_mc.GetXaxis()->SetLabelOffset(0.03);
    }
    
