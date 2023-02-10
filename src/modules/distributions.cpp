@@ -488,8 +488,9 @@ void run()
          if (dss.name.find("Run2017A")!=std::string::npos) Run2017AB=true;
          else if (dss.name.find("Run2017B")!=std::string::npos) Run2017AB=true;
          
-         //Check if gen level deltaR cut should be applied
-         bool applyDeltaRgen = (currentSystematic.type() == Systematic::applyGenLevel_DeltaRcut);
+         //Check if gen level deltaR cut should be applied (should be always applied in nominal)
+         // ~bool applyDeltaRgen = (currentSystematic.type() == Systematic::applyGenLevel_DeltaRcut);
+         bool applyDeltaRgen = true;
          
          //variables used for storing in minimal trees
          float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
