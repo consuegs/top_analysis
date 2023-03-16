@@ -79,6 +79,8 @@ def checkErrorFile(outName):
                 return False
             if line.find("SysError")>=0:
                 return False
+            if line.find("timed out")>=0:
+                return False
     return size < 1
     
     

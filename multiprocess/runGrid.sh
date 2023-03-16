@@ -47,13 +47,13 @@ else
    mkdir ../100.0
    cd "../100.0"
    eval `scram unsetenv -sh`;
-   gfal-copy -r davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/dmeuser/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
+   gfal-copy -r -t 3600 davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/dmeuser/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
    # ~gfal-copy -r dcap://grid-dcap-extern.physik.rwth-aachen.de"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
    # ~gfal-copy -r -t 7200 dcap://grid-dcap-extern.physik.rwth-aachen.de"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
    # ~gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal   #not working
    if [[ $syst != "Nominal" ]]
    then
-      gfal-copy -r davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/dmeuser/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
+      gfal-copy -r -t 3600 davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/dmeuser/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
       # ~gfal-copy -r dcap://grid-dcap-extern.physik.rwth-aachen.de"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
       # ~gfal-copy -r -t 7200 dcap://grid-dcap-extern.physik.rwth-aachen.de"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
       # ~gfal-copy -r srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN="${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst    # not working
