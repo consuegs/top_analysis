@@ -18,8 +18,8 @@ Config const &cfg=Config::get();
 extern "C"
 void run()
 {
-   // ~TString sampleName = "TTbar_diLepton";
-   TString sampleName = "T2tt_525_350";
+   TString sampleName = "TTbar_diLepton";
+   // ~TString sampleName = "T2tt_525_350";
    
    io::RootFileSaver saver(TString::Format("minTree_analyze/plots%.1f.root",cfg.processFraction*100),"plot_metStudies/"+sampleName);
    
@@ -155,6 +155,22 @@ void run()
       TLegend leg=le.buildLegend(.6,.7,1-1.5*gPad->GetRightMargin(),-1,1);
       leg.Draw();
       saver.save(can,"pfVSpuppi/baseline_vs_MET120/GenMetDiffMETRel_dPhiMETLep",true,true,true);
+      
+      //Plot only Puppi and invert plot
+      // ~gPad->SetLeftMargin(0.15);
+      // ~TTbar_profile_Puppi.GetYaxis()->SetTitle("mean[(p_{T}^{miss}-genMET)/genMET]");
+      // ~TTbar_profile_Puppi.GetYaxis()->SetTitleOffset(1.2);
+      // ~TTbar_profile_Puppi.Scale(-1);
+      // ~TTbar_profile_full_Puppi.Scale(-1);
+      // ~TTbar_profile_Puppi.Draw("e1");
+      // ~TTbar_profile_full_Puppi.Draw("same e1");
+      
+      // ~gfx::LegendEntries le;
+      // ~le.append(TTbar_profile_full_Puppi,"All events","pl");
+      // ~le.append(TTbar_profile_Puppi,"p_{T}^{miss}> 120 GeV","pl");
+      // ~TLegend leg=le.buildLegend(.15,.7,0.5,-1,1);
+      // ~leg.Draw();
+      // ~saver.save(can,"pfVSpuppi/baseline_vs_MET120/GenMetDiffMETRel_dPhiMETLep",true,true,true);
    }
    
    //Plotting genMet as a function of dPhi (met120)
