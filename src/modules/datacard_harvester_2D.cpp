@@ -51,7 +51,7 @@ void run(){
     // ~string histLoc = "/net/data_cms1b/user/dmeuser/top_analysis/" + string("2018") + "/v06/output_framework/multiHists/";
     string histLoc = "";
     if (year=="2016_preVFP" or year=="2016_postVFP"){
-        histLoc+="/net/data_cms1b/user/teroerde/top_analysis/" + year + "/"+string(cfg.treeVersion.Data())+"/output_framework/multiHists/combine_new/";
+        histLoc+="/net/data_cms1b/user/dmeuser/top_analysis/" + year + "/"+string(cfg.treeVersion.Data())+"/output_framework/multiHists/combine/";
     } else{
         histLoc+="/net/data_cms1b/user/dmeuser/top_analysis/" + year + "/"+string(cfg.treeVersion.Data())+"/output_framework/multiHists/combine/";
     }
@@ -136,17 +136,9 @@ void run(){
             cb.cp().process({"otherBKG"}).AddSyst(cb, "other_xsec", "lnN", SystMap<>::init(1+cfg.systUncFactor.at("XSEC_OTHER").first));
             
             // Uncertainties, that are applied to all processes:              
-            vector<string> shapeUncAllMC; 
-            // ~if (year=="2018"){  // Uncertainties not split into corr and uncorr
-                // ~shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE", "JESUserDefinedHEM1516"};  
-            // ~} else{
-                // ~shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE",};  
-            // ~}
-        if (year=="2018"){
-            shapeUncAllMC = {"BTAGBC_CORR", "BTAGBC_UNCORR", "BTAGL_CORR", "BTAGL_UNCORR", "JEREta0", "JEREta1", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE", "JESUserDefinedHEM1516"};  
-        } else{
-            shapeUncAllMC = {"BTAGBC_CORR", "BTAGBC_UNCORR", "BTAGL_CORR", "BTAGL_UNCORR", "JEREta0", "JEREta1", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE"};  
-        }
+            vector<string> shapeUncAllMC;
+            shapeUncAllMC = {"BTAGBC_CORR", "BTAGBC_UNCORR", "BTAGL_CORR", "BTAGL_UNCORR", "JEREta0", "JEREta1", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "JETPILEUPID", "PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "TOP_PT", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE"};
+            // ~shapeUncAllMC = {"BTAGBC", "BTAGL", "JER", "JESAbsolute", "JESAbsoluteYear", "JESBBEC1", "JESBBEC1Year", "JESFlavorRealistic", "JESRelativeBalreg", "JESRelativeSampleYear", "JETPILEUPID","PDF_ALPHAS", "PSFSRSCALE", "PSISRSCALE", "PU", "L1PREFIRING", "MESCALE", "MEFACSCALE", "MERENSCALE"};  
             for (auto systNameAll : shapeUncAllMC) {
                 cb.cp().process(ch::JoinStr({sig_procs, bkg_procs})).AddSyst(cb, systNameAll, "shape", SystMap<>::init(1.00));
             }
@@ -166,15 +158,9 @@ void run(){
                 cb.cp().bin({bin_name}).AddSyst(cb, "TRIG_$BIN", "shape", SystMap<>::init(1.00));
             }
             
-            // Uncertainties, that are not applied to DY processes:
-            // ~vector<string> shapeUncNoDY = {"MEFACSCALE", "MERENSCALE", "MESCALE"};
-            // ~for (auto systNameTTbar : shapeUncNoDY) {
-                // ~cb.cp().process({"TTbar_diLepton", "TTbar_other", "SingleTop", "otherBKG"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
-            // ~}
-            
             // Uncertainties, that are applied only to ttbar processes:
             // ~vector<string> shapeUncTTbarOnly = {"BFRAG", "BSEMILEP", "CR1", "CR2", "ERDON", "MTOP", "MATCH", "UETUNE"};
-            vector<string> shapeUncTTbarOnly = {"BSEMILEP", "CR1", "CR2", "ERDON", "MTOP", "MATCH", "UETUNE"};
+            vector<string> shapeUncTTbarOnly = {"BSEMILEP", "CR1", "CR2", "ERDON", "MTOP", "MATCH", "TOP_PT", "UETUNE"};
             
             for (auto systNameTTbar : shapeUncTTbarOnly) {
                 cb.cp().process({"TTbar_diLepton", "TTbar_other"}).AddSyst(cb, systNameTTbar, "shape", SystMap<>::init(1.00));
