@@ -168,6 +168,10 @@ int Config::getTotalFileNR(std::string const sample) const{
    return tempVec.size();
 }
 
+bool Config::isData(std::string const sample) const{
+   return !pt.get_optional<std::string>(sample+".xsecs");
+}
+
 // static
 Color& Color::instance_(){
    static Color instance;

@@ -131,6 +131,8 @@ public:
    void setLumi(const float newLumi);
    
    int getTotalFileNR(std::string const) const;
+   
+   bool isData(std::string const) const;
 
    Config(std::string config_year="");
 };
