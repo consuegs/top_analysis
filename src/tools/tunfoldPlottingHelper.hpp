@@ -16,6 +16,7 @@
 #include <TProfile.h>
 #include <TVectorD.h>
 #include <TParameter.h>
+#include <THashList.h>
 
 #include "tools/hist.hpp"
 #include "tools/io.hpp"
@@ -35,7 +36,7 @@ namespace tunfoldplotting
    
    std::pair<float,int> getChi2NDF(TH1F* hist_res, TH1F* hist_true);
    std::pair<float,int> getChi2NDF_withCorr(TH1F* hist_res, TH1F* hist_true, TH2F* corr_res);
-   TH2F* get_response(TH2F* responseHist,bool columnNormalized = false);
+   TH2F* get_response(TH2F* responseHist,bool columnNormalized = false,bool includeUnderflow = false);
    void plot_response(TH2F* responseHist, TString name, io::RootFileSaver* saver, const bool is2D);
    void plot_correlation(TH2F* corrMatrix, TString name, io::RootFileSaver* saver);
    void plot_systBreakdown(std::map<TString,TH1F> const &indShifts, io::RootFileSaver* saver, TString const &name, TString const &method, TString var,

@@ -635,6 +635,7 @@ TString Systematic::getPrintName(const TString& type)
     else if(type == "MATCH") return "ME-PS matching";
     else if(type == "MESCALE_ENVELOPE") return "ME scale";
     else if(type == "MTOP") return "Top mass";
+    else if(type == "JETPILEUPID") return "Jet pileup ID";
     else if(type == "PDF_ALPHAS") return "PDF #alpha_{s}";
     else if(type == "PDF_ENVELOPE") return "PDF replica";
     else if(type == "PS") return "Parton shower";
@@ -644,6 +645,9 @@ TString Systematic::getPrintName(const TString& type)
     else if(type == "UETUNE") return "Underlying event";
     else if(type == "UNCLUSTERED") return "Unclustered energy";
     else if(type == "XSEC BKG") return "Background cross sections";
+    else if(type == "JET") return "Jet related";
+    else if(type == "OTHER EXP") return "Other exp. unc.";
+    else if(type == "OTHER THEO") return "Other theo. unc.";
     else return type;       // return argument if print name not definied
 }
 

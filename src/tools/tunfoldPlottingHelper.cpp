@@ -54,15 +54,16 @@ std::pair<float,int> tunfoldplotting::getChi2NDF_withCorr(TH1F* hist_res, TH1F* 
    }
 }
 
-TH2F* tunfoldplotting::get_response(TH2F* responseHist,bool columnNormalized) {
+TH2F* tunfoldplotting::get_response(TH2F* responseHist,bool columnNormalized, bool includeUnderflow) {
    TH2F* tempHist;
    float sum=0;
+   int startBin = (includeUnderflow)? 0 : 1;
    if (columnNormalized){ //Normalize each individual column of diagram
       tempHist=(TH2F*)responseHist->Clone();
-      for (int x=1; x<=tempHist->GetNbinsX(); x++){
-         sum=tempHist->Integral(x,x,1,tempHist->GetNbinsY());
+      for (int x=startBin; x<=tempHist->GetNbinsX(); x++){
+         sum=tempHist->Integral(x,x,startBin,tempHist->GetNbinsY());
          if (sum==0) continue;
-         for (int y=1; y<=tempHist->GetNbinsY(); y++){
+         for (int y=startBin; y<=tempHist->GetNbinsY(); y++){
             if (tempHist->GetBinContent(x,y)!=0)tempHist->SetBinContent(x,y,tempHist->GetBinContent(x,y)/sum);
             else tempHist->SetBinContent(x,y,0.000002);
          }
@@ -70,10 +71,10 @@ TH2F* tunfoldplotting::get_response(TH2F* responseHist,bool columnNormalized) {
    }
    else { //Normalize each individual line of diagram
       tempHist=(TH2F*)responseHist->Clone();
-      for (int y=1; y<=tempHist->GetNbinsY(); y++){
-         sum=tempHist->Integral(1,tempHist->GetNbinsX(),y,y);
+      for (int y=startBin; y<=tempHist->GetNbinsY(); y++){
+         sum=tempHist->Integral(startBin,tempHist->GetNbinsX(),y,y);
          if (sum==0) continue;
-         for (int x=1; x<=tempHist->GetNbinsY(); x++){
+         for (int x=startBin; x<=tempHist->GetNbinsY(); x++){
             if (tempHist->GetBinContent(x,y)!=0)tempHist->SetBinContent(x,y,tempHist->GetBinContent(x,y)/sum);
             else tempHist->SetBinContent(x,y,0.000002);
          }
@@ -85,66 +86,75 @@ TH2F* tunfoldplotting::get_response(TH2F* responseHist,bool columnNormalized) {
 void tunfoldplotting::plot_response(TH2F* responseHist, TString name, io::RootFileSaver* saver, const bool is2D) {
    
    for (TString norm :{"","column"}){
+      for (TString sUnderFlow : {"","includeUnderflow"}){
       
-      TH2F* tempHist = get_response(responseHist, norm == "column");
-            
-      TCanvas can;
-      can.cd();
-      
-      if(is2D){
-         can.Size(1200,600);
-         gPad->SetRightMargin(0.13);
-         gPad->SetLeftMargin(0.08);
-         gPad->SetBottomMargin(0.15);
-         tempHist->GetYaxis()->SetTitleOffset(0.5);
-         tempHist->GetZaxis()->SetTitleOffset(0.55);
-         tempHist->GetZaxis()->SetLabelOffset(0.0015);
-      }
-      else{
-         gPad->SetRightMargin(0.2);
-         gPad->SetLeftMargin(0.13);
-         gPad->SetBottomMargin(0.15);
-         tempHist->GetYaxis()->SetTitleOffset(0.9);
-         tempHist->GetXaxis()->SetTitleOffset(0.9);
-         tempHist->GetZaxis()->SetTitleOffset(0.8);
-         tempHist->GetZaxis()->SetLabelOffset(0.0015);
-      }
-      
-      tempHist->GetYaxis()->SetTitleSize(0.05);
-      tempHist->GetXaxis()->SetTitleSize(0.05);
-      tempHist->GetZaxis()->SetTitleSize(0.05);
-      tempHist->GetYaxis()->SetLabelSize(0.04);
-      tempHist->GetXaxis()->SetLabelSize(0.04);
-      tempHist->GetZaxis()->SetLabelSize(0.04);
-      
-      tempHist->SetMarkerColor(kRed);
-      tempHist->SetMarkerSize(1.5);
-      tempHist->SetTitle("");
-      tempHist->GetZaxis()->SetTitle((norm=="column")?"column normalized distribution":"line normalized distribution");
-      tempHist->SetMinimum(0.000001);
-      tempHist->SetMaximum(1.);
-      
-      tempHist->SetStats(false);
-      tempHist->Draw("colz text");
-      
-      tempHist->GetYaxis()->SetTitle("reco binNumber");
-      tempHist->GetXaxis()->SetTitle("gen binNumber");
-
-      
-      if (is2D){
-         TLine line;
-         line.SetLineColor(kGreen);
-         line.SetLineWidth(2);
-         line.SetLineStyle(2);
-         line.DrawLine(7.5,0.5,7.5,21.5);
-         line.DrawLine(14.5,0.5,14.5,21.5);
+         TH2F* tempHist = get_response(responseHist, norm == "column", sUnderFlow == "includeUnderflow");
+               
+         TCanvas can;
+         can.cd();
          
-         line.DrawLine(0.5,7.5,21.5,7.5);
-         line.DrawLine(0.5,14.5,21.5,14.5);
+         if(is2D){
+            can.Size(1200,600);
+            gPad->SetRightMargin(0.13);
+            gPad->SetLeftMargin(0.09);
+            gPad->SetBottomMargin(0.15);
+            tempHist->GetYaxis()->SetTitleOffset(0.5);
+            tempHist->GetZaxis()->SetTitleOffset(0.55);
+            tempHist->GetZaxis()->SetLabelOffset(0.0015);
+         }
+         else{
+            gPad->SetRightMargin(0.2);
+            gPad->SetLeftMargin(0.14);
+            gPad->SetBottomMargin(0.15);
+            tempHist->GetYaxis()->SetTitleOffset(0.9);
+            tempHist->GetXaxis()->SetTitleOffset(0.9);
+            tempHist->GetZaxis()->SetTitleOffset(0.8);
+            tempHist->GetZaxis()->SetLabelOffset(0.0015);
+         }
+         
+         tempHist->GetYaxis()->SetTitleSize(0.05);
+         tempHist->GetXaxis()->SetTitleSize(0.05);
+         tempHist->GetZaxis()->SetTitleSize(0.05);
+         tempHist->GetYaxis()->SetLabelSize(0.04);
+         tempHist->GetXaxis()->SetLabelSize(0.04);
+         tempHist->GetZaxis()->SetLabelSize(0.04);
+         
+         tempHist->SetMarkerColor(kRed);
+         tempHist->SetMarkerSize(1.5);
+         tempHist->SetTitle("");
+         tempHist->GetZaxis()->SetTitle((norm=="column")?"column normalized distribution":"line normalized distribution");
+         tempHist->SetMinimum(0.000001);
+         tempHist->SetMaximum(1.);
+         
+         if (sUnderFlow=="includeUnderflow") {
+            tempHist->GetYaxis()->SetRangeUser(-1, tempHist->GetNbinsY());
+            tempHist->GetYaxis()->ChangeLabel(1,-1,-1,-1,-1,-1,"NonReco");
+            
+            // ~std::cout<<(TObjString)*tempHist->GetYaxis()->GetLabels()->At(0)<<std::endl;
+         } 
+         
+         tempHist->SetStats(false);
+         tempHist->Draw("colz text");
+         
+         tempHist->GetYaxis()->SetTitle("reco binNumber");
+         tempHist->GetXaxis()->SetTitle("gen binNumber");
+
+         
+         if (is2D){
+            TLine line;
+            line.SetLineColor(kGreen);
+            line.SetLineWidth(2);
+            line.SetLineStyle(2);
+            line.DrawLine(4.5,0.5,4.5,12.5);
+            line.DrawLine(8.5,0.5,8.5,12.5);
+            
+            line.DrawLine(0.5,4.5,12.5,4.5);
+            line.DrawLine(0.5,8.5,12.5,8.5);
+         }
+         
+         can.RedrawAxis();
+         saver->save(can,"response"+norm+sUnderFlow+"/"+name,true,true,true);
       }
-      
-      can.RedrawAxis();
-      saver->save(can,"response"+norm+"/"+name,true,true,true);
    }
 }
 
@@ -403,15 +413,14 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
    }
    
    if (is2D){
-      // ~totalShift.first.GetYaxis()->SetRangeUser(-55,55);
-      totalShift.first.GetYaxis()->SetRangeUser(-75,75);
+      totalShift.first.GetYaxis()->SetRangeUser(-30,30);
    }
    else if(saver->getInternalPath().Contains("dPhi")){
       totalShift.first.GetYaxis()->SetRangeUser(-10,10);
    }
    else {
-      // ~totalShift.first.GetYaxis()->SetRangeUser(-30,30);
-      totalShift.first.GetYaxis()->SetRangeUser(-50,50);
+      totalShift.first.GetYaxis()->SetRangeUser(-30,30);
+      // ~totalShift.first.GetYaxis()->SetRangeUser(-50,50);
    }
    
    int currentColor = 2;
@@ -442,7 +451,8 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
       legE.append(*envelopes.first,Systematic::getPrintName(shift.first),"l");
       
       currentColor++;
-      if (currentColor > 9) {
+      if (currentColor == 5) currentColor++;    //avoid yellow
+      if (currentColor > (shiftsMap.size()/2)+1) {
          currentColor = 2;
          currentLineStyle += 1;
       }
@@ -889,10 +899,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       hist::divideByBinWidth(*unfolded);
       hist::divideByBinWidth(*unfolded_total.first);
       hist::divideByBinWidth(*unfolded_total.second);
-      if(dist.is2D && plotTheo){
-         hist::divideByBinWidth(fixedOrderNNLOpair.first);
-         hist::divideByBinWidth(fixedOrderNLOpair.first);
-      }
+      // ~if(dist.is2D && plotTheo){
+         // ~hist::divideByBinWidth(fixedOrderNNLOpair.first);
+         // ~hist::divideByBinWidth(fixedOrderNLOpair.first);
+      // ~}
    }
    
    // Plotting options
@@ -999,8 +1009,15 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       realDis->Draw("hist same");
       realDisAlt->Draw("hist same");
       
-      unfolded_reg_graph.Draw("pe2 same");
-      unfolded_reg_totalGraph.Draw("p same");
+      if(plotTheo){
+         fixedOrderNNLOpair.first.Draw("hist same");
+         fixedOrderNLOpair.first.Draw("hist same");
+      }
+      
+      // ~unfolded_reg_graph.Draw("pe2 same");
+      // ~unfolded_reg_totalGraph.Draw("p same");
+      unfolded_graph.Draw("pe2 same");
+      unfolded_totalGraph.Draw("p same");
    }
    
    
@@ -1048,7 +1065,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       // ~auto Chi2Pair_corr_reg = getChi2NDF_withCorr(unfolded_reg,realDis,covMatrix_reg);
       // ~legE.append(*unfolded_reg,TString::Format("Reg [#chi^{2}/NDF=%.1f/%i(%.1f/%i)]",Chi2Pair_reg.first,Chi2Pair_reg.second,Chi2Pair_corr_reg.first,Chi2Pair_corr_reg.second),"pe");
       if(tau_par>0) legE.append(unfolded_reg_totalGraph,TString::Format("Unfolded (#tau=%.5f)",tau_par),"pe");
-      else legE.append(unfolded_reg_totalGraph,"Unfolded","pe");
+      else legE.append(unfolded_totalGraph,"Unfolded","pe");
+      // ~else legE.append(unfolded_totalGraph,"Exp. data unc.","pe");
    }
    
    if(!rewStudy){
@@ -1076,48 +1094,65 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    can.pL_.SetTickx(0);
    TH1F ratio;
    TH1F ratio_alt;
+   TH1F ratio_data;
+   TH1F ratio_alt_data;
    TH1F ratio_NNLO;
    TH1F ratio_NLO;
+   TH1F ratio_NNLO_data;
+   TH1F ratio_NLO_data;
    TH1F ratio_unfolded;
+   TH1F ratio_unfolded_data;
    TH1F ratio_unfolded_reg;
    TH1F ratio_unfolded_bbb;
    
    // derive ratios
-   ratio=hist::getRatio(*realDis,*realDis,"ratio",hist::NOERR);   //Get Ratio between unfolded and true hists
-   ratio_alt=hist::getRatio(*realDisAlt,*realDis,"ratio",hist::NOERR);
+   ratio=hist::getRatio(*realDis,*realDis,"Result/POWHEG",hist::NOERR);   //Get Ratio between unfolded and true hists
+   ratio_data=hist::getRatio(*realDis,*unfolded,"Pred./Data",hist::NOERR);   
+   ratio_alt=hist::getRatio(*realDisAlt,*realDis,"Result/POWHEG",hist::NOERR);
+   ratio_alt_data=hist::getRatio(*realDisAlt,*unfolded,"Pred./Data",hist::NOERR);
    if(plotTheo){
-      ratio_NNLO=hist::getRatio(fixedOrderNNLOpair.first,*realDis,"ratio",hist::ONLY1);
-      ratio_NLO=hist::getRatio(fixedOrderNLOpair.first,*realDis,"ratio",hist::ONLY1);
+      ratio_NNLO=hist::getRatio(fixedOrderNNLOpair.first,*realDis,"Result/POWHEG",hist::ONLY1);
+      ratio_NLO=hist::getRatio(fixedOrderNLOpair.first,*realDis,"Result/POWHEG",hist::ONLY1);
+      ratio_NNLO_data=hist::getRatio(fixedOrderNNLOpair.first,*unfolded,"Pred./Data",hist::ONLY1);
+      ratio_NLO_data=hist::getRatio(fixedOrderNLOpair.first,*unfolded,"Pred./Data",hist::ONLY1);
    }
-   ratio_unfolded=hist::getRatio(*unfolded,*realDis,"ratio",hist::ONLY1);
-   ratio_unfolded_reg=hist::getRatio(*unfolded_reg,*realDis,"ratio",hist::ONLY1);
-   ratio_unfolded_bbb=hist::getRatio(*unfolded_bbb,*realDis,"ratio",hist::ONLY1);
+   ratio_unfolded=hist::getRatio(*unfolded,*realDis,"Result/POWHEG",hist::ONLY1);
+   ratio_unfolded_data=hist::getRatio(*unfolded,*unfolded,"Pred./Data",hist::ONLY1);
+   ratio_unfolded_reg=hist::getRatio(*unfolded_reg,*realDis,"Result/POWHEG",hist::ONLY1);
+   ratio_unfolded_bbb=hist::getRatio(*unfolded_bbb,*realDis,"Result/POWHEG",hist::ONLY1);
       
    // derive syst. ratios
    TGraphAsymmErrors ratio_totalGraph = hist::getRatioAsymmGraph(*unfolded_total.first,*unfolded_total.second,*unfolded,*realDis);
+   TGraphAsymmErrors ratio_totalGraph_data = hist::getRatioAsymmGraph(*unfolded_total.first,*unfolded_total.second,*unfolded,*unfolded);
    TGraphAsymmErrors ratio_reg_totalGraph = hist::getRatioAsymmGraph(*unfolded_reg_total.first,*unfolded_reg_total.second,*unfolded_reg,*realDis);
    TGraphAsymmErrors ratio_bbb_totalGraph = hist::getRatioAsymmGraph(*unfolded_bbb_total.first,*unfolded_bbb_total.second,*unfolded_bbb,*realDis);
       
    // setup stat. unc. plotting
    TGraphErrors ratio_graph(&ratio_unfolded);
+   TGraphErrors ratio_graph_data(&ratio_unfolded_data);
    TGraphErrors ratio_reg_graph(&ratio_unfolded_reg);
    TGraphErrors ratio_bbb_graph(&ratio_unfolded_bbb);
    for (int i=0; i<ratio_unfolded.GetNbinsX(); i++){    //change x error for plotting
       ratio_graph.SetPointError(i,binning_met[1]/10.,ratio_unfolded.GetBinError(i+1));
+      ratio_graph_data.SetPointError(i,binning_met[1]/10.,ratio_unfolded_data.GetBinError(i+1));
       ratio_reg_graph.SetPointError(i,binning_met[1]/10.,ratio_unfolded_reg.GetBinError(i+1));
       ratio_bbb_graph.SetPointError(i,binning_met[1]/10.,ratio_unfolded_bbb.GetBinError(i+1));
    }
    
    ratio_graph.SetFillStyle(1001);
+   ratio_graph_data.SetFillStyle(1001);
    ratio_reg_graph.SetFillStyle(1001);
    ratio_bbb_graph.SetFillStyle(1001);
    ratio_graph.SetLineWidth(0);
+   ratio_graph_data.SetLineWidth(0);
    ratio_reg_graph.SetLineWidth(0);
    ratio_bbb_graph.SetLineWidth(0);
    ratio_graph.SetFillColor(kGray);
+   ratio_graph_data.SetFillColor(kGray);
    ratio_reg_graph.SetFillColor(kGreen-9);
    ratio_bbb_graph.SetFillColor(kMagenta-9);
    ratio_graph.SetMarkerSize(0.4);
+   ratio_graph_data.SetMarkerSize(0.4);
    ratio_reg_graph.SetMarkerSize(0.4);
    ratio_bbb_graph.SetMarkerSize(0.4);
       
@@ -1125,10 +1160,14 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    if(dist.is2D){
       ratio.SetMaximum(1.49);
       ratio.SetMinimum(0.51);
+      ratio_data.SetMaximum(1.49);
+      ratio_data.SetMinimum(0.51);
    }
    else {
-      ratio.SetMaximum((rewStudy)? 1.49 : 1.25);
-      ratio.SetMinimum((rewStudy)? 0.51 : 0.75);
+      ratio.SetMaximum((rewStudy)? 1.49 : 1.35);
+      ratio.SetMinimum((rewStudy)? 0.51 : 0.65);
+      ratio_data.SetMaximum((rewStudy)? 1.49 : 1.35);
+      ratio_data.SetMinimum((rewStudy)? 0.51 : 0.65);
    }
    ratio.SetLineColor(kRed-6);
    ratio.SetMarkerColor(kRed-6);
@@ -1136,13 +1175,24 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    ratio.GetXaxis()->SetTitleOffset(1.7);
    ratio.GetXaxis()->SetLabelOffset(0.015);
    ratio.GetXaxis()->SetTickLength(0.);
-   // ~if (plotComparison) ratio.Draw("hist");
-   // ~else ratio.Draw();
-   ratio.Draw("hist");
-   
-   ratio_alt.SetLineColor(kBlue-6);
-   ratio_alt.SetMarkerColor(kBlue-6);
-   ratio_alt.Draw("same");
+   ratio_data.SetLineColor(kRed-6);
+   ratio_data.SetMarkerColor(kRed-6);
+   ratio_data.GetYaxis()->SetTitleOffset(0.4);
+   ratio_data.GetXaxis()->SetTitleOffset(1.7);
+   ratio_data.GetXaxis()->SetLabelOffset(0.015);
+   ratio_data.GetXaxis()->SetTickLength(0.);
+   if (plotComparison) {
+      ratio.Draw("hist");
+      ratio_alt.SetLineColor(kBlue-6);
+      ratio_alt.SetMarkerColor(kBlue-6);
+      ratio_alt.Draw("same");
+   }
+   else {
+      ratio_data.Draw();
+      ratio_alt_data.SetLineColor(kBlue-6);
+      ratio_alt_data.SetMarkerColor(kBlue-6);
+      ratio_alt_data.Draw("same");
+   }
    
    if(plotTheo){
       ratio_NNLO.SetMarkerSize(0);
@@ -1153,9 +1203,11 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    }
    
    ratio_totalGraph.SetLineWidth(1.);
+   ratio_totalGraph_data.SetLineWidth(1.);
    ratio_reg_totalGraph.SetLineWidth(1.);
    ratio_bbb_totalGraph.SetLineWidth(1.);
    ratio_totalGraph.SetMarkerSize(0.4);
+   ratio_totalGraph_data.SetMarkerSize(0.4);
    ratio_reg_totalGraph.SetMarkerSize(0.4);
    ratio_bbb_totalGraph.SetMarkerSize(0.4);
    
@@ -1178,15 +1230,16 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       
    }
    else if(!onlyTheo){
-      ratio_reg_graph.Draw("pe2 same");
-      ratio_reg_totalGraph.Draw("p same");
+      ratio_graph_data.Draw("pe2 same");
+      ratio_totalGraph_data.Draw("p same");
       // ~ratio.Draw("axis same");
       
-      legE_ratio.append(ratio_reg_totalGraph,"#sigma_{tot.}","e");
-      legE_ratio.append(ratio_reg_graph,"#sigma_{stat.}","f");
+      legE_ratio.append(ratio_totalGraph,"#sigma_{tot.}","e");
+      legE_ratio.append(ratio_graph,"#sigma_{stat.}","f");
    }
    
-   ratio.Draw("axis same");
+   if (plotComparison) ratio.Draw("axis same");
+   else ratio_data.Draw("axis same");
    
    TLegend leg_ratio=legE_ratio.buildLegend(.16,.85,0.45,.95,2);
    leg_ratio.Draw();
