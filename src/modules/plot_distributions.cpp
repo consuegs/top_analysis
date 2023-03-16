@@ -126,10 +126,11 @@ void run()
    // 1D plots
    std::vector<distr> vecDistr;
    for(TString channel:{"ee","mumu","emu"}){
-      vecDistr.push_back({"cutflow/",channel,0.5,9.5,9});
+      vecDistr.push_back({"cutflow/",channel,0.5,5.5,5});
    }
    for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
+         /*
          // ~vecDistr.push_back({selection+channel,"Lep_e_pt",0.,600.,50});
          // ~vecDistr.push_back({selection+channel,"Lep_mu_pt",0.,600.,50});
          vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,30});
@@ -221,11 +222,10 @@ void run()
          vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,9,{0,40,68,100,140,196,260,332,410,500}});
          vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
-         vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi_xy",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
-         vecDistr.push_back({selection+channel,"dphi_metNearLep_xy",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
-         
-         // ~vecDistr.push_back({selection+channel,"mLL",0,200,25});
-         // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
+         // ~vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi_xy",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
+         // ~vecDistr.push_back({selection+channel,"dphi_metNearLep_xy",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
+         */
+         vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,9,{0,40,68,100,140,196,260,332,410,500}});
       }
    }
    
@@ -233,17 +233,8 @@ void run()
    std::vector<distr2D> vecDistr2D;
    for(TString selection:{"baseline"}){
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
-         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,40,80,120,160,230,400},{0,0.7,1.4,3.14}});
-         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_Puppi",0.,400.,6,0.,3.14,3,{0,20,40,60,80,100,120,140,160,195,230,400},{0,0.35,0.7,1.05,1.4,2.27,3.14}});
-         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,14,0.,3.2,6,{0,20,40,52.5,65,80,95,110,125,142.5,160,180,200,300,400},{0,0.32,0.64,0.96,1.28,2.24,3.2}});
-         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,7,0.,3.2,3,{0,40,65,95,125,160,200,400},{0,0.64,1.28,3.2}});
-         
-         
-         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,7,0.,3.2,2,{0,65,95,135,175,250,295,400},{0,0.64,3.2}});
-         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,7,0.,3.2,2,{0,40,65,80,95,115,135,155,175,212.5,250,272.5,295,347.5,400},{0,0.32,0.64,1.92,3.2}});
-         
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,4,0.,3.2,3,{0,70,125,200,400},{0,0.56,1.08,3.2}});
-         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,8,0.,3.2,6,{0,40,70,97.5,125,162.5,200,300,400},{0,0.28,0.56,0.82,1.08,2.14,3.2}});
+         vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,8,0.,3.2,6,{0,40,70,97.5,125,162.5,200,300,400},{0,0.28,0.56,0.82,1.08,2.14,3.2}});
       }
    }
    

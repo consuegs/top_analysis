@@ -85,6 +85,7 @@ void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TS
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
       stSamples = {"SingleTop"};
+      bsmSamples = {"T2tt_525_438","T2tt_525_350"};
       break;
       case(1): //2016_postVFP 
       case(0): //2016_preVFP
@@ -93,6 +94,7 @@ void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TS
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
       stSamples = {"SingleTop"};
+      bsmSamples = {"T2tt_525_438","T2tt_525_350"};
       break;
    }
 }
@@ -542,8 +544,8 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    TH1F* sqrtB_hist = (TH1F*)hist_mc->Clone();
    TH1F* S_sqrtB_hist;
    hist::sqrtHist(*sqrtB_hist);
-   if (systHists_vec.size() == 1){  // single period plot
-      if (cfgDistr.year_int==3){    //Plot BSM currently only available for 2018
+   // ~if (systHists_vec.size() == 1){  // single period plot
+      // ~if (cfgDistr.year_int==3){    //Plot BSM currently only available for 2018
          // ~hists_BSM=hs->getHistograms(loc,{"T2tt_525_438","T2tt_525_350"});
          hists_BSM=hs->getHistograms(loc,{"T2tt_525_350"});
          for (auto const &h: hists_BSM) {
@@ -554,8 +556,8 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
          }
          le+=hs->getLegendEntries();
          BSM_legend=hs->getLegendEntries();
-      }
-   }
+      // ~}
+   // ~}
    
    if (is2D){
       fixAxis2D(st_mc.GetXaxis(),binEdgesY.size()-1);
