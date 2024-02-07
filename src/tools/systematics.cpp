@@ -154,6 +154,7 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("FRAC_TTOTHER")) return frac_ttother;
     if(type.BeginsWith("LUMI")) return lumi;
     if(type.BeginsWith("XSEC_TTOTHER")) return xsec_ttother;
+    if(type.BeginsWith("XSEC_TTSIGNAL")) return xsec_ttsignal;
     if(type.BeginsWith("XSEC_DY")) return xsec_dy;
     if(type.BeginsWith("XSEC_ST")) return xsec_st;
     if(type.BeginsWith("XSEC_OTHER")) return xsec_other;
@@ -441,6 +442,7 @@ TString Systematic::convertType(const Type& type)
     if(type == frac_ttother) return "FRAC_TTOTHER";
     if(type == lumi) return "LUMI";
     if(type == xsec_ttother) return "XSEC_TTOTHER";
+    if(type == xsec_ttsignal) return "XSEC_TTSIGNAL";
     if(type == xsec_dy) return "XSEC_DY";
     if(type == xsec_st) return "XSEC_ST";
     if(type == xsec_other) return "XSEC_OTHER";
@@ -624,7 +626,7 @@ std::vector<TString> Systematic::convertType(const std::vector<Type>& types)
 
 TString Systematic::getPrintName(const TString& type)
 {
-    if(type == "BSEMILEP") return "B semi-leptonic BR";
+    if(type == "BSEMILEP") return "B semileptonic BR";
     else if(type == "BTAG") return "b tagging";
     else if(type == "CR_ENVELOPE") return "Color reconnection";
     else if(type == "JES") return "Jet energy scale";
@@ -639,15 +641,16 @@ TString Systematic::getPrintName(const TString& type)
     else if(type == "PDF_ALPHAS") return "PDF #alpha_{s}";
     else if(type == "PDF_ENVELOPE") return "PDF replica";
     else if(type == "PS") return "Parton shower";
+    else if(type == "PDF") return "PDF";
     else if(type == "PU") return "Pileup";
-    else if(type == "TOP_PT") return "Top p_{T}";
+    else if(type == "TOP_PT") return "Top momentum";
     else if(type == "TRIG") return "Trigger";
     else if(type == "UETUNE") return "Underlying event";
     else if(type == "UNCLUSTERED") return "Unclustered energy";
-    else if(type == "XSEC BKG") return "Background cross sections";
+    else if(type == "BKG XSEC") return "Background";
     else if(type == "JET") return "Jet related";
-    else if(type == "OTHER EXP") return "Other exp. unc.";
-    else if(type == "OTHER THEO") return "Other theo. unc.";
+    else if(type == "xOTHER EXP") return "Other exp. unc.";
+    else if(type == "xOTHER THEO") return "Other theo. unc.";
     else return type;       // return argument if print name not definied
 }
 

@@ -125,6 +125,8 @@ Config::Config(std::string config_year)
    tunfold_bkgSamples_other = util::to_vector<std::string>(pt.get<std::string>("TUnfold.bkgSamples_other"));
    tunfold_withPTreweight = pt.get<bool>("TUnfold.withPTreweight");
    tunfold_scalePTreweight = pt.get<std::string>("TUnfold.scalePTreweight");
+   tunfold_withPHIreweight = pt.get<bool>("TUnfold.withPHIreweight");
+   tunfold_scalePHIreweight = pt.get<std::string>("TUnfold.scalePHIreweight");
    tunfold_withDNN = pt.get<bool>("TUnfold.withDNN");
    tunfold_withPF = pt.get<bool>("TUnfold.withPF");
    tunfold_withSameBins = pt.get<bool>("TUnfold.withSameBins");

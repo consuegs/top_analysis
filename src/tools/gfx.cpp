@@ -161,6 +161,9 @@ std::pair<TString,TString> gfx::parseTitle(TString const &title)
       ,std::make_tuple("%pTnunu","p_{#scale[.8]{T}}^{#scale[.8]{#nu#nu}}","GeV")
       ,std::make_tuple("DNN_MET_pT","DNN p_{#scale[.8]{T}}^{#scale[.8]{miss}}","")
       ,std::make_tuple("DNN_MET_dPhi_nextLep","min[#Delta#phi(DNN p_{#scale[.8]{T}}^{#scale[.8]{miss}},l)]","")
+      ,std::make_tuple("p_{T}^{Jet1} (GeV)","p_{#scale[.8]{T}}^{#scale[.8]{j_{1}}}","GeV")
+      ,std::make_tuple("p_{T}^{Jet2} (GeV)","p_{#scale[.8]{T}}^{#scale[.8]{j_{2}}}","GeV")
+      ,std::make_tuple("m_{ll} (GeV)","m_{ll}","GeV")
    };
 
    TString nt(title);

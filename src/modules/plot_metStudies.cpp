@@ -27,6 +27,7 @@ void run()
    can.cd();
    io::RootFileReader histReader("minTree_analyze/histograms_Nominal.root");
    
+   /*
    //Plotting comparison between PF and Puppi for different selections
    // ~for (TString sel : {"baseline_met120","baseline_met120_ee","baseline_met120_emu","baseline_met120_mumu","baseline_genmet120","baseline_met200","baseline_met120_230","baseline_met230","baseline_matchedLep_met120","baseline"}){
    for (TString sel : {"baseline_genmet120/all"}){
@@ -101,58 +102,111 @@ void run()
             saver.save(can,"pfVSpuppi/"+sel+"/"+var,true,true,true);
          }
    }
+   */
    
-   //Plotting comparison between PF and Puppi comparing full and met>120
+   //Plotting comparison between PF and Puppi comparing full and met>120 and genmet>120
    for (auto dummy: {1}){
       TH2F* TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/GenMetDiffMETRel_dPhiMETLep/"+sampleName);
       TH2F* TTbar_2D_Puppi = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/GenMetDiffMETRel_dPhiMETLep_Puppi/"+sampleName);
+      TH2F* TTbar_2D_DNN = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/GenMetDiffMETRel_dPhiMETLep_DNN/"+sampleName);
       TH2F* TTbar_2D_full = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/GenMetDiffMETRel_dPhiMETLep/"+sampleName);
       TH2F* TTbar_2D_full_Puppi = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/GenMetDiffMETRel_dPhiMETLep_Puppi/"+sampleName);
+      TH2F* TTbar_2D_full_DNN = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"all/GenMetDiffMETRel_dPhiMETLep_DNN/"+sampleName);
+      TH2F* TTbar_2D_genMet = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_genmet120/all/GenMetDiffMETRel_dPhiMETLep/"+sampleName);
+      TH2F* TTbar_2D_genMet_Puppi = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_genmet120/all/GenMetDiffMETRel_dPhiMETLep_Puppi/"+sampleName);
+      TH2F* TTbar_2D_genMet_DNN = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_genmet120/all/GenMetDiffMETRel_dPhiMETLep_DNN/"+sampleName);
+
       
       TProfile TTbar_profile;
       TProfile TTbar_profile_Puppi;
+      TProfile TTbar_profile_DNN;
       TTbar_profile=*(TTbar_2D->ProfileX("Profile"));
       TTbar_profile_Puppi=*(TTbar_2D_Puppi->ProfileX("Profile"));
+      TTbar_profile_DNN=*(TTbar_2D_DNN->ProfileX("Profile"));
       
       TProfile TTbar_profile_full;
       TProfile TTbar_profile_full_Puppi;
+      TProfile TTbar_profile_full_DNN;
       TTbar_profile_full=*(TTbar_2D_full->ProfileX("Profile"));
       TTbar_profile_full_Puppi=*(TTbar_2D_full_Puppi->ProfileX("Profile"));
+      TTbar_profile_full_DNN=*(TTbar_2D_full_DNN->ProfileX("Profile"));
       
-      TTbar_profile.SetLineColor(kBlue);
+      TProfile TTbar_profile_genMet;
+      TProfile TTbar_profile_genMet_Puppi;
+      TProfile TTbar_profile_genMet_DNN;
+      TTbar_profile_genMet=*(TTbar_2D_genMet->ProfileX("Profile"));
+      TTbar_profile_genMet_Puppi=*(TTbar_2D_genMet_Puppi->ProfileX("Profile"));
+      TTbar_profile_genMet_DNN=*(TTbar_2D_genMet_DNN->ProfileX("Profile"));
+      
+      TTbar_profile.SetLineColor(kGreen+2);
       TTbar_profile_Puppi.SetLineColor(kRed);
-      TTbar_profile.SetMarkerColor(kBlue);
+      TTbar_profile_DNN.SetLineColor(kBlue);
+      TTbar_profile.SetMarkerColor(kGreen+2);
       TTbar_profile_Puppi.SetMarkerColor(kRed);
+      TTbar_profile_DNN.SetMarkerColor(kBlue);
       TTbar_profile.SetMarkerSize(1);
       TTbar_profile_Puppi.SetMarkerSize(1);
+      TTbar_profile_DNN.SetMarkerSize(1);
+      TTbar_profile.SetMarkerStyle(22);
+      TTbar_profile_Puppi.SetMarkerStyle(22);
+      TTbar_profile_DNN.SetMarkerStyle(22);
       
-      TTbar_profile_full.SetLineColor(kBlue);
+      TTbar_profile_full.SetLineColor(kGreen+2);
       TTbar_profile_full_Puppi.SetLineColor(kRed);
-      TTbar_profile_full.SetMarkerColor(kBlue);
+      TTbar_profile_full_DNN.SetLineColor(kBlue);
+      TTbar_profile_full.SetMarkerColor(kGreen+2);
       TTbar_profile_full_Puppi.SetMarkerColor(kRed);
+      TTbar_profile_full_DNN.SetMarkerColor(kBlue);
       TTbar_profile_full.SetMarkerSize(1);
       TTbar_profile_full_Puppi.SetMarkerSize(1);
-      TTbar_profile_full.SetMarkerStyle(4);
-      TTbar_profile_full_Puppi.SetMarkerStyle(4);
+      TTbar_profile_full_DNN.SetMarkerSize(1);
+      TTbar_profile_full.SetMarkerStyle(8);
+      TTbar_profile_full_Puppi.SetMarkerStyle(8);
+      TTbar_profile_full_DNN.SetMarkerStyle(8);
+      
+      TTbar_profile_genMet.SetLineColor(kGreen+2);
+      TTbar_profile_genMet_Puppi.SetLineColor(kRed);
+      TTbar_profile_genMet_DNN.SetLineColor(kBlue);
+      TTbar_profile_genMet.SetMarkerColor(kGreen+2);
+      TTbar_profile_genMet_Puppi.SetMarkerColor(kRed);
+      TTbar_profile_genMet_DNN.SetMarkerColor(kBlue);
+      TTbar_profile_genMet.SetMarkerSize(1);
+      TTbar_profile_genMet_Puppi.SetMarkerSize(1);
+      TTbar_profile_genMet_DNN.SetMarkerSize(1);
+      TTbar_profile_genMet.SetMarkerStyle(21);
+      TTbar_profile_genMet_Puppi.SetMarkerStyle(21);
+      TTbar_profile_genMet_DNN.SetMarkerStyle(21);
       
       TTbar_profile.SetStats(0);
-      TTbar_profile.SetMaximum(0.1);
-      TTbar_profile.SetMinimum(-0.7);
-      TTbar_profile.GetYaxis()->SetTitle("mean[(genMET-p_{T}^{miss})/genMET]");
+      TTbar_profile.SetMaximum(0.8);
+      TTbar_profile.SetMinimum(-0.8);
+      TTbar_profile.GetYaxis()->SetTitle("<(gen. p_{T}^{miss}-rec. p_{T}^{miss})/gen. p_{T}^{miss}>");
       
       gPad->SetLeftMargin(0.15);
       TTbar_profile.GetYaxis()->SetTitleOffset(1.2);
-      TTbar_profile.Draw("e1");
-      TTbar_profile_Puppi.Draw("same e1");
-      TTbar_profile_full.Draw("same e1");
-      TTbar_profile_full_Puppi.Draw("same e1");
+      TTbar_profile.Draw("p");
+      TTbar_profile_Puppi.Draw("same p");
+      // ~TTbar_profile_DNN.Draw("same p");
+      TTbar_profile_full.Draw("same p");
+      TTbar_profile_full_Puppi.Draw("same p");
+      // ~TTbar_profile_full_DNN.Draw("same p");
+      TTbar_profile_genMet.Draw("same p");
+      TTbar_profile_genMet_Puppi.Draw("same p");
+      // ~TTbar_profile_genMet_DNN.Draw("same p");
       
       gfx::LegendEntries le;
-      le.append(TTbar_profile_full,"PF","pl");
-      le.append(TTbar_profile_full_Puppi,"Puppi","pl");
-      le.append(TTbar_profile,"PF>120 GeV","pl");
-      le.append(TTbar_profile_Puppi,"Puppi> 120 GeV","pl");
-      TLegend leg=le.buildLegend(.6,.7,1-1.5*gPad->GetRightMargin(),-1,1);
+      le.append(TTbar_profile_full,"PF","lpe");
+      le.append(TTbar_profile,"rec. p_{T}^{miss}>120 GeV","ple");
+      le.append(TTbar_profile_genMet,"gen. p_{T}^{miss}>120 GeV","ple");
+      le.append(TTbar_profile_full_Puppi,"PUPPI","lpe");
+      le.append(TTbar_profile_Puppi,"rec. p_{T}^{miss}>120 GeV","ple");
+      le.append(TTbar_profile_genMet_Puppi,"gen. p_{T}^{miss}>120 GeV","ple");
+      // ~le.append(TTbar_profile_full_DNN,"DNN","lpe");
+      // ~le.append(TTbar_profile_DNN,"rec. p_{T}^{miss}>120 GeV","ple");
+      // ~le.append(TTbar_profile_genMet_DNN,"gen. p_{T}^{miss}>120 GeV","ple");
+      // ~TLegend leg=le.buildLegend(.2,.8,0.85,-1,3); //if only two curves are plotted
+      TLegend leg=le.buildLegend(.2,.73,0.85,-1,3);
+      leg.SetEntrySeparation(0.5);
       leg.Draw();
       saver.save(can,"pfVSpuppi/baseline_vs_MET120/GenMetDiffMETRel_dPhiMETLep",true,true,true);
       
@@ -173,6 +227,7 @@ void run()
       // ~saver.save(can,"pfVSpuppi/baseline_vs_MET120/GenMetDiffMETRel_dPhiMETLep",true,true,true);
    }
    
+   /*
    //Plotting genMet as a function of dPhi (met120)
    TH2F* TTbar_2D = histReader.read<TH2F>(TString::Format("analyze_minTrees%.1f/",cfg.processFraction*100)+"baseline_met120/all/genMet_dPhiMETLep_Puppi/"+sampleName);
    TProfile TTbar_profile;
@@ -228,6 +283,7 @@ void run()
    // ~TTbar_profile.Draw("e1");  
    // ~label.Draw();
    // ~saver.save(can,"nVerticesVSdPhi/met120",true,true);  
+   */
    
    /*
    //Plotting dPhi gen and reco distr in same plot

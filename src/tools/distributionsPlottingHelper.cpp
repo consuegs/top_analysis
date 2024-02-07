@@ -72,28 +72,34 @@ void systHists::combineChannel(){
 void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TString> &mcSamples, std::vector<TString> &dataSamples, std::vector<TString> &ttbarSamples, std::vector<TString> &signalSamples, std::vector<TString> &stSamples, std::vector<TString> &bsmSamples){
    switch(year_int){
       case(3): //2018
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","EGamma","MuonEG","SingleMuon"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
-      stSamples = {"SingleTop"};
+      // ~stSamples = {"SingleTop"};
+      stSamples = {"SingleTop_DS"};
       bsmSamples = {"T2tt_525_438","T2tt_525_350"};
       break;
       case(2): //2017
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
-      stSamples = {"SingleTop"};
+      // ~stSamples = {"SingleTop"};
+      stSamples = {"SingleTop_DS"};
       bsmSamples = {"T2tt_525_438","T2tt_525_350"};
       break;
       case(1): //2016_postVFP 
       case(0): //2016_preVFP
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
-      stSamples = {"SingleTop"};
+      // ~stSamples = {"SingleTop"};
+      stSamples = {"SingleTop_DS"};
       bsmSamples = {"T2tt_525_438","T2tt_525_350"};
       break;
    }
@@ -185,25 +191,47 @@ void distributionsplotting::combineAllSamples(int const &year_int, hist::Histogr
    hs->combineSamples("tt other",{"TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"});
    switch(year_int){
       case(3): //2018
-      mcSamples_merged = {"ttW/Z","WJetsToLNu","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
+      // ~mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
+      mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop_DS","tt other","TTbar_diLepton"};
       hs->combineSamples("data",{"DoubleMuon","EGamma","MuonEG","SingleMuon"});
       hs->combineSamples("MC",mcSamples_merged);
-      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      // ~hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop_DS","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
       break;
       case(2): //2017
-      mcSamples_merged = {"ttW/Z","WJetsToLNu","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
+      // ~mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
+      mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop_DS","tt other","TTbar_diLepton"};
       hs->combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
       hs->combineSamples("MC",mcSamples_merged);
-      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      // ~hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop_DS","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
       break;
       case(0): //2016_preVFP
       case(1): //2016_postVFP
-      mcSamples_merged = {"ttW/Z","WJetsToLNu","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
+      // ~mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
+      mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop_DS","tt other","TTbar_diLepton"};
       hs->combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
       hs->combineSamples("MC",mcSamples_merged);
-      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      // ~hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop_DS","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
       break;
    }
+}
+
+TString distributionsplotting::getPrintName(TString const& sampleName){
+   std::map<TString,TString> printNames=
+   {{"TTbar\\_diLepton","\\ttbar{} (ll)"},
+   {"tt other","\\ttbar{} other"},
+   {"DrellYan\\_comb","DY+jets"},
+   {"WJetsToLNu","W+jets"},
+   {"ttW/Z","\\ttbar{}W/Z"},
+   {"SingleTop","Single top DR"},
+   {"SingleTop\\_DS","Single top DS"},
+   };
+   if (printNames.find(sampleName) != printNames.end()) {
+      return printNames[sampleName];
+   }
+   else return sampleName;
 }
 
 void distributionsplotting::addShifts(const TH1F &tempShift,TH1F* hist_shiftUP,TH1F* hist_shiftDOWN){
@@ -293,22 +321,23 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal,
    }
    
    //Derive envelopes and mTOP uncertainty
+   TH2D cov_mock("cov_mock","",hist_shiftUP->GetNbinsX(),0.5,hist_shiftUP->GetNbinsX()+0.5,hist_shiftUP->GetNbinsX(),0.5,hist_shiftUP->GetNbinsX()+0.5);
    if(useMEenvelope){
-      TH1F MEenvelope_down = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,false);
+      TH1F MEenvelope_down = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,*nominal,cov_mock,false);
       addShifts(MEenvelope_down,hist_shiftUP,hist_shiftDOWN);
-      TH1F MEenvelope_up = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,true);
+      TH1F MEenvelope_up = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,*nominal,cov_mock,true);
       addShifts(MEenvelope_up,hist_shiftUP,hist_shiftDOWN);
    }
    if(useCRenvelope){
-      TH1F CRenvelope_down = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,false);
+      TH1F CRenvelope_down = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,*nominal,cov_mock,false);
       addShifts(CRenvelope_down,hist_shiftUP,hist_shiftDOWN);
-      TH1F CRenvelope_up = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,true);
+      TH1F CRenvelope_up = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,*nominal,cov_mock,true);
       addShifts(CRenvelope_up,hist_shiftUP,hist_shiftDOWN);
    }
    if(useMTop){
-      TH1F mTOP_down = tunfoldplotting::getMTOPuncCombined(vec_systShifts,false);
+      TH1F mTOP_down = tunfoldplotting::getMTOPuncCombined(vec_systShifts,*nominal,cov_mock,false);
       addShifts(mTOP_down,hist_shiftUP,hist_shiftDOWN);
-      TH1F mTOP_up = tunfoldplotting::getMTOPuncCombined(vec_systShifts,true);
+      TH1F mTOP_up = tunfoldplotting::getMTOPuncCombined(vec_systShifts,*nominal,cov_mock,true);
       addShifts(mTOP_up,hist_shiftUP,hist_shiftDOWN);
    }
    
@@ -338,8 +367,12 @@ void distributionsplotting::printTotalYields(hist::Histograms<TH1F>* hs, std::ve
    float mcYield_total_down;
    float mcYield_total_up;
    std::map<TString,float> totalMap;
+   std::map<TString,std::array<float,4>> valueMap;
+   std::map<TString,std::array<float,4>> fractionMap;
+   std::array<float,4> mcUncArray;
+   int catCounter = 0;
    
-   for (TString cat:{"ee","emu","mumu","all"}){    //Get the number of events per category
+   for (TString cat:{"ee","mumu","emu","all"}){    //Get the number of events per category
       TH1F* mc_total=hs->getHistogram("cutflow/"+cat,"MC");
       // ~TH1F* mc_total=hs->getHistogram("baseline/"+cat+"/nBjets","MC");
       
@@ -358,6 +391,7 @@ void distributionsplotting::printTotalYields(hist::Histograms<TH1F>* hs, std::ve
       mcYield_total += mcYield;
       mcYield_total_down += mcYield_down;
       mcYield_total_up += mcYield_up;
+      mcUncArray[catCounter] = (mcYield_up+abs(mcYield_down))/2.;
       bool isMCtotal = false;
       for (TString sample:outputSamples){
          isMCtotal = (sample=="MC");
@@ -377,8 +411,38 @@ void distributionsplotting::printTotalYields(hist::Histograms<TH1F>* hs, std::ve
          }
          // ~if (sample=="MC") std::cout<<mcYield_down<<"   "<<mcYield_up<<std::endl;
          // ~if (sample=="MC") std::cout<<mcYield_down/mcYield*100<<"   "<<mcYield_up/mcYield*100<<std::endl;
+         
+         //store for later use
+         valueMap[sample][catCounter] = sampleYield;
+         fractionMap[sample][catCounter] = sampleYield/mcYield*100;
+         
       }
+      catCounter++;
    }
+   
+   //print overview table
+   std::cout<<std::endl<<std::endl;
+   std::cout<<"& Channel & \\ee{} & \\mumu & \\emu{} & all \\\\\\hline\\hline"<<std::endl;
+   std::cout<<"\\multirow{7}[0]{*}{\\begin{sideways}Contribution\\end{sideways}}"<<std::endl;
+   for (TString sample:outputSamples) {
+      sample.ReplaceAll("_","\\_");
+      if (sample == "MC" || sample == "data") continue;
+      std::cout<<"&"<<getPrintName(sample)<<"&$"<<std::setprecision(0)<<valueMap[sample][0]<<"("<<std::setprecision(1)<<fractionMap[sample][0]<<")$";
+      std::cout<<"&$"<<std::setprecision(0)<<valueMap[sample][1]<<"\\,("<<std::setprecision(1)<<fractionMap[sample][1]<<")$";
+      std::cout<<"&$"<<std::setprecision(0)<<valueMap[sample][2]<<"\\,("<<std::setprecision(1)<<fractionMap[sample][2]<<")$";
+      std::cout<<"&$"<<std::setprecision(0)<<valueMap[sample][3]<<"\\,("<<std::setprecision(1)<<fractionMap[sample][3]<<")$"<<"\\\\"<<std::endl;
+   }
+   std::cout<<"\\hline\\hline"<<std::endl;
+   std::cout<<"&"<<"Sum MC"<<"&$"<<valueMap["MC"][0]<<"$&$"<<valueMap["MC"][1]<<"$&$"<<valueMap["MC"][2]<<"$&$"<<valueMap["MC"][3]<<"$"<<"\\\\"<<std::endl;
+   std::cout<<"&"<<"$\\sigma$(Sum MC)"<<"&$"<<mcUncArray[0]<<"$&$"<<mcUncArray[1]<<"$&$"<<mcUncArray[2]<<"$&$"<<mcUncArray[3]<<"$"<<"\\\\"<<std::endl;
+   std::cout<<"&"<<"Data"<<std::setprecision(0)<<"&$"<<valueMap["data"][0]<<"$&$"<<valueMap["data"][1]<<"$&$"<<valueMap["data"][2]<<"$&$"<<valueMap["data"][3]<<"$"<<"\\\\"<<std::endl;
+   std::cout<<"\\hline\\hline"<<std::endl;
+   std::cout<<"&"<<"Data/MC [\\%]"<<"&$"<<std::setprecision(1);
+   std::cout<<fractionMap["data"][0]<<"\\pm"<<fractionMap["data"][0]/valueMap["MC"][0]*mcUncArray[0]<<"$&$";
+   std::cout<<fractionMap["data"][1]<<"\\pm"<<fractionMap["data"][1]/valueMap["MC"][1]*mcUncArray[1]<<"$&$";
+   std::cout<<fractionMap["data"][2]<<"\\pm"<<fractionMap["data"][2]/valueMap["MC"][2]*mcUncArray[2]<<"$&$";
+   std::cout<<fractionMap["data"][3]<<"\\pm"<<fractionMap["data"][3]/valueMap["MC"][3]*mcUncArray[3]<<"$"<<"\\\\"<<std::endl;
+   
 }
 
 // print breakdown of syst uncertainties
@@ -451,14 +515,14 @@ void distributionsplotting::drawVertLines2D(std::vector<float> const &binEdgesY,
       aline->DrawLine(i*400,lowerEnd,i*400,upperEnd);
       if (text){
          // ~atext->DrawLatex(75+((i-1)*400),1.7*lowerEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i-1],binEdgesY[i]));
-         atext->DrawLatex(75+((i-1)*400),1.7*lowerEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i-1],binEdgesY[i]));
-         if (i==(binEdgesY.size()-2)) atext->DrawLatex(75+(i*400),1.7*lowerEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i],binEdgesY[i+1]));    // for last bin
+         atext->DrawLatex(75+((i-1)*400),1e-4*upperEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i-1],binEdgesY[i]));
+         if (i==(binEdgesY.size()-2)) atext->DrawLatex(75+(i*400),1e-4*upperEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i],binEdgesY[i+1]));    // for last bin
       }
    }
 }
 
 void distributionsplotting::plotHistograms(TString const &sPresel, TString const &sVar, hist::Histograms<TH1F>* const &hs, std::vector<TString> const &mcSamples_merged, 
-                     std::map<const TString,Color_t> const & colormap, std::vector<std::vector<systHists*>> const &systHists_vec, io::RootFileSaver const &saver, bool plotStatUncExpData, bool is2D, const std::vector<float> &binEdgesY){
+                     std::map<const TString,Color_t> const & colormap, std::map<const TString,TString> const & printNameMap, std::vector<std::vector<systHists*>> const &systHists_vec, io::RootFileSaver const &saver, bool plotBSM, bool is2D, const std::vector<float> &binEdgesY){
    
    gfx::SplitCan sp_can;
    if(is2D) sp_can.can_.Size(1200,600);
@@ -466,7 +530,7 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    sp_can.pU_.cd();
    TString loc;
    loc=sPresel+sVar;
-   THStack st_mc=hs->getStack(loc,mcSamples_merged,colormap);
+   THStack st_mc=hs->getStack(loc,mcSamples_merged,colormap,printNameMap);
    gfx::LegendEntries le=hs->getLegendEntries();
    
    //systematics
@@ -488,53 +552,58 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    if (sPresel.Contains("Met200")) cat+="  p_{T}^{miss}>200 GeV";
    TLatex label=gfx::cornerLabel(cat,1);
    
-   if (sVar.Contains("phi")){    // set plotting ranges
-      st_mc.SetMinimum(1);
-      st_mc.SetMaximum(1e6);
-   }
-   st_mc.SetMinimum(1);
+   // set plotting ranges
    if (is2D) st_mc.SetMaximum(5e3*st_mc.GetMaximum());
-   else st_mc.SetMaximum(1e3*st_mc.GetMaximum());
+   else if (sVar.Contains("mLL") || sVar.Contains("DNN_MET_dPhi_nextLep")) st_mc.SetMaximum(3e2*st_mc.GetMaximum());
+   else st_mc.SetMaximum(1e1*st_mc.GetMaximum());
+   if (sPresel.Contains("cutflow")) st_mc.SetMinimum(1000);
+   else st_mc.SetMinimum(10);
    st_mc.Draw();     // draw stack
-   if(sPresel.Contains("cutflow")) st_mc.GetXaxis()->SetRangeUser(0.5,5.5);
+   if(sPresel.Contains("cutflow")) {
+      st_mc.GetXaxis()->SetRangeUser(0.5,5.5);
+      st_mc.GetXaxis()->SetNdivisions(6);
+   }
+   else if (sVar.Contains("nJets") || sVar.Contains("nBjets")){
+      st_mc.GetXaxis()->SetNdivisions(st_mc.GetXaxis()->GetNbins()+1);
+   }
    if(is2D) {     //needed because title is missing
       st_mc.SetTitle(";;Events/Bin;");
       st_mc.GetYaxis()->SetTitleOffset(0.75);
    }
    
-   systGraph.SetFillStyle(3001);
+   systGraph.SetFillStyle(3005);
    systGraph.SetLineWidth(0);
-   systGraph.SetFillColor(kGray);
+   systGraph.SetFillColor(kBlack);
    systGraph.Draw("same 2");    // draw syst.
    
    // data plotting part
    auto hist_data = hs->getHistogram(loc,{"data"});
    hist_data->SetLineColor(kBlack);
-   hist_data->SetMarkerSize((is2D)? 0.4 : 0.5);
+   hist_data->SetMarkerSize((is2D)? 0.4 : 0.7);
    bool plotData = false;
    if(sPresel.Contains("GOF2D") || !(sVar.Contains("MET") || sVar.Contains("met1000")|| sVar.Contains("dphi_metNearLep")|| sVar.Contains("C_em")|| sVar.Contains("Met"))) {
       hist_data->Draw("same");
-      le.append(*hist_data,"data","lep");
+      le.prepend(*hist_data,"Data","lep");
       plotData = true;
    }
    else if (!is2D && !sPresel.Contains("GOF2D")) {    // for MET distributions only plot up to pT=140
-      for (int i=1; i<=hist_data->GetNbinsX(); i++){
-         if (hist_data->GetXaxis()->GetBinUpEdge(i)>140) hist_data->SetBinContent(i,0.);
-      }
+      // ~for (int i=1; i<=hist_data->GetNbinsX(); i++){
+         // ~if (hist_data->GetXaxis()->GetBinUpEdge(i)>140) hist_data->SetBinContent(i,0.);
+      // ~}
       hist_data->Draw("same");
-      le.append(*hist_data,"data","lep");
+      le.prepend(*hist_data,"Data","lep");
       plotData = true;
    }
    else if (is2D){
       int width_index = hist_data->GetNbinsX()/(binEdgesY.size()-1);
       float width = hist_data->GetXaxis()->GetBinUpEdge(width_index);      //width of one dPhi bin in MET
       int dphi_bin = 1;
-      for (int i=1; i<=hist_data->GetNbinsX(); i++){
-         if (i>dphi_bin*width_index) dphi_bin++;
-         if (hist_data->GetXaxis()->GetBinUpEdge(i)-(width*(dphi_bin-1))>140) hist_data->SetBinContent(i,0.);
-      }
+      // ~for (int i=1; i<=hist_data->GetNbinsX(); i++){
+         // ~if (i>dphi_bin*width_index) dphi_bin++;
+         // ~if (hist_data->GetXaxis()->GetBinUpEdge(i)-(width*(dphi_bin-1))>140) hist_data->SetBinContent(i,0.);
+      // ~}
       hist_data->Draw("same");
-      le.append(*hist_data,"data","lep");
+      le.prepend(*hist_data,"Data","lep");
       plotData = true;
    }
    
@@ -544,20 +613,20 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    TH1F* sqrtB_hist = (TH1F*)hist_mc->Clone();
    TH1F* S_sqrtB_hist;
    hist::sqrtHist(*sqrtB_hist);
-   // ~if (systHists_vec.size() == 1){  // single period plot
-      // ~if (cfgDistr.year_int==3){    //Plot BSM currently only available for 2018
-         // ~hists_BSM=hs->getHistograms(loc,{"T2tt_525_438","T2tt_525_350"});
-         hists_BSM=hs->getHistograms(loc,{"T2tt_525_350"});
-         for (auto const &h: hists_BSM) {
-            h->Draw("same hist");
-            h->SetLineWidth(1.8);
-            S_sqrtB_hist = (TH1F*)h->Clone();
-            S_sqrtB_hist->Divide(sqrtB_hist);
-         }
-         le+=hs->getLegendEntries();
-         BSM_legend=hs->getLegendEntries();
-      // ~}
-   // ~}
+   if(plotBSM){
+      hists_BSM=hs->getHistograms(loc,{"T2tt_525_350"});
+      // ~hists_BSM=hs->getHistograms(loc,{"T2tt_525_438","T2tt_525_350"});
+      for (auto const &h: hists_BSM) {
+         h->Draw("same hist");
+         h->SetLineWidth(2);
+         S_sqrtB_hist = (TH1F*)h->Clone();
+         S_sqrtB_hist->Divide(sqrtB_hist);
+         if(is2D)le.append(*h,"#lower[0.08]{#tilde{#lower[-0.08]{t}}}#lower[0.1]{#bar{#lower[-0.1]{#lower[0.1]{#tilde{#lower[-0.1]{t}}}}}}","l");
+         else le.append(*h,"#lower[0.14]{#tilde{#lower[-0.14]{t}}}#lower[0.1]{#bar{#lower[-0.1]{#lower[0.1]{#tilde{#lower[-0.1]{t}}}}}}","l");
+      }
+      // ~le+=hs->getLegendEntries();
+      BSM_legend=hs->getLegendEntries();
+   }
    
    if (is2D){
       fixAxis2D(st_mc.GetXaxis(),binEdgesY.size()-1);
@@ -570,15 +639,15 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    // ~axis.SetStats(0);
    // ~axis.SetYTitle("Events/Bin");
    // ~axis.Draw("same axis");
-   TLegend leg=le.buildLegend(.42,.72,1-(gPad->GetRightMargin()+0.02),-1,2);
+   TLegend leg=le.buildLegend(.57,(plotBSM)? .73:.77,1-(gPad->GetRightMargin()+0.02),-1,2);
    leg.SetFillStyle(1001);
    leg.Draw();
    label.Draw();
    
    // ratio part
    sp_can.pL_.cd();
-   TH1F ratio = hist::getRatio(*hist_data,st_mc,"data/MC",hist::ONLY1);
-   TH1F ratio_mc = hist::getRatio(st_mc,st_mc,"data/MC",hist::ONLY1);
+   TH1F ratio = hist::getRatio(*hist_data,st_mc,"Data/MC",hist::ONLY1);
+   TH1F ratio_mc = hist::getRatio(st_mc,st_mc,"Data/MC",hist::ONLY1);
    
    // syst unc.
    TH1F* hist_mc_sysDown = (TH1F*)hist_mc->Clone();
@@ -586,8 +655,8 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    hist_mc_sysDown->Add(syst.second,-1.);
    hist_mc_sysUp->Add(syst.first);
             
-   TH1F ratio_mc_systDown = hist::getRatio(*hist_mc_sysDown,*hist_mc,"data/MC",hist::ONLY1);
-   TH1F ratio_mc_systUp = hist::getRatio(*hist_mc_sysUp,*hist_mc,"data/MC",hist::ONLY1);
+   TH1F ratio_mc_systDown = hist::getRatio(*hist_mc_sysDown,*hist_mc,"Data/MC",hist::ONLY1);
+   TH1F ratio_mc_systUp = hist::getRatio(*hist_mc_sysUp,*hist_mc,"Data/MC",hist::ONLY1);
    
    TGraphAsymmErrors systGraphRatio = hist::getErrorGraph(&ratio_mc_systUp,&ratio_mc_systDown,&ratio_mc,false);
    
@@ -604,43 +673,43 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       float up2 = hist_mc_totalUp->GetBinContent(i)*hist_mc_totalUp->GetBinContent(i);
       hist_mc_totalDown->SetBinContent(i,sqrt(stat2+down2));
       hist_mc_totalUp->SetBinContent(i,sqrt(stat2+up2));
-      
-      if (plotStatUncExpData) {
-         float binContent = hist_mc->GetBinContent(i);
-         hist_mc_expDataStatDown->SetBinContent(i,binContent-sqrt(binContent));
-         hist_mc_expDataStatUp->SetBinContent(i,binContent+sqrt(binContent));
-      }
    }
    
    hist_mc_totalDown->Add(hist_mc,-1.);
    hist_mc_totalDown->Scale(-1.);
    hist_mc_totalUp->Add(hist_mc);
             
-   TH1F ratio_mc_totalDown = hist::getRatio(*hist_mc_totalDown,*hist_mc,"data/MC",hist::ONLY1);
-   TH1F ratio_mc_totalUp = hist::getRatio(*hist_mc_totalUp,*hist_mc,"data/MC",hist::ONLY1);
+   TH1F ratio_mc_totalDown = hist::getRatio(*hist_mc_totalDown,*hist_mc,"Data/MC",hist::ONLY1);
+   TH1F ratio_mc_totalUp = hist::getRatio(*hist_mc_totalUp,*hist_mc,"Data/MC",hist::ONLY1);
    
-   TH1F ratio_mc_expDataStatDown = hist::getRatio(*hist_mc_expDataStatDown,*hist_mc,"data/MC",hist::ONLY1);
-   TH1F ratio_mc_expDataStatUp = hist::getRatio(*hist_mc_expDataStatUp,*hist_mc,"data/MC",hist::ONLY1);
+   TH1F ratio_mc_expDataStatDown = hist::getRatio(*hist_mc_expDataStatDown,*hist_mc,"Data/MC",hist::ONLY1);
+   TH1F ratio_mc_expDataStatUp = hist::getRatio(*hist_mc_expDataStatUp,*hist_mc,"Data/MC",hist::ONLY1);
    
    TGraphAsymmErrors totalUncGraphRatio = hist::getErrorGraph(&ratio_mc_totalUp,&ratio_mc_totalDown,&ratio_mc,false);
    
    TGraphAsymmErrors expDataStatRatio = hist::getErrorGraph(&ratio_mc_expDataStatUp,&ratio_mc_expDataStatDown,&ratio_mc,false);
    
    if(sPresel.Contains("cutflow")){    // set cutflow specific axis labels
-      ratio_mc.GetXaxis()->SetBinLabel(1,"diLepton");
-      ratio_mc.GetXaxis()->SetBinLabel(2,"mll");
+      ratio_mc.GetXaxis()->SetBinLabel(1,"dilepton");
+      ratio_mc.GetXaxis()->SetBinLabel(2,"m_{ll}");
       ratio_mc.GetXaxis()->SetBinLabel(3,"jets");
-      ratio_mc.GetXaxis()->SetBinLabel(4,"btag");
-      ratio_mc.GetXaxis()->SetBinLabel(5,"DNN MET");
-      // ~ratio_mc.GetXaxis()->SetBinLabel(7,"(addLepton veto)");
+      ratio_mc.GetXaxis()->SetBinLabel(4,"b-tag");
+      ratio_mc.GetXaxis()->SetBinLabel(5,"DNN p_{#scale[.8]{T}}^{#scale[.8]{miss}}");
+      ratio_mc.GetXaxis()->SetTitle("Cut");
       ratio_mc.GetXaxis()->SetRangeUser(0.5,5.5);
       ratio_mc.GetXaxis()->SetLabelOffset(0.03);
+      ratio_mc.GetXaxis()->SetTitleOffset(1.0);
+      ratio_mc.GetXaxis()->SetNdivisions(6);
+   }
+   
+   if (sVar.Contains("nJets") || sVar.Contains("nBjets")){
+      ratio_mc.GetXaxis()->SetNdivisions(ratio_mc.GetXaxis()->GetNbins()+1);
    }
    
    if(is2D){
       ratio_mc.GetYaxis()->SetTitleOffset(0.25);
-      ratio_mc.SetMaximum(1.35);
-      ratio_mc.SetMinimum(0.65);
+      ratio_mc.SetMaximum(1.75);
+      ratio_mc.SetMinimum(0.4);
    }
    else{
       ratio_mc.GetYaxis()->SetTitleOffset(0.45);
@@ -652,7 +721,9 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    totalUncGraphRatio.SetFillColor(kGray);
    totalUncGraphRatio.SetLineWidth(0);
    expDataStatRatio.SetFillColor(kBlue);
-   systGraphRatio.SetFillColor(kGray+2);
+   // ~systGraphRatio.SetFillColor(kGray+2);
+   systGraphRatio.SetFillColor(kBlack);
+   systGraphRatio.SetLineColor(kBlack);
    systGraphRatio.SetFillStyle(3004);
    expDataStatRatio.SetFillStyle(3005);
    expDataStatRatio.SetLineWidth(0);
@@ -662,14 +733,13 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    ratio_mc.Draw("e2");    // only for axis
    totalUncGraphRatio.Draw("same e2");
    systGraphRatio.Draw("same e2");
-   if(plotStatUncExpData) expDataStatRatio.Draw("same e2");
    ratio_mc.Draw("axis same");
    if(is2D){
-      ratio.SetMarkerSize(0.2);
+      ratio.SetMarkerSize(0.3);
       ratio.SetLineWidth(1.5);
    }
    gPad->RedrawAxis("g");
-   if(plotData) ratio.Draw("pe1 same");
+   if(plotData) ratio.Draw("pe0 same");
    
    if(is2D){
       fixAxis2D(ratio_mc.GetXaxis(),binEdgesY.size()-1);
@@ -679,12 +749,14 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    gfx::LegendEntries le_low;
    le_low.append(totalUncGraphRatio,"#sigma_{tot.}","f");
    le_low.append(systGraphRatio,"#sigma_{syst.}","f");
-   if(plotStatUncExpData) le_low.append(expDataStatRatio,"#sigma_{stat.(exp. data)}","f");
-   TLegend leg_low=le_low.buildLegend(.45,.8,0.75,0.95,2);
+   float legStart = .2;
+   if(sPresel.Contains("cutflow")) legStart = 0.6;
+   TLegend leg_low=le_low.buildLegend(legStart,.8,legStart+0.25,0.95,2);
    leg_low.Draw();
       
    saver.save(sp_can,loc,false,true);
    
+   /*
    //Draw S over sqrt(B) plots
    if (systHists_vec.size() == 1 && cfgDistr.year_int==3){  // single period plot and year 2018
       TCanvas can;
@@ -710,6 +782,7 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       
       saver.save(can,"S_sqrtB/"+loc,true,true,true);
    }
+   */
    
    
    //normalized distributions
@@ -873,9 +946,10 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<s
       }
       
       // derive CR envelope
+      TH2D cov_mock("cov_mock","",vec_systShifts[0][syst].GetNbinsX(),0.5,vec_systShifts[0][syst].GetNbinsX()+0.5,vec_systShifts[0][syst].GetNbinsX(),0.5,vec_systShifts[0][syst].GetNbinsX()+0.5);
       if ((std::find(Systematic::crTypes.begin(), Systematic::crTypes.end(), Systematic::convertType(syst)) != Systematic::crTypes.end()) && CRenvelopeDone == false) {
-         map_combinedShifts["CR_ENVELOPE_DOWN"] = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,false);
-         map_combinedShifts["CR_ENVELOPE_UP"] = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,true);
+         map_combinedShifts["CR_ENVELOPE_DOWN"] = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,*nominals[3],cov_mock,false);
+         map_combinedShifts["CR_ENVELOPE_UP"] = tunfoldplotting::getCRenvelopeCombined(vec_systShifts,*nominals[3],cov_mock,true);
          CRenvelopeDone = true;
          continue;
       }
@@ -883,8 +957,8 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<s
       
       // derive ME envelope
       if ((std::find(Systematic::meTypes.begin(), Systematic::meTypes.end(), Systematic::convertType(syst)) != Systematic::meTypes.end()) && MEenvelopeDone == false) {
-         map_combinedShifts["MESCALE_ENVELOPE_DOWN"] = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,false);
-         map_combinedShifts["MESCALE_ENVELOPE_UP"] = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,true);
+         map_combinedShifts["MESCALE_ENVELOPE_DOWN"] = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,*nominals[3],cov_mock,false);
+         map_combinedShifts["MESCALE_ENVELOPE_UP"] = tunfoldplotting::getMESCALEenvelopeCombined(vec_systShifts,*nominals[3],cov_mock,true);
          MEenvelopeDone = true;
          continue;
       }
@@ -892,8 +966,8 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSystCombined(std::vector<s
       
       // derive mTop uncertainty
       if ((std::find(Systematic::mTopTypes.begin(), Systematic::mTopTypes.end(), Systematic::convertType(syst)) != Systematic::mTopTypes.end()) && MTopDone == false) {
-         map_combinedShifts["MTOP_DOWN"] = tunfoldplotting::getMTOPuncCombined(vec_systShifts,false);
-         map_combinedShifts["MTOP_UP"] = tunfoldplotting::getMTOPuncCombined(vec_systShifts,true);
+         map_combinedShifts["MTOP_DOWN"] = tunfoldplotting::getMTOPuncCombined(vec_systShifts,*nominals[3],cov_mock,false);
+         map_combinedShifts["MTOP_UP"] = tunfoldplotting::getMTOPuncCombined(vec_systShifts,*nominals[3],cov_mock,true);
          MTopDone = true;
          continue;
       }

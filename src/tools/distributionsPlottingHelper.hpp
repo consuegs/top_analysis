@@ -97,11 +97,13 @@ namespace distributionsplotting
    void drawVertLines2D(std::vector<float> const &binEdgesY, float const &lowerEnd, float const &upperEnd,bool text);
    
    void plotHistograms(TString const &sPresel, TString const &sVar, hist::Histograms<TH1F>* const &hs, std::vector<TString> const &mcSamples_merged, 
-                     std::map<const TString,Color_t> const & colormap, std::vector<std::vector<systHists*>> const &systHists_vec, io::RootFileSaver const &saver, bool plotStatUncExpData=false, bool is2D=false, const std::vector<float> &binEdgesY={});
+                     std::map<const TString,Color_t> const & colormap, std::map<const TString,TString> const & printNameMap, std::vector<std::vector<systHists*>> const &systHists_vec, io::RootFileSaver const &saver, bool plotBSM=false, bool is2D=false, const std::vector<float> &binEdgesY={});
                      
    void getCombinedDistributions(hist::Histograms<TH1F> &hs_combined, std::vector<hist::Histograms<TH1F>*> const &hs_vec, std::vector<TString> const &mcSamples_merged);
    
    std::pair<TH1F*,TH1F*> getTotalSystCombined(std::vector<std::vector<systHists*>> const &systHists_vec_all, TString const loc);
+   
+   TString getPrintName(TString const& sampleName);
    
 } // namespace distributionsplotting
 

@@ -77,30 +77,34 @@ void run(){
     
     // DNN input variables:
     
-    test_variables["PuppiMET_xy*cos(PuppiMET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_xy_X");
-    test_variables["PuppiMET_xy*sin(PuppiMET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_xy_Y");
-    test_variables["MET_xy*cos(MET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_xy_X");
-    test_variables["MET_xy*sin(MET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_xy_Y");
-    test_variables["vecsum_pT_allJet*cos(HT_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "vecsum_pT_allJet_X");
-    test_variables["vecsum_pT_allJet*sin(HT_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "vecsum_pT_allJet_Y");
-    test_variables["mass_l1l2_allJet"] = tuple(linspace(120, 1800, 29, 0.), "mass_l1l2_allJet");
-    test_variables["Jet1_pt*sin(Jet1_phi)"] = tuple(linspace(-400, 400, 41), "Jet1_pY");
-    test_variables["MHT"] = tuple(linspace(60, 1800, 30, 0., 2000.), "MHT");
-    test_variables["Lep1_pt*cos(Lep1_phi)"] = tuple(linspace(-250, 250, 26), "Lep1_pX");
-    test_variables["Lep1_pt*sin(Lep1_phi)"] = tuple(linspace(-250, 250, 26), "Lep1_pY");
-    test_variables["Jet1_pt*cos(Jet1_phi)"] = tuple(linspace(-400, 400, 41), "Jet1_pX");
-    test_variables["CaloMET"] = tuple(linspace(0, 200, 41, 0., 500.), "CaloMET");
-    test_variables["MT2"] = tuple(linspace(0, 160, 41, 0., 200.), "MT2");
-    test_variables["mjj"] = tuple(linspace(60, 1800, 30, 0., 2000.), "mjj");
-    test_variables["nJets"] = tuple(linspace(1.5, 8.5, 8, 1.5, 12.5), "nJets");
-    test_variables["Jet1_E"] = tuple(linspace(40, 500, 24, 0.), "Jet1_E");
-    test_variables["HT"] = tuple(linspace(50, 1200, 24, 0., 2500.), "HT");
-    test_variables["Jet2_pt*cos(Jet2_phi)"] = tuple(linspace(-250, 250, 26), "Jet2_pX");
-    test_variables["Jet2_pt*sin(Jet2_phi)"] = tuple(linspace(-250, 250, 26), "Jet2_pY");
-    test_variables["DeepMET_reso*cos(DeepMET_reso_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_reso_X");
-    test_variables["DeepMET_reso*sin(DeepMET_reso_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_reso_Y");
-    test_variables["DeepMET_resp*cos(DeepMET_resp_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_resp_X");
-    test_variables["DeepMET_resp*sin(DeepMET_resp_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_resp_Y");
+    // ~test_variables["PuppiMET_xy*cos(PuppiMET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_xy_X");
+    // ~test_variables["PuppiMET_xy*sin(PuppiMET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "PuppiMET_xy_Y");
+    // ~test_variables["MET_xy*cos(MET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_xy_X");
+    // ~test_variables["MET_xy*sin(MET_xy_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "MET_xy_Y");
+    // ~test_variables["vecsum_pT_allJet*cos(HT_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "vecsum_pT_allJet_X");
+    // ~test_variables["vecsum_pT_allJet*sin(HT_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "vecsum_pT_allJet_Y");
+    // ~test_variables["mass_l1l2_allJet"] = tuple(linspace(120, 1800, 29, 0.), "mass_l1l2_allJet");
+    // ~test_variables["Jet1_pt*sin(Jet1_phi)"] = tuple(linspace(-400, 400, 41), "Jet1_pY");
+    // ~test_variables["MHT"] = tuple(linspace(60, 1800, 30, 0., 2000.), "MHT");
+    // ~test_variables["Lep1_pt*cos(Lep1_phi)"] = tuple(linspace(-250, 250, 26), "Lep1_pX");
+    // ~test_variables["Lep1_pt*sin(Lep1_phi)"] = tuple(linspace(-250, 250, 26), "Lep1_pY");
+    // ~test_variables["Jet1_pt*cos(Jet1_phi)"] = tuple(linspace(-400, 400, 41), "Jet1_pX");
+    // ~test_variables["CaloMET"] = tuple(linspace(0, 200, 41, 0., 500.), "CaloMET");
+    // ~test_variables["MT2"] = tuple(linspace(0, 160, 41, 0., 200.), "MT2");
+    // ~test_variables["mjj"] = tuple(linspace(60, 1800, 30, 0., 2000.), "mjj");
+    // ~test_variables["nJets"] = tuple(linspace(1.5, 8.5, 8, 1.5, 12.5), "nJets");
+    // ~test_variables["Jet1_E"] = tuple(linspace(40, 500, 24, 0.), "Jet1_E");
+    // ~test_variables["HT"] = tuple(linspace(50, 1200, 24, 0., 2500.), "HT");
+    // ~test_variables["Jet2_pt*cos(Jet2_phi)"] = tuple(linspace(-250, 250, 26), "Jet2_pX");
+    // ~test_variables["Jet2_pt*sin(Jet2_phi)"] = tuple(linspace(-250, 250, 26), "Jet2_pY");
+    // ~test_variables["DeepMET_reso*cos(DeepMET_reso_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_reso_X");
+    // ~test_variables["DeepMET_reso*sin(DeepMET_reso_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_reso_Y");
+    // ~test_variables["DeepMET_resp*cos(DeepMET_resp_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_resp_X");
+    // ~test_variables["DeepMET_resp*sin(DeepMET_resp_phi)"] = tuple(linspace(-150, 150, 31, -250., 250.), "DeepMET_resp_Y");
+    
+    std::vector<double> metBinning = {0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500};
+    test_variables["DNN_MET_pT"] = tuple(metBinning, "DNN_MET_pT");
+    // ~test_variables["DNN_MET_pT"] = tuple(linspace(0., 500., 25 , 0., 500.), "DNN_MET_pT");
 
 
     map<string,tuple<vector<double>,string>>::iterator it;

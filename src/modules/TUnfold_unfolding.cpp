@@ -71,9 +71,9 @@ void analyzeToy(TH1 const *hist_toy,
          prof_pull=new TProfile(namePull,title,xBins->GetSize()-1,xBins->GetArray());
          prof_res=new TProfile(nameRes,title,xBins->GetSize()-1,xBins->GetArray());
          hist_coverage=new TH1D(nameCoverage,title,xBins->GetSize()-1,xBins->GetArray());
-         hist_pull=new TH1D(namePullHist,";Pull;Entries",50,-3,3);
-         hist_res=new TH1D(nameResHist,";Residual;Entries",50,-0.1,0.1);
-         hist_chi=new TH1D(nameChiHist,";#chi^{2}/ndf;Entries",50,0,3);
+         hist_pull=new TH1D(namePullHist,";(x^{unf}_{i}-x_{i}^{toy})/#sigma_{i}^{unf};Number of toys",50,-3,3);
+         hist_res=new TH1D(nameResHist,";x_{i}^{unf}-x_{i}^{toy};Number of toys",50,-0.1,0.1);
+         hist_chi=new TH1D(nameChiHist,";#chi^{2};Number of toys",50,0,30);
       } else {
          int nBins=hist_toy->GetNbinsX();
          double x0=hist_toy->GetXaxis()->GetXmin();
@@ -81,9 +81,9 @@ void analyzeToy(TH1 const *hist_toy,
          prof_pull=new TProfile(namePull,title,nBins,x0,x1);
          prof_res=new TProfile(nameRes,title,nBins,x0,x1);
          hist_coverage=new TH1D(nameCoverage,title,nBins,x0,x1);
-         hist_pull=new TH1D(namePullHist,";Pull;Entries",50,-3,3);
-         hist_res=new TH1D(nameResHist,";Residual;Entries",50,-0.1,0.1);
-         hist_chi=new TH1D(nameChiHist,";#chi^{2}/ndf;Entries",50,0,3);
+         hist_pull=new TH1D(namePullHist,";(x^{unf}_{i}-x_{i}^{toy})/#sigma_{i}^{unf};Number of toys",50,-3,3);
+         hist_res=new TH1D(nameResHist,";x_{i}^{unf}-x_{i}^{toy};Number of toys",50,-0.1,0.1);
+         hist_chi=new TH1D(nameChiHist,";#chi^{2};Number of toys",50,0,30);
       }
    }
    
@@ -101,7 +101,8 @@ void analyzeToy(TH1 const *hist_toy,
    }
    
    auto chi2_pair=getChi2NDF_withCorr(hist_toy,hist_truth,cov);
-   hist_chi->Fill(chi2_pair.first/(1.0*chi2_pair.second));
+   // ~hist_chi->Fill(chi2_pair.first/(1.0*chi2_pair.second));
+   hist_chi->Fill(chi2_pair.first);
    
 }
 
@@ -162,6 +163,7 @@ void run()
    // ~std::vector<TString> systVec = {"Nominal","MESCALE_UP"};
    // ~std::vector<TString> systVec = {"applyGenLevel_DeltaRcut"};
    // ~std::vector<TString> systVec = {"JETPILEUPID_DOWN"};
+   // ~std::vector<TString> systVec = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN"};
    std::vector<TString> systVec = {"Nominal"};
    
    //Remove HEM unc. for all year except 2018
@@ -189,16 +191,20 @@ void run()
    // ~std::vector<TString> distributions = {"pTll"};
    // ~std::vector<TString> distributions = {"inclusive"};
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_DNN"};
+   // ~std::vector<TString> distributions = {"pTnunu_new"};
    // ~std::vector<TString> distributions = {"pTnunu_new_DNN"};
    // ~std::vector<TString> distributions = {"dPhi_DNN"};
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur_DNN"};
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_mergedBins_DNN"};
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
-   std::vector<TString> distributions = {"inclusive","dPhi_new_DNN","pTnunu_new_DNN","2D_dPhi_pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN","2D_dPhi_pTnunu_new_mergedBins_DNN","2D_dPhi_pTnunu_new_30StabPur2PhiBins16_DNN","2D_dPhi_pTnunu_new_30StabPur2PhiBins14_DNN"};
+   // ~std::vector<TString> distributions = {"inclusive","dPhi_new_DNN","pTnunu_new_DNN","2D_dPhi_pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN","2D_dPhi_pTnunu_new_mergedBins_DNN","2D_dPhi_pTnunu_new_30StabPur2PhiBins16_DNN","2D_dPhi_pTnunu_new_30StabPur2PhiBins14_DNN"};
    // ~std::vector<TString> distributions = {"pTnunu_new_DNN","pTnunu_DNN","2D_dPhi_pTnunu_new_DNN","2D_dPhi_pTnunu_new40_DNN"};
-   // ~std::vector<TString> distributions = {"pTnunu_new_DNN","2D_dPhi_pTnunu_new_DNN","dPhi_new_DNN","inclusive"};
+   // ~std::vector<TString> distributions = {"pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
    
-   // ~std::vector<TString> distributions = {"pTnunu_new_singleLast_DNN","pTnunu_new"};
+   // ~std::vector<TString> distributions = {"inclusive","dPhi_new_DNN","pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
+   std::vector<TString> distributions = {"pTnunu_new","dPhi","2D_dPhi_pTnunu_new_30StabPur12Bins"};
+   // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur12Bins"};
+   
    
    // ~bool verbose = false;
    bool verbose = true;
@@ -227,6 +233,10 @@ void run()
          bool withPTreweight = cfg.tunfold_withPTreweight;
          TString scale = cfg.tunfold_scalePTreweight;
          
+         // Use phi reweighted
+         bool withPHIreweight = cfg.tunfold_withPHIreweight;
+         TString scale_phi = cfg.tunfold_scalePHIreweight;
+         
          // Use DNN instead of pfMET
          bool withDNN = cfg.tunfold_withDNN;
          
@@ -253,6 +263,10 @@ void run()
          bool useRealData = false;
          // ~bool useRealData = true;
          
+         //Use Single Top DS
+         bool useSingleTopDS = false;
+         // ~bool useSingleTopDS = true;
+         
          //Cannot use realData and altPseudo data simultaneously
          if (useRealData && useAltReco){
             std::cerr<<"Error: Cannot use realData and altPseudo data simultaneously"<<std::endl;
@@ -276,6 +290,7 @@ void run()
          if (withDNN) input_loc+="_DNN";
          if (withSameBins) input_loc+="_SameBins";
          if (withPTreweight) input_loc+="_PTreweight"+scale;
+         else if (withPHIreweight) input_loc+="_PHIreweight"+scale_phi;
          io::RootFileReader histReader(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/%s/TUnfold_%s_%.1f.root" : "TUnfold/%s/TUnfold_SF91_%s_%.1f.root",input_loc.Data(),(isNominal)? currentSystematic.name().Data() : "Nominal",cfg.processFraction*100));
          io::RootFileReader histReader_syst(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/%s/TUnfold_%s_%.1f.root" : "TUnfold/%s/TUnfold_SF91_%s_%.1f.root",input_loc.Data(),currentSystematic.name().Data(),cfg.processFraction*100));
          
@@ -291,15 +306,15 @@ void run()
          }
 
          // read histograms
-         TString recoName = (useAltReco)? "/histDataRecoAlt" : ((useRealData)? "/histDataReal":"/histDataReco");
+         TString recoName = (useAltReco)? "/histDataRecoAlt" : ((useRealData)? "/histDataReal": ((useSingleTopDS)? "/histDataRecoSTDS" : "/histDataReco"));
          TH1 *histDataReco=histReader.read<TH1>(input_loc+recoName);
          TH1 *histDataReco_unscaled=(TH1*)histDataReco->Clone();
          TH1 *histDataReco_coarse=histReader.read<TH1>(input_loc+recoName+"_coarse");
          TH1 *histDataReco_coarse_unscaled=(TH1*)histDataReco_coarse->Clone();
          TH1 *histDataTruth=histReader.read<TH1>(input_loc+"/histDataTruth");
          TH1 *histSignalFraction=histReader_syst.read<TH1>(input_loc+"/hist_SignalFraction");
-         TH1 *histMCRec_bkg=histReader_syst.read<TH1>(input_loc+"/histMCRec_bkg");
-         TH1 *histMCRec_bkg_coarse=histReader_syst.read<TH1>(input_loc+"/histMCRec_bkg_coarse");
+         TH1 *histMCRec_bkg=histReader_syst.read<TH1>(input_loc+((useSingleTopDS)? "/histMCRecSTDS_bkg" : "/histMCRec_bkg"));
+         TH1 *histMCRec_bkg_coarse=histReader_syst.read<TH1>(input_loc+((useSingleTopDS)? "/histMCRecSTDS_bkg_coarse" : "/histMCRec_bkg_coarse"));
          TH1 *histSignalFraction_coarse=histReader_syst.read<TH1>(input_loc+"/hist_SignalFraction_coarse");
          TH2 *histMCGenRec=histReader_syst.read<TH2>(input_loc+"/histMCGenRec");
          TH2 *histMCGenRec_sameBins=histReader_syst.read<TH2>(input_loc+"/histMCGenRec_sameBins");
@@ -308,7 +323,7 @@ void run()
             cout<<"problem to read input histograms\n";
          }
          
-         if(!withPTreweight){    //No background and signal fraction considered in reweighting study
+         if(!(withPTreweight || withPHIreweight)){    //No background and signal fraction considered in reweighting study
             // substract non-ttbar background
             histDataReco->Add(histMCRec_bkg,-1);
             histDataReco_coarse->Add(histMCRec_bkg_coarse,-1);
@@ -328,12 +343,14 @@ void run()
          // step 2 : open output file
          TString save_path = (useAltReco)? "TUnfold_results_TTbar_amcatnlo_"+sample_response : "TUnfold_results_"+sample+"_"+sample_response;
          if (useRealData) save_path = "TUnfold_results_realData_"+sample_response;
+         if (useSingleTopDS) save_path+="_SingleTopDS";
          if (withBSM) save_path+="_BSM";
          if (withPuppi) save_path+="_Puppi";
          if (withPF) save_path+="_PF";
          if (withDNN) save_path+="_DNN";
          if (withSameBins) save_path+="_SameBins";
          if (withPTreweight) save_path+="_PTreweight"+scale;
+         else if (withPHIreweight) save_path+="_PHIreweight"+scale_phi;
          save_path += "/"+varName;
          io::RootFileSaver saver(TString::Format(!cfg.tunfold_withScaleFactor ? "TUnfold/%s/TUnfold_%s_%.1f.root" : "TUnfold/%s/TUnfold_SF91_%s_%.1f.root",input_loc_old.Data(),currentSystematic.name().Data(),cfg.processFraction*100),save_path);
          
@@ -389,9 +406,10 @@ void run()
                TH1 *hist_folded=unfold.GetFoldedOutput("hist_foldedResult",";bin",0,0,false);
                TH2 *cov_input=unfold.GetEmatrixInput("cov_input",";bin",0,0,false);
                TH2 *cov_statResponse=unfold.GetEmatrixSysUncorr("cov_statResponse",";bin",0,0,true);
-               TH2 *cov_Output=unfold.GetEmatrixTotal("cov_total",";bin",0,0,true);
+               // ~TH2 *cov_Output=unfold.GetEmatrixTotal("cov_total",";bin",0,0,true);
+               TH2 *cov_Output=unfold.GetEmatrixTotal("cov_total",";bin",0,0,false);
                TH2 *corr_matrix=unfold.GetRhoIJtotal("Rho2D");
-               
+                              
                // run the unfolding for toys
                if(toy_studies){
                   //Define histograms for toy studies
@@ -404,7 +422,7 @@ void run()
                   TH1 *hist_unfolded_firstToy=0;
                   TH2 *cov_input_firstToy=0;
                   for(int itoy=0;itoy<MAXTOY;itoy++) {
-                     // ~std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
+                     std::cout<<"================== itoy="<<itoy<<" =========================="<<std::endl;
                      TH1 *reco_toy=generatePoissonToy(histDataReco_unscaled,itoy);
                      
                      if (itoy==0)unfold.SetInput(histDataReco_unscaled,1.0);
@@ -437,7 +455,7 @@ void run()
                }
                
                //Set stat. error to combined stat. error from input and response matrix
-               for (int i=1; i<hist_unfolded->GetNbinsX();i++){
+               for (int i=1; i<=hist_unfolded->GetNbinsX();i++){
                   hist_unfolded->SetBinError(i,sqrt(cov_input->GetBinContent(i,i)+cov_statResponse->GetBinContent(i,i)));
                }
                //===========================

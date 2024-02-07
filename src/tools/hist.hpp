@@ -67,7 +67,7 @@ namespace hist
       std::vector<TString> getVariableNames();
       std::vector<HIST*> getHistograms(TString const &varName,std::vector<TString> const &samples,bool divideByBinWidth=false);
       HIST* getHistogram(TString const &varName,TString const &sample,bool divideByBinWidth=false);
-      THStack getStack(TString const &varName,std::vector<TString> const& samples,std::map<const TString,Color_t> const& colormap={},bool divideByBinWidth=false, bool includeData=false);
+      THStack getStack(TString const &varName,std::vector<TString> const& samples,std::map<const TString,Color_t> const& colormap={},std::map<const TString,TString> const& printNameMap={},bool divideByBinWidth=false, bool includeData=false);
       HIST* getSummedHist(TString const &varName,bool divideByBinWidth=false);
       HIST* getSummedHist(TString const &varName,std::vector<TString> const &samples,bool divideByBinWidth=false);
       float getCount(TString const &varName, TString const &sample);
@@ -187,6 +187,7 @@ namespace hist
    TH2D rebinned_double(TH2D const &h, std::vector<float> const &binedges_x, std::vector<float> const &binedges_y,bool mergeOverflow=true,bool mergeUnderflow=true);
    TH1F histTrafo_2D(TH2F* const &hist2D);
    void divideByBinWidth(TH1& h,bool divideLastBin=true);
+   void divideByBinWidth(TH2& h,bool divideLastBin=true);
    void mergeOverflow(TH1& h, bool includeUnderflow=true);
    void mergeOverflow(TH2& h, bool includeUnderflow=true);
    void sqrtHist(TH1& h);
@@ -202,6 +203,8 @@ namespace hist
    TH1F getPull    (TH1F const &h1,THStack &h2,TString title="pull",ErrorType et=COMB);
    TH1F getRatio   (THStack &h1,THStack &h2,TString title="ratio",ErrorType et=COMB);
    TH1F getPull    (THStack &h1,THStack &h2,TString title="pull",ErrorType et=COMB);
+   
+   TH1F getNormalizedHist(TH1F const &h1);
 
    TGraphErrors getRatioGraph(TH1F const &h1,TH1F const &h2,TString title="ratio",ErrorType et=COMB);
    TGraphErrors getRatioGraph(TH1F const &h1,THStack &h2,TString title="ratio",ErrorType et=COMB);
@@ -216,7 +219,7 @@ namespace hist
    
    TGraphAsymmErrors getErrorGraph(TH1F* const &eDOWN, TH1F* const &eUP, TH1F* const &nominal, bool const shift, bool const eXzero=false);
    
-   TGraphAsymmErrors getRatioAsymmGraph(TH1F const &down,TH1F const &up,TH1F const &nominal,TH1F const &denominator);
+   TGraphAsymmErrors getRatioAsymmGraph(TH1F const &down,TH1F const &up,TH1F const &nominal,TH1F const &denominator,bool const eXzero=true);
 }
 
 #endif /* HIST_HPP__ */

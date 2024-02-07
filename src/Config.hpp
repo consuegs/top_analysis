@@ -108,7 +108,9 @@ public:
    std::vector<std::string> tunfold_bkgSamples_ttbar;
    std::vector<std::string> tunfold_bkgSamples_other;
    bool tunfold_withPTreweight;
+   bool tunfold_withPHIreweight;
    TString tunfold_scalePTreweight;
+   TString tunfold_scalePHIreweight;
    bool tunfold_withDNN;
    bool tunfold_withPF;
    bool tunfold_withSameBins;

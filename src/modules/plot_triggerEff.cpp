@@ -26,7 +26,7 @@ std::vector<float> const &Edges_ee_mumu={20,50,90,200};
 std::vector<float> const &Edges_emu={20,50,80,120,200};
 
 // Function to plot 2D eff or SF
-void plot2D(TH2 &hist, TString const &cat, TString const &savePath, io::RootFileSaver const &saver, float const &zMin=0.85, float const &zMax=1.0){
+void plot2D(TH2 &hist, TString const &cat, TString const &savePath, io::RootFileSaver const &saver, float const &zMin=0.9, float const &zMax=1.0){
    TCanvas can;
    gPad->SetRightMargin(0.2);
    gPad->SetLeftMargin(0.13);
@@ -36,6 +36,7 @@ void plot2D(TH2 &hist, TString const &cat, TString const &savePath, io::RootFile
    hist.SetMinimum(zMin);
    hist.SetMarkerSize(1.2);
    hist.SetStats(0);
+   gStyle->SetPaintTextFormat(".3f");
    hist.Draw("colz text e");
    TLatex label=gfx::cornerLabel(cat,1);
    label.Draw();
@@ -106,19 +107,35 @@ void eff1D(io::RootFileReader const &histReader, io::RootFileSaver const &saver,
                axis.SetMinimum(0.75);
                axis.SetStats(0);
                axis.GetYaxis()->SetTitleOffset(0.8);
+               axis.Draw("axis");
+               
+               //Draw line at max eff.
+               TLine * aline = new TLine();
+               aline->SetLineWidth(2);
+               aline->SetLineStyle(7);
+               aline->DrawLine(0.,1.,200.,1.);
                
                // Draw eff. for MC and data
-               axis.Draw("axis");
                eff_data_hist.Draw("pe1 same");
                eff_MC_hist.Draw("same");
                
-               TLatex label=gfx::cornerLabel(channel+", "+trigg,3);
+               
+               TString cat;   // set channel label
+               if (channel.Contains("ee")) cat="ee";
+               else if (channel.Contains("emu")) cat="e#mu";
+               else if (channel.Contains("mumu")) cat="#mu#mu";
+               // ~TLatex label=gfx::cornerLabel(channel+", "+trigg,3);
+               TLatex label=gfx::cornerLabel(cat,1);
                label.Draw();
                
                gfx::LegendEntries legE;
-               legE.append(eff_data_hist,TString::Format(dataName+" (eff.=%.2f^{+%.2f}_{-%.2f}%%)",efficiency_data*100,e_u_data*100,e_d_data*100),"lep");
-               legE.append(eff_MC_hist,TString::Format(mcName+" (eff.=%.2f^{+%.2f}_{-%.2f}%%)",efficiency_MC*100,e_u_MC*100,e_d_MC*100),"lep");
-               TLegend leg=legE.buildLegend(.52,.7,1-(gPad->GetRightMargin()+0.02),-1);
+               TString dataString = "Data";
+               TString mcString = "Simulation";
+               // ~legE.append(eff_data_hist,TString::Format(dataName+" (eff.=%.2f^{+%.2f}_{-%.2f}%%)",efficiency_data*100,e_u_data*100,e_d_data*100),"lep");
+               // ~legE.append(eff_MC_hist,TString::Format(mcName+" (eff.=%.2f^{+%.2f}_{-%.2f}%%)",efficiency_MC*100,e_u_MC*100,e_d_MC*100),"lep");
+               legE.append(eff_data_hist,TString::Format(dataString+" (#varepsilon=%.1f%%)",efficiency_data*100),"lep");
+               legE.append(eff_MC_hist,TString::Format(mcString+" (#varepsilon=%.1f%%)",efficiency_MC*100),"lep");
+               TLegend leg=legE.buildLegend(.52,.75,1-(gPad->GetRightMargin()+0.02),-1);
                leg.Draw();
                
                saver.save(can,selection+"/"+trigg+"/"+channel+"/"+var,true,false,true);
@@ -394,6 +411,7 @@ void finalSFunc(io::RootFileReader const &sFReader, io::RootFileSaver const &sav
          TH2F* lumiWeighted=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_lumiWeighted");
          TH2F* totalUp=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statUp");
          TH2F* totalDown=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statDown");
+         TH2F* totalMean=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statDown");
          TH2F* statUp=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statUp");
          TH2F* statDown=sFReader.read<TH2F>("baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_statDown");
          
@@ -443,17 +461,20 @@ void finalSFunc(io::RootFileReader const &sFReader, io::RootFileSaver const &sav
             for(int j=0; j<=alpha->GetNbinsY();j++){
                totalUp->SetBinError(i,j,sqrt(pow(nominalSF_totalSyst->GetBinError(i,j),2)+pow(totalUp->GetBinError(i,j),2)));
                totalDown->SetBinError(i,j,sqrt(pow(nominalSF_totalSyst->GetBinError(i,j),2)+pow(totalDown->GetBinError(i,j),2)));
+               totalMean->SetBinError(i,j,(totalUp->GetBinError(i,j)+totalDown->GetBinError(i,j))/2.);
             }
          }
          
          saverHist.save(*totalUp,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_totalUp");
          saverHist.save(*totalDown,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_totalDown");
+         saverHist.save(*totalMean,"baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_totalMean");
          if(isAnalysisTrigg){
              saverSF.save(*totalUp,channel+"_SF_totalUp");
              saverSF.save(*totalDown,channel+"_SF_totalDown");
          }
          plot2D(*totalUp,cat+",SF_totalUp","baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_totalUp",saver);
          plot2D(*totalDown,cat+",SF_totalDown","baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_totalDown",saver);
+         plot2D(*totalMean,cat+"","baselineTrigger/"+trigg+"/"+channel+"/"+var+"_SF_totalMean",saver);
          
          //Store min max unc. in File
          if(isAnalysisTrigg){

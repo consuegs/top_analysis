@@ -81,6 +81,12 @@ TString io::RootFileSaver::getInternalPath() const
    return intPath_;
 }
 
+TString io::RootFileSaver::getFilePath() const
+{
+   TString filePath = fPath_;
+   return filePath.ReplaceAll(fName_,"");
+}
+
 void io::RootFileSaver::save(TObject const &obj, TString name,bool decorate,bool simulation,bool addPDF) const
 {  
    if (intPath_!="") name=intPath_+"/"+name;

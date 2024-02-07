@@ -191,6 +191,11 @@ float getPTreweight(const float &metGen, const float &slope){
    else return 0.;
 }
 
+float getPHIreweight(const float &dPhi, const float &slope){
+   if(dPhi>0) return std::max((1.+(dPhi-1.5)*slope)*(1.+(dPhi-1.5)*slope),0.1);
+   else return 0.;
+}
+
 //small class containing all TUnfold related hist for one distribution
 class Distribution
 {
@@ -217,6 +222,8 @@ class Distribution
          histDataReco_coarse=signalBinning_->CreateHistogram("histDataReco_coarse_"+varName_);
          histDataTruth=signalBinning_->CreateHistogram("histDataTruth_"+varName_);
          histDataTruth_fakes=signalBinning_->CreateHistogram("histDataTruth_fakes_"+varName_);
+         histDataRecoSTDS=detectorBinning_->CreateHistogram("histDataRecoSTDS_"+varName_);
+         histDataRecoSTDS_coarse=signalBinning_->CreateHistogram("histDataRecoSTDS_coarse_"+varName_);
          histDataRecoAlt=detectorBinning_->CreateHistogram("histDataRecoAlt_"+varName_);
          histDataRecoAlt_coarse=signalBinning_->CreateHistogram("histDataRecoAlt_coarse_"+varName_);
          histDataTruthAlt=signalBinning_->CreateHistogram("histDataTruthAlt_"+varName_);
@@ -236,6 +243,8 @@ class Distribution
          histMCRecAlt_fakes_coarse=signalBinning_->CreateHistogram("histMCRecAlt_fakes_coarse-"+varName_);
          histMCRec_bkg=detectorBinning_->CreateHistogram("histMCRec_bkg-"+varName_);
          histMCRec_bkg_coarse=signalBinning_->CreateHistogram("histMCRec_bkg_coarse-"+varName_);
+         histMCRecSTDS_bkg=detectorBinning_->CreateHistogram("histMCRecSTDS_bkg-"+varName_);
+         histMCRecSTDS_bkg_coarse=signalBinning_->CreateHistogram("histMCRecSTDS_bkg_coarse-"+varName_);
       }
       
       //2D
@@ -288,6 +297,14 @@ class Distribution
          histDataRecoAlt_coarse->Fill(binNumber_coarse,weight);
       }
       
+      void fillDataRecoSTDS(float const &weight){
+         Int_t binNumber = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
+         histDataRecoSTDS->Fill(binNumber,weight);
+         
+         Int_t binNumber_coarse = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
+         histDataRecoSTDS_coarse->Fill(binNumber_coarse,weight);
+      }
+      
       void fillDataReal(){
          Int_t binNumber = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
          histDataReal->Fill(binNumber);
@@ -301,6 +318,13 @@ class Distribution
          Int_t recBin_purity = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
          histMCRec_bkg->Fill(recBin,weight);
          histMCRec_bkg_coarse->Fill(recBin_purity,weight);
+      }
+      
+      void fillMCbkgSTDS(float const &weight){
+         Int_t recBin = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
+         Int_t recBin_purity = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
+         histMCRecSTDS_bkg->Fill(recBin,weight);
+         histMCRecSTDS_bkg_coarse->Fill(recBin_purity,weight);
       }
       
       void fillMCfakes(float const &weight){
@@ -349,10 +373,12 @@ class Distribution
          // set reco bin error to error expected in data
          for(int i=0;i<=histDataReco->GetNbinsX()+1;i++) {
             histDataReco->SetBinError(i,sqrt(histDataReco->GetBinContent(i)));
+            histDataRecoSTDS->SetBinError(i,sqrt(histDataRecoSTDS->GetBinContent(i)));
             histDataRecoAlt->SetBinError(i,sqrt(histDataRecoAlt->GetBinContent(i)));
          }
          for(int i=0;i<=histDataReco_coarse->GetNbinsX()+1;i++) {
             histDataReco_coarse->SetBinError(i,sqrt(histDataReco_coarse->GetBinContent(i)));
+            histDataRecoSTDS_coarse->SetBinError(i,sqrt(histDataRecoSTDS_coarse->GetBinContent(i)));
             histDataRecoAlt_coarse->SetBinError(i,sqrt(histDataRecoAlt_coarse->GetBinContent(i)));
          }
       }
@@ -362,6 +388,8 @@ class Distribution
          saver.save(*signalBinning_,varName_+"/generator_binning");
          saver.save(*histDataReco,varName_+"/histDataReco");
          saver.save(*histDataReco_coarse,varName_+"/histDataReco_coarse");
+         saver.save(*histDataRecoSTDS,varName_+"/histDataRecoSTDS");
+         saver.save(*histDataRecoSTDS_coarse,varName_+"/histDataRecoSTDS_coarse");
          saver.save(*histDataRecoAlt,varName_+"/histDataRecoAlt");
          saver.save(*histDataRecoAlt_coarse,varName_+"/histDataRecoAlt_coarse");
          saver.save(*histDataReal,varName_+"/histDataReal");
@@ -381,6 +409,8 @@ class Distribution
          saver.save(*histMCRecAlt_fakes,varName_+"/histMCRecAlt_fakes");
          saver.save(*histMCRec_bkg,varName_+"/histMCRec_bkg");
          saver.save(*histMCRec_bkg_coarse,varName_+"/histMCRec_bkg_coarse");
+         saver.save(*histMCRecSTDS_bkg,varName_+"/histMCRecSTDS_bkg");
+         saver.save(*histMCRecSTDS_bkg_coarse,varName_+"/histMCRecSTDS_bkg_coarse");
          saver.save(*(histMCGenRec->ProjectionX()),varName_+"/histMCGenRec_projX");
          saver.save(*(histMCGenRec->ProjectionY()),varName_+"/histMCGenRec_projY");
          saver.save(*(histMCGenRecAlt->ProjectionX()),varName_+"/histMCGenRecAlt_projX");
@@ -428,6 +458,8 @@ class Distribution
       
       TH1* histDataReco;
       TH1* histDataReco_coarse;
+      TH1* histDataRecoSTDS;
+      TH1* histDataRecoSTDS_coarse;
       TH1* histDataRecoAlt;
       TH1* histDataRecoAlt_coarse;
       TH1* histDataTruth;
@@ -448,6 +480,8 @@ class Distribution
       TH1* histMCRecAlt_fakes_coarse;
       TH1* histMCRec_bkg;
       TH1* histMCRec_bkg_coarse;
+      TH1* histMCRecSTDS_bkg;
+      TH1* histMCRecSTDS_bkg_coarse;
 };
 
 TString getSavePath(){
@@ -460,6 +494,9 @@ TString getSavePath(){
    if (cfg.tunfold_withPTreweight) {
       save_path+="_PTreweight"+cfg.tunfold_scalePTreweight;
    }
+   else if (cfg.tunfold_withPHIreweight) {
+      save_path+="_PHIreweight"+cfg.tunfold_scalePHIreweight;
+   }
    return save_path;
 }
 
@@ -469,6 +506,9 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
    
    if (cfg.tunfold_withPTreweight) {
       sample+="_PTreweight"+cfg.tunfold_scalePTreweight;
+   }
+   else if (cfg.tunfold_withPHIreweight) {
+      sample+="_PHIreweight"+cfg.tunfold_scalePHIreweight;
    }
    
    //check if syst is nominal type
@@ -489,6 +529,7 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_mergedBins_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur12Bins_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur12Bins") dist.setVariables(metRec,phiRec,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins14_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins16_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
@@ -507,10 +548,13 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
    TString minTreePath_Nominal = cfg.minTreePath+TString::Format("/100.0/%s/",(isNominal)? syst.name().Data() : "Nominal");
    
    float scale_rew = std::stof(cfg.tunfold_scalePTreweight.Data());
+   float scale_rew_phi = std::stof(cfg.tunfold_scalePHIreweight.Data());
    
    for (TString currentSample : cfg.tunfold_InputSamples){     // loop over samples (data or pseudo data)
       bool isSignal = (currentSample == "TTbar_diLepton");
       bool isSignalAlt = (currentSample == "TTbar_amcatnlo");
+      bool isSTDS = (currentSample == "SingleTop_DS");
+      bool isSTDR = (currentSample == "SingleTop");
       bool isRealData = cfg.isData(currentSample.Data());
             
       double totalMCweight = 0.;    // total weights used to normalize reweighting study
@@ -570,8 +614,8 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
             // ~if(metRec<0) continue;
             
             //ignore fakes and background in reweighting study
-            if (!isSignal && cfg.tunfold_withPTreweight) continue;
-            if(cfg.tunfold_withPTreweight && (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40))) continue;
+            if (!isSignal && (cfg.tunfold_withPTreweight || cfg.tunfold_withPHIreweight)) continue;
+            if((cfg.tunfold_withPTreweight || cfg.tunfold_withPHIreweight) && (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40))) continue;
             
             // ~if (metGen>0) mcWeight*=sqrt(sqrt(sqrt(sqrt(metGen))));
             
@@ -583,9 +627,9 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
                }
                else {
                   //reweight for reweighting studies
-                  if(cfg.tunfold_withPTreweight) {
+                  if((cfg.tunfold_withPTreweight || cfg.tunfold_withPHIreweight)) {
                      totalMCweight += mcWeight;
-                     float weight = getPTreweight(metGen,scale_rew);
+                     float weight = (cfg.tunfold_withPTreweight)? getPTreweight(metGen,scale_rew) : getPHIreweight(phiGen,scale_rew_phi);
                      mcWeight *= weight;
                      totalMCweight_rew += mcWeight;
                   }
@@ -601,10 +645,13 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
 
             // fill histogram with reconstructed quantities
             if (metRec<0) continue;   //events that are not reconstructed
-            if (!isSignalAlt && !isRealData){
+            if (!isSignalAlt && !isRealData && !isSTDS){
                for(Distribution& dist : distribution_vec) dist.fillDataReco(mcWeight*recoWeight);
             }
-            if (!isSignal  && !isRealData){
+            if (!isSignalAlt && !isRealData && !isSTDR){
+               for(Distribution& dist : distribution_vec) dist.fillDataRecoSTDS(mcWeight*recoWeight);
+            }
+            if (!isSignal  && !isRealData && !isSTDS){
                for(Distribution& dist : distribution_vec) dist.fillDataRecoAlt(mcWeight*recoWeight);
             }
             if (isRealData){
@@ -614,10 +661,12 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
          io::log<<"";
       }
       
-      if(cfg.tunfold_withPTreweight && isSignal){     // apply correct normalizatin for reweighting studies
+      if((cfg.tunfold_withPTreweight || cfg.tunfold_withPHIreweight) && isSignal){     // apply correct normalizatin for reweighting studies
          for(Distribution& dist : distribution_vec){
             dist.histDataReco->Scale(totalMCweight/totalMCweight_rew);
             dist.histDataReco_coarse->Scale(totalMCweight/totalMCweight_rew);
+            dist.histDataRecoSTDS->Scale(totalMCweight/totalMCweight_rew);
+            dist.histDataRecoSTDS_coarse->Scale(totalMCweight/totalMCweight_rew);
             dist.histDataTruth->Scale(totalMCweight/totalMCweight_rew);
             dist.histDataTruth_fakes->Scale(totalMCweight/totalMCweight_rew);
          }
@@ -727,6 +776,7 @@ std::tuple<TString,TString,float> getPath_SampleName_SF(TString const &sample, T
 void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver const &saver, Systematic::Systematic const &syst){
    //check if syst is nominal type
    bool isNominal = (std::find(Systematic::nominalTypes.begin(), Systematic::nominalTypes.end(), syst.type()) != Systematic::nominalTypes.end());
+   bool isTTbarType = (std::find(Systematic::ttbarTypes.begin(), Systematic::ttbarTypes.end(), syst.type()) != Systematic::ttbarTypes.end());
    //set correct paths for nominal and current syst
    TString minTreePath_nominal = cfg.minTreePath+TString::Format("/100.0/%s/",(isNominal)? syst.name().Data() : "Nominal");
    TString minTreePath_syst = cfg.minTreePath+TString::Format("/100.0/%s/",syst.name().Data());
@@ -746,6 +796,7 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_mergedBins_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur12Bins_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur12Bins") dist.setVariables(metRec,phiRec,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins14_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins16_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
@@ -764,13 +815,15 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
    // create vector with all input samples
    std::vector<std::string> samples = cfg.tunfold_bkgSamples_ttbar;
    samples.insert(samples.begin(),cfg.tunfold_ResponseSample.Data());
-   if (isNominal) samples.insert(samples.begin(),cfg.tunfold_ResponseSampleAlt.Data());
+   if (isNominal || isTTbarType) samples.insert(samples.begin(),cfg.tunfold_ResponseSampleAlt.Data());
    samples.insert(samples.end(),cfg.tunfold_bkgSamples_other.begin(),cfg.tunfold_bkgSamples_other.end());
    
    for (TString sample : samples){     // loop over all MC samples
       bool isSignal = (sample == cfg.tunfold_ResponseSample.Data());
       bool isSignalAlt = (sample == cfg.tunfold_ResponseSampleAlt.Data());
       bool isBKGother = (std::find(cfg.tunfold_bkgSamples_other.begin(),cfg.tunfold_bkgSamples_other.end(), sample) != cfg.tunfold_bkgSamples_other.end());
+      bool isSTDS = (sample == "SingleTop_DS");
+      bool isSTDR = (sample == "SingleTop");
             
       auto [minTreePath_current, currentSample, sfUnc] = getPath_SampleName_SF(sample,minTreePath_nominal,minTreePath_syst,isSignal,isBKGother,syst);
       
@@ -834,7 +887,8 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
             
             // fill background distributions
             if(isBKGother){
-               for(Distribution& dist : distribution_vec) dist.fillMCbkg(mcWeight*recoWeight);
+               if(!isSTDS) for(Distribution& dist : distribution_vec) dist.fillMCbkg(mcWeight*recoWeight);
+               if(!isSTDR) for(Distribution& dist : distribution_vec) dist.fillMCbkgSTDS(mcWeight*recoWeight);
                continue;
             }
             
@@ -920,6 +974,12 @@ void run()
                                           {0,0.28,0.56,0.82,1.08,2.14,3.141}
                                           ));
    distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_30StabPur12Bins_DNN",     // Optimized binning for DNN with 30% stability and purity
+                                          {0,70,125,200},
+                                          {0,0.56,1.08,3.141},
+                                          {0,40,70,97.5,125,162.5,200,300},
+                                          {0,0.28,0.56,0.82,1.08,2.14,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_30StabPur12Bins",     // Optimized binning for DNN with 30% stability and purity (does not use DNN)
                                           {0,70,125,200},
                                           {0,0.56,1.08,3.141},
                                           {0,40,70,97.5,125,162.5,200,300},

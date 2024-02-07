@@ -313,7 +313,7 @@ HIST* hist::Histograms<HIST>::getHistogram(TString const &varName,TString const 
 
 
 template <class HIST>
-THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TString> const& samples,std::map<const TString,Color_t> const& colormap,bool divideByBinWidth, bool includeData)
+THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TString> const& samples,std::map<const TString,Color_t> const& colormap,std::map<const TString,TString> const& printNameMap,bool divideByBinWidth, bool includeData)
 {
    le_.clear();
    THStack st;
@@ -341,7 +341,8 @@ THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TStr
          // no full dataset, use default colors or color defined in colormap
          if (colormap.find(s)!=colormap.end()) h->SetFillColor(colormap.at(s));
          else h->SetFillColor(Color::next());
-         le_.prepend(*h,s,"f");
+         if (printNameMap.find(s)!=printNameMap.end()) le_.prepend(*h,printNameMap.at(s),"f");
+         else le_.prepend(*h,s,"f");
       }
       h->SetFillStyle(1001);
       st.Add(h,"hist");
@@ -519,6 +520,21 @@ bool hist::checkRebinningConistency(const TAxis* axis, std::vector<T> const &new
       }
    }
    return true;
+}
+
+//derive normalized histogram with proper uncertainies (bin-by-bin correlations included)
+TH1F hist::getNormalizedHist(TH1F const &h1)
+{
+   TH1F normalized = h1;
+   normalized.Reset();
+   float integral = h1.Integral();
+   
+   for (int i=1; i<=h1.GetNbinsX(); i++){
+      normalized.SetBinContent(i,h1.GetBinContent(i)/integral);
+      normalized.SetBinError(i,h1.GetBinError(i)*(integral-h1.GetBinContent(i))/(integral*integral));
+   }
+   
+   return normalized;
 }
 
 TH1F& hist::rebinned(TH1F const &h, std::vector<float> const &edges, std::vector<float> const &widths,bool mergeOverflow,bool mergeUnderflow)
@@ -736,6 +752,31 @@ void hist::divideByBinWidth(TH1& h,bool divideLastBin)
    yt.ReplaceAll("BIN","BINW");
    yt.ReplaceAll(" / bin","BINW");
    h.GetYaxis()->SetTitle(yt);
+}
+
+void hist::divideByBinWidth(TH2& h,bool divideLastBin)
+{
+   int NX=h.GetNbinsX();
+   int NY=h.GetNbinsY();
+   if (h.GetBinContent(NX+1) != 0) {
+      debug_io<<"non-emtpy overflow. merge first!";
+      throw;
+   }
+   float w;
+   if (divideLastBin) NX++;NY++;
+   //else: not dividing the last bin=merged overflow
+   for (int i=0; i<NX; i++) {
+      for (int j=0; j<NY; j++) {
+         w=h.GetXaxis()->GetBinWidth(i)*h.GetYaxis()->GetBinWidth(j);
+         h.SetBinContent(i,j,h.GetBinContent(i,j)/w);
+         h.SetBinError(i,j,h.GetBinError(i,j)/w);
+      }
+   }
+   // labels
+   TString zt=h.GetZaxis()->GetTitle();
+   zt.ReplaceAll("BIN","BINW");
+   zt.ReplaceAll(" / bin","BINW");
+   h.GetZaxis()->SetTitle(zt);
 }
 
 void hist::mergeOverflow(TH1& h, bool includeUnderflow)
@@ -1091,7 +1132,7 @@ TGraphAsymmErrors hist::getErrorGraph(TH1F* const &eDOWN, TH1F* const &eUP, TH1F
    return asymmerrors;
 }
 
-TGraphAsymmErrors hist::getRatioAsymmGraph(TH1F const &down,TH1F const &up,TH1F const &nominal,TH1F const &denominator){
+TGraphAsymmErrors hist::getRatioAsymmGraph(TH1F const &down,TH1F const &up,TH1F const &nominal,TH1F const &denominator,bool const eXzero){
 
    TH1F* sysDown = (TH1F*)nominal.Clone();
    TH1F* sysUp = (TH1F*)nominal.Clone();
@@ -1102,5 +1143,5 @@ TGraphAsymmErrors hist::getRatioAsymmGraph(TH1F const &down,TH1F const &up,TH1F 
    TH1F ratio_systDown = getRatio(*sysDown,denominator,"data/MC",hist::ONLY1);
    TH1F ratio_systUp = getRatio(*sysUp,denominator,"data/MC",hist::ONLY1);
    
-   return getErrorGraph(&ratio_systDown,&ratio_systUp,&ratio_nominal,false,true);
+   return getErrorGraph(&ratio_systDown,&ratio_systUp,&ratio_nominal,false,eXzero);
 }

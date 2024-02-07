@@ -135,6 +135,7 @@ namespace Systematic{
         frac_tthf,          // correction factor for the fraction of tt+HF events from the template fit
         frac_ttother,       // correction factor for the fraction of tt+Other events from the template fit
         lumi,               // luminosity uncertainty
+        xsec_ttsignal,      // cross-section uncertainty of tt signal process
         xsec_ttother,       // cross-section uncertainty of tt bkg. process
         xsec_dy,            // cross-section uncertainty of Drell-Yan process
         xsec_st,            // cross-section uncertainty of SingleTop process
@@ -354,7 +355,7 @@ namespace Systematic{
         jesUserDefinedHEM1516,
         frac_tthf, frac_ttother,
         lumi,
-        xsec_ttother,xsec_dy,xsec_st,xsec_other,
+        xsec_ttother,xsec_dy,xsec_st,xsec_other,xsec_ttsignal,
         mass,
         match,
         match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
@@ -447,33 +448,30 @@ namespace Systematic{
         muonID,muonIDStat,muonIDSyst,muonIso,muonIsoStat,muonIsoSyst,
     };
 
-    /// Define ttbar systematics, i.e. variations of the ttbar sample (e.g. mass or scale variations)
+    /// Define ttbar systematics, which are used for uncertainty on ttbar MC prediction
+    // ~const std::vector<Type> ttbarTypes{
+        // ~topPt,
+        // ~mTop169p5,mTop175p5,mtop,
+        // ~match,
+        // ~erdon, CR1, CR2, CR_envelope, CR_envelope_ind,
+        // ~meScale, meScale_envelope_ind, meScale_envelope,
+        // ~meFacScale,
+        // ~meRenScale,
+        // ~psISRScale,
+        // ~psFSRScale,
+        // ~bFrag, bFrag_central, bFrag_Peterson, bSemilep,
+        // ~ueTune,
+        // ~alphasPdf, pdf, pdf_envelope, psScaleWeight,
+    // ~};
     const std::vector<Type> ttbarTypes{
-        topPtTheory, topPt,
-        mass,
-        match,
-        //match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
-        erdon, CR1, CR2, CR_envelope, CR_envelope_ind,
-        meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother, meScale_envelope_ind, meScale_envelope,
-        meFacScale, meFacScale_ttbb, meFacScale_ttb, meFacScale_tt2b, meFacScale_ttcc, meFacScale_ttother,
-        meRenScale, meRenScale_ttbb, meRenScale_ttb, meRenScale_tt2b, meRenScale_ttcc, meRenScale_ttother,
-        psScale, psScale_ttbb, psScale_ttb, psScale_tt2b, psScale_ttcc, psScale_ttother,
-        psISRScale,
-        //psISRScale_ttbb, psISRScale_ttb, psISRScale_tt2b, psISRScale_ttcc, psISRScale_ttother,
-        psFSRScale,
-        //psFSRScale_ttbb, psFSRScale_ttb, psFSRScale_tt2b, psFSRScale_ttcc, psFSRScale_ttother,
-        scale, scale_ttbb, scale_ttb, scale_tt2b, scale_ttcc, scale_ttother,
-        bFrag, bFrag_central, bFrag_Peterson, bSemilep,
-        ueTune,
-        ueTune_ttbb, ueTune_ttb, ueTune_tt2b, ueTune_ttcc, ueTune_ttother,
-        powhegv2, powheg, powhegv2Herwig, powhegHerwig, powhegHelac, powhegOpenloops, amcatnlofxfx, mcatnlo, madgraphmlm, cp5, perugia11, perugia11NoCR,
-        alphasPdf, pdf, pdf_envelope, psScaleWeight,
-        closure,
+        meScale, meScale_envelope_ind, meScale_envelope,
+        meFacScale,
+        meRenScale
     };
 
     /// Define cross-section uncertainty systematics, which use nominal samples, and change only the scaling
     const std::vector<Type> crossSectionTypes{
-        xsec_ttother,xsec_dy,xsec_st,xsec_other,
+        xsec_ttother,xsec_dy,xsec_st,xsec_other,xsec_ttsignal,
     };
 
     /// Define uncertainties due to tt+HF fraction scale factor from the fit, which use nominal samples, and change only the scaling
@@ -483,7 +481,7 @@ namespace Systematic{
 
     /// Define systematics that do not require dedicated root files
     const std::vector<Type> fileIndependentTypes{
-        xsec_ttother,xsec_dy,xsec_st,xsec_other,
+        xsec_ttother,xsec_dy,xsec_st,xsec_other,xsec_ttsignal,
         dynorm,
         frac_tthf, frac_ttother,
         lumi,
@@ -508,7 +506,7 @@ namespace Systematic{
         
         pdf,
         tw_ds,
-        xsec_ttother,xsec_dy,xsec_st,xsec_other,
+        xsec_ttother,xsec_dy,xsec_st,xsec_other,xsec_ttsignal,
         l1prefiring,
         applyJetVetoMaps,
         applyJetVetoMaps_loose,
@@ -612,7 +610,7 @@ namespace Systematic{
         topPt,
         tw_ds,
         ueTune,
-        xsec_dy,xsec_st,xsec_ttother,xsec_other
+        xsec_dy,xsec_st,xsec_ttother,xsec_other,xsec_ttsignal,
     };
     
     ///Define pseudo systematics that are essentially no shifts but changes in the selection (mostly for additional studies)

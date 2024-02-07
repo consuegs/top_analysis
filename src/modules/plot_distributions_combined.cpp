@@ -10,6 +10,10 @@ Config &cfg=Config::get();
 extern "C"
 void run()
 {
+   // ~//Plot BSM
+   // ~bool plotBSM = true;
+   bool plotBSM = false;
+   
    // Define systematics
    
    //Nominal
@@ -38,27 +42,27 @@ void run()
    // 1D plots
    std::vector<distr> vecDistr;
    for(TString channel:{"ee","mumu","emu"}){
-      vecDistr.push_back({"cutflow/",channel,0.5,9.5,9});
+      // ~vecDistr.push_back({"cutflow/",channel,0.5,9.5,9});
    }
    for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
-         // ~vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,30});
-         // ~vecDistr.push_back({selection+channel,"Lep2_pt",0.,300.,25});
-         // ~vecDistr.push_back({selection+channel,"mLL",0,200,25});
+         // ~vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,20});
+         // ~vecDistr.push_back({selection+channel,"Lep2_pt",0.,306.,17});
+         // ~vecDistr.push_back({selection+channel,"mLL",0,204,17});
          // ~vecDistr.push_back({selection+channel,"pTbJet",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"Jet2_pt",0.,400.,20});
-         // ~vecDistr.push_back({selection+channel,"nJets",1.5,9.5,8});
-         // ~vecDistr.push_back({selection+channel,"nBjets",-0.5,4.5,5});
+         // ~vecDistr.push_back({selection+channel,"nJets",1.5,8.5,7});
+         // ~vecDistr.push_back({selection+channel,"nBjets",0.5,4.5,4});
          // ~vecDistr.push_back({selection+channel,"Lep1_eta",-2.5,2.5,25});
          // ~vecDistr.push_back({selection+channel,"Lep2_eta",-2.5,2.5,25});
          // ~vecDistr.push_back({selection+channel,"Jet1_eta",-2.5,2.5,25});
          // ~vecDistr.push_back({selection+channel,"Jet2_eta",-2.5,2.5,25});
          
          // ~vecDistr.push_back({selection+channel,"MET_xy",0.,500.,50});
-         // ~vecDistr.push_back({selection+channel,"PuppiMET_xy",0.,500.,50});
-         vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
-         vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
+         // ~vecDistr.push_back({selection+channel,"PuppiMET_xy",0.,500.,25});
+         // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
+         // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
       }
    }
    
@@ -139,12 +143,13 @@ void run()
    }
    
    // combine years (nominals)
-   std::vector<TString> samples_merged = util::addVectors(mcSamples_merged,{"data","MC","T2tt_525_350"});
+   std::vector<TString> samples_merged = util::addVectors(mcSamples_merged,{"data","MC","T2tt_525_350","T2tt_525_438"});
    hist::Histograms<TH1F> hs_combined(samples_merged);
    getCombinedDistributions(hs_combined,hs_vec,samples_merged);
    
-   // Define color map
+   // Define color map and printName map
    std::map<const TString,Color_t> colormap = {{"TTbar_diLepton",kRed-6},{"Diboson",kCyan-8},{"ttW/Z",kGreen-7},{"tt other",kRed-9}};
+   std::map<const TString,TString> printNameMap = {{"TTbar_diLepton","t#bar{t} (ll)"},{"tt other","t#bar{t} other"},{"SingleTop","Single top DR"},{"SingleTop_DS","Single top DS"},{"DrellYan_comb","DY+jets"},{"ttW/Z","t#bar{t}W/Z"},{"WJetsToLNu","W+jets"}};
    
    io::RootFileSaver saver(TString::Format("../../../Combined/%s/Distributions/plots%.1f.root",versionString.Data(),cfg.processFraction*100),"plot_distributions");
    
@@ -153,7 +158,7 @@ void run()
       
       // get combined syst uncertainty
       // ~auto start = high_resolution_clock::now();      
-      plotHistograms(distr_.path,distr_.name,&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,false);
+      plotHistograms(distr_.path,distr_.name,&hs_combined,mcSamples_merged,colormap,printNameMap,systHists_vec_all,saver,plotBSM,false);
       
       // ~auto stop = high_resolution_clock::now();
       // ~auto duration = duration_cast<microseconds>(stop - start);
@@ -163,10 +168,10 @@ void run()
          TString combinedPath(distr_.path);
          combinedPath.ReplaceAll("/emu","/all");
          if (distr_.name == "emu") {   // for cutflow plot
-            plotHistograms(combinedPath,"all",&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,false);
+            plotHistograms(combinedPath,"all",&hs_combined,mcSamples_merged,colormap,printNameMap,systHists_vec_all,saver,plotBSM,false);
          }
          else {
-            plotHistograms(combinedPath,distr_.name,&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,false);
+            plotHistograms(combinedPath,distr_.name,&hs_combined,mcSamples_merged,colormap,printNameMap,systHists_vec_all,saver,plotBSM,false);
          }
       }
    }
@@ -174,16 +179,16 @@ void run()
    // plot 2D distributions
    for (auto const & distr_ : vecDistr2D){
       
-      plotHistograms(distr_.path,distr_.name,&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,true,distr_.binEdgesY);
+      plotHistograms(distr_.path,distr_.name,&hs_combined,mcSamples_merged,colormap,printNameMap,systHists_vec_all,saver,plotBSM,true,distr_.binEdgesY);
       
       if (distr_.path.Contains("/emu") || distr_.name == "emu"){  //plot all channels combined
          TString combinedPath(distr_.path);
          combinedPath.ReplaceAll("/emu","/all");
          if (distr_.name == "emu") {   // for cutflow plot
-            plotHistograms(combinedPath,"all",&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,true,distr_.binEdgesY);
+            plotHistograms(combinedPath,"all",&hs_combined,mcSamples_merged,colormap,printNameMap,systHists_vec_all,saver,plotBSM,true,distr_.binEdgesY);
          }
          else {
-            plotHistograms(combinedPath,distr_.name,&hs_combined,mcSamples_merged,colormap,systHists_vec_all,saver,false,true,distr_.binEdgesY);
+            plotHistograms(combinedPath,distr_.name,&hs_combined,mcSamples_merged,colormap,printNameMap,systHists_vec_all,saver,plotBSM,true,distr_.binEdgesY);
          }
       }
    }

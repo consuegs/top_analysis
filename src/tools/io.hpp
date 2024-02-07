@@ -36,6 +36,7 @@ namespace io
       void save(gfx::SplitCan &obj, TString name,bool simulation=true,bool addPDF=false) const;
       void closeFile() const;
       TString getInternalPath() const;
+      TString getFilePath() const;
    private:
       TFile *file_;
       TString fName_,fPath_,intPath_;
