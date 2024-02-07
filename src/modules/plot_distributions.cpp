@@ -10,6 +10,9 @@ Config const &cfg=Config::get();
 extern "C"
 void run()
 {
+   //Select which tW sample is used (DS or DR, DS is default)
+   bool useDR = false;
+   // ~bool useDR = true;
    
    std::vector<TString> mcSamples={};
    std::vector<TString> dataSamples={};
@@ -17,7 +20,7 @@ void run()
    std::vector<TString> signalSamples={};
    std::vector<TString> stSamples={};
    std::vector<TString> bsmSamples={};
-   getSampleVectors(cfg.year_int,mcSamples,dataSamples,ttbarSamples,signalSamples,stSamples,bsmSamples);
+   getSampleVectors(cfg.year_int,mcSamples,dataSamples,ttbarSamples,signalSamples,stSamples,bsmSamples,useDR);
    std::vector<TString> samplesToPlot = util::addVectors(mcSamples,dataSamples);
    samplesToPlot = util::addVectors(samplesToPlot,bsmSamples);
    
@@ -100,10 +103,10 @@ void run()
    // ~std::vector<TString> systToPlot = {"useDNNnoMetCutDY"};
    // ~std::vector<TString> systToPlot = {"removeMetCut"};
    
-   for (int i=1;i<=50;i++){
-       systToPlot.push_back(TString::Format("PDF_%i_UP",i));
-       systToPlot.push_back(TString::Format("PDF_%i_DOWN",i));
-   }
+   // ~for (int i=1;i<=50;i++){
+       // ~systToPlot.push_back(TString::Format("PDF_%i_UP",i));
+       // ~systToPlot.push_back(TString::Format("PDF_%i_DOWN",i));
+   // ~}
    
    // Remove HEM for all years except 2018
    auto itr =std::find(systToPlot.begin(), systToPlot.end(), "JESUserDefinedHEM1516_DOWN");
@@ -123,7 +126,7 @@ void run()
    }
    
    // Define saver
-   io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),TString::Format("plot_distributions%s",(systToPlot[0]=="Nominal")? "" : ("_"+systToPlot[0]).Data()));
+   io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),TString::Format("plot_distributions%s%s",(systToPlot[0]=="Nominal")? "" : ("_"+systToPlot[0]).Data(),(useDR)? "_DR" : ""));
    
    // 1D plots
    std::vector<distr> vecDistr;
@@ -272,7 +275,7 @@ void run()
    hs = &(systHists_vec[0]->hists_);
    
    // Combine different samples to improve readability
-   combineAllSamples(cfg.year_int,hs,mcSamples_merged);
+   combineAllSamples(cfg.year_int,hs,mcSamples_merged,useDR);
    
    // Loop over distributions to plot
    for (auto const & distr_ : vecDistr){

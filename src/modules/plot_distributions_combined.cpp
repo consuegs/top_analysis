@@ -10,9 +10,13 @@ Config &cfg=Config::get();
 extern "C"
 void run()
 {
-   // ~//Plot BSM
+   //Plot BSM
    // ~bool plotBSM = true;
    bool plotBSM = false;
+   
+   //Select which tW sample is used (DS or DR, DS is default)
+   bool useDR = false;
+   // ~bool useDR = true;
    
    // Define systematics
    
@@ -42,7 +46,7 @@ void run()
    // 1D plots
    std::vector<distr> vecDistr;
    for(TString channel:{"ee","mumu","emu"}){
-      // ~vecDistr.push_back({"cutflow/",channel,0.5,9.5,9});
+      vecDistr.push_back({"cutflow/",channel,0.5,9.5,9});
    }
    for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
@@ -70,7 +74,7 @@ void run()
    std::vector<distr2D> vecDistr2D;
    for(TString selection:{"baseline"}){
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
-         vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,8,0.,3.2,6,{0,40,70,97.5,125,162.5,200,300,400},{0,0.28,0.56,0.82,1.08,2.14,3.2}});
+         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,8,0.,3.2,6,{0,40,70,97.5,125,162.5,200,300,400},{0,0.28,0.56,0.82,1.08,2.14,3.2}});
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,4,0.,3.2,3,{0,70,125,200,400},{0,0.56,1.08,3.2}});
       }
    }
@@ -111,7 +115,7 @@ void run()
       std::vector<TString> signalSamples={};
       std::vector<TString> stSamples={};
       std::vector<TString> bsmSamples={};
-      getSampleVectors(cfg_years[i].year_int,mcSamples,dataSamples,ttbarSamples,signalSamples,stSamples,bsmSamples);
+      getSampleVectors(cfg_years[i].year_int,mcSamples,dataSamples,ttbarSamples,signalSamples,stSamples,bsmSamples,useDR);
       std::vector<TString> samplesToPlot = util::addVectors(mcSamples,dataSamples);
       samplesToPlot = util::addVectors(samplesToPlot,bsmSamples);
       
@@ -138,7 +142,7 @@ void run()
       hs_vec[i] = &(systHists_vec_all[i][0]->hists_);
       
       // combine different samples to improve readability
-      combineAllSamples(cfg_years[i].year_int,hs_vec[i],mcSamples_merged);
+      combineAllSamples(cfg_years[i].year_int,hs_vec[i],mcSamples_merged,useDR);
       
    }
    
@@ -151,7 +155,7 @@ void run()
    std::map<const TString,Color_t> colormap = {{"TTbar_diLepton",kRed-6},{"Diboson",kCyan-8},{"ttW/Z",kGreen-7},{"tt other",kRed-9}};
    std::map<const TString,TString> printNameMap = {{"TTbar_diLepton","t#bar{t} (ll)"},{"tt other","t#bar{t} other"},{"SingleTop","Single top DR"},{"SingleTop_DS","Single top DS"},{"DrellYan_comb","DY+jets"},{"ttW/Z","t#bar{t}W/Z"},{"WJetsToLNu","W+jets"}};
    
-   io::RootFileSaver saver(TString::Format("../../../Combined/%s/Distributions/plots%.1f.root",versionString.Data(),cfg.processFraction*100),"plot_distributions");
+   io::RootFileSaver saver(TString::Format("../../../Combined/%s/Distributions/plots%.1f.root",versionString.Data(),cfg.processFraction*100),TString::Format("plot_distributions%s",(useDR)? "_DR" : ""));
    
    // plot 1D distributions
    for (auto const & distr_ : vecDistr){

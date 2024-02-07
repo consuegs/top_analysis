@@ -69,37 +69,49 @@ void systHists::combineChannel(){
 }
 
 // Return sample vectors to import
-void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TString> &mcSamples, std::vector<TString> &dataSamples, std::vector<TString> &ttbarSamples, std::vector<TString> &signalSamples, std::vector<TString> &stSamples, std::vector<TString> &bsmSamples){
+void distributionsplotting::getSampleVectors(int const &year_int, std::vector<TString> &mcSamples, std::vector<TString> &dataSamples, std::vector<TString> &ttbarSamples, std::vector<TString> &signalSamples, std::vector<TString> &stSamples, std::vector<TString> &bsmSamples, bool const &useDR){
    switch(year_int){
       case(3): //2018
-      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      if (useDR) {
+         mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+         stSamples = {"SingleTop"};
+      }
+      else{
+         mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+         stSamples = {"SingleTop_DS"};
+      }
       dataSamples = {"DoubleMuon","EGamma","MuonEG","SingleMuon"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
-      // ~stSamples = {"SingleTop"};
-      stSamples = {"SingleTop_DS"};
       bsmSamples = {"T2tt_525_438","T2tt_525_350"};
       break;
       case(2): //2017
-      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      if (useDR) {
+         mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+         stSamples = {"SingleTop"};
+      }
+      else{
+         mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+         stSamples = {"SingleTop_DS"};
+      }
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
-      // ~stSamples = {"SingleTop"};
-      stSamples = {"SingleTop_DS"};
       bsmSamples = {"T2tt_525_438","T2tt_525_350"};
       break;
       case(1): //2016_postVFP 
       case(0): //2016_preVFP
-      // ~mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
-      mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+      if (useDR) {
+         mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+         stSamples = {"SingleTop"};
+      }
+      else{
+         mcSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"};
+         stSamples = {"SingleTop_DS"};
+      }
       dataSamples = {"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"};
       ttbarSamples = {"TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"};
       signalSamples = {"TTbar_diLepton"};
-      // ~stSamples = {"SingleTop"};
-      stSamples = {"SingleTop_DS"};
       bsmSamples = {"T2tt_525_438","T2tt_525_350"};
       break;
    }
@@ -183,7 +195,7 @@ void distributionsplotting::add_Categories(TString const path, io::RootFileReade
 }
 
 //Function to combine samples to combined backgrounds
-void distributionsplotting::combineAllSamples(int const &year_int, hist::Histograms<TH1F>* hs, std::vector<TString> &mcSamples_merged){
+void distributionsplotting::combineAllSamples(int const &year_int, hist::Histograms<TH1F>* hs, std::vector<TString> &mcSamples_merged, const bool useDR){
    hs->combineSamples("Diboson",{"WW","WZ","ZZ"});
    hs->combineSamples("DrellYan_comb",{"DrellYan_NLO","DrellYan_M10to50_NLO"});
    hs->combineSamples("ttZ",{"ttZ_2L","ttZ_QQ"});
@@ -191,29 +203,29 @@ void distributionsplotting::combineAllSamples(int const &year_int, hist::Histogr
    hs->combineSamples("tt other",{"TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"});
    switch(year_int){
       case(3): //2018
-      // ~mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
-      mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop_DS","tt other","TTbar_diLepton"};
+      if (useDR) mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
+      else mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop_DS","tt other","TTbar_diLepton"};
       hs->combineSamples("data",{"DoubleMuon","EGamma","MuonEG","SingleMuon"});
       hs->combineSamples("MC",mcSamples_merged);
-      // ~hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
-      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop_DS","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      if (useDR) hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      else hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop_DS","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
       break;
       case(2): //2017
-      // ~mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
-      mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop_DS","tt other","TTbar_diLepton"};
+      if (useDR) mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
+      else mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop_DS","tt other","TTbar_diLepton"};
       hs->combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
       hs->combineSamples("MC",mcSamples_merged);
-      // ~hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
-      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop_DS","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      if (useDR) hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      else hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop_DS","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
       break;
       case(0): //2016_preVFP
       case(1): //2016_postVFP
-      // ~mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
-      mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop_DS","tt other","TTbar_diLepton"};
+      if (useDR) mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop","tt other","TTbar_diLepton"};
+      else mcSamples_merged = {"WJetsToLNu","ttW/Z","Diboson","DrellYan_comb","SingleTop_DS","tt other","TTbar_diLepton"};
       hs->combineSamples("data",{"DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"});
       hs->combineSamples("MC",mcSamples_merged);
-      // ~hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
-      hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop_DS","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      if (useDR) hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
+      else hs->combineSamples("SM bkg.",{"tt other","Diboson","SingleTop_DS","WJetsToLNu","DrellYan_comb","ttZ","ttW"});
       break;
    }
 }

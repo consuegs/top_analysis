@@ -71,14 +71,14 @@ namespace distributionsplotting
       std::vector<float> binEdgesY = {};
    };
    
-   void getSampleVectors(int const &year_int, std::vector<TString> &mcSamples, std::vector<TString> &dataSamples, std::vector<TString> &ttbarSamples, std::vector<TString> &signalSamples, std::vector<TString> &stSamples, std::vector<TString> &bsmSamples);
+   void getSampleVectors(int const &year_int, std::vector<TString> &mcSamples, std::vector<TString> &dataSamples, std::vector<TString> &ttbarSamples, std::vector<TString> &signalSamples, std::vector<TString> &stSamples, std::vector<TString> &bsmSamples, bool const &useDR=false);
    
    void importHists(std::vector<systHists*> &systHists_vec, std::vector<TString> const &samplesToPlot, std::vector<TString> const &mcSamples,
                      std::vector<distr> const &vecDistr, std::vector<distr2D> const &vecDistr2D,  bool const &standardDict=true);
                      
    void add_Categories(TString const path, io::RootFileReader const &reader_hist, TH1F &out_hist);
    
-   void combineAllSamples(int const &year_int, hist::Histograms<TH1F>* hs, std::vector<TString> &mcSamples_merged);
+   void combineAllSamples(int const &year_int, hist::Histograms<TH1F>* hs, std::vector<TString> &mcSamples_merged, const bool useDR=false);
    
    void addShifts(const TH1F &tempShift,TH1F* hist_shiftUP,TH1F* hist_shiftDOWN);
    
