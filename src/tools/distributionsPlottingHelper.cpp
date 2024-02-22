@@ -521,14 +521,15 @@ void distributionsplotting::fixAxis2D(TAxis* axis, const int &nBinsY){     // on
 void distributionsplotting::drawVertLines2D(std::vector<float> const &binEdgesY, float const &lowerEnd, float const &upperEnd,bool text){// only valid for x range in met between 0 and 400
    TLine * aline = new TLine();
    TLatex * atext = new TLatex();
-   atext->SetTextSize(0.025);
+   // ~atext->SetTextSize(0.025);
+   atext->SetTextSize(0.035);
    aline->SetLineWidth(1.8);
    for (int i=1; i<(binEdgesY.size()-1); i++){
       aline->DrawLine(i*400,lowerEnd,i*400,upperEnd);
       if (text){
-         // ~atext->DrawLatex(75+((i-1)*400),1.7*lowerEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i-1],binEdgesY[i]));
-         atext->DrawLatex(75+((i-1)*400),1e-4*upperEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i-1],binEdgesY[i]));
-         if (i==(binEdgesY.size()-2)) atext->DrawLatex(75+(i*400),1e-4*upperEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i],binEdgesY[i+1]));    // for last bin
+         // ~atext->DrawLatex(75+((i-1)*400),1e-4*upperEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i-1],binEdgesY[i]));
+         atext->DrawLatex(30+((i-1)*400),1.5e-4*upperEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i-1],binEdgesY[i]));
+         if (i==(binEdgesY.size()-2)) atext->DrawLatex(30+(i*400),1.5e-4*upperEnd,TString::Format("%.2f<|#Delta#phi|<%.2f",binEdgesY[i],binEdgesY[i+1]));    // for last bin
       }
    }
 }

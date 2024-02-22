@@ -164,7 +164,8 @@ void run()
    // ~std::vector<TString> systVec = {"applyGenLevel_DeltaRcut"};
    // ~std::vector<TString> systVec = {"JETPILEUPID_DOWN"};
    // ~std::vector<TString> systVec = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN"};
-   std::vector<TString> systVec = {"Nominal"};
+   std::vector<TString> systVec = {"Nominal","CR1","CR2","ERDON"};
+   // ~std::vector<TString> systVec = {"Nominal"};
    
    //Remove HEM unc. for all year except 2018
    auto itr =std::find(systVec.begin(), systVec.end(), "JESUserDefinedHEM1516_DOWN");
@@ -202,8 +203,10 @@ void run()
    // ~std::vector<TString> distributions = {"pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
    
    // ~std::vector<TString> distributions = {"inclusive","dPhi_new_DNN","pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
-   std::vector<TString> distributions = {"pTnunu_new","dPhi","2D_dPhi_pTnunu_new_30StabPur12Bins"};
+   // ~std::vector<TString> distributions = {"pTnunu_new","dPhi","2D_dPhi_pTnunu_new_30StabPur12Bins"};
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur12Bins"};
+   
+   std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur9Bins_sameDet_DNN","2D_dPhi_pTnunu_new_30StabPur9Bins_diffDet_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
    
    
    // ~bool verbose = false;
@@ -260,12 +263,12 @@ void run()
          bool useAltReco = false;
          
          //Use real data
-         bool useRealData = false;
-         // ~bool useRealData = true;
+         // ~bool useRealData = false;
+         bool useRealData = true;
          
          //Use Single Top DS
-         bool useSingleTopDS = false;
-         // ~bool useSingleTopDS = true;
+         // ~bool useSingleTopDS = false;
+         bool useSingleTopDS = true;
          
          //Cannot use realData and altPseudo data simultaneously
          if (useRealData && useAltReco){

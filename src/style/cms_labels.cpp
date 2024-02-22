@@ -30,9 +30,11 @@ void style::draw_lumi(TPad &pad, bool simulation, bool drawLumiText)
    float extraTextFont = 52;  // default is helvetica-italics
    // text sizes and text offsets with respect to the top frame
    // in unit of the top margin size
-   float lumiTextSize     = 0.6;
+   // ~float lumiTextSize     = 0.6;
+   float lumiTextSize     = 0.7;
    float lumiTextOffset   = 0.2;
-   float cmsTextSize      = 0.75;
+   // ~float cmsTextSize      = 0.75;
+   float cmsTextSize      = 0.85;
    // ratio of "CMS" and extra text size
    float extraOverCmsTextSize  = 0.76;
 

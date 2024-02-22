@@ -533,6 +533,8 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins14_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins16_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur9Bins_sameDet_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur9Bins_diffDet_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "pTnunu_new") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);
@@ -800,6 +802,8 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins14_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur2PhiBins16_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "2D_dPhi_pTnunu_new40_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur9Bins_sameDet_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
+      else if (dist.varName_ == "2D_dPhi_pTnunu_new_30StabPur9Bins_diffDet_DNN") dist.setVariables(metRec_DNN,phiRec_DNN,metGen,phiGen);
       else if (dist.varName_ == "pTnunu") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "pTnunu_new") dist.setVariables(metRec,metGen);
       else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);      
@@ -1002,6 +1006,18 @@ void run()
                                           {0,0.64,1.2,3.141},
                                           {0,20,40,55,70,85,100,115,130,145,160,180,200,300},
                                           {0,0.32,0.64,0.92,1.2,2.2,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_30StabPur9Bins_sameDet_DNN",     // Binning with merged last pT bin to derive CR unc. (det. level binning unchanged)
+                                          {0,70,125},
+                                          {0,0.56,1.08,3.141},
+                                          {0,40,70,97.5,125,162.5,200,300},
+                                          {0,0.28,0.56,0.82,1.08,2.14,3.141}
+                                          ));
+   distribution_vec.push_back(Distribution("2D_dPhi_pTnunu_new_30StabPur9Bins_diffDet_DNN",     // Binning with merged last pT bin to derive CR unc. (adapted det. level binning)
+                                          {0,70,125},
+                                          {0,0.56,1.08,3.141},
+                                          {0,40,70,97.5,125,262.5},
+                                          {0,0.28,0.56,0.82,1.08,2.14,3.141}
                                           ));
    distribution_vec.push_back(Distribution("pTnunu",
                                           {0,40,70,110,170,260,370},

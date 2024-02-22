@@ -46,7 +46,7 @@ void run()
    // 1D plots
    std::vector<distr> vecDistr;
    for(TString channel:{"ee","mumu","emu"}){
-      vecDistr.push_back({"cutflow/",channel,0.5,9.5,9});
+      // ~vecDistr.push_back({"cutflow/",channel,0.5,9.5,9});
    }
    for(TString selection:{"baseline"}){ //Reco 1D Histograms
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
@@ -65,8 +65,8 @@ void run()
          
          // ~vecDistr.push_back({selection+channel,"MET_xy",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"PuppiMET_xy",0.,500.,25});
-         // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
-         // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
+         vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
+         vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
       }
    }
    

@@ -105,9 +105,11 @@ void io::RootFileSaver::save(TObject const &obj, TString name,bool decorate,bool
       
       if (addPDF) {
          TString loc = std::string(fPath_).substr(0, std::string(fPath_).find_last_of("\\/"));
-         loc = loc+"/pdf_out/"+name+".pdf";
-         ensurePathForFile(loc);
-         can.SaveAs(loc);
+         TString filePath = loc+"/pdf_out/"+name+".pdf";
+         TString filePath_eps = loc+"/pdf_out/"+name+".eps";
+         ensurePathForFile(filePath);
+         can.SaveAs(filePath);
+         // ~can.SaveAs(filePath_eps);
       }
    }
    file_->cd();

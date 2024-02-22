@@ -125,10 +125,13 @@ std::pair<float,int> tunfoldplotting::getChi2NDF_withCorr(TH1F* hist_res, TGraph
             corr[i-1][j-1]=cov_res->GetBinContent(i,j)/(sqrt(cov_res->GetBinContent(i,i)*cov_res->GetBinContent(j,j)));
          }
       }
-      diff.Print();
-      cov.Print();
-      // ~std::cout<<cov.Determinant()<<std::endl;
-      // ~corr.Print();
+      
+      if (!includeTrueError){
+         diff.Print();
+         // ~cov.Print();
+         // ~std::cout<<cov.Determinant()<<std::endl;
+         corr.Print();
+      }
       
       cov.Invert();
       
@@ -1136,7 +1139,6 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    realDisAlt->SetTitle(dist.title);
    realDis->SetStats(false);
    
-   
    unfolded_reg->SetLineColor(kGreen+2);
    unfolded_bbb->SetLineColor(kViolet);
    unfolded_reg->SetMarkerColor(kGreen+2);
@@ -1298,14 +1300,14 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    TLine * aline = new TLine();
    if (dist.is2D){
       //Draw vertical lines and binning ranges for deltaPhi
-      atext->SetTextSize(0.03);
+      atext->SetTextSize(0.035);
       aline->SetLineWidth(2);
       aline->DrawLine(800,unfolded->GetMinimum(),800,unfolded->GetMaximum());
       aline->DrawLine(400,unfolded->GetMinimum(),400,unfolded->GetMaximum());
       aline->DrawLine(800,unfolded->GetMinimum(),800,unfolded->GetMaximum());
-      atext->DrawLatex(75,0.5*unfolded->GetMaximum(),TString::Format("0<|#Delta#phi|<%.2f",binning_phi(1)));
-      atext->DrawLatex(475,0.5*unfolded->GetMaximum(),TString::Format("%.2f<|#Delta#phi|<%.2f",binning_phi(1),binning_phi(2)));
-      atext->DrawLatex(875,0.5*unfolded->GetMaximum(),TString::Format("%.2f<|#Delta#phi|<%.2f",binning_phi(2),binning_phi(3)));
+      atext->DrawLatex(50,0.5*unfolded->GetMaximum(),TString::Format("0<|#Delta#phi|<%.2f",binning_phi(1)));
+      atext->DrawLatex(450,0.5*unfolded->GetMaximum(),TString::Format("%.2f<|#Delta#phi|<%.2f",binning_phi(1),binning_phi(2)));
+      atext->DrawLatex(850,0.5*unfolded->GetMaximum(),TString::Format("%.2f<|#Delta#phi|<%.2f",binning_phi(2),binning_phi(3)));
    }
    
    //Get Chi2 and NDF
@@ -1386,10 +1388,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       // ~legE.append(realDisAlt_totalGraph,"MadGraph","p");
       // ~legE.append(fixedOrderNNLOgraph,"NNLO","p");
       // ~legE.append(fixedOrderNLOgraph,"NLO","p");
-      legE.append(realDis_totalGraph,TString::Format("Powheg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_powheg_cov.first,Chi2Pair_powheg_cov.second),"p");
-      legE.append(realDisAlt_totalGraph,TString::Format("MadGraph [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_madgraph_cov.first,Chi2Pair_madgraph_cov.second),"p");
-      legE.append(fixedOrderNNLOgraph,TString::Format("NNLO [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_NNLO_cov.first,Chi2Pair_NNLO_cov.second),"p");
-      legE.append(fixedOrderNLOgraph,TString::Format("NLO [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_NLO_cov.first,Chi2Pair_NLO_cov.second),"p");
+      legE.append(realDis_totalGraph,TString::Format("Powheg [%.1f/%i]",Chi2Pair_powheg_cov.first,Chi2Pair_powheg_cov.second),"p");
+      legE.append(realDisAlt_totalGraph,TString::Format("MC@NLO [%.1f/%i]",Chi2Pair_madgraph_cov.first,Chi2Pair_madgraph_cov.second),"p");
+      legE.append(fixedOrderNNLOgraph,TString::Format("NNLO [%.1f/%i]",Chi2Pair_NNLO_cov.first,Chi2Pair_NNLO_cov.second),"p");
+      legE.append(fixedOrderNLOgraph,TString::Format("NLO [%.1f/%i]",Chi2Pair_NLO_cov.first,Chi2Pair_NLO_cov.second),"p");
       // ~legE.append(*realDis,TString::Format("Powheg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_powheg.first,Chi2Pair_powheg.second),"p");
       // ~legE.append(*realDisAlt,TString::Format("MadGraph [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_madgraph.first,Chi2Pair_madgraph.second),"p");
       // ~legE.append(fixedOrderNNLOgraph,TString::Format("NNLO [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_NNLO.first,Chi2Pair_NNLO.second),"p");
@@ -1403,8 +1405,9 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       legE.append(fixedOrderNLOpair.first,"NLO","l");
       legE.append(fixedOrderLOpair.first,"LO","l");
    }
-   TLegend leg=legE.buildLegend(.149,.46,0.339,.69,1);
-   leg.SetTextSize(0.03);
+   // ~TLegend leg=legE.buildLegend(.149,.46,0.339,.69,1);
+   TLegend leg=legE.buildLegend(.149,.45,0.339,.72,1);
+   leg.SetTextSize(0.034);
    leg.Draw();
    
    unfolded->Draw("axis same");
@@ -1705,6 +1708,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    }
    
    gStyle->SetTickLength(0.,"x");
+   gStyle->SetLabelSize(0.06,"x");
    
    /*
    //Print rel. uncertainties:
