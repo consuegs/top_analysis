@@ -38,7 +38,7 @@ def getPath(pathName, user=None):
         user = getpass.getuser()
     
     if not os.path.isfile(os.path.join(os.path.dirname(__file__),"%s.ini"%user)):
-        print "No path config found for user %s"%user
+        print("No path config found for user %s"%user)
         exit(1)
     
     config = BetterConfigParser()
@@ -48,4 +48,4 @@ def getPath(pathName, user=None):
 
 
 if __name__ == "__main__":
-    print getPath("testPath")
+    print(getPath("testPath"))

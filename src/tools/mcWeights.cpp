@@ -44,7 +44,7 @@ void mcWeights::prepareLumiWeight(const Datasubset &dss, const float &lumi){
 }
 
 
-const float mcWeights::getMCweight(const float &nominalWeight, const std::vector<float> &w_pdf, const std::vector<float> &w_ps, const std::vector<float> &w_bFrag)
+const float mcWeights::getMCweight(const float &nominalWeight, const std::vector<float> &w_pdf, const std::vector<float> &w_ps, const std::vector<float> &w_bFrag, const std::vector<float> &w_match)
 {
    if(useNominal) return nominalWeight;
    else {      // Compared to normalization in dataset.cpp Bins are shifted by -1 since entry in w_pdf[0] is in BinNR=1 for summed Hist
@@ -81,6 +81,9 @@ const float mcWeights::getMCweight(const float &nominalWeight, const std::vector
          case Systematic::bSemilep:
             return w_bFrag[(upVariation)? 5-1 : 6-1]*nominalWeight;
             break;
+         case Systematic::match_dctr:
+            return w_match[(upVariation)? 0 : 1]*nominalWeight;
+            break;
          default:
             std::cout<<"Error in mcWeights: Weight for "<<Systematic::convertType(systematic_.type())<<" not found"<<std::endl;
             exit(200);
@@ -89,10 +92,10 @@ const float mcWeights::getMCweight(const float &nominalWeight, const std::vector
    }
 }
 
-const float mcWeights::getMCweight_lumiWeighted(const float &nominalWeight, const std::vector<float> &w_pdf, const std::vector<float> &w_ps, const std::vector<float> &w_bFrag)
+const float mcWeights::getMCweight_lumiWeighted(const float &nominalWeight, const std::vector<float> &w_pdf, const std::vector<float> &w_ps, const std::vector<float> &w_bFrag, const std::vector<float> &w_match)
 {
    if (preparedLumiWeight){
-      return this->getMCweight(nominalWeight,w_pdf,w_ps,w_bFrag)*lumiWeight;
+      return this->getMCweight(nominalWeight,w_pdf,w_ps,w_bFrag,w_match)*lumiWeight;
    }
    else{
       std::cout<<"Error in mcWeights: lumiWeights is not defined!!"<<std::endl;

@@ -166,6 +166,7 @@ Systematic::Type Systematic::convertType(const TString& type, bool const &quiet)
     if(type.BeginsWith("MATCH_TTB"))     return match_ttb;
     if(type.BeginsWith("MATCH_TTCC"))    return match_ttcc;
     if(type.BeginsWith("MATCH_TTOTHER")) return match_ttother;
+    if(type.BeginsWith("MATCH_DCTR")) return match_dctr;
     if(type.BeginsWith("MATCH")) return match;
     if(type.BeginsWith("CR1")) return CR1;
     if(type.BeginsWith("CR2")) return CR2;
@@ -454,6 +455,7 @@ TString Systematic::convertType(const Type& type)
     if(type == match_ttb)     return "MATCH_TTB";
     if(type == match_ttcc)    return "MATCH_TTCC";
     if(type == match_ttother) return "MATCH_TTOTHER";
+    if(type == match_dctr) return "MATCH_DCTR";
     if(type == match) return "MATCH";
     if(type == CR1) return "CR1";
     if(type == CR2) return "CR2";
@@ -635,6 +637,7 @@ TString Systematic::getPrintName(const TString& type)
     else if(type == "LEPTON") return "Lepton reconstruction";
     else if(type == "LUMI") return "Luminosity";
     else if(type == "MATCH") return "ME-PS matching";
+    else if(type == "MATCH_DCTR") return "ME-PS matching";
     else if(type == "MESCALE_ENVELOPE") return "ME scale";
     else if(type == "MTOP") return "Top mass";
     else if(type == "JETPILEUPID") return "Jet pileup ID";
@@ -875,6 +878,14 @@ TString Systematic::prefiringWeightName(const Systematic & systematic){
    else std::cout<<"Do not apply systematic variation\n";
    
    return weightName;
+}
+
+TString Systematic::matchDCTRWeightName(const TString &dsName, const bool &upVariation){
+    if (dsName == "TTbar_diLepton" || dsName == "TTbar_singleLepton" || dsName == "Hadronic"){
+        if (upVariation) return "hdamp_weight_up";
+        else return "hdamp_weight_down";
+    }
+    else return "weightFragCentral";    //return dummy for non powheg TTbar sample since nTuple entry not yet available
 }
 
 TString Systematic::metNameAddition(const Systematic & systematic){

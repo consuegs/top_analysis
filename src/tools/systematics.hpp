@@ -144,6 +144,7 @@ namespace Systematic{
         topPt,              // scale top pt as estimated in ttbar differential cross-section measurements, uncertainty via switching off and on
         mass,               // variations of masses used in process generation (here top quark mass)
         match,              // matching uncertainty in process generation, associated to powheg-pythia hdamp parameter
+        match_dctr,         // matching uncertainty in process generation, associated to powheg-pythia hdamp parameter (applying DCTR weights instead of alternative sample)
         match_ttbb,         // matching uncertainty in process generation, associated to powheg-pythia hdamp parameter per ttbar+XX
         match_tt2b,         // matching uncertainty in process generation, associated to powheg-pythia hdamp parameter per ttbar+XX
         match_ttb,          // matching uncertainty in process generation, associated to powheg-pythia hdamp parameter per ttbar+XX
@@ -357,7 +358,7 @@ namespace Systematic{
         lumi,
         xsec_ttother,xsec_dy,xsec_st,xsec_other,xsec_ttsignal,
         mass,
-        match,
+        match,match_dctr,
         match_ttbb, match_ttb, match_tt2b, match_ttcc, match_ttother,
         meScale, meScale_ttbb, meScale_ttb, meScale_tt2b, meScale_ttcc, meScale_ttother, meScale_z, meScale_st, meScale_envelope_ind, meScale_envelope,
         meFacScale, meFacScale_ttbb, meFacScale_ttb, meFacScale_tt2b, meFacScale_ttcc, meFacScale_ttother,
@@ -525,7 +526,8 @@ namespace Systematic{
         meScale,meFacScale,meRenScale,
         psISRScale,psFSRScale,
         bFrag,bSemilep,
-        alphasPdf,pdf
+        alphasPdf,pdf,
+        match_dctr
     };
     
     ///Define systematics that require rescaling of lumi weight
@@ -534,7 +536,8 @@ namespace Systematic{
         psISRScale,psFSRScale,
         bFrag,bSemilep,
         alphasPdf,
-        pu
+        pu,
+        match_dctr
 
     };
     
@@ -601,6 +604,7 @@ namespace Systematic{
         
         l1prefiring,
         match,
+        match_dctr,
         meScale_envelope,meScale,meFacScale,meRenScale,
         mtop,
         muonIDSyst,muonIsoSyst,muonScale,
@@ -687,6 +691,9 @@ namespace Systematic{
     
     /// Get correct met name (to derive unc. due to unclustered Energy)
     TString metNameAddition(const Systematic & systematic);
+    
+    /// Get correct match DCTR weight name (return dummy if not POWHEG sample, not yet stored in old nTuples)
+    TString matchDCTRWeightName(const TString &dsName, const bool &upVariation);
     
     /// Check if alternative sample and selected systematic match
     void checkAlternativeSample(const Systematic & systematic, const TString &dsSyst, const TString &dsName);

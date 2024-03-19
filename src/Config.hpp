@@ -115,6 +115,7 @@ public:
    bool tunfold_withPF;
    bool tunfold_withSameBins;
    bool tunfold_withBSM;
+   TString tunfold_scaleBSM;
    bool tunfold_withScaleFactor;
    bool tunfold_plotComparison;
    bool tunfold_plotToyStudies;

@@ -46,7 +46,7 @@ systHists::systHists(TString const &systematicName, TString filePath, TString co
          }
          
          // Adapt datasets if syst. only changes ttbar (currently used for bFrag and bSemi)
-         if (systematic_.type() == Systematic::bFrag || systematic_.type() == Systematic::bSemilep){
+         if (systematic_.type() == Systematic::bFrag || systematic_.type() == Systematic::bSemilep || systematic_.type() == Systematic::match_dctr){
             onlyTTbar = true;
             datasets_ = datasets_ttBar;
          }

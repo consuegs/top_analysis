@@ -228,6 +228,8 @@ class Distribution
          histDataRecoAlt_coarse=signalBinning_->CreateHistogram("histDataRecoAlt_coarse_"+varName_);
          histDataTruthAlt=signalBinning_->CreateHistogram("histDataTruthAlt_"+varName_);
          histDataTruthAlt_fakes=signalBinning_->CreateHistogram("histDataTruthAlt_fakes_"+varName_);
+         histDataTruthBSM=signalBinning_->CreateHistogram("histDataTruthBSM_"+varName_);
+         histDataTruthAltBSM=signalBinning_->CreateHistogram("histDataTruthAltBSM_"+varName_);
          histDataReal=detectorBinning_->CreateHistogram("histDataReal_"+varName_);
          histDataReal_coarse=signalBinning_->CreateHistogram("histDataReal_coarse_"+varName_);
       }
@@ -279,6 +281,16 @@ class Distribution
       void fillDataTruthAlt(float const &weight){
          Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
          histDataTruthAlt->Fill(genbinNumber,weight);
+      }
+      
+      void fillDataTruthBSM(float const &weight){
+         Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         histDataTruthBSM->Fill(genbinNumber,weight);
+      }
+      
+      void fillDataTruthAltBSM(float const &weight){
+         Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         histDataTruthAltBSM->Fill(genbinNumber,weight);
       }
       
       void fillDataReco(float const &weight){
@@ -398,6 +410,8 @@ class Distribution
          saver.save(*histDataTruth,varName_+"/histDataTruth");
          saver.save(*histDataTruthAlt_fakes,varName_+"/histDataTruthAlt_fakes");
          saver.save(*histDataTruthAlt,varName_+"/histDataTruthAlt");
+         saver.save(*histDataTruthBSM,varName_+"/histDataTruthBSM");
+         saver.save(*histDataTruthAltBSM,varName_+"/histDataTruthAltBSM");
       }
       
       void saveMCHists(io::RootFileSaver const &saver){
@@ -466,6 +480,8 @@ class Distribution
       TH1* histDataTruth_fakes;
       TH1* histDataTruthAlt;
       TH1* histDataTruthAlt_fakes;
+      TH1* histDataTruthBSM;
+      TH1* histDataTruthAltBSM;
       
       TH1* histDataReal;
       TH1* histDataReal_coarse;
@@ -486,7 +502,10 @@ class Distribution
 
 TString getSavePath(){
    TString save_path = "TUnfold_binning_"+cfg.tunfold_InputSamples[0]+"_"+cfg.tunfold_ResponseSample;
-   if (cfg.tunfold_withBSM) save_path+="_BSM";
+   if (cfg.tunfold_withBSM) {
+      if (std::stof(cfg.tunfold_scaleBSM.Data()) == 1 ) save_path+="_BSM";
+      else save_path+="_BSM"+cfg.tunfold_scaleBSM;
+   }
    if (!cfg.tunfold_withDNN && cfg.tunfold_withPF) save_path+="_PF";
    else if (!cfg.tunfold_withDNN) save_path+="_Puppi";
    if (cfg.tunfold_withDNN) save_path+="_DNN";
@@ -501,16 +520,7 @@ TString getSavePath(){
 }
 
 void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver const &saver, Systematic::Systematic const &syst){
-   
-   TString sample = cfg.tunfold_InputSamples[0];
-   
-   if (cfg.tunfold_withPTreweight) {
-      sample+="_PTreweight"+cfg.tunfold_scalePTreweight;
-   }
-   else if (cfg.tunfold_withPHIreweight) {
-      sample+="_PHIreweight"+cfg.tunfold_scalePHIreweight;
-   }
-   
+      
    //check if syst is nominal type
    bool isNominal = (std::find(Systematic::nominalTypes.begin(), Systematic::nominalTypes.end(), syst.type()) != Systematic::nominalTypes.end());
    
@@ -551,6 +561,7 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
    
    float scale_rew = std::stof(cfg.tunfold_scalePTreweight.Data());
    float scale_rew_phi = std::stof(cfg.tunfold_scalePHIreweight.Data());
+   float scale_BSM = std::stof(cfg.tunfold_scaleBSM.Data());
    
    for (TString currentSample : cfg.tunfold_InputSamples){     // loop over samples (data or pseudo data)
       bool isSignal = (currentSample == "TTbar_diLepton");
@@ -558,6 +569,10 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       bool isSTDS = (currentSample == "SingleTop_DS");
       bool isSTDR = (currentSample == "SingleTop");
       bool isRealData = cfg.isData(currentSample.Data());
+      bool isBSM = (currentSample == "T2tt_525_350");
+      
+      //ignore BSM sample if option is not set in config
+      if(isBSM && !cfg.tunfold_withBSM) continue;
             
       double totalMCweight = 0.;    // total weights used to normalize reweighting study
       double totalMCweight_rew = 0.;
@@ -636,13 +651,22 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
                      totalMCweight_rew += mcWeight;
                   }
                   for(Distribution& dist : distribution_vec) dist.fillDataTruth(mcWeight);
+                  for(Distribution& dist : distribution_vec) dist.fillDataTruthBSM(mcWeight);
                }
             }
             else if (isSignalAlt){ // fill truth distributions with alternative MC sample (used for pseudo data)
                if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40)) {
                   for(Distribution& dist : distribution_vec) dist.fillDataTruthAlt_fakes(mcWeight);
                }
-               else for(Distribution& dist : distribution_vec) dist.fillDataTruthAlt(mcWeight);
+               else {
+                  for(Distribution& dist : distribution_vec) dist.fillDataTruthAlt(mcWeight);
+                  for(Distribution& dist : distribution_vec) dist.fillDataTruthAltBSM(mcWeight);
+               }
+            }
+            else if (isBSM){  //fill trutg dsitribution with BSM content
+               mcWeight *= scale_BSM;
+               for(Distribution& dist : distribution_vec) dist.fillDataTruthBSM(mcWeight);
+               for(Distribution& dist : distribution_vec) dist.fillDataTruthAltBSM(mcWeight);
             }
 
             // fill histogram with reconstructed quantities
@@ -675,54 +699,6 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       }
       
    }
-   
-   /*
-   TFile *bsmFile=new TFile(minTreePath_Nominal+"T2tt_650_350.root","read");
-   TTree *BSMTree=(TTree *) bsmFile->Get("ttbar_res100.0/T2tt_650_350");
-   if(!BSMTree) {
-      cout<<"could not read 'BSM' tree\n";
-   }
-   
-   if (cfg.tunfold_withBSM) {
-      BSMTree->ResetBranchAddresses();
-      BSMTree->SetBranchAddress("Phi_recPuppi",&phiRec);
-      BSMTree->SetBranchAddress("PuppiMET",&metRec);
-      if(cfg.tunfold_withPF) {
-         BSMTree->SetBranchAddress("Phi_rec",&phiRec);
-         BSMTree->SetBranchAddress("MET",&metRec);
-      }
-      else if(cfg.tunfold_withDNN) {
-         BSMTree->SetBranchAddress("DNN_MET_dPhi_nextLep",&phiRec);
-         BSMTree->SetBranchAddress("DNN_MET_pT",&metRec);
-      }
-      else{
-         BSMTree->SetBranchAddress("Phi_recPuppi",&phiRec);
-         BSMTree->SetBranchAddress("PuppiMET",&metRec);
-      }
-      BSMTree->SetBranchAddress("Phi_NuNu",&phiGen);
-      BSMTree->SetBranchAddress("PtNuNu",&metGen);
-      BSMTree->SetBranchAddress("genDecayMode",&genDecayMode);
-      BSMTree->SetBranchAddress("N",&mcWeight);
-      BSMTree->SetBranchAddress("SF",&recoWeight);
-      
-      int entriesToRun=BSMTree->GetEntriesFast()*cfg.processFraction;
-      
-      for(Int_t ievent=0;ievent<entriesToRun;ievent++) {
-         if(BSMTree->GetEntry(ievent)<=0) break;
-         
-         // ~mcWeight=mcWeight*(137191.0/35867.05998);   //scale to full Run2 Lumi
-
-         // fill histogram with reconstructed quantities
-         if (metRec<0) continue;   //events that are not reconstructed
-         Int_t binNumber=detectorBinning->GetGlobalBinNumber(metRec,phiRec);
-         histDataReco->Fill(binNumber,mcWeight);
-         
-         Int_t binNumber_coarse=signalBinning->GetGlobalBinNumber(metRec,phiRec);
-         histDataReco_coarse->Fill(binNumber_coarse,mcWeight);
-      }
-   }
-   delete BSMTree;
-   */
    
    // correct stat unc. (if pseudo data) and save data hists
    for(Distribution& dist : distribution_vec){
@@ -758,8 +734,8 @@ std::tuple<TString,TString,float> getPath_SampleName_SF(TString const &sample, T
    else if(syst.type()==Systematic::pdf){
       if(!isSignal) minTreePath_current = minTreePath_nominal;
    }
-   // Use nominal for other bkg in case of bFrag bSemi
-   else if(syst.type() == Systematic::bFrag || syst.type() == Systematic::bSemilep){
+   // Use nominal for other bkg in case of bFrag bSemi and match_DCTR
+   else if(syst.type() == Systematic::bFrag || syst.type() == Systematic::bSemilep|| syst.type() == Systematic::match_dctr){
       if(isBKGother) minTreePath_current = minTreePath_nominal;
    }
    // Change SF for lumi and xsec uncertainties
@@ -828,6 +804,10 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
       bool isBKGother = (std::find(cfg.tunfold_bkgSamples_other.begin(),cfg.tunfold_bkgSamples_other.end(), sample) != cfg.tunfold_bkgSamples_other.end());
       bool isSTDS = (sample == "SingleTop_DS");
       bool isSTDR = (sample == "SingleTop");
+      bool isBSM = (sample == "T2tt_525_350");
+      
+      //ignore BSM sample for background and response matrix
+      if(isBSM) continue;
             
       auto [minTreePath_current, currentSample, sfUnc] = getPath_SampleName_SF(sample,minTreePath_nominal,minTreePath_syst,isSignal,isBKGother,syst);
       

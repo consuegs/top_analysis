@@ -227,8 +227,8 @@ void tunfoldplotting::plot_response(TH2F* responseHist, TString name, io::RootFi
          tempHist->SetStats(false);
          tempHist->Draw("colz text");
          
-         tempHist->GetYaxis()->SetTitle("Detector level");
-         tempHist->GetXaxis()->SetTitle("Particle level");
+         tempHist->GetYaxis()->SetTitle("Bin(Detector level)");
+         tempHist->GetXaxis()->SetTitle("Bin(Particle level)");
 
          
          if (is2D){
@@ -944,6 +944,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    bool isRealData = saver->getInternalPath().Contains("realData");
    bool isTWDS = saver->getInternalPath().Contains("SingleTopDS");
    bool isAltMC = saveName.Contains("amcatnlo");
+   bool isBSM = saveName.Contains("BSM");
          
    //Get fixed order prediction
    std::pair<TH1F,std::pair<TH1F,TH1F>> fixedOrderNNLOpair;
@@ -1130,7 +1131,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       unfolded->SetMaximum(2.5*unfolded->GetMaximum());
       // ~unfolded->SetMinimum(0.4*unfolded->GetMinimum());
       if(!is_dPhi_1d && !dist.is2D) unfolded->SetMinimum(0.15*unfolded->GetMinimum());
-      else unfolded->SetMinimum(0.3*unfolded->GetMinimum());
+      else unfolded->SetMinimum((isBSM)? 0.1*unfolded->GetMinimum() : 0.3*unfolded->GetMinimum());
    }
    unfolded->SetLineColor(kBlack);
    unfolded->SetTitle(dist.title);
@@ -1224,9 +1225,9 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       unfolded->Draw("axis");
       
       
-      if(!isAltMC){
+      if(!isAltMC && !isBSM){
          realDis->Draw("hist same");   //Draw into current canvas (axis are not drawn again due to "same")
-         if(rewStudy) realDisAlt->Draw("hist same");
+         if(rewStudy || isBSM) realDisAlt->Draw("hist same");
       }
       else{
          realDis->SetLineColor(kBlue-6);
@@ -1311,14 +1312,14 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    }
    
    //Get Chi2 and NDF
-   auto Chi2Pair = getChi2NDF(unfolded,(isAltMC)? realDisAlt:realDis);
+   auto Chi2Pair = getChi2NDF(unfolded,(isAltMC || isBSM)? realDisAlt:realDis);
    // ~auto Chi2Pair_corr = getChi2NDF_withCorr(unfolded,realDis,covMatrix);
    
    //Draw legend
    gfx::LegendEntries legE;
    if (plotComparison && !onlyTheo) {
-      auto Chi2Pair_reg = getChi2NDF(unfolded_reg,(isAltMC)? realDisAlt:realDis);
-      auto Chi2Pair_bbb = getChi2NDF(unfolded_bbb,(isAltMC)? realDisAlt:realDis);
+      auto Chi2Pair_reg = getChi2NDF(unfolded_reg,(isAltMC || isBSM)? realDisAlt:realDis);
+      auto Chi2Pair_bbb = getChi2NDF(unfolded_bbb,(isAltMC || isBSM)? realDisAlt:realDis);
       // ~legE.append(*unfolded,TString::Format("NoReg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair.first,Chi2Pair.second),"pe");
       // ~legE.append(*unfolded_reg,TString::Format("Reg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_reg.first,Chi2Pair_reg.second),"pe");
       // ~legE.append(*unfolded_bbb,TString::Format("BBB [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_bbb.first,Chi2Pair_bbb.second),"pe");
@@ -1338,6 +1339,13 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
          legE.append(unfolded_totalGraph,TString::Format("Nominal (#chi^{2}/dof=%.1f/%i)",Chi2Pair.first,Chi2Pair.second),"pe");
          legE.append(unfolded_reg_totalGraph,TString::Format("Regularized (#chi^{2}/dof=%.1f/%i)",Chi2Pair_reg.first,Chi2Pair_reg.second),"pe");
          legE.append(unfolded_bbb_totalGraph,TString::Format("BBB (#chi^{2}/dof=%.1f/%i)",Chi2Pair_bbb.first,Chi2Pair_bbb.second),"pe");
+      }
+      else if (isBSM){
+         legE.append(*realDis,"Response","l");
+         legE.append(*realDisAlt,"tt+BSM (p_{T}^{#nu#nu}=p_{T}^{#nu#nu+BSM})","l");
+         legE.append(unfolded_totalGraph,TString::Format("Nominal [%.1f/%i]",Chi2Pair.first,Chi2Pair.second),"pe");
+         legE.append(unfolded_reg_totalGraph,TString::Format("Regularized [%.1f/%i]",Chi2Pair_reg.first,Chi2Pair_reg.second),"pe");
+         legE.append(unfolded_bbb_totalGraph,TString::Format("BBB [%.1f/%i]",Chi2Pair_bbb.first,Chi2Pair_bbb.second),"pe");
       }
       else {
          legE.append(*realDis,"Truth","l");
@@ -1405,8 +1413,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       legE.append(fixedOrderNLOpair.first,"NLO","l");
       legE.append(fixedOrderLOpair.first,"LO","l");
    }
-   // ~TLegend leg=legE.buildLegend(.149,.46,0.339,.69,1);
-   TLegend leg=legE.buildLegend(.149,.45,0.339,.72,1);
+   
+   TLegend leg=legE.buildLegend(.149,.45,0.339,(isBSM)? 0.68 : .72,1);
    leg.SetTextSize(0.034);
    leg.Draw();
    
@@ -1448,7 +1456,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    TGraphAsymmErrors ratio_alt_data_graph_asym;
    
    //change realDis if alt MC is used (easier than using multiple if statements)
-   if(isAltMC){
+   if(isAltMC || isBSM){
       TH1F* dummyHist = realDis;
       realDis = realDisAlt;
       realDisAlt = dummyHist;
@@ -1527,6 +1535,12 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       ratio.SetMinimum(0.51);
       ratio_data_axis.SetMaximum(1.49);
       ratio_data_axis.SetMinimum(0.51);
+      if (onlyTheo) {
+         ratio.SetMaximum(1.55);
+         ratio_data_axis.SetMaximum(1.55);
+         ratio.SetMinimum(0.21);
+         ratio_data_axis.SetMinimum(0.21);
+      }
    }
    else if (!is_dPhi_1d) {
       ratio.SetMaximum((rewStudy)? 1.49 : 1.89);
@@ -1590,7 +1604,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    if (plotComparison || onlyTheo) {   // draw MC
       ratio_alt.SetLineColor(kBlue-6);
       ratio_alt.SetMarkerColor(kBlue-6);
-      if(isAltMC || rewStudy) ratio_alt.Draw("same");
+      if(isAltMC || rewStudy || isBSM) ratio_alt.Draw("same");
    }
    else {
       ratio_data.SetLineColor(kGreen+2);

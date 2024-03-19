@@ -165,6 +165,9 @@ double Datasubset::getNgen_syst(const Systematic::Systematic& systematic) const
             // ~return this->readNgenFromHist("hSystMCweight_bFrag_timesTopPU_",(upVariation)? 5 : 6);
             return this->readNgenFromHist("hSystMCweight_bFrag_timesTopnnloPU_",(upVariation)? 5 : 6);
             break;
+         case Systematic::match_dctr:
+            return this->readNgenFromHist("hSystMCweight_hDamp_timesTopnnloPU_",(upVariation)? 2 : 3);
+            break;
          case Systematic::pu:
             // ~return this->readNgenFromHist("hSystMCweight_PU_timesTopPU_",(upVariation)? 2 : 3);
             return this->readNgenFromHist("hSystMCweight_PU_timesTopnnloPU_",(upVariation)? 2 : 3);

@@ -26,10 +26,10 @@ public:
    void prepareLumiWeight(const Datasubset &dss, const float &lumi);
 
    /// Get per-event mcWeight
-   const float getMCweight(const float &nominalWeight, const std::vector<float> &w_pdf, const std::vector<float> &w_ps, const std::vector<float> &w_bFrag);
+   const float getMCweight(const float &nominalWeight, const std::vector<float> &w_pdf, const std::vector<float> &w_ps, const std::vector<float> &w_bFrag, const std::vector<float> &w_match);
    
    /// Get per-event mcWeight including lumi weight
-   const float getMCweight_lumiWeighted(const float &nominalWeight, const std::vector<float> &w_pdf, const std::vector<float> &w_ps, const std::vector<float> &w_bFrag);
+   const float getMCweight_lumiWeighted(const float &nominalWeight, const std::vector<float> &w_pdf, const std::vector<float> &w_ps, const std::vector<float> &w_bFrag, const std::vector<float> &w_match);
 
 
 private:

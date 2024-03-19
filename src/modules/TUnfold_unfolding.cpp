@@ -138,7 +138,7 @@ void run()
    
    // Nominal Set
    
-   // ~std::vector<TString> systVec = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR1","CR2","ERDON","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JETPILEUPID_UP","JETPILEUPID_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","MATCH_UP","MATCH_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN","MTOP169p5","MTOP175p5","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
+   // ~std::vector<TString> systVec = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR1","CR2","ERDON","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JETPILEUPID_UP","JETPILEUPID_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","MATCH_DCTR_UP","MATCH_DCTR_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN","MTOP169p5","MTOP175p5","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    
    // JES complete Set
    
@@ -164,8 +164,9 @@ void run()
    // ~std::vector<TString> systVec = {"applyGenLevel_DeltaRcut"};
    // ~std::vector<TString> systVec = {"JETPILEUPID_DOWN"};
    // ~std::vector<TString> systVec = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN"};
-   std::vector<TString> systVec = {"Nominal","CR1","CR2","ERDON"};
-   // ~std::vector<TString> systVec = {"Nominal"};
+   // ~std::vector<TString> systVec = {"Nominal","CR1","CR2","ERDON"};
+   std::vector<TString> systVec = {"Nominal"};
+   // ~std::vector<TString> systVec = {"Nominal","MATCH_DCTR_UP","MATCH_DCTR_DOWN"};
    
    //Remove HEM unc. for all year except 2018
    auto itr =std::find(systVec.begin(), systVec.end(), "JESUserDefinedHEM1516_DOWN");
@@ -202,11 +203,11 @@ void run()
    // ~std::vector<TString> distributions = {"pTnunu_new_DNN","pTnunu_DNN","2D_dPhi_pTnunu_new_DNN","2D_dPhi_pTnunu_new40_DNN"};
    // ~std::vector<TString> distributions = {"pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
    
-   // ~std::vector<TString> distributions = {"inclusive","dPhi_new_DNN","pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
+   std::vector<TString> distributions = {"inclusive","dPhi_new_DNN","pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
    // ~std::vector<TString> distributions = {"pTnunu_new","dPhi","2D_dPhi_pTnunu_new_30StabPur12Bins"};
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur12Bins"};
    
-   std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur9Bins_sameDet_DNN","2D_dPhi_pTnunu_new_30StabPur9Bins_diffDet_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
+   // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur9Bins_sameDet_DNN","2D_dPhi_pTnunu_new_30StabPur9Bins_diffDet_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
    
    
    // ~bool verbose = false;
@@ -254,6 +255,7 @@ void run()
          
          // include signal to pseudo data
          bool withBSM = cfg.tunfold_withBSM;
+         TString scale_BSM = cfg.tunfold_scaleBSM;
          
          //Use scale factor
          bool withScaleFactor = cfg.tunfold_withScaleFactor;
@@ -263,8 +265,8 @@ void run()
          bool useAltReco = false;
          
          //Use real data
-         // ~bool useRealData = false;
-         bool useRealData = true;
+         bool useRealData = false;
+         // ~bool useRealData = true;
          
          //Use Single Top DS
          // ~bool useSingleTopDS = false;
@@ -287,7 +289,10 @@ void run()
          //==============================================
          // step 1 : read binning schemes and input histograms
          TString input_loc="TUnfold_binning_"+sample+"_"+sample_response;
-         if (withBSM) input_loc+="_BSM";
+         if (withBSM) {
+            if (std::stof(scale_BSM.Data()) == 1.) input_loc+="_BSM";
+            else input_loc+="_BSM"+scale_BSM;
+         }
          if (withPuppi) input_loc+="_Puppi";
          if (withPF) input_loc+="_PF";
          if (withDNN) input_loc+="_DNN";
@@ -347,7 +352,10 @@ void run()
          TString save_path = (useAltReco)? "TUnfold_results_TTbar_amcatnlo_"+sample_response : "TUnfold_results_"+sample+"_"+sample_response;
          if (useRealData) save_path = "TUnfold_results_realData_"+sample_response;
          if (useSingleTopDS) save_path+="_SingleTopDS";
-         if (withBSM) save_path+="_BSM";
+         if (withBSM) {
+            if (std::stof(scale_BSM.Data()) == 1.) save_path+="_BSM";
+            else save_path+="_BSM"+scale_BSM;
+         }
          if (withPuppi) save_path+="_Puppi";
          if (withPF) save_path+="_PF";
          if (withDNN) save_path+="_DNN";

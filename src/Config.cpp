@@ -131,6 +131,7 @@ Config::Config(std::string config_year)
    tunfold_withPF = pt.get<bool>("TUnfold.withPF");
    tunfold_withSameBins = pt.get<bool>("TUnfold.withSameBins");
    tunfold_withBSM = pt.get<bool>("TUnfold.withBSM");
+   tunfold_scaleBSM = pt.get<std::string>("TUnfold.scaleBSM");
    tunfold_withScaleFactor = pt.get<bool>("TUnfold.withScaleFactor");
    tunfold_plotComparison = pt.get<bool>("TUnfold.plotComparison");
    tunfold_plotToyStudies = pt.get<bool>("TUnfold.plotToyStudies");

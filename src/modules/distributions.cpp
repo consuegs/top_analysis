@@ -682,6 +682,8 @@ void run()
          TTreeReaderValue<double> w_prefiring(reader, Systematic::prefiringWeightName(currentSystematic));
          TTreeReaderValue<double> w_prefiring_up(reader, "prefiring_weight_up");
          TTreeReaderValue<double> w_prefiring_down(reader, "prefiring_weight_down");
+         TTreeReaderValue<float> matchWeight_up(reader, Systematic::matchDCTRWeightName(ds.name,true));
+         TTreeReaderValue<float> matchWeight_down(reader, Systematic::matchDCTRWeightName(ds.name,false));
          TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
          TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
          TTreeReaderValue<std::vector<tree::Jet>>      jets     (reader, "jets");
@@ -840,7 +842,8 @@ void run()
             
             // Get mcWeight
             std::vector<float> bFrag_vec = {*fragUpWeight,*fragCentralWeight,*fragDownWeight,*fragPetersonWeight,*semilepbrUpWeight,*semilepbrDownWeight};
-            float mcWeight = (isData)? 1. : mcWeighter.getMCweight(*w_mc,*w_pdf,*w_ps,bFrag_vec);
+            std::vector<float> match_vec = {*matchWeight_up,*matchWeight_down};
+            float mcWeight = (isData)? 1. : mcWeighter.getMCweight(*w_mc,*w_pdf,*w_ps,bFrag_vec,match_vec);
                         
             if(isSignal || !applytopPTreweighting) *w_topPT=1.;  //Set top weight for signals or if topPTsystematic to 1 
             float cutFlow_weight=(isData)? 1: *w_pu * mcWeight * *w_topPT * leptonSFweight * *w_prefiring;
@@ -962,7 +965,7 @@ void run()
                   }
                   currentPos += triggerSF_vec.size();
                   for (int i=0; i<mcWeighter_vec.size(); i++){
-                     minTree_systWeights[currentPos+i] = SFWeight * *w_pu * *w_topPT * mcWeighter_vec[i].getMCweight_lumiWeighted(*w_mc,*w_pdf,*w_ps,bFrag_vec);
+                     minTree_systWeights[currentPos+i] = SFWeight * *w_pu * *w_topPT * mcWeighter_vec[i].getMCweight_lumiWeighted(*w_mc,*w_pdf,*w_ps,bFrag_vec,match_vec);
                   }
                   // ~std::cout<<minTree_systWeights[currentPos]<<std::endl;
                   // ~exit(1);
@@ -988,7 +991,7 @@ void run()
                   }
                   currentPos += triggerSF_vec.size();
                   for (int i=0; i<mcWeighter_vec.size(); i++){
-                     minTree_systWeights[currentPos+i] = *w_pu * *w_topPT * mcWeighter_vec[i].getMCweight_lumiWeighted(*w_mc,*w_pdf,*w_ps,bFrag_vec);
+                     minTree_systWeights[currentPos+i] = *w_pu * *w_topPT * mcWeighter_vec[i].getMCweight_lumiWeighted(*w_mc,*w_pdf,*w_ps,bFrag_vec,match_vec);
                   }
                   currentPos += mcWeighter_vec.size();
                   minTree_systWeights[currentPos] = lumi_weight_puUp * *w_pu_up * *w_topPT * mcWeight;   //PU_UP

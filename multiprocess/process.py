@@ -40,6 +40,8 @@ bTagEff_sample_syst_dict = {
       "JETPILEUPID_DOWN" : "TTbar_diLepton",
       "MATCH_UP" : "TTbar_diLepton_MATCH_UP",
       "MATCH_DOWN" : "TTbar_diLepton_MATCH_DOWN",
+      "MATCH_DCTR_UP" : "TTbar_diLepton",
+      "MATCH_DCTR_DOWN" : "TTbar_diLepton",
       "MERENSCALE_UP" : "TTbar_diLepton",
       "MERENSCALE_DOWN" : "TTbar_diLepton",
       "MEFACSCALE_UP" : "TTbar_diLepton",
@@ -166,6 +168,8 @@ sample_allSyst_dict = {
       "L1PREFIRING_DOWN" : allMC,
       "MATCH_UP" : ["TTbar_diLepton_MATCH_UP","TTbar_diLepton_tau_MATCH_UP","TTbar_singleLepton_MATCH_UP","TTbar_hadronic_MATCH_UP"],
       "MATCH_DOWN" : ["TTbar_diLepton_MATCH_DOWN","TTbar_diLepton_tau_MATCH_DOWN","TTbar_singleLepton_MATCH_DOWN","TTbar_hadronic_MATCH_DOWN"],
+      "MATCH_DCTR_UP" : ["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"],
+      "MATCH_DCTR_DOWN" : ["TTbar_diLepton","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic"],
       "MERENSCALE_UP" : allMC,
       "MERENSCALE_DOWN" : allMC,
       "MEFACSCALE_UP" : allMC,
@@ -264,8 +268,8 @@ sample_allSyst_dict = {
 #  ~tunfold_syst = [
 #  ~"Nominal"
 #  ~]
-tunfold_syst = [
-"MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN"]
+#  ~tunfold_syst = ["CR1","CR2","ERDON"]
+tunfold_syst = ["MATCH_DCTR_UP","MATCH_DCTR_DOWN"]
 
 #  ~tunfold_syst = ["JESAbsoluteMPFBias_UP","JESAbsoluteMPFBias_DOWN","JESAbsoluteScale_UP","JESAbsoluteScale_DOWN","JESAbsoluteStat_UP","JESAbsoluteStat_DOWN","JESFlavorQCD_UP","JESFlavorQCD_DOWN","JESFragmentation_UP","JESFragmentation_DOWN","JESPileUpDataMC_UP","JESPileUpDataMC_DOWN","JESPileUpPtBB_UP","JESPileUpPtBB_DOWN","JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESPileUpPtRef_UP","JESPileUpPtRef_DOWN","JESRelativeBal_UP","JESRelativeBal_DOWN","JESRelativeFSR_UP","JESRelativeFSR_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativePtBB_UP","JESRelativePtBB_DOWN","JESRelativePtEC1_UP","JESRelativePtEC1_DOWN","JESRelativeSample_UP","JESRelativeSample_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN","JESRelativeStatFSR_UP","JESRelativeStatFSR_DOWN","JESSinglePionECAL_UP","JESSinglePionECAL_DOWN","JESSinglePionHCAL_UP","JESSinglePionHCAL_DOWN","JESTimePtEta_UP","JESTimePtEta_DOWN"]
 
@@ -310,9 +314,9 @@ def get_dataBasePath_dCache(year,curl=True,dcap=False,extern=False):      #retur
       return "root://grid-cms-xrootd.physik.rwth-aachen.de///store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname",user),year,config["input"]["version"])
 
 def printSubmitInfo(args):
-   print "Running "+args.m
-   print "Systematic: "+args.s
-   print "Process "+str(args.f*100)+"% of events"
+   print("Running "+args.m)
+   print("Systematic: "+args.s)
+   print("Process "+str(args.f*100)+"% of events")
    
 def createLogPath(args):
    logpath = "logs/"+args.y+"/"+args.s+"/"+str(args.f)+"/"+args.m
@@ -364,27 +368,27 @@ def uploadCompressedCMSSW():    #compress and upload CMSSW to dCache to run on g
    CMSSW_version = CMSSW_path.split("/")[-1]
    filePath+=CMSSW_version+".tgz"
    
-   print "Compressing",CMSSW_version
+   print("Compressing "+CMSSW_version)
    try:
       os.chdir(CMSSW_path+"/../")
       subprocess.call(["tar","-zcvf",filePath,CMSSW_version],stdout=open(os.devnull, 'wb'))
       os.chdir(runDir)
    except Exception as error:
-      print "Compressing failed"
+      print("Compressing failed")
       errno, errstr = error.args
-      print errstr
+      print(errstr)
       sys.exit(20)
    
-   print "Uploading",CMSSW_version,"to dCache"
+   print("Uploading "+CMSSW_version+" to dCache")
    targetPath = "gridJobInputs/"+CMSSW_version+".tgz"
    command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format(getPath("dCacheBasePath"))+targetPath,"-f","-r"
    command = " ".join(command)
    try:
       subprocess.call(command,shell=True)
    except Exception as error:
-      print "Uploading failed"
+      print("Uploading failed")
       errno, errstr = error.args
-      print errstr
+      print(errstr)
       sys.exit(21)
 
 def uploadCompressedFW():    #compress and upload local Framework to dCache to run on grid
@@ -401,27 +405,27 @@ def uploadCompressedFW():    #compress and upload local Framework to dCache to r
    filePath+="FW.tgz"
    FW_path = getPath("frameworkBasePath")
    
-   print "Compressing framework from",FW_path
+   print("Compressing framework from "+FW_path)
    try:
       os.chdir(FW_path)
       subprocess.call(["tar","-hzcvf",filePath]+FW_files,stdout=open(os.devnull, 'wb'))
       os.chdir(runDir)
    except Exception as error:
-      print "Compressing failed"
+      print("Compressing failed")
       errno, errstr = error.args
-      print errstr
+      print(errstr)
       sys.exit(30)
    
-   print "Uploading framework to dCache"
+   print("Uploading framework to dCache")
    targetPath = "gridJobInputs/FW.tgz"
    command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format(getPath("dCacheBasePath"))+targetPath,"-f","-r"
    command = " ".join(command)
    try:
       subprocess.call(command,shell=True)
    except Exception as error:
-      print "Uploading failed"
+      print("Uploading failed")
       errno, errstr = error.args
-      print errstr
+      print(errstr)
       sys.exit(31)
    
 def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=False):
@@ -434,25 +438,25 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
       toProcess_data = []
       toProcess_signal = []
       if (any("TTbar_diLepton" in s for s in toProcess_mc)==False or len(toProcess_mc)>1 or toProcess_data or toProcess_signal):
-         print "Error: bTagEff should only be submitted with TTbar_dilepton"
+         print("Error: bTagEff should only be submitted with TTbar_dilepton")
          sys.exit(1)
 
-   print toProcess_mc
-   print toProcess_data
-   print toProcess_signal
+   print(toProcess_mc)
+   print(toProcess_data)
+   print(toProcess_signal)
    
    # set dataBasePath depending on dCache options
    if args.scratchInput==False and args.copyDCache==False and args.condFileTransfer==False:
-      print "Use dCache input and run on grid"
+      print("Use dCache input and run on grid")
       dataBasePath = "-d"+get_dataBasePath_dCache(args.y)
    elif args.copyDCache:
-      print "Copy input from dCache to condor lx-node and run on lx-node"
+      print("Copy input from dCache to condor lx-node and run on lx-node")
       dataBasePath = "-d$TMP/"
    elif args.condFileTransfer:
-      print "Use Condor file transfer to copy from dCache to node"
+      print("Use Condor file transfer to copy from dCache to node")
       dataBasePath = ""
    else:
-      print "Use scratch input"
+      print("Use scratch input")
       dataBasePath = ""
    
    # Ask if selected settings are correct
@@ -460,7 +464,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    if disableConfirm==False:
       correctSamples = input("If you want to continue with the selected setting, enter 1:\n")
       if (correctSamples != 1):
-         print "Abort Submission"
+         print("Abort Submission")
          runSubmit = False
    
    if runSubmit:
@@ -468,18 +472,18 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
       if (args.SingleSubmit and ((len(toProcess_mc)+len(toProcess_data)+len(toProcess_signal))==1)):
          singleFileNR = input("Please input the filenumber to submit:\n")
       elif args.SingleSubmit:
-         print "SingleSubmit can only be used if one dataset is selected"
+         print("SingleSubmit can only be used if one dataset is selected")
          exit(98)
 
       # not data processing if systematic shift is choosen
       if (toProcess_data and args.s not in nominalTypeSysts):
          toProcess_data=[]
-         print "!!!!!!!!!!!!!!!!Data is not processed with systematic shift!!!!!!!!!!!!!!!!!!!!"
+         print("!!!!!!!!!!!!!!!!Data is not processed with systematic shift!!!!!!!!!!!!!!!!!!!!")
       
       # triggerEff only submitted with TTbar_dilepton and MET
       if (args.m == "triggerEff"):
          if ("TTbar_diLepton" not in toProcess_mc or len(toProcess_mc)>1 or toProcess_signal or "MET" not in toProcess_data):
-            print "Error: triggerEff should only be submitted with TTbar_dilepton and MET"
+            print("Error: triggerEff should only be submitted with TTbar_dilepton and MET")
             sys.exit(1)
       
       # create logpath if not existing
@@ -500,7 +504,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
                   totalFiles=singleFileNR
                   startFileNR=singleFileNR
                else:
-                  print "Selected SingleFileNR is not available"
+                  print("Selected SingleFileNR is not available")
                   exit(98)
             
             for fileNR in range(startFileNR-1,totalFiles):     # loop over files for given dataset
@@ -646,6 +650,7 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["ZZ"]
    #  ~toProcess_mc=["DrellYan_NLO"]
    #  ~toProcess_mc=["TTbar_diLepton"]
+   toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_hadronic","TTbar_singleLepton"]
    #  ~toProcess_mc=["TTbar_diLepton_tau_MATCH_DOWN"]
    #  ~toProcess_mc=["TTbar_diLepton_UETUNE_UP","TTbar_diLepton_tau_UETUNE_UP","TTbar_singleLepton_UETUNE_UP","TTbar_hadronic_UETUNE_UP"]
    #  ~toProcess_mc=["TTbar_diLepton_UETUNE_DOWN","TTbar_diLepton_tau_UETUNE_DOWN","TTbar_singleLepton_UETUNE_DOWN","TTbar_hadronic_UETUNE_DOWN"]
@@ -661,7 +666,7 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["DrellYan_M10to50"]
    #  ~toProcess_mc=["DrellYan"]
    #  ~toProcess_mc=["SingleTop","SingleTop_DS"]
-   toProcess_mc=["bb4l"]
+   #  ~toProcess_mc=["bb4l"]
    #  ~toProcess_mc=["bb4l_new"]
    #  ~toProcess_mc=[]
    #  ~toProcess_mc=allMC
@@ -728,11 +733,11 @@ if __name__ == "__main__":
             args.s = syst
             submit(args,toProcess_mc,toProcess_data,toProcess_signal,args.noConfirmation)
       else:
-         print "bTagEff_complete can only be used if bTagEff is selected as module!"
+         print("bTagEff_complete can only be used if bTagEff is selected as module!")
          exit(98)
    elif (args.distributions_complete):
       if (args.m == "" or args.m == "distributions"):
-         print "Submit nominal"
+         print("Submit nominal")
          if (args.y=="2018"):
             submit(args,allMC,allData2018,[])
          elif (args.y=="2017"):
@@ -740,12 +745,12 @@ if __name__ == "__main__":
          elif (args.y=="2016_preVFP" or args.y == "2016_postVFP"):
             submit(args,allMC,allData2016,[])
          else:
-            print args.y+" does not match correct year"
+            print(args.y+" does not match correct year")
          for syst in sample_allSyst_dict.keys():
             args.s = syst
             submit(args,sample_allSyst_dict[syst],[],[],args.noConfirmation)
       else:
-         print "distributions_complete can only be used if distributions is selected as module!"
+         print("distributions_complete can only be used if distributions is selected as module!")
          exit(98)
    elif (args.pdf_complete):
       if (args.m == "" or args.m == "distributions"):
@@ -754,7 +759,7 @@ if __name__ == "__main__":
                args.s = "PDF_{}_{}".format(varNumber,var)
                submit(args,["TTbar_diLepton"],[],[],args.noConfirmation)
       else:
-         print "pdf_complete can only be used if distributions is selected as module!"
+         print("pdf_complete can only be used if distributions is selected as module!")
          exit(98)
       
    

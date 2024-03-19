@@ -126,6 +126,8 @@ void run()
       TTreeReaderValue<float> fragPetersonWeight(reader, "weightFragPeterson");
       TTreeReaderValue<float> semilepbrUpWeight(reader, "weightSemilepbrUp");
       TTreeReaderValue<float> semilepbrDownWeight(reader, "weightSemilepbrDown");
+      TTreeReaderValue<float> matchWeight_up(reader, "hdamp_weight_up");
+      TTreeReaderValue<float> matchWeight_down(reader, "hdamp_weight_down");
       TTreeReaderValue<double> w_prefiring(reader, "prefiring_weight");
       TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
       TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
@@ -227,7 +229,7 @@ void run()
          else if (channel[2]) channelID = 3;
          float leptonSFweight = leptonSF.getSFDilepton(p_l1,p_l2,flavor_l1,flavor_l2,etaSC_l1,etaSC_l2);
          // ~float triggerSF = triggerSFcalc.getTriggerSF(p_l1.Pt(),p_l2.Pt(),channelID,muonLead);    //Not used since bTagEff needed in triggerSF calc.
-         float mcWeight = mcWeighter.getMCweight(*w_mc,*w_pdf,*w_ps,{*fragUpWeight,*fragCentralWeight,*fragDownWeight,*fragPetersonWeight,*semilepbrUpWeight,*semilepbrDownWeight});
+         float mcWeight = mcWeighter.getMCweight(*w_mc,*w_pdf,*w_ps,{*fragUpWeight,*fragCentralWeight,*fragDownWeight,*fragPetersonWeight,*semilepbrUpWeight,*semilepbrDownWeight},{*matchWeight_up,*matchWeight_down});
          float fEventWeight=*w_pu * mcWeight * *w_topPT;     //Set event weight 
          float SFWeight=leptonSFweight * *w_prefiring;     //Set combined SF weight
          hs2d.setFillWeight(fEventWeight*SFWeight);

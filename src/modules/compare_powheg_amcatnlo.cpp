@@ -288,6 +288,166 @@ void compare_tW_ds_dr(const bool add_tt=false, const bool compare_bb4l=false){
    }
 }
 
+
+// compare hDamp shifted samples between alternative MC and DCTR approach
+void compare_hDamp(){
+   io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"compare_hdamp_DCTR");
+   
+   io::RootFileReader histReader_DCTR_UP(TString::Format("multiHists/MATCH_DCTR_UP/histograms_merged_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   io::RootFileReader histReader_DCTR_DOWN(TString::Format("multiHists/MATCH_DCTR_DOWN/histograms_merged_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   io::RootFileReader histReader_UP(TString::Format("multiHists/MATCH_UP/histograms_merged_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   io::RootFileReader histReader_DOWN(TString::Format("multiHists/MATCH_DOWN/histograms_merged_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   io::RootFileReader histReader_nominal(TString::Format("multiHists/Nominal/histograms_merged_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
+   
+   std::map<TString,std::vector<TString>> msPresel_vVars={};
+   // ~for(TString channel:{"ee/","emu/","mumu/","combined/"}){
+   for(TString channel:{"combined/"}){
+      msPresel_vVars.insert(std::pair<TString,std::vector<TString>>("baseline/"+channel,
+      // ~{"PuppiMET","METunc_Puppi","MET","HT","nJets","n_Interactions","Lep1_flavor","Lep2_flavor","Lep1_pt","Lep1_phi","Lep1_eta","Lep1_E","Lep2_pt","Lep2_phi","Lep2_eta","Lep2_E","Jet1_pt","Jet1_phi","Jet1_eta","Jet1_E","Jet2_pt","Jet2_phi","Jet2_eta","Jet2_E","dPhiMETnearJet","dPhiMETfarJet","dPhiMETleadJet","dPhiMETlead2Jet","dPhiMETbJet","dPhiLep1Lep2","dPhiJet1Jet2","METsig","MHT","MT","looseLeptonVeto","dPhiMETnearJet_Puppi","dPhiMETfarJet_Puppi","dPhiMETleadJet_Puppi","dPhiMETlead2Jet_Puppi","dPhiMETbJet_Puppi","dPhiLep1bJet","dPhiLep1Jet1","mLL","PFMET_phi","PuppiMET_phi","CaloMET","CaloMET_phi","MT2","vecsum_pT_allJet","vecsum_pT_l1l2_allJet","mass_l1l2_allJet","ratio_vecsumpTlep_vecsumpTjet","mjj","DNN_MET_pT"}));
+      {"DNN_MET_pT","DNN_MET_dPhi_nextLep"}));
+      // ~{"sum_mlb"}));
+      // ~msPresel_vVars.insert(std::pair<TString,std::vector<TString>>("genParticles/"+channel,{"genMET","pT_nunu"}));
+   }
+   
+   for (auto const &sPresel_vVars:msPresel_vVars){
+      TString const &sPresel=sPresel_vVars.first;
+      for (TString sVar:sPresel_vVars.second){
+         TString loc;
+         loc=sPresel+sVar;
+         
+         //Define empty histograms
+         TH1F* hist_DCTR_UP;
+         TH1F* hist_DCTR_DOWN;
+         TH1F* hist_UP;
+         TH1F* hist_DOWN;
+         TH1F* hist_nominal;
+         
+         if(sPresel.Contains("combined/")){
+            TString sel=((TObjString*)sPresel.Tokenize("/")->First())->String();
+            
+            hist_DCTR_UP=histReader_DCTR_UP.read<TH1F>(sel+"/ee/"+sVar+"/TTbar_diLepton");
+            hist_DCTR_UP->Add(histReader_DCTR_UP.read<TH1F>(sel+"/emu/"+sVar+"/TTbar_diLepton"));
+            hist_DCTR_UP->Add(histReader_DCTR_UP.read<TH1F>(sel+"/mumu/"+sVar+"/TTbar_diLepton"));
+            
+            hist_DCTR_DOWN=histReader_DCTR_DOWN.read<TH1F>(sel+"/ee/"+sVar+"/TTbar_diLepton");
+            hist_DCTR_DOWN->Add(histReader_DCTR_DOWN.read<TH1F>(sel+"/emu/"+sVar+"/TTbar_diLepton"));
+            hist_DCTR_DOWN->Add(histReader_DCTR_DOWN.read<TH1F>(sel+"/mumu/"+sVar+"/TTbar_diLepton"));
+            
+            hist_UP=histReader_UP.read<TH1F>(sel+"/ee/"+sVar+"/TTbar_diLepton_MATCH_UP");
+            hist_UP->Add(histReader_UP.read<TH1F>(sel+"/emu/"+sVar+"/TTbar_diLepton_MATCH_UP"));
+            hist_UP->Add(histReader_UP.read<TH1F>(sel+"/mumu/"+sVar+"/TTbar_diLepton_MATCH_UP"));
+            
+            hist_DOWN=histReader_DOWN.read<TH1F>(sel+"/ee/"+sVar+"/TTbar_diLepton_MATCH_DOWN");
+            hist_DOWN->Add(histReader_DOWN.read<TH1F>(sel+"/emu/"+sVar+"/TTbar_diLepton_MATCH_DOWN"));
+            hist_DOWN->Add(histReader_DOWN.read<TH1F>(sel+"/mumu/"+sVar+"/TTbar_diLepton_MATCH_DOWN"));
+            
+            hist_nominal=histReader_nominal.read<TH1F>(sel+"/ee/"+sVar+"/TTbar_diLepton");
+            hist_nominal->Add(histReader_nominal.read<TH1F>(sel+"/emu/"+sVar+"/TTbar_diLepton"));
+            hist_nominal->Add(histReader_nominal.read<TH1F>(sel+"/mumu/"+sVar+"/TTbar_diLepton"));
+         }
+         else{
+            hist_DCTR_UP=histReader_DCTR_UP.read<TH1F>(loc+"/TTbar_diLepton");
+            hist_DCTR_DOWN=histReader_DCTR_DOWN.read<TH1F>(loc+"/TTbar_diLepton");
+            hist_UP=histReader_UP.read<TH1F>(loc+"/TTbar_diLepton_MATCH_UP");
+            hist_DOWN=histReader_DOWN.read<TH1F>(loc+"/TTbar_diLepton_MATCH_DOWN");
+            hist_nominal=histReader_nominal.read<TH1F>(loc+"/TTbar_diLepton");
+         }
+         
+         int rebinFactor = 1;
+         if (sVar == "genMET" || sVar == "pT_nunu") rebinFactor = 4;
+         else if (sVar == "DNN_MET_pT") rebinFactor = 25;
+         else if (sVar == "DNN_MET_dPhi_nextLep") rebinFactor = 16;
+         
+         hist_DCTR_UP->Rebin(rebinFactor);
+         hist_DCTR_DOWN->Rebin(rebinFactor);
+         hist_UP->Rebin(rebinFactor);
+         hist_DOWN->Rebin(rebinFactor);
+         hist_nominal->Rebin(rebinFactor);
+   
+         gfx::SplitCan spcan;
+         spcan.cdUp();
+         spcan.pU_.SetLogy();
+         TString cat;
+         if (sPresel.Contains("ee/")) cat="ee";
+         else if (sPresel.Contains("emu/")) cat="e#mu";
+         else if (sPresel.Contains("mumu/")) cat="#mu#mu";
+         else if (sPresel.Contains("combined/")) cat="all";
+         TLatex label=gfx::cornerLabel(cat,1);
+         
+         hist_DCTR_UP->SetStats(0);
+         hist_nominal->Draw("axis");
+         
+         hist_DCTR_UP->SetLineColor(kRed);
+         hist_DCTR_DOWN->SetLineColor(kGreen+2);
+         hist_UP->SetLineColor(kRed);
+         hist_DOWN->SetLineColor(kGreen+2);
+         
+         hist_nominal->SetMarkerSize(0);
+         hist_DCTR_UP->SetMarkerSize(0);
+         hist_DCTR_DOWN->SetMarkerSize(0);
+         hist_UP->SetMarkerSize(0);
+         hist_DOWN->SetMarkerSize(0);
+         
+         hist_DCTR_UP->SetLineStyle(7);
+         hist_DCTR_DOWN->SetLineStyle(7);
+         
+         hist_nominal->Draw("same");
+         hist_DCTR_UP->Draw("same");
+         hist_DCTR_DOWN->Draw("same");
+         hist_UP->Draw("same");
+         hist_DOWN->Draw("same");
+
+         gfx::LegendEntries le;
+         le.append(*hist_nominal,"Nominal","l");
+         le.append(*hist_UP,"hDamp up","l");
+         le.append(*hist_DOWN,"hDamp down","l");
+         le.append(*hist_DCTR_UP,"hDamp up (DCTR)","l");
+         le.append(*hist_DCTR_DOWN,"hDamp down (DCTR)","l");
+         
+         TLegend leg=le.buildLegend(.7,.8,1-gPad->GetRightMargin(),-1,1);
+         leg.Draw();
+         label.Draw();
+         
+         //Get chi2 and KS comparison
+         std::pair<float,int> chi_UP = tunfoldplotting::getChi2NDF(hist_DCTR_UP,hist_UP,true);
+         std::pair<float,int> chi_DOWN = tunfoldplotting::getChi2NDF(hist_DCTR_DOWN,hist_DOWN,true);
+         double KS_UP = hist_DCTR_UP->KolmogorovTest(hist_UP);
+         double KS_DOWN = hist_DCTR_DOWN->KolmogorovTest(hist_DOWN);
+         
+         std::cout<<"chi2/ndf(UP): "<<chi_UP.first<<"/"<<chi_UP.second<<std::endl;
+         std::cout<<"chi2/ndf(DOWN): "<<chi_DOWN.first<<"/"<<chi_DOWN.second<<std::endl;
+         std::cout<<"KS-Test(UP): "<<hist_DCTR_UP->KolmogorovTest(hist_UP)<<std::endl;
+         std::cout<<"KS-Test(DOWN): "<<hist_DCTR_DOWN->KolmogorovTest(hist_DOWN)<<std::endl;
+         
+         TLatex testResults;
+         testResults.SetTextSize(0.03);
+         testResults.SetNDC();
+         testResults.DrawLatex(0.2,0.6,TString::Format("#splitline{#chi^{2}/ndf (UP) = %.1f/%i}{#chi^{2}/ndf (DOWN) = %.1f/%i}",chi_UP.first,chi_UP.second,chi_DOWN.first,chi_DOWN.second));
+         testResults.DrawLatex(0.2,0.5,TString::Format("#splitline{KS-Test (UP) = %.2f}{KS-Test (DOWN) = %.2f}",KS_UP,KS_DOWN));
+         
+         spcan.cdLow();
+         TH1F hRatio_nominal=hist::getRatio(*hist_nominal,*hist_nominal,"Ratio",hist::ONLY1);
+         TH1F hRatio_DCTR_UP=hist::getRatio(*hist_DCTR_UP,*hist_nominal,"Ratio",hist::ONLY1);
+         TH1F hRatio_DCTR_DOWN=hist::getRatio(*hist_DCTR_DOWN,*hist_nominal,"Ratio",hist::ONLY1);
+         TH1F hRatio_UP=hist::getRatio(*hist_UP,*hist_nominal,"Ratio",hist::ONLY1);
+         TH1F hRatio_DOWN=hist::getRatio(*hist_DOWN,*hist_nominal,"Ratio",hist::ONLY1);
+         hRatio_nominal.SetStats(false);
+         hRatio_nominal.SetMarkerSize(0);
+         
+         hRatio_nominal.SetMaximum(1.15);
+         hRatio_nominal.SetMinimum(0.85);
+         
+         hRatio_nominal.Draw();
+         hRatio_DCTR_UP.Draw("same");
+         hRatio_DCTR_DOWN.Draw("same");
+         hRatio_UP.Draw("same");
+         hRatio_DOWN.Draw("same");
+         
+         saver.save(spcan,loc,true,true);
+      }
+   }
+}
+
 extern "C"
 void run()
 {
@@ -296,5 +456,7 @@ void run()
    // ~compare_tW_ds_dr();
    // ~compare_tW_ds_dr(true);
    // ~compare_tW_ds_dr(false,false);
-   compare_tW_ds_dr(false,true);
+   // ~compare_tW_ds_dr(false,true);
+   
+   compare_hDamp();
 }
