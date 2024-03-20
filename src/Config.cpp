@@ -9,14 +9,8 @@
 
 //static
 Config& Config::get(std::string config_year){
-   if (config_year != "") {
-	   static Config instance(config_year);
-	   return instance;
-   }
-   else{
-	 std::cerr<<"Error: $ANALYSIS_YEAR_CONFIG is not set"<<std::endl;
-	 exit(5);
-   }
+   static Config instance(config_year);
+   return instance;
 }
 
 void Config::setOutput(const std::string output){
@@ -32,9 +26,10 @@ Config::Config(std::string config_year)
    // ~boost::property_tree::ptree pt;
    std::string cfgFile(std::string(getenv("PWD"))+"/../");
    if (config_year == ""){
-      config_year=getenv("ANALYSIS_YEAR_CONFIG");
-   }
-   if (config_year!=NULL){
+	  setenv("ANALYSIS_YEAR_CONFIG","",false);
+	  config_year=getenv("ANALYSIS_YEAR_CONFIG");
+   }   
+   if (config_year!=NULL && config_year!=""){
       std::cout<<"Running on year "+config_year+" (to change set ANALYSIS_YEAR_CONFIG variable)"<<std::endl;
       cfgFile+="config"+config_year+".ini";
    }
