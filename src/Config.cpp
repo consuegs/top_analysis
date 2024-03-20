@@ -9,8 +9,14 @@
 
 //static
 Config& Config::get(std::string config_year){
-   static Config instance(config_year);
-   return instance;
+   if (config_year != "") {
+	   static Config instance(config_year);
+	   return instance;
+   }
+   else{
+	 std::cerr<<"Error: $ANALYSIS_YEAR_CONFIG is not set"<<std::endl;
+	 exit(5);
+   }
 }
 
 void Config::setOutput(const std::string output){
