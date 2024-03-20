@@ -1,7 +1,7 @@
 #!/bin/bash -e
 EXTRA_OPTS=
 BASE_SCRIPT="cmssw-env"
-CMD_TO_RUN=("source ~/top_analysis/tools/.setupCC7singularity.sh; /bin/bash")  #add own file to be sourced when starting singularity
+CMD_TO_RUN=("source ~/top_analysis/tools/cc7_singularity/.setupCC7singularity.sh; /bin/bash")  #add own file to be sourced when starting singularity
 CMS_IMAGE=$(basename $0)
 CMS_IMAGE="${CMS_IMAGE%_*}"   #enables renaming the executable
 THISDIR=$(dirname $0)
