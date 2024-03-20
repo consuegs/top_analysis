@@ -1,0 +1,105 @@
+#!/bin/bash -e
+EXTRA_OPTS=
+BASE_SCRIPT="cmssw-env"
+CMD_TO_RUN=("source ~/.setupCC7singularity.sh; /bin/bash")  #add own file to be sourced when starting singularity
+CMS_IMAGE=$(basename $0)
+CMS_IMAGE="${CMS_IMAGE%_*}"   #enables renaming the executable
+THISDIR=$(dirname $0)
+IGNORE_MOUNTS=""
+CONTAINER_CMD="singularity"
+BINDPATH_ENV="SINGULARITY_BINDPATH"
+if which apptainer >/dev/null 2>&1 ; then
+  CONTAINER_CMD="apptainer"
+  BINDPATH_ENV="APPTAINER_BINDPATH"
+fi
+while [ "$#" != 0 ]; do
+  case "$1" in
+    -h|--help)
+      HELP_ARG=""
+      if [ "${CMS_IMAGE}" = "${BASE_SCRIPT}" ] ; then HELP_ARG="[--cmsos <image>] "; fi
+      echo "Usage: $0 [-h|--help] ${HELP_ARG}[extra-options] [--ignore-mount <dir1[,dir2[,...]]>] [--command-to-run|-- <command to run>]"
+      echo "Environment variable UNPACKED_IMAGE can be set to point to either valid docker/singularity image or unpacked image path"
+      exit 0
+      ;;
+    --ignore-mount) IGNORE_MOUNTS=$(echo $2 | tr ',' ' '); shift; shift ;;
+    --cmsos)
+      if [ "${CMS_IMAGE}" != "${BASE_SCRIPT}" ] ; then
+        echo "ERROR: Unknown option '--cmsos' found. This option is only valid for ${BASE_SCRIPT} command."
+        exit 1
+      fi
+      CMS_IMAGE=$2 ; shift ; shift
+      if [ $(echo "$CMS_IMAGE" | grep '/' | wc -l) -eq 0 ] ; then CMS_IMAGE="cmssw/$CMS_IMAGE"; fi
+      CMS_IMAGE="$(echo ${CMS_IMAGE} | sed 's|/|-|')"
+      ;;
+    --command-to-run|--)
+      shift
+      CMD_TO_RUN=("$@")
+      break
+      ;;
+    *)
+      EXTRA_OPTS="${EXTRA_OPTS} $1"
+      shift
+      ;;
+  esac
+done
+
+MOUNT_POINTS=""
+if [ "X${SINGULARITY_BINDPATH}" != "X" ] ; then MOUNT_POINTS="${SINGULARITY_BINDPATH}" ; fi
+if [ -d /cvmfs ] ; then
+  for repo in cms cms-ib grid projects unpacked ; do
+    ls /cvmfs/${repo}.cern.ch >/dev/null 2>&1 || true
+  done
+  MOUNT_POINTS="${MOUNT_POINTS},/cvmfs,/cvmfs/grid.cern.ch/etc/grid-security/vomses:/etc/vomses,/cvmfs/grid.cern.ch/etc/grid-security:/etc/grid-security"
+fi
+for dir in /etc/tnsnames.ora /eos /build /data /afs /pool ; do
+  [ ! -e $dir ] || MOUNT_POINTS="${MOUNT_POINTS},${dir}"
+done
+OLD_CMSOS=$(echo ${SCRAM_ARCH} | cut -d_ -f1,2)
+if [ -e ${THISDIR}/../cmsset_default.sh ] ; then
+  # necessary to preserve quotes/grouping in original CMD_TO_RUN when running multiple commands through sh -c
+  printf -v CMD_STR '%q ' "${CMD_TO_RUN[@]}"
+  CMD_TO_RUN=("[ \"${OLD_CMSOS}\" != \"\$(${THISDIR}/cmsos)\" ] && export SCRAM_ARCH=""; source ${THISDIR}/../cmsset_default.sh; ${CMD_STR}")
+fi
+
+if [ "X${UNPACKED_IMAGE}" = "X" ] ;then
+  if [ "${CMS_IMAGE}" = "${BASE_SCRIPT}" ] ; then
+    echo "ERROR: Missing --cmsos <image> command-line argument. Usage $0 --cmsos cc7"
+    exit 1
+  fi
+  case $CMS_IMAGE in
+    cmssw-cc6) CMS_IMAGE=cmssw-slc6;;
+  esac
+  DOCKER_NAME="$(echo ${CMS_IMAGE} | sed 's|-|/|')"
+  UNAME_M=":$(uname -m)"
+  UNPACK_DIRS="/cvmfs/unpacked.cern.ch/registry.hub.docker.com"
+  for dir in ${UNPACK_DIRS} ; do
+    ls ${dir} >/dev/null 2>&1 || true
+    for tag in "" ${UNAME_M} :latest ; do
+      if [ -e "${dir}/${DOCKER_NAME}${tag}" ] ; then
+        UNPACKED_IMAGE="${dir}/${DOCKER_NAME}${tag}"
+        break
+      fi
+    done
+    [ "${UNPACKED_IMAGE}" != "" ] && break
+  done
+  if [ "${UNPACKED_IMAGE}" = "" ] ; then
+    echo "ERROR: Unable to find unpacked image '${DOCKER_NAME}' under ${UNPACK_DIRS} path(s)."
+    exit 1
+  fi
+fi
+
+if [ -e $UNPACKED_IMAGE ] ; then
+  VALID_MOUNT_POINTS=""
+  for dir in $(echo $MOUNT_POINTS | tr ',' '\n' | sort | uniq) ; do
+    if [ "${IGNORE_MOUNTS}" != "" ] ; then
+      hdir=$(echo $dir | sed 's|:.*||')
+      if [ $(echo " ${IGNORE_MOUNTS} " | grep " $hdir " | wc -l) -gt 0 ] ; then continue ; fi
+    fi
+    bind_dir=$(echo $dir | sed 's|.*:||')
+    if [ -e ${UNPACKED_IMAGE}/${bind_dir} ] ; then
+      VALID_MOUNT_POINTS="${VALID_MOUNT_POINTS},${dir}"
+    fi
+  done
+  export ${BINDPATH_ENV}=$(echo ${VALID_MOUNT_POINTS} | sed 's|^,||')
+fi
+${CONTAINER_CMD} -s exec ${EXTRA_OPTS} $UNPACKED_IMAGE sh -c "${CMD_TO_RUN[@]}"
