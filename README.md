@@ -100,7 +100,7 @@ The entry function has to be `extern "C" void run() {...}`.
 Add `<module>` to the list in `src/modules/CMakeLists.txt`
 
 ## Running on condor ##
-The `distributions`, `bTagEff` and `triggerEff` modules can be executed in multiple condor jobs. One job corresponds to one sample file (defined in `config.ini`). The scripts for submitting the jobs can be found in `multiprocess/`. 
+The `distributions`, `bTagEff` and `triggerEff` modules can be executed in multiple condor jobs. One job corresponds to one sample file (defined in `config*.ini`). The scripts for submitting the jobs can be found in `multiprocess/`. 
 Attention: The output hists are saved in an additional folder `output/multiHists/` (in case of the distributions module)
-and have to be merged before plotting.  
+and have to be merged before plotting. For a new user to use the submission option a corresponding user config in `users/` has to be created.
 ...
