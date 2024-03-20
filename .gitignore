@@ -8,5 +8,4 @@
 /multiprocess/inputs/
 *.pyc
 /data/bTagEff*/
-/data/Trigger*
 *.txt
