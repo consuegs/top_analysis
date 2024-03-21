@@ -650,7 +650,7 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["ZZ"]
    #  ~toProcess_mc=["DrellYan_NLO"]
    #  ~toProcess_mc=["TTbar_diLepton"]
-   toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_hadronic","TTbar_singleLepton"]
+   #  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_hadronic","TTbar_singleLepton"]
    #  ~toProcess_mc=["TTbar_diLepton_tau_MATCH_DOWN"]
    #  ~toProcess_mc=["TTbar_diLepton_UETUNE_UP","TTbar_diLepton_tau_UETUNE_UP","TTbar_singleLepton_UETUNE_UP","TTbar_hadronic_UETUNE_UP"]
    #  ~toProcess_mc=["TTbar_diLepton_UETUNE_DOWN","TTbar_diLepton_tau_UETUNE_DOWN","TTbar_singleLepton_UETUNE_DOWN","TTbar_hadronic_UETUNE_DOWN"]
@@ -664,7 +664,7 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["TTbar_diLepton_MTOP175p5","TTbar_diLepton_tau_MTOP175p5","TTbar_singleLepton_MTOP175p5","TTbar_hadronic_MTOP175p5"]
    #  ~toProcess_mc=["TTbar_diLepton_tau_MTOP175p5"]
    #  ~toProcess_mc=["DrellYan_M10to50"]
-   #  ~toProcess_mc=["DrellYan"]
+   toProcess_mc=["DrellYan"]
    #  ~toProcess_mc=["SingleTop","SingleTop_DS"]
    #  ~toProcess_mc=["bb4l"]
    #  ~toProcess_mc=["bb4l_new"]
@@ -687,7 +687,7 @@ if __name__ == "__main__":
    parser = argparse.ArgumentParser()
    parser.add_argument('-m', type=str, default="distributions", help="module, default is distributions")
    parser.add_argument('-f', type=float, choices=[Range(0.0, 1.0)], default=1.0, help="process fraction")
-   parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",required=True)
+   parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG (e.g. 2016_preVFP)",required=True)
    parser.add_argument('-s', type=str, default="Nominal", help="systematic shift")
    parser.add_argument('--scratchInput', action='store_true', default=False, help="Use nTuple stored on scratch, otherwise dCache Input is used.")
    parser.add_argument('--copyDCache', action='store_true', default=False, help="Copy nTuples stored on dCache to lx-node before running the code on lx-node.")

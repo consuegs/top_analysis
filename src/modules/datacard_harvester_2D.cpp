@@ -48,13 +48,7 @@ void run(){
     string year = string(cfg.year);
     // ~string year = "2017"
     // Location of the ROOT histogram files
-    // ~string histLoc = "/net/data_cms1b/user/dmeuser/top_analysis/" + string("2018") + "/v06/output_framework/multiHists/";
-    string histLoc = "";
-    if (year=="2016_preVFP" or year=="2016_postVFP"){
-        histLoc+="/net/data_cms1b/user/dmeuser/top_analysis/" + year + "/"+string(cfg.treeVersion.Data())+"/output_framework/multiHists/combine/";
-    } else{
-        histLoc+="/net/data_cms1b/user/dmeuser/top_analysis/" + year + "/"+string(cfg.treeVersion.Data())+"/output_framework/multiHists/combine/";
-    }
+    string histLoc = string(cfg.outputDirectory.Data())+"/multiHists/combine/";
     
     vector<tuple<string,string>> DNN_2Dhists_vec;
     

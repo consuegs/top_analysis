@@ -47,16 +47,10 @@ extern "C"
 void run(){
     string year = string(cfg.year);
     // Location of the ROOT histogram files
-    // ~string histLoc = "/net/data_cms1b/user/dmeuser/top_analysis/" + string("2018") + "/v06/output_framework/multiHists/";
-    string histLoc = "";
-    if (year=="2016_preVFP" or year=="2016_postVFP"){
-        // ~histLoc+="/net/data_cms1b/user/dmeuser/top_analysis/" + year + "/"+string(cfg.treeVersion.Data())+"/output_framework/multiHists/combine_new/";
-        histLoc+="/net/data_cms1b/user/dmeuser/top_analysis/" + year + "/"+string(cfg.treeVersion.Data())+"/output_framework/multiHists/combine/";
-    } else{
-        histLoc+="/net/data_cms1b/user/dmeuser/top_analysis/" + year + "/"+string(cfg.treeVersion.Data())+"/output_framework/multiHists/combine/";
-    }
+    string histLoc = string(cfg.outputDirectory.Data())+"/multiHists/combine/";
     
     map<string,tuple<vector<double>,string>> test_variables;
+    throw;
     
     // variables not used in DNN:
     // ~test_variables["Lep1_pt*cos(Lep1_phi)"] = tuple(linspace(-250, 250, 26), "Lep1_pX");

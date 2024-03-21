@@ -33,9 +33,9 @@ make
 echo $(date)
 
 #random sleep to avoid to many simultaneous copy jobs
-duration=$[ ( $RANDOM % 15 )  + 1 ]
-echo "Sleeping for "$duration" minutes"
-sleep $duration"m"
+# ~duration=$[ ( $RANDOM % 15 )  + 1 ]
+# ~echo "Sleeping for "$duration" minutes"
+# ~sleep $duration"m"
 
 #get inputs from dCache
 if [[ $2 != "TUnfold_binning" ]]
@@ -47,10 +47,11 @@ else
    mkdir ../100.0
    cd "../100.0"
    eval `scram unsetenv -sh`;
-   gfal-copy -r -t 3600 davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/"$10"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
+   echo grid-webdav.physik.rwth-aachen.de:2889/store/user/"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal
+   gfal-copy -r -t 3600 davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/Nominal ./Nominal
    if [[ $syst != "Nominal" ]]
    then
-      gfal-copy -r -t 3600 davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/"$10"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
+      gfal-copy -r -t 3600 davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/"${10}"/minTrees/"$4"/"$9"/minTrees/100.0/$syst ./$syst
    fi
    cd ../CMSSW_10_5_0/src/
    eval `scramv1 runtime -sh`
