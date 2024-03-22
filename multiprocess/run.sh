@@ -1,6 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash
 
-source /etc/profile.d/umd_ui.sh #to enable proxy
+source /cvmfs/cms.cern.ch/cmsset_default.sh
 
 export HOSTNAME=$HOSTNAME
 
@@ -9,25 +9,16 @@ duration=$[ ( $RANDOM % 10 )  + 1 ]
 echo "Sleeping for "$duration" minutes"
 sleep $duration"m"
 
+#copy input file to node
 if [[ $8 != "" ]]
 then
-   # ~xrdcp "$8" $TMP   #copy to node
-   dccp "$8" $TMP
+   gfal-copy "$8" $TMP
 fi
 
-submitDir=${10}/multiprocess # framework base dir
-export SCRAM_ARCH=slc7_amd64_gcc820
-source /cvmfs/cms.cern.ch/cmsset_default.sh
-cd ${9} # CMSSW/src dir
-eval `scramv1 runtime -sh`
+submitDir=${10}/multiprocess # framework base dir 
 
-cd $submitDir
-
-cd ../build
-
-export ANALYSIS_YEAR_CONFIG="$4"
-
-./run.x "$1" "$2" "$3" "$5" "$6" "$7" 2>&1 | tee $TMP/OutFile.txt
+# run framework in singularity
+cmssw-cc7 -- "export SCRAM_ARCH=slc7_amd64_gcc820 && source /cvmfs/cms.cern.ch/cmsset_default.sh && cd ${9} && cmsenv && cd $submitDir && cd ../build && export ANALYSIS_YEAR_CONFIG=$4 && ./run.x $1 $2 $3 $5 $6 $7 2>&1 | tee $TMP/OutFile.txt"
 
 #copy minTrees to dCache
 if [[ $1 != "distributions" ]]

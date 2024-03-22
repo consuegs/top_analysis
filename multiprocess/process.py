@@ -536,7 +536,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
    use_x509userproxy       = true
    Request_Memory          = {4} Mb
-   Requirements            = (TARGET.Machine == "lxblade33.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade34.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade35.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade36.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade37.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade38.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade39.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade40.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade41.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade42.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade43.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade44.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade45.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade46.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade47.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade48.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade49.physik.rwth-aachen.de") || (TARGET.Machine == "lxblade50.physik.rwth-aachen.de")
+   Requirements            = (TARGET.Machine == "lxbatch01.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch02.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch03.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch04.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch05.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch06.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch07.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch08.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch09.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch10.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch11.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch12.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch13.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch14.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch15.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch16.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch17.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch18.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch19.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch20.physik.rwth-aachen.de")
    Queue
       """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),dataBasePath,inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath"),getPath("dCacheBasePath")),)
                   elif args.condFileTransfer:
@@ -647,7 +647,7 @@ if __name__ == "__main__":
    # Select datasets to process
    #############################################
    #  ~toProcess_mc=["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan","DrellYan_M10to50","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
-   #  ~toProcess_mc=["ZZ"]
+   toProcess_mc=["ZZ"]
    #  ~toProcess_mc=["DrellYan_NLO"]
    #  ~toProcess_mc=["TTbar_diLepton"]
    #  ~toProcess_mc=["TTbar_diLepton","TTbar_diLepton_tau","TTbar_hadronic","TTbar_singleLepton"]
@@ -664,7 +664,7 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["TTbar_diLepton_MTOP175p5","TTbar_diLepton_tau_MTOP175p5","TTbar_singleLepton_MTOP175p5","TTbar_hadronic_MTOP175p5"]
    #  ~toProcess_mc=["TTbar_diLepton_tau_MTOP175p5"]
    #  ~toProcess_mc=["DrellYan_M10to50"]
-   toProcess_mc=["DrellYan"]
+   #  ~toProcess_mc=["DrellYan"]
    #  ~toProcess_mc=["SingleTop","SingleTop_DS"]
    #  ~toProcess_mc=["bb4l"]
    #  ~toProcess_mc=["bb4l_new"]
