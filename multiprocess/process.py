@@ -462,7 +462,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    # Ask if selected settings are correct
    runSubmit = True
    if disableConfirm==False:
-      correctSamples = input("If you want to continue with the selected setting, enter 1:\n")
+      correctSamples = bool(input("If you want to continue with the selected setting, enter 1:\n"))
       if (correctSamples != 1):
          print("Abort Submission")
          runSubmit = False
@@ -489,7 +489,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
       # create logpath if not existing
       logpath = createLogPath(args)
 
-      requ_mem=1500   #standard value, allocated if not defined
+      requ_mem=10000   #standard value, allocated if not defined
       
       # loop over selected datasets and submit corresponding jobs
       sampleStr = ""

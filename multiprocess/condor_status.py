@@ -13,20 +13,21 @@ sys.path.append("../users")
 from getPath import getPath
 
 def getInfos():
-    #  ~out = subprocess.check_output(["condor_q", "-long", "-grid"])
-    out = subprocess.check_output(["condor_q", "-long"])
-    #  ~for jobStrings in out.split("\n\n"):
-        #  ~for line in jobStrings.split("\n"):
-            #  ~if line:
-                #  ~break
-                #  ~print [line.split(" = ")]
+    if sys.version_info[0] < 3:
+        out = subprocess.check_output(["condor_q", "-long"])
+    else:
+        out = subprocess.getoutput("condor_q -long")
+        
     return [ dict([line.replace("\"","").split(" = ") for line in jobStrings.split("\n") if (" = " in line and "TransferOutputRemaps" not in line)]) for jobStrings in out.split("\n\n") if jobStrings ]
 
 def getSummary():
-    #  ~out = subprocess.check_output(["condor_q", "-constraint","JobUniverse==9"])
-    out = subprocess.check_output(["condor_q"])
-    #  ~return out.split("\n")[-3]
-    return out.split("\n")[-5]
+    if sys.version_info[0] < 3:
+        out = subprocess.check_output(["condor_q"])
+        postion = -5
+    else:
+        out = subprocess.getoutput(["condor_q"])
+        postion = -4
+    return out.split("\n")[postion]
 
 def getNameFromOutFile(outFile):
     moduleName = outFile.split("/")[-2]
@@ -89,7 +90,7 @@ def resubmitJob(outName,automaticResubmit=False):
     else :
         value = input("For resubmitting "+outName+" enter 1. For showing .out, .log and .error enter 2:\n")
     if value==1:
-        print "Resubmitting..."
+        print("Resubmitting...")
         sp.call(["condor_submit", outName.replace(".out",".submit")])
         sp.call(["rm", outName])
         sp.call(["rm", outName.replace(".out",".log")])
@@ -114,11 +115,11 @@ def getProgressFromOut(outName,checkCompleted=False,printStatus=True,resubmit=Fa
                             color = "yellow"
                             if progress==10:
                                 color = "green"
-                            if printStatus: print colored("--"+line.split(".")[0]+" "+str(progress*10)+"%",color)
+                            if printStatus: print(colored("--"+line.split(".")[0]+" "+str(progress*10)+"%",color))
             if(processing == False and checkCompleted and lines>2):
                 color = "red"
                 if printStatus: 
-                    print colored(getNameFromOutFile(outName)+" failed",color)
+                    print(colored(getNameFromOutFile(outName)+" failed",color))
                     resubmitJob(outName,resubmit)
                 if resubmit:
                     resubmitJob(outName,resubmit)
@@ -129,11 +130,11 @@ def getStatusFromOut(outName,running,printStatus=True,resubmit=False):
     if os.path.exists(outName) == False or len(open(outName).readlines(  ))<=10:
         if running:
             color = "blue"
-            if printStatus: print colored(getNameFromOutFile(outName)+" no output yet",color)
+            if printStatus: print(colored(getNameFromOutFile(outName)+" no output yet",color))
         else:
             color = "red"
             if printStatus:
-                print colored(getNameFromOutFile(outName)+" failed",color)
+                print(colored(getNameFromOutFile(outName)+" failed",color))
                 resubmitJob(outName,resubmit)
             if resubmit:
                 resubmitJob(outName,resubmit)
@@ -142,19 +143,26 @@ def getStatusFromOut(outName,running,printStatus=True,resubmit=False):
         if checkErrorFile(outName) == False:
             finished = False
         elif len(open(outName).readlines(  )) !=0:
+            gridjob = False;
             with open(outName,"r") as f:
                 next(f)
                 for line in f:
+                    if line.find("grid-wn")>=0:
+                        gridjob = True;
                     if line.find("took")>=0:
                         finished = True
                         color = "green"
-                        if printStatus: print colored(datasetName+" is finished, copy took "+getCopyTimeFromError(outName)[0].strip()+"s with "+getCopyTimeFromError(outName)[1].strip()+", script"+line.split(")")[-1].replace("=","").replace("\n","")+" on "+getMachineFromOut(outName),color)
+                        if printStatus:
+                            if gridjob:
+                                print(colored(datasetName+" is finished, copy took "+getCopyTimeFromError(outName)[0].strip()+"s with "+getCopyTimeFromError(outName)[1].strip()+", script"+line.split(")")[-1].replace("=","").replace("\n","")+" on "+getMachineFromOut(outName),color))
+                            else:
+                                print(colored(datasetName+" is finished, script"+line.split(")")[-1].replace("=","").replace("\n",""),color))
         if finished == False and running:
             getProgressFromOut(outName,True,printStatus,resubmit,True) 
         elif finished == False and running == False:
             color = "red"
             if printStatus:
-                print colored(getNameFromOutFile(outName)+" failed"+" on "+getMachineFromOut(outName),color)
+                print(colored(getNameFromOutFile(outName)+" failed"+" on "+getMachineFromOut(outName),color))
                 resubmitJob(outName,resubmit)
             if resubmit:
                 resubmitJob(outName,resubmit)
@@ -189,7 +197,7 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
 
     for job in jobs:
         
-        if job.has_key("RemoteHost") == False:
+        if "RemoteHost" not in job:
             job["RemoteHost"] = "Grid"
         
         if job["Args"]=="0":
@@ -204,26 +212,26 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
         runningLogs[job["Out"]] = (0 if jStatus=="1" else 1)
         if(printOutput == False): continue     # show job status only in nominal mode
         if jStatus == "1":
-            print colored("\033[1m"+name+"    "+job["ClusterId"]+"       idle"+"\033[0m","yellow")
+            print(colored("\033[1m"+name+"    "+job["ClusterId"]+"       idle"+"\033[0m","yellow"))
         elif jStatus == "2":
-            print colored("\033[1m"+name+"    "+job["RemoteHost"]+"   "+job["ClusterId"]+"       running"+"\033[0m","green")
+            print(colored("\033[1m"+name+"    "+job["RemoteHost"]+"   "+job["ClusterId"]+"       running"+"\033[0m","green"))
             getProgressFromOut(job["Out"])
         elif jStatus == "5":
-            print colored("\033[1m"+name+"    "+job["ClusterId"]+"       held"+"\033[0m","red")
+            print(colored("\033[1m"+name+"    "+job["ClusterId"]+"       held"+"\033[0m","red"))
         elif jStatus == "7":
             susTime = (time.time()-int(job["LastSuspensionTime"]))/60.
-            print colored("\033[1m"+name+"    "+job["RemoteHost"]+"       suspended since {:.2f} min".format(susTime)+"         "+job["RemoteHost"]+"       "+job["ClusterId"]+"\033[0m","red")
+            print(colored("\033[1m"+name+"    "+job["RemoteHost"]+"       suspended since {:.2f} min".format(susTime)+"         "+job["RemoteHost"]+"       "+job["ClusterId"]+"\033[0m","red"))
             getProgressFromOut(job["Out"])
             if susTime > 10 and checkSuspended :
                 value = input("Job suspended for more than 10 Minutes, please enter 1 to kill job and start again or 0 to continue:\n")
                 if value==1:
-                    print "resubmitting job"
+                    print("resubmitting job")
                     susJobs.append(job["ClusterId"])
         #  ~else:
             #  ~print "job status = ", jStatus
     
     if(printOutput):
-        print getSummary()
+        print(getSummary())
 
         for job in susJobs:
             os.system("condor_hold "+job)
@@ -234,11 +242,11 @@ def checkStatusFromQueue(printOutput=True,checkSuspended=False):
 def merge(distrLogPath,mergeAll=False,onlyHist=True):
     if mergeAll:
         value = 1
-    else: value = input("All jobs finished succesfully. For merging the outputs enter 1:\n")
+    else: value = int(input("All jobs finished succesfully. For merging the outputs enter 1:\n"))
     if value==1:
-        print "merging output for "+distrLogPath
+        print("merging output for "+distrLogPath)
         if onlyHist:
-            print "merging only hists"
+            print("merging only hists")
             sp.call(["python","mergeOutputs.py",distrLogPath,"--onlyHists"])
         else:
             sp.call(["python","mergeOutputs.py",distrLogPath])
@@ -260,7 +268,7 @@ def summaryJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF,modul
         if(os.path.exists(distrLogPath)):
             status = checkStatusFromLog(distrLogPath,runningLogs.keys(),False,resubmit)
             if status[0]:
-                print colored(distrLogPath,"green",attrs=['bold'])
+                print(colored(distrLogPath,"green",attrs=['bold']))
                 if (module != "TUnfold_binning"):
                     if (mergeOutputs.mergeRequired(distrLogPath,module=="distributions",False) or forceMergeAll) and resubmit==False:
                         merge(distrLogPath,(mergeAll or forceMergeAll))
@@ -269,11 +277,11 @@ def summaryJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF,modul
                 idleCheck = [value for key, value in runningLogs.iteritems() if (key.find(systName)>0 and key.find(year)>0)]
                 nIdle = idleCheck.count(0)
                 nFailed = status[1][0]-status[1][1]-status[1][2]
-                print colored(distrLogPath,"cyan",attrs=['bold'])
-                print colored("-----Idle:{}/{}".format(nIdle,status[1][0]),"yellow")
-                print colored("-----Running:{}/{}".format(status[1][1]-nIdle,status[1][0]),"blue")
-                print colored("-----Failed:{}/{}".format(nFailed,status[1][0]),"red")
-                print colored("-----Finished:{}/{}".format(status[1][2],status[1][0]),"green")
+                print(colored(distrLogPath,"cyan",attrs=['bold']))
+                print(colored("-----Idle:{}/{}".format(nIdle,status[1][0]),"yellow"))
+                print(colored("-----Running:{}/{}".format(status[1][1]-nIdle,status[1][0]),"blue"))
+                print(colored("-----Failed:{}/{}".format(nFailed,status[1][0]),"red"))
+                print(colored("-----Finished:{}/{}".format(status[1][2],status[1][0]),"green"))
                 allFinished = False;
     #  ~if allFinished and module == "distributions":
         #  ~value = input("All jobs finished succesfully. For uploading the minTrees to dCache enter 1:\n")
@@ -325,12 +333,12 @@ if __name__ == "__main__":
                     if mergeOutputs.mergeRequired(args.checkCompleted,isDistributions(args.checkCompleted),False) or args.forceMergeAll:
                         merge(args.checkCompleted)
                     else:
-                        print "No merge required"
+                        print("No merge required")
             else:
-                print "Wrong Path"
+                print("Wrong Path")
         
         if (args.repeat):
-            print time.strftime("%H-%M-%S:"), "Sleeping for 15 minutes."
+            print(time.strftime("%H-%M-%S:"), "Sleeping for 15 minutes.")
             time.sleep(900)
         else:
             break

@@ -84,14 +84,14 @@ def mergeHist(dataset,logPath,histPath):    # merges histograms of given dataset
         os.remove(outfile)
     if sp.call(["hadd","-f",outfile]+splitSamples,stdout=open(os.devnull, 'wb')):
         sys.exit(1)
-    print "Created",outfile
+    print("Created",outfile)
     os.chdir(runDir)
     
 def mergeHists_forSamples(logPath,histPath,datasetList,samplesToMerge,outputName):        # merges histograms for different samples (mainly needed for datacard production)
     
     for sample in samplesToMerge:
         if sample not in datasetList:
-            print "No merging for:",samplesToMerge
+            print("No merging for:",samplesToMerge)
             return
     
     nTupleVersion = getNTupleVersion(getInfoFromLogPath(logPath)["year"])
@@ -134,7 +134,7 @@ def mergeHists_forSamples(logPath,histPath,datasetList,samplesToMerge,outputName
         shutil.rmtree(histPath+"/temp/")
     
     datasetList.append(outputName)      # add merged samples to datasetList
-    print "Created",outfile
+    print("Created",outfile)
     os.chdir(runDir)
 
 def mergeAllHists(datasets,logPath,histPath):       # merge all histograms into one file used for plotting scripts
@@ -148,13 +148,13 @@ def mergeAllHists(datasets,logPath,histPath):       # merge all histograms into 
     os.chdir(histPath)
     for datasetFile in datasetFiles:
         if os.path.exists(datasetFile)==False:
-            print "Error:", datasetFile, "is missing"
+            print("Error:", datasetFile, "is missing")
             sys.exit(98)
     if os.path.exists(outfile):
         os.remove(outfile)
     if sp.call(["hadd","-f",outfile]+datasetFiles,stdout=open(os.devnull, 'wb')):
         sys.exit(1)
-    print "Created",outfile
+    print("Created",outfile)
     os.chdir(runDir)
 
 def getDatasetList(logPath):    # get list of dataset, where jobs have been submitted
@@ -250,7 +250,7 @@ def mergeForCombine(logPath,histPath,sampleList):
         distrLogPath = systPath+"/1.0/distributions/"
         if(os.path.exists(distrLogPath)):
             info_syst = getInfoFromLogPath(distrLogPath)
-            print "-------Renaming {}---------------".format(info_syst["syst"])
+            print("-------Renaming {}---------------".format(info_syst["syst"]))
             mergedHistPath = getHistPath(distrLogPath)+"histograms_merged_{}.root".format(nTupleVersion)
             f = TFile(mergedHistPath,"READ")
             hists = {}
@@ -340,8 +340,8 @@ if __name__ == "__main__":
     isTriggerEff = (args.logPath.find("triggerEff") > 0)
         
     if (isDistributions == False and (args.onlyHists == False)):
-        print "Error: For other modules than distributions Trees can not be merged!"
-        print "Continuing with --onlyHists option"
+        print("Error: For other modules than distributions Trees can not be merged!")
+        print("Continuing with --onlyHists option")
         args.onlyHists = True
     
     treePath = getTreePath(args.logPath)
@@ -354,22 +354,22 @@ if __name__ == "__main__":
         datasetList = getDatasetList(args.logPath)
     else:
         if args.mergeAllHists or args.onlyTrees:
-            print "Error: mergeAllHists option not compatible with singeSample or onlyTrees"
+            print("Error: mergeAllHists option not compatible with singeSample or onlyTrees")
         if args.singleDataset in getDatasetList(args.logPath):
             datasetList = [args.singleDataset]
         else:
-            print "Error: Selected sample not in logPath"
+            print("Error: Selected sample not in logPath")
             sys.exit(1)
         
     for dataset in datasetList:     # check if all datasets, which are intended for merging, are finished
             if isComplete(args.logPath,dataset) == False:
-                print "Error:",dataset,"is not complete"
+                print("Error:",dataset,"is not complete")
                 sys.exit(1)
     
     if (args.mergeForCombine==False):
         for dataset in datasetList:
                 if isComplete(args.logPath,dataset):
-                    print "-------------Start merging", dataset, "----------------------"
+                    print("-------------Start merging", dataset, "----------------------")
                     if args.onlyHists == False:
                         mergeTree(dataset,args.logPath,treePath)
                     if args.onlyTrees == False:
@@ -388,7 +388,7 @@ if __name__ == "__main__":
             mergeHists_forSamples(args.logPath,histPath,datasetList,["TTbar_diLepton_tau_"+info["syst"],"TTbar_singleLepton_"+info["syst"],"TTbar_hadronic_"+info["syst"]],"TTbar_other_"+info["syst"])
         
         if args.mergeAllHists and (isDistributions or isTriggerEff) and args.onlyTrees == False:
-            print "-------------Start merging all datasets to one histFile----------------------"
+            print("-------------Start merging all datasets to one histFile----------------------")
             mergeAllHists(datasetList,args.logPath,histPath)
     elif(args.mergeForCombine):
         args.logPath = "logs/{0}/Nominal/1.0/distributions/".format(args.y)
