@@ -5,9 +5,9 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh
 export HOSTNAME=$HOSTNAME
 
 #random sleep to avoid to many simultaneous copy jobs
-# ~duration=$[ ( $RANDOM % 10 )  + 1 ]
-# ~echo "Sleeping for "$duration" minutes"
-# ~sleep $duration"m"
+duration=$[ ( $RANDOM % 10 )  + 1 ]
+echo "Sleeping for "$duration" minutes"
+sleep $duration"m"
 
 #copy input file to node
 if [[ $8 != "" ]]
