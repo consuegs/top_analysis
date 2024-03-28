@@ -126,8 +126,8 @@ void run()
       TTreeReaderValue<float> fragPetersonWeight(reader, "weightFragPeterson");
       TTreeReaderValue<float> semilepbrUpWeight(reader, "weightSemilepbrUp");
       TTreeReaderValue<float> semilepbrDownWeight(reader, "weightSemilepbrDown");
-      TTreeReaderValue<float> matchWeight_up(reader, "hdamp_weight_up");
-      TTreeReaderValue<float> matchWeight_down(reader, "hdamp_weight_down");
+      TTreeReaderValue<float> matchWeight_up(reader, Systematic::matchDCTRWeightName(dss.name,true));
+      TTreeReaderValue<float> matchWeight_down(reader, Systematic::matchDCTRWeightName(dss.name,false));
       TTreeReaderValue<double> w_prefiring(reader, "prefiring_weight");
       TTreeReaderValue<std::vector<tree::Muon>>     muons    (reader, "muons");
       TTreeReaderValue<std::vector<tree::Electron>> electrons(reader, "electrons");
