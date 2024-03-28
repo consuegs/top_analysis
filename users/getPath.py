@@ -1,13 +1,13 @@
 import getpass
 import os
-import ConfigParser
+import configparser
 import re
 
 
-class BetterConfigParser(ConfigParser.RawConfigParser):
+class BetterConfigParser(configparser.RawConfigParser):
 
     def get(self, section, option):
-        result = ConfigParser.RawConfigParser.get(self, section, option)
+        result = configparser.RawConfigParser.get(self, section, option)
         result = self.__replaceSectionwideTemplates(result)
         return result
 
