@@ -6,7 +6,7 @@
 - Scientific Linux 7 (use singularity)
 
 ## Setup scientific linux 7 singularity ##
-Add the following lines to your `.bashrc` to start the singularity each time you run on the Alma9 node (standard node on the physik cluster). To work properly the repository has to be clone into your home directory.
+Before setting up the singularity, the repository has to be cloned. Add the following lines to your `.bashrc` to start the singularity each time you run on the Alma9 node (standard node on the physik cluster). To work properly the repository has to be clone into your home directory.
 
     # Run singularity if not on cc7 node
     linuxVersion=$( cat /etc/redhat-release )
@@ -33,6 +33,8 @@ Add the following lines to your `.bashrc` to start the singularity each time you
 To exit the singularity, just use `exit`.
 
 ## Setup CMSSW Environmet ##
+Before setting up the CMSSW environment, run `source /cvmfs/cms.cern.ch/cmsset_default.sh` or, even better, add the command to your `.bashrc`.
+
     export SCRAM_ARCH=slc7_amd64_gcc820
     cmsrel CMSSW_10_5_0
     cd CMSSW_10_5_0/src/
