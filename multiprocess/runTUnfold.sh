@@ -22,7 +22,7 @@ then
    gfal-copy -r -t 20000 davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/"$7"/minTrees/"$3"/"$5"/minTrees/100.0/$syst ./$syst
 fi
 
-# ~cmssw-cc7 -- "export SCRAM_ARCH=slc7_amd64_gcc820 && source /cvmfs/cms.cern.ch/cmsset_default.sh && cd ${8} && cmsenv && cd $submitDir && cd ../build && export ANALYSIS_YEAR_CONFIG=$3 && export HOSTNAME=$HOSTNAME && ./run.x $1 $2 $4 -m$TMP/"
+cmssw-cc7 -- "export SCRAM_ARCH=slc7_amd64_gcc820 && source /cvmfs/cms.cern.ch/cmsset_default.sh && cd ${8} && cmsenv && cd $submitDir && cd ../build && export ANALYSIS_YEAR_CONFIG=$3 && export HOSTNAME=$HOSTNAME && ./run.x $1 $2 $4 -m$TMP/"
 
 if [[ $8 != "" ]]
 then

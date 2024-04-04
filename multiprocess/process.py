@@ -341,7 +341,11 @@ def removeJES_HEM(year):
          del sample_allSyst_dict[key]
 
 def checkCEjobs():      #check how many jobs are present in both CE and choose with CE to submit to
-   out = subprocess.check_output(["condor_status", "-grid"])
+   try:
+      out = subprocess.check_output(["condor_status", "-grid"])
+   except Exception as error:
+      print("Direct grid submission not possible (try to submit from remaining cc7 nodes or use `--copyDCache` option to run on local lx cluster)")
+      sys.exit(21)
    jobs_ce1 = 0
    jobs_ce2 = 0
    for line in out.split("\n"):
@@ -367,13 +371,16 @@ def uploadCompressedCMSSW(onCMSconnect=False):    #compress and upload CMSSW to 
          if exc.errno != errno.EEXIST:
             raise
    CMSSW_path = os.getenv('CMSSW_BASE')
+   if CMSSW_path == None:
+      print("No CMSSW version is sourced! Requirement for direct grid submission (only possible from cc7 nodes)")
+      exit(25)
    CMSSW_version = CMSSW_path.split("/")[-1]
    filePath+=CMSSW_version+".tgz"
    
    print("Compressing "+CMSSW_version)
    try:
       os.chdir(CMSSW_path+"/../")
-      subprocess.call(["tar","-zcvf",filePath,CMSSW_version],stdout=open(os.devnull, 'wb'))
+      subprocess.check_call(["tar","-zcvf",filePath,CMSSW_version],stdout=open(os.devnull, 'wb'))
       os.chdir(runDir)
    except Exception as error:
       print("Compressing failed")
@@ -383,17 +390,16 @@ def uploadCompressedCMSSW(onCMSconnect=False):    #compress and upload CMSSW to 
    
    print("Uploading "+CMSSW_version+" to dCache")
    targetPath = "gridJobInputs/"+CMSSW_version+".tgz"
-   command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format(getPath("dCacheBasePath"))+targetPath,"-f","-r"
-   if onCMSconnect:
-      command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"davs://grid-webdav.physik.rwth-aachen.de:2889{}/".format(getPath("dCacheBasePath_webdav"))+targetPath,"-f","-r"
+   command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"davs://grid-webdav.physik.rwth-aachen.de:2889{}/".format(getPath("dCacheBasePath_webdav"))+targetPath,"-f","-r"
    command = " ".join(command)
-   try:
-      subprocess.call(command,shell=True)
-   except Exception as error:
+   ouput_upload = str(subprocess.check_output(command,shell=True))
+   if ouput_upload.find("ERROR")>=0:
+      print(ouput_upload)
       print("Uploading failed")
-      errno, errstr = error.args
-      print(errstr)
       sys.exit(21)
+   else:
+      print(ouput_upload)
+      print ("Upload successfull")
 
 def uploadCompressedFW(onCMSconnect=False):    #compress and upload local Framework to dCache to run on grid
    runDir = os.getcwd()
@@ -412,7 +418,7 @@ def uploadCompressedFW(onCMSconnect=False):    #compress and upload local Framew
    print("Compressing framework from "+FW_path)
    try:
       os.chdir(FW_path)
-      subprocess.call(["tar","-hzcvf",filePath]+FW_files,stdout=open(os.devnull, 'wb'))
+      subprocess.check_call(["tar","-hzcvf",filePath]+FW_files,stdout=open(os.devnull, 'wb'))
       os.chdir(runDir)
    except Exception as error:
       print("Compressing failed")
@@ -422,17 +428,16 @@ def uploadCompressedFW(onCMSconnect=False):    #compress and upload local Framew
    
    print("Uploading framework to dCache")
    targetPath = "gridJobInputs/FW.tgz"
-   command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format(getPath("dCacheBasePath"))+targetPath,"-f","-r"
-   if onCMSconnect:
-      command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"davs://grid-webdav.physik.rwth-aachen.de:2889{}/".format(getPath("dCacheBasePath_webdav"))+targetPath,"-f","-r"
+   command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"davs://grid-webdav.physik.rwth-aachen.de:2889{}/".format(getPath("dCacheBasePath_webdav"))+targetPath,"-f","-r"
    command = " ".join(command)
-   try:
-      subprocess.call(command,shell=True)
-   except Exception as error:
+   ouput_upload = str(subprocess.check_output(command,shell=True))
+   if ouput_upload.find("ERROR")>=0:
+      print(ouput_upload)
       print("Uploading failed")
-      errno, errstr = error.args
-      print(errstr)
       sys.exit(31)
+   else:
+      print(ouput_upload)
+      print ("Upload successfull")
    
 def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=False):
    
@@ -476,7 +481,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    if runSubmit:
       # For single submit check if only one dataset is selected and then ask for file nr
       if (args.SingleSubmit and ((len(toProcess_mc)+len(toProcess_data)+len(toProcess_signal))==1)):
-         singleFileNR = input("Please input the filenumber to submit:\n")
+         singleFileNR = int(input("Please input the filenumber to submit:\n"))
       elif args.SingleSubmit:
          print("SingleSubmit can only be used if one dataset is selected")
          exit(98)
@@ -601,7 +606,15 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    getenv                  = yes
    Queue
       """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1), getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),inputPath,checkCEjobs()))
-               subprocess.call(["condor_submit", submitFile])
+               try:
+                  subprocess.check_call(["condor_submit", submitFile])
+               except Exception as error:
+                  print("Submission failed")
+                  errno, errstr = error.args
+                  print(errstr)
+                  print("Submission failed. One potential mistake: Submitting from Alma9 node with old CMSSW version sourced.\nSubmission from Alma9 nodes does work without CMSSW environment")
+                  sys.exit(22)
+                  
 
 
 def submitTUnfold(args,systematics):
@@ -622,12 +635,6 @@ def submitTUnfold(args,systematics):
             os.remove(logFile)
       
       submitFile = logpath+"/"+args.m+".submit"    #define submit file
-      
-      # get dCache path (currently 2016 is stored in Marius folder)
-      #  ~if (args.y.find("2016")>=0):
-         #  ~dCachePath = getPath("dCacheBasePath","teroerde")
-      #  ~else:
-         #  ~dCachePath = getPath("dCacheBasePath")
       
       dCachePath = getPath("dCacheBasePath")
                         
@@ -682,7 +689,14 @@ def submitTUnfold(args,systematics):
       getenv                  = yes
       Queue
          """.format(str(args.f),args.m,"placeholder","placeholder","placeholder",args.y,args.s,"placeholder", getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),"placeholder",checkCEjobs(),getPath("gridname")))
-      subprocess.call(["condor_submit", submitFile])
+      try:
+         subprocess.check_call(["condor_submit", submitFile])
+      except Exception as error:
+         print("Submission failed")
+         errno, errstr = error.args
+         print(errstr)
+         print("Submission failed. One potential mistake: Submitting from Alma9 node with old CMSSW version sourced.\nSubmission from Alma9 nodes does work without CMSSW environment")
+         sys.exit(22)
    
    
 
