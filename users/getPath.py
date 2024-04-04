@@ -2,6 +2,7 @@ import getpass
 import os
 import configparser
 import re
+import socket
 
 
 class BetterConfigParser(configparser.RawConfigParser):
@@ -37,12 +38,17 @@ def getPath(pathName, user=None):
     if user == None:
         user = getpass.getuser()
     
-    if not os.path.isfile(os.path.join(os.path.dirname(__file__),"%s.ini"%user)):
+    if socket.gethostname().find("uscms")>=0:
+        configName = "%s_cmsconnect.ini"%user
+    else:
+        configName = "%s.ini"%user
+
+    if not os.path.isfile(os.path.join(os.path.dirname(__file__),configName)):
         print("No path config found for user %s"%user)
         exit(1)
     
     config = BetterConfigParser()
-    config.read(os.path.join(os.path.dirname(__file__),"%s.ini"%user))
+    config.read(os.path.join(os.path.dirname(__file__),configName))
 
     return config.get("paths",pathName)
 

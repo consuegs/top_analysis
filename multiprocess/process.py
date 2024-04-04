@@ -296,7 +296,7 @@ def get_version(year):      #checks config for name of file
    config.read("../config"+year+".ini")
    return config["input"]["version"]
 
-def get_dataBasePath_dCache(year,curl=True,dcap=False,extern=False):      #return dataBasePath on dCache for given year
+def get_dataBasePath_dCache(year,curl=True,dcap=False,extern=False,cmsconnect=False):      #return dataBasePath on dCache for given year
    config = configparser.ConfigParser()
    config.read("../config"+year+".ini")
    if (args.y.find("2016")>=0):
@@ -308,6 +308,8 @@ def get_dataBasePath_dCache(year,curl=True,dcap=False,extern=False):      #retur
          return "dcap://grid-dcap-extern.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname",user),year,config["input"]["version"])
       else:
          return "dcap://grid-dcap.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname",user),year,config["input"]["version"])
+   elif cmsconnect:
+      return "davs://grid-webdav.physik.rwth-aachen.de:2889/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname",user),year,config["input"]["version"])
    elif curl:
       return "curlsimple://grid-webdav.physik.rwth-aachen.de:2889/store/user/{0}/mergedNtuple/{1}/{2}/".format(getPath("gridname",user),year,config["input"]["version"])
    else:
@@ -355,7 +357,7 @@ def checkCEjobs():      #check how many jobs are present in both CE and choose w
    else:
       return "ce-1"
 
-def uploadCompressedCMSSW():    #compress and upload CMSSW to dCache to run on grid
+def uploadCompressedCMSSW(onCMSconnect=False):    #compress and upload CMSSW to dCache to run on grid
    runDir = os.getcwd()
    filePath = runDir+"/inputs/"
    if not os.path.exists(filePath):
@@ -382,6 +384,8 @@ def uploadCompressedCMSSW():    #compress and upload CMSSW to dCache to run on g
    print("Uploading "+CMSSW_version+" to dCache")
    targetPath = "gridJobInputs/"+CMSSW_version+".tgz"
    command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format(getPath("dCacheBasePath"))+targetPath,"-f","-r"
+   if onCMSconnect:
+      command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"davs://grid-webdav.physik.rwth-aachen.de:2889{}/".format(getPath("dCacheBasePath_webdav"))+targetPath,"-f","-r"
    command = " ".join(command)
    try:
       subprocess.call(command,shell=True)
@@ -391,7 +395,7 @@ def uploadCompressedCMSSW():    #compress and upload CMSSW to dCache to run on g
       print(errstr)
       sys.exit(21)
 
-def uploadCompressedFW():    #compress and upload local Framework to dCache to run on grid
+def uploadCompressedFW(onCMSconnect=False):    #compress and upload local Framework to dCache to run on grid
    runDir = os.getcwd()
    filePath = runDir+"/inputs/"
    if not os.path.exists(filePath):
@@ -419,6 +423,8 @@ def uploadCompressedFW():    #compress and upload local Framework to dCache to r
    print("Uploading framework to dCache")
    targetPath = "gridJobInputs/FW.tgz"
    command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN={}/".format(getPath("dCacheBasePath"))+targetPath,"-f","-r"
+   if onCMSconnect:
+      command = "eval `scram unsetenv -sh`;","gfal-copy",filePath,"davs://grid-webdav.physik.rwth-aachen.de:2889{}/".format(getPath("dCacheBasePath_webdav"))+targetPath,"-f","-r"
    command = " ".join(command)
    try:
       subprocess.call(command,shell=True)
@@ -515,7 +521,10 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
                
                submitFile = logpath+"/"+args.m+"_"+x+"_"+str(fileNR+1)+".submit"    #define submit file
                
-               if args.copyDCache:     #set path to dCache input in case of copying to condor node
+               if args.cmsconnect:
+                  inputPath = get_dataBasePath_dCache(args.y,False,False,False,True)+get_fileName(x,args.y,fileNR)
+                  inputPath = inputPath.replace(" ", "")
+               elif args.copyDCache:     #set path to dCache input in case of copying to condor node
                   inputPath = get_dataBasePath_dCache(args.y,False,True,True)+get_fileName(x,args.y,fileNR)
                   inputPath = inputPath.replace(" ", "")
                elif args.condFileTransfer:    #set path to dCache input in case of copying to condor node
@@ -556,6 +565,24 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    Requirements            = (TARGET.CpuFamily > 6) && (TARGET.Machine != "lxcip16.physik.rwth-aachen.de")  {9}
    Queue
       """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1),inputPath,"\nRank = CpuFamily" if(x=="TTbar_diLepton") else "", getPath("cmsswBasePath"), getPath("frameworkBasePath")),)
+                  elif args.cmsconnect:    # comsconnect submission
+                     f.write("""
+   universe                = vanilla
+   Executable              = runCMSconnect.sh
+   Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {10} {11} {9} {12}
+   Log                     = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.log
+   Output                  = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.out
+   Error                   = logs/{5}/{6}/{0}/{1}/{1}_{3}_{7}.error
+   should_transfer_files   = YES
+   transfer_output_files   = output_framework
+   transfer_output_remaps  = "output_framework = {8}/{5}/{9}/output_framework"
+   when_to_transfer_output = ON_SUCCESS
+   success_exit_code       = 0
+   getenv                  = yes
+   +ProjectName            = "cms.org.cern"
+   +JobMaxRetries          = 0
+   Queue 1
+      """.format(str(args.f),args.m,sampleStr,x,str(requ_mem),args.y,args.s,str(fileNR+1), getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),inputPath,getPath("gridname")))
                   else:    # Grid submission
                      f.write("""
    universe                = grid
@@ -618,6 +645,24 @@ def submitTUnfold(args,systematics):
       Requirements            = (TARGET.Machine == "lxbatch01.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch02.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch03.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch04.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch05.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch06.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch07.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch08.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch09.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch10.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch11.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch12.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch13.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch14.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch15.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch16.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch17.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch18.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch19.physik.rwth-aachen.de") || (TARGET.Machine == "lxbatch20.physik.rwth-aachen.de")
       Queue
       """.format(str(args.f),args.m,args.y,args.s,get_version(args.y),dCachePath,getPath("gridname"),getPath("cmsswBasePath"),getPath("frameworkBasePath")))
+         elif args.cmsconnect:    # cmsconnect submission
+            f.write("""
+      universe                = vanilla
+      Executable              = runCMSconnect.sh
+      Arguments               = -f{0} {1} {2} {5} -s{6} --fileNR={7} {10} {11} {9} {13}
+      Log                     = logs/{5}/{6}/{0}/{1}/{1}.log
+      Output                  = logs/{5}/{6}/{0}/{1}/{1}.out
+      Error                   = logs/{5}/{6}/{0}/{1}/{1}.error
+      should_transfer_files   = YES
+      transfer_output_files   = output_framework
+      transfer_output_remaps  = "output_framework = {8}/{5}/{9}/output_framework"
+      when_to_transfer_output = ON_SUCCESS
+      success_exit_code       = 0
+      getenv                  = yes
+      +ProjectName            = "cms.org.cern"
+      +JobMaxRetries          = 0
+      Queue 1
+         """.format(str(args.f),args.m,"placeholder","placeholder","placeholder",args.y,args.s,"placeholder", getPath("scratchBasePath"),get_version(args.y),getPath("dCacheBasePath"),"placeholder",checkCEjobs(),getPath("gridname")))
          else:    #grid submission
             f.write("""
       universe                = grid
@@ -692,6 +737,7 @@ if __name__ == "__main__":
    parser.add_argument('--scratchInput', action='store_true', default=False, help="Use nTuple stored on scratch, otherwise dCache Input is used.")
    parser.add_argument('--copyDCache', action='store_true', default=False, help="Copy nTuples stored on dCache to lx-node before running the code on lx-node.")
    parser.add_argument('--condFileTransfer', action='store_true', default=False, help="Use condor file transfer to copy from dCache to node before running the code.")
+   parser.add_argument('--cmsconnect', action='store_true', default=False, help="Submit from cmsconnect")
    parser.add_argument('--SingleSubmit', action='store_true' )
    parser.add_argument('--bTagEff_complete', action='store_true', default=False, help="Submits bTagEff jobs with all relevant systematics (use with care!)")
    parser.add_argument('--distributions_complete', action='store_true', default=False, help="Submits distributions jobs with all relevant systematics (use with care!)")
@@ -704,8 +750,8 @@ if __name__ == "__main__":
       
    # Upload CMSSW and FW to dCache if running on grid
    if args.scratchInput==False and args.copyDCache==False and args.condFileTransfer==False:
-      uploadCompressedCMSSW()
-      uploadCompressedFW()
+      uploadCompressedCMSSW(args.cmsconnect)
+      uploadCompressedFW(args.cmsconnect)
    
    # Remove HEM syst uncertainty for all years except 2018
    removeJES_HEM(args.y)

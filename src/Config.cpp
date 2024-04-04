@@ -139,7 +139,7 @@ Config::Config(std::string config_year)
 
    // Check if running on lx* with home directory excess, if not, output cannot be stored on /net/...
    TString hostname=getenv("HOSTNAME");
-   if (hostname.Contains("lx")){
+   if (hostname.Contains("lx") || hostname.Contains("uscms")){
       outputDirectory=pt.get<std::string>("output.directory")+treeVersion+"/output_framework";
    }
    else{
