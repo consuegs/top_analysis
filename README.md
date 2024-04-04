@@ -70,39 +70,50 @@ Execute `run.x` (created in the build directory).
 Meaningful modules can be chosen as arguments:
 
     $ ./run.x --help
-    Running on year 2018 (to change set ANALYSIS_YEAR_CONFIG variable)
-    Usage: ./run.x module1[ module2[...]] [options]
-    Allowed options:
-      -h [ --help ]                         produce help message
-      -f [ --fraction ] arg (=1)            Fraction of events to process
-      --mc_dataset arg                      Single MC dataset to be processed, if 
-                                            empty datasets are taken from 
-                                            config.ini
-      --data_dataset arg                    Single data dataset to be processed, if
-                                            empty datasets are taken from 
-                                            config.ini
-      --signal_dataset arg                  Single signal dataset to be processed, 
-                                            if empty datasets are taken from 
-                                            config.ini
-      --fileNR arg (=0)                     FileNR to be processed, if zero all 
-                                            files are processed (filelist defined 
-                                            in .ini)
-      -s [ --systematic ] arg (=Nominal)    Systematic uncertainty to be applied 
-                                            (only for distributions)
-      -d [ --dataBasePath ] arg (=/net/data_cms1b/user/dmeuser/top_analysis/2018/v06/nTuple/)
-                                            Alternative dataBasePath, which can be 
-                                            used for condor submission with 
-                                            inputFileTransfer
-      --release                             Release mode (don't draw version 
-                                            labels)
+        Running on year 2018 (to change set ANALYSIS_YEAR_CONFIG variable)
+        Usage: ./run.x module1[ module2[...]] [options]
+        Allowed options:
+          -h [ --help ]                         produce help message
+          -f [ --fraction ] arg (=1)            Fraction of events to process
+          --mc_dataset arg                      Single MC dataset to be processed, if 
+                                                empty datasets are taken from 
+                                                config.ini
+          --data_dataset arg                    Single data dataset to be processed, if
+                                                empty datasets are taken from 
+                                                config.ini
+          --signal_dataset arg                  Single signal dataset to be processed, 
+                                                if empty datasets are taken from 
+                                                config.ini
+          --fileNR arg (=0)                     FileNR to be processed, if zero all 
+                                                files are processed (filelist defined 
+                                                in .ini)
+          -s [ --systematic ] arg (=Nominal)    Systematic uncertainty to be applied 
+                                                (only for distributions)
+          -d [ --dataBasePath ] arg (=/net/data_cms1b/user/dmeuser/top_analysis/2018/v08/nTuple/)
+                                                Alternative dataBasePath, which can be 
+                                                used for condor submission with 
+                                                inputFileTransfer
+          -m [ --minTreePath ] arg (=/net/data_cms1b/user/dmeuser/top_analysis/2018/v08/minTrees/)
+                                                Alternative minTreePath, which can be 
+                                                used for condor submission with 
+                                                inputFileTransfer
+          --release                             Release mode (don't draw version 
+                                                labels)
+
 
 ## Adding new modules ##
 To add a new module, create a new `<module>.cpp` file in `src/modules`.
 The entry function has to be `extern "C" void run() {...}`.
 Add `<module>` to the list in `src/modules/CMakeLists.txt`
 
-## Running on condor ##
+## Running on condor: general information ##
 The `distributions`, `bTagEff` and `triggerEff` modules can be executed in multiple condor jobs. One job corresponds to one sample file (defined in `config*.ini`). The scripts for submitting the jobs can be found in `multiprocess/`. 
-Attention: The output hists are saved in an additional folder `output/multiHists/` (in case of the distributions module)
-and have to be merged before plotting. For a new user to use the submission option a corresponding user config in `users/` has to be created.
+Attention: The output hists are saved in an additional folder `output_framework/multiHists/` (in case of the distributions module) and have to be merged before plotting. In addition, the `TUnfold_binning` module can be submitted for individual systematics. For a new user to use the submission option a corresponding user config in `users/` has to be created and a grid certificate has to be present to setup a voms proxy.
+
+## Running on condor: site dependencies ##
+Currently there are three different options to submit condor jobs using `multiprocess/process.py`. Two options can be used from the lxcluster nodes:
+* **Submitting to `lxbatch*.physik.rwth-aachen.de` nodes:** Jobs are submitted to local cluster nodes, with direct network connection to the dCache. This option is selcted based on `--copyDCache`
+* **Direct Grid submission**: Jobs are directly submitted to `grid-ce-1(2)-rwth.gridka.de`. This submission is currently only possible from the remaining cc7 cluster nodes, which can be accessed via `ssh dmeuser@lxv7.physik.rwth-aachen.de -i <public key>`. This option is expected to be no longer present once the CEs migrate to a newer HTcondor version (around summer 2024).
+
+The third option is based on the [cmsconnect service](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookCMSConnect). To use this service, follow the instructions given in the twiki. Based on this service the jobs can be submitted to the CMS global pool using via a specifig login node. Since there is no shared filesystem with the lxcluster nodes, the framework has to be setup on the login node. In addition, the storage of the outputs has to be properly solved (currently using `/scratch(<username>` seems to be an option). Furthermore, a new user config `<username>_cmsconnect.ini` has to be created. Once the framework is setup, the jobs can be submitted using the additional `--cmsconnect` option.
 ...
