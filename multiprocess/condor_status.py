@@ -57,6 +57,8 @@ def getMachineFromOut(outName):
     
 def getCopyTimeFromError(outName):
     logName = outName.replace(".out",".error")
+    time = "-1"
+    speed = "-1"
     with open(logName,"r") as f:
         for line in f:
             if line.find("seconds") >= 0:
@@ -296,7 +298,7 @@ def isDistributions(logPath):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c",'--checkCompleted', type=str, default="", help="Checks status of all jobs in given log folder")
+    parser.add_argument('-c','--checkCompleted', type=str, default="", help="Checks status of all jobs in given log folder")
     parser.add_argument('-y', type=str, help="year to be set as ANALYSIS_YEAR_CONFIG",default="2018")
     parser.add_argument('--checkSuspended', action='store_true', help="Checks if jobs are suspended for more than 10 minutes, and offers resubmit")
     parser.add_argument('--distributions', action='store_true', help="Shows summary for distribution jobs per systematic")

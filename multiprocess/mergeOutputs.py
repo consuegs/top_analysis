@@ -11,7 +11,8 @@ import sys
 import shutil
 import shlex
 import ROOT
-from ROOT import *
+#  ~from ROOT import *
+ROOT.PyConfig.IgnoreCommandLineOptions = True   #avoid overwriting --help option
 import utilities
 sys.path.append("../users")
 from getPath import getPath
