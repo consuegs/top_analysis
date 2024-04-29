@@ -48,7 +48,7 @@ def getSplitSamples(dataset,logPath):   # extracts sample names from finished.tx
 
 def listAllObjectPaths(file_,output,path=""):
     file_.cd(path)
-    for key in gDirectory.GetListOfKeys():
+    for key in ROOT.gDirectory.GetListOfKeys():
         if key.IsFolder():
             listAllObjectPaths(file_,output,path+"/"+key.GetName())
         else:
@@ -83,7 +83,13 @@ def mergeHist(dataset,logPath,histPath):    # merges histograms of given dataset
     os.chdir(histPath)
     if os.path.exists(outfile):
         os.remove(outfile)
-    if sp.call(["hadd","-f",outfile]+splitSamples,stdout=open(os.devnull, 'wb')):
+    
+    command = 'cmssw-cc7 --command-to-run "source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.12.06/x86_64-centos7-gcc48-opt/root/bin/thisroot.sh && hadd -f -j 8 {0}'.format(outfile)
+    for sampleName in splitSamples:
+        command += " "+sampleName
+    command +='"'
+    
+    if sp.call(command,shell=True,stdout=sp.DEVNULL):
         sys.exit(1)
     print("Created",outfile)
     os.chdir(runDir)
@@ -106,20 +112,21 @@ def mergeHists_forSamples(logPath,histPath,datasetList,samplesToMerge,outputName
     runDir = os.getcwd()
     os.chdir(histPath)
     for file_ in inputSamples:  #loop over inputSamples
-        f = TFile(file_,"READ")
+        f = ROOT.TFile(file_,"READ")
         hists = {}
         histNames = []
         listAllObjectPaths(f,histNames)     # get all paths in root file
         for histName in histNames:
             hist = f.Get(histName)
             hists[histName] = hist
-        f_out = TFile(histPath+"/temp/"+file_,"RECREATE")
+        f_out = ROOT.TFile(histPath+"/temp/"+file_,"RECREATE")
+        f_out.SetBit(ROOT.TFile.k630forwardCompatibility)
         tempSamples.append(histPath+"/temp/"+file_)
         f_out.cd()
         for histName in hists.keys():
             folderName = histName.rsplit("/",1)[0]
             folderName = folderName[1:] 
-            with utilities.Quiet(kError + 1):   # avoid spaming from root
+            with utilities.Quiet(ROOT.kError + 1):   # avoid spaming from root
                 if f_out.cd(folderName) == False:
                     f_out.mkdir(folderName)
                     f_out.cd(folderName)
@@ -129,7 +136,14 @@ def mergeHists_forSamples(logPath,histPath,datasetList,samplesToMerge,outputName
     
     if os.path.exists(outfile):
         os.remove(outfile)
-    if sp.call(["hadd","-f",outfile]+tempSamples,stdout=open(os.devnull, 'wb')):    # combine temp hists with hadd
+    
+    command = 'cmssw-cc7 --command-to-run "source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.12.06/x86_64-centos7-gcc48-opt/root/bin/thisroot.sh && hadd -f -j 8 {0}'.format(outfile)
+    for sampleName in tempSamples:
+        command += " "+sampleName
+    command +='"'
+    
+    if sp.call(command,shell=True,stdout=sp.DEVNULL):
+    #  ~if sp.call(["hadd","-f",outfile]+tempSamples,stdout=open(os.devnull, 'wb')):    # combine temp hists with hadd 
         sys.exit(1)
     if os.path.exists(histPath+"/temp/"):   # cleaning
         shutil.rmtree(histPath+"/temp/")
@@ -153,7 +167,14 @@ def mergeAllHists(datasets,logPath,histPath):       # merge all histograms into 
             sys.exit(98)
     if os.path.exists(outfile):
         os.remove(outfile)
-    if sp.call(["hadd","-f",outfile]+datasetFiles,stdout=open(os.devnull, 'wb')):
+    
+    command = 'cmssw-cc7 --command-to-run "source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.12.06/x86_64-centos7-gcc48-opt/root/bin/thisroot.sh && hadd -f -j 8 {0}'.format(outfile)
+    for sampleName in datasetFiles:
+        command += " "+sampleName
+    command +='"'
+    
+    if sp.call(command,shell=True,stdout=sp.DEVNULL):
+    #  ~if sp.call(["hadd","-f",outfile]+datasetFiles,stdout=open(os.devnull, 'wb')):
         sys.exit(1)
     print("Created",outfile)
     os.chdir(runDir)
@@ -245,7 +266,7 @@ def mergeForCombine(logPath,histPath,sampleList):
     if os.path.exists(outputDir) == False:      #create combine folder for output files
         os.mkdir(outputDir)
     
-    f_out = TFile(outfile,"RECREATE")      # output file containing all hists
+    f_out = ROOT.TFile(outfile,"RECREATE")      # output file containing all hists
     
     for systPath in glob.glob("logs/"+info["year"]+"/*"):   # loop for renaming and merging histograms
         distrLogPath = systPath+"/1.0/distributions/"
