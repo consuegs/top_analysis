@@ -17,6 +17,12 @@ import utilities
 sys.path.append("../users")
 from getPath import getPath
 
+#check root version
+root_version = ROOT.gROOT.GetVersion()
+if root_version != "6.30/06":
+    print("Your ROOT version is {}".format(root_version),"Script requires 6.30/06")
+    exit()
+
 
 def getNTupleVersion(year):    # checks config for number of files for given dataset
    config = configparser.ConfigParser()
