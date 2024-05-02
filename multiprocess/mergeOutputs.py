@@ -17,9 +17,9 @@ import utilities
 sys.path.append("../users")
 from getPath import getPath
 
-#check root version
+#check root version (only required when running on new node)
 root_version = ROOT.gROOT.GetVersion()
-if root_version != "6.30/06":
+if root_version != "6.30/06" and root_version != "6.12/07":
     print("Your ROOT version is {}".format(root_version),"Script requires 6.30/06")
     exit()
 
