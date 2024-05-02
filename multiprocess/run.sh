@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo $1
+echo $2
+
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 
 export HOSTNAME=$HOSTNAME
@@ -21,7 +24,7 @@ submitDir=${10}/multiprocess # framework base dir
 cmssw-cc7 -- "export SCRAM_ARCH=slc7_amd64_gcc820 && source /cvmfs/cms.cern.ch/cmsset_default.sh && cd ${9} && cmsenv && cd $submitDir && cd ../build && export ANALYSIS_YEAR_CONFIG=$4 && ./run.x $1 $2 $3 $5 $6 $7 2>&1 | tee $TMP/OutFile.txt"
 
 #copy minTrees to dCache
-if [[ $1 == "distributions" ]]
+if [[ $2 == "distributions" ]]
 then
    minTreePath=$(cat $TMP/OutFile.txt | grep minTree | tr "'" "\n"| sed -n '4p')
    echo $minTreePath
