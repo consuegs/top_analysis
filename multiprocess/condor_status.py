@@ -90,7 +90,7 @@ def checkErrorFile(outName):
 def resubmitJob(outName,automaticResubmit=False):
     if automaticResubmit: value = 1
     else :
-        value = input("For resubmitting "+outName+" enter 1. For showing .out, .log and .error enter 2:\n")
+        value = int(input("For resubmitting "+outName+" enter 1. For showing .out, .log and .error enter 2:\n"))
     if value==1:
         print("Resubmitting...")
         sp.call(["condor_submit", outName.replace(".out",".submit")])
@@ -276,7 +276,7 @@ def summaryJobs(year,runningLogs,resubmit,mergeAll,forceMergeAll,ignorePDF,modul
                         merge(distrLogPath,(mergeAll or forceMergeAll))
             else:
                 systName = getSystFromOutFile(distrLogPath)
-                idleCheck = [value for key, value in runningLogs.iteritems() if (key.find(systName)>0 and key.find(year)>0)]
+                idleCheck = [value for key, value in runningLogs.items() if (key.find(systName)>0 and key.find(year)>0)]
                 nIdle = idleCheck.count(0)
                 nFailed = status[1][0]-status[1][1]-status[1][2]
                 print(colored(distrLogPath,"cyan",attrs=['bold']))
