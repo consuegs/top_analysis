@@ -43,6 +43,10 @@ hist::Histograms<TH2F> defineHistograms2D(std::vector<TString> const &datasets){
       hs2D.addHist(channel+"/genMet_dPhiMETLep_Puppi"   ,";min[#Delta#phi(p_{T}^{miss},l)];genmet",20,0,3.14,6000,0,1000);
       hs2D.addHist(channel+"/leadTopPT_dPhiMETLep_Puppi"   ,";min[#Delta#phi(p_{T}^{miss},l)];p_{T}(lead. top)",20,0,3.14,6000,0,1000);
       
+      hs2D.addHist(channel+"/GenMetDiffMETRel_MET"   ,";p_{T}^{miss};|p_{T}^{miss}-GenMet|/genMET",100,0,500,6000,-5,5);
+      hs2D.addHist(channel+"/GenMetDiffMETRel_MET_Puppi"   ,";p_{T}^{miss};|p_{T}^{miss}-GenMet|/genMET",100,0,500,6000,-5,5);
+      hs2D.addHist(channel+"/GenMetDiffMETRel_MET_DNN"   ,";p_{T}^{miss};|p_{T}^{miss}-GenMet|/genMET",100,0,500,6000,-5,5);
+      
       hs2D.addHist("baseline_met120"+channel+"/GenMetDiffMETRel_dPhiMETLep"   ,";min[#Delta#phi(p_{T}^{miss},l)];|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
       hs2D.addHist("baseline_met120"+channel+"/GenMetDiffMETRel_dPhiMETLep_Puppi"   ,";min[#Delta#phi(p_{T}^{miss},l)];|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
       hs2D.addHist("baseline_met120"+channel+"/GenMetDiffMETRel_dPhiMETLep_DNN"   ,";min[#Delta#phi(p_{T}^{miss},l)];|p_{T}^{miss}-GenMet|/genMET",20,0,3.14,6000,-5,5);
@@ -125,6 +129,10 @@ void fillHistograms(systHists_minTree* syst, minTreeReader const &reader, float 
       syst->hists2D_.fillweight(catString+"/GenMetDiffMETRel_dPhiMETLep"                      ,reader.PhiRec_xy,(reader.genMet-reader.MET_xy)/reader.genMet,weight);
       syst->hists2D_.fillweight(catString+"/GenMetDiffMETRel_dPhiMETLep_Puppi"                ,reader.PhiRecPuppi_xy,(reader.genMet-reader.PuppiMET_xy)/reader.genMet,weight);
       syst->hists2D_.fillweight(catString+"/GenMetDiffMETRel_dPhiMETLep_DNN"                ,reader.DNN_MET_dPhi_nextLep,(reader.genMet-reader.DNN_MET_pT)/reader.genMet,weight);
+      
+      syst->hists2D_.fillweight(catString+"/GenMetDiffMETRel_MET"                      ,reader.MET_xy,(reader.genMet-reader.MET_xy)/reader.genMet,weight);
+      syst->hists2D_.fillweight(catString+"/GenMetDiffMETRel_MET_Puppi"                      ,reader.PuppiMET_xy,(reader.genMet-reader.PuppiMET_xy)/reader.genMet,weight);
+      syst->hists2D_.fillweight(catString+"/GenMetDiffMETRel_MET_DNN"                      ,reader.DNN_MET_pT,(reader.genMet-reader.DNN_MET_pT)/reader.genMet,weight);
       
       syst->hists2D_.fillweight(catString+"/genMet_dPhiMETLep_Puppi"                ,reader.PhiRecPuppi_xy,reader.genMet,weight);
       syst->hists2D_.fillweight(catString+"/leadTopPT_dPhiMETLep_Puppi"                ,reader.PhiRecPuppi_xy,reader.leadTop_pT,weight);

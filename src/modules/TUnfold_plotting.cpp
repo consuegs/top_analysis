@@ -88,8 +88,8 @@ void run()
    bool jetVetoMaps = false;
    
    //Use real data
-   bool useRealData = false;
-   // ~bool useRealData = true;
+   // ~bool useRealData = false;
+   bool useRealData = true;
    
    //Use Single Top DS
    // ~bool useSingleTopDS = false;
@@ -117,7 +117,7 @@ void run()
    
    vecDistr.push_back({"pTnunu_new_DNN",0,500.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",false});
    vecDistr.push_back({"dPhi_new_DNN",0,3.2,";min[#Delta#phi(p_{T}^{#nu#nu},l)];d#sigma/dmin[#Delta#phi(p_{T}^{#nu#nu},l)] (pb)","%.2f",false});
-   // ~vecDistr.push_back({"inclusive",0,1,";Signal Bin;d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.1f",false});
+   vecDistr.push_back({"inclusive",0,1,";Signal Bin;d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.1f",false});
    vecDistr.push_back({"2D_dPhi_pTnunu_new_30StabPur12Bins_DNN",0,400.,";p_{T}^{#nu#nu} (GeV);d#sigma/dp_{T}^{#nu#nu} (pb GeV^{-1})","%.0f",true});
 
    
@@ -177,6 +177,7 @@ void run()
    // ~std::vector<TString> systVec = {"BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN"};
    // ~std::vector<TString> systVec = {"BTAGBC_UP","BTAGBC_DOWN","BTAGL_UP","BTAGL_DOWN"};
    // ~std::vector<TString> systVec = {"JESBBEC1Year_UP","JESBBEC1Year_DOWN"};
+   // ~std::vector<TString> systVec = {"JETPILEUPID_DOWN"};
    // ~std::vector<TString> systVec = {"JESBBEC1Year_DOWN"};
    // ~std::vector<TString> systVec = {"JESPileUpPtEC1_UP","JESPileUpPtEC1_DOWN","JESRelativeJEREC1_UP","JESRelativeJEREC1_DOWN","JESRelativeStatEC_UP","JESRelativeStatEC_DOWN"};
    // ~std::vector<TString> systVec = {"JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN"};
@@ -200,12 +201,12 @@ void run()
    ////////////////////////////
    // ~std::map<TString,std::vector<TString>> systCombinations = {};
    std::map<TString,std::vector<TString>> systCombinations = {
-      // ~{"JES",{"JESRelativeBalreg","JESFlavorRealistic","JESRelativeSampleYear","JESAbsoluteYear","JESAbsolute","JESBBEC1Year","JESBBEC1","JESUserDefinedHEM1516"}},
-      // ~{"JER",{"JEREta0","JEREta1"}},
-      // ~{"BTAG",{"BTAGBC_CORR","BTAGL_CORR","BTAGBC_UNCORR","BTAGL_UNCORR"}},
-      // ~{"LEPTON",{"ELECTRON_ID","ELECTRON_RECO","ELECTRON_SCALESMEARING","MUON_ID_STAT","MUON_ID_SYST","MUON_ISO_STAT","MUON_ISO_SYST","MUON_SCALE"}},
-      // ~{"PS",{"PSISRSCALE","PSFSRSCALE"}},
-      // ~{"XSEC BKG",{"XSEC_TTOTHER","XSEC_DY","XSEC_ST","XSEC_OTHER"}},
+      {"JES",{"JESRelativeBalreg","JESFlavorRealistic","JESRelativeSampleYear","JESAbsoluteYear","JESAbsolute","JESBBEC1Year","JESBBEC1","JESUserDefinedHEM1516"}},
+      {"JER",{"JEREta0","JEREta1"}},
+      {"BTAG",{"BTAGBC_CORR","BTAGL_CORR","BTAGBC_UNCORR","BTAGL_UNCORR"}},
+      {"LEPTON",{"ELECTRON_ID","ELECTRON_RECO","ELECTRON_SCALESMEARING","MUON_ID_STAT","MUON_ID_SYST","MUON_ISO_STAT","MUON_ISO_SYST","MUON_SCALE"}},
+      {"PS",{"PSISRSCALE","PSFSRSCALE"}},
+      {"XSEC BKG",{"XSEC_TTOTHER","XSEC_DY","XSEC_ST","XSEC_OTHER"}},
    };
    
    for (distrUnfold &dist : vecDistr){
@@ -297,11 +298,13 @@ void run()
          TH1F *unfolded_bbb=histReader.read<TH1F>(input_loc_result+"/BBB/hist_unfoldedResult");
          TH1F *realDis=histReader.read<TH1F>((useAltReco)? input_loc+"/histDataTruthAlt" : input_loc+"/histDataTruth");
          TH1F *realDisAlt=histReader.read<TH1F>(input_loc+"/histDataTruthAlt");
+         TH1F *realDisHerwig=histReader.read<TH1F>(input_loc+"/histDataTruthHerwig");
          TH2D *covMatrix_bbb=histReader.read<TH2D>(input_loc_result+"/BBB/cov_output");
          
          unfolded_bbb->Scale(1./cfg.lumi);
          realDis->Scale(1./cfg.lumi);
          realDisAlt->Scale(1./cfg.lumi);
+         realDisHerwig->Scale(1./cfg.lumi);
          
          std::map<TString,TH1F> indShifts_bbb;
          std::map<TString,TH2F> indResponse_bbb;
@@ -312,6 +315,8 @@ void run()
          std::cout<<"----------------------------------------------------------"<<std::endl;
          std::cout<<"Measured total cross section:"<<unfolded_bbb->GetBinContent(1)<<std::endl;
          std::cout<<"Expected total cross section:"<<realDis->GetBinContent(1)<<std::endl;
+         std::cout<<"Expected total cross section (amc@NLO):"<<realDisAlt->GetBinContent(1)<<std::endl;
+         std::cout<<"Expected total cross section (Herwig):"<<realDisHerwig->GetBinContent(1)<<std::endl;
          plot_systBreakdown(indShifts_bbb,&saver,"","BBB",dist.varName,useRealData,systCombinations);
          std::cout<<"----------------------------------------------------------"<<std::endl;
          
@@ -319,10 +324,12 @@ void run()
          unfolded_bbb->Scale(cfg.lumi);
          realDis->Scale(cfg.lumi);
          realDisAlt->Scale(cfg.lumi);
+         realDisHerwig->Scale(cfg.lumi);
          
          if (!(withPTreweight || withPHIreweight)){
             resultSaver.save(*realDis,"Truth");
             resultSaver.save(*realDisAlt,"TruthAlt");
+            resultSaver.save(*realDisHerwig,"TruthHerwig");
             resultSaver.save(*unfolded_bbb,"BBB/unfolded");
             resultSaver.save(*covMatrix_bbb,"BBB/cov");
             
@@ -334,16 +341,21 @@ void run()
                   if (Systematic::convertType(key) != Systematic::pdf_envelope){
                   TH1D temp_realDis_syst;
                   TH1D temp_realDisAlt_syst;
+                  TH1D temp_realDisHerwig_syst;
                   temp_realDis_syst = *indResponse_bbb[key].ProjectionX();
                   temp_realDisAlt_syst = *indResponseAlt_bbb[key].ProjectionX(); 
+                  temp_realDisHerwig_syst = *indResponseAlt_bbb[key].ProjectionX(); 
                      if(dist.norm) {   // Strange scaling, but this matches the one used for the nominal true hist and is fixed in combineYears
                         temp_realDis_syst.Scale(1./temp_realDis_syst.Integral());
                         temp_realDisAlt_syst.Scale(1./temp_realDis_syst.Integral());
+                        temp_realDisHerwig_syst.Scale(1./temp_realDis_syst.Integral());
                         temp_realDis_syst.Scale(cfg.lumi);
                         temp_realDisAlt_syst.Scale(cfg.lumi);
+                        temp_realDisHerwig_syst.Scale(cfg.lumi);
                      }
                   resultSaver.save(temp_realDis_syst,"Truth_"+key);
                   resultSaver.save(temp_realDisAlt_syst,"TruthAlt_"+key);
+                  resultSaver.save(temp_realDisHerwig_syst,"TruthHerwig_"+key);
                   }
                   else {   //shift for pdf envelope has to be derived separately since it does not follow logic as other uncertainties (enevelope done before year combination)
                      TH1F temp_realDis_syst = getPDFenvelope(input_loc+"/histMCGenRec_projX",input_loc_old,realDis,Systematic::convertVariation(key) == Systematic::up,false,false);
@@ -365,7 +377,8 @@ void run()
 
       // read histograms
       TH1F *realDis=histReader.read<TH1F>(input_loc+"/histDataTruth");
-      TH1F *realDisAlt=histReader.read<TH1F>((withBSM)? input_loc+"/histDataTruthBSM" : input_loc+"/histDataTruthAlt");
+      TH1F *realDisAlt=histReader.read<TH1F>((withBSM)? ((useAltReco)? input_loc+"/histDataTruthAltBSM" : input_loc+"/histDataTruthBSM") : input_loc+"/histDataTruthAlt");
+      TH1F *realDisHerwig=histReader.read<TH1F>((withBSM)? ((useAltReco)? input_loc+"/histDataTruthHerwigBSM" : input_loc+"/histDataTruthBSM") : input_loc+"/histDataTruthHerwig");
       TH1F *realDis_response=histReader.read<TH1F>(input_loc+"/histMCGenRec_projX");
       TH1F *unfolded=histReader.read<TH1F>(input_loc_result+"/hist_unfoldedResult");
       TH1F *unfolded_reg=histReader.read<TH1F>(input_loc_result+"/reg/hist_unfoldedResult");
@@ -390,6 +403,7 @@ void run()
       if(dist.norm){
          realDis->Scale(1./realDis->Integral());
          realDisAlt->Scale(1./realDisAlt->Integral());
+         realDisHerwig->Scale(1./realDisHerwig->Integral());
          realDis_response->Scale(1./realDis_response->Integral());
          unfolded->Scale(1./unfolded->Integral());
          unfolded_reg->Scale(1./unfolded_reg->Integral());
@@ -398,6 +412,7 @@ void run()
       else{
          realDis->Scale(1./cfg.lumi);
          realDisAlt->Scale(1./cfg.lumi);
+         realDisHerwig->Scale(1./cfg.lumi);
          realDis_response->Scale(1./cfg.lumi);
          unfolded->Scale(1./cfg.lumi);
          unfolded_reg->Scale(1./cfg.lumi);
@@ -424,6 +439,7 @@ void run()
       TH1F* unfoldedClone_bbb = (TH1F*)unfolded_bbb->Clone();    // needed for storing results for combination
       TH1F* realDisClone = (TH1F*)realDis->Clone();    // needed for storing results for combination
       TH1F* realDisCloneAlt = (TH1F*)realDisAlt->Clone();    // needed for storing results for combination
+      TH1F* realDisCloneHerwig = (TH1F*)realDisHerwig->Clone();    // needed for storing results for combination
       TH2D* covMatrixClone = (TH2D*)covMatrix->Clone();    // needed for storing results for combination
       TH2D* covMatrixClone_reg = (TH2D*)covMatrix_reg->Clone();    // needed for storing results for combination
       TH2D* covMatrixClone_bbb = (TH2D*)covMatrix_bbb->Clone();    // needed for storing results for combination
@@ -433,7 +449,7 @@ void run()
       chi2_file.open ("chi2_values_data.txt");
       
       // Plot results
-      std::vector<double> xbins_vec = plot_UnfoldedResult(generatorBinning,unfolded,unfolded_reg,unfolded_bbb,unfolded_total,unfolded_reg_total,unfolded_bbb_total,unfolded_dummy_total,unfolded_dummy_total,tau_par->GetVal(),realDis,(withPTreweight || withPHIreweight)? realDis_response : realDisAlt,covMatrix,dist,plotComparison,saveName,&saver,num_bins,(withPTreweight || withPHIreweight),onlyTheo,plotTheo,chi2_file);
+      std::vector<double> xbins_vec = plot_UnfoldedResult(generatorBinning,unfolded,unfolded_reg,unfolded_bbb,unfolded_total,unfolded_reg_total,unfolded_bbb_total,unfolded_dummy_total,unfolded_dummy_total,unfolded_dummy_total,tau_par->GetVal(),realDis,(withPTreweight || withPHIreweight)? realDis_response : realDisAlt,realDisHerwig,covMatrix,dist,plotComparison,saveName,&saver,num_bins,(withPTreweight || withPHIreweight),onlyTheo,plotTheo,chi2_file);
       
       chi2_file.close();
       
@@ -471,7 +487,7 @@ void run()
       // ~plot_response_diff(indResponse,responseMatrix_fine,&saver,saveName);
       
       //Plot toy studies
-      if (plotComparison) saveName=sample+"_"+sample_response;
+      // ~if (plotComparison) saveName=sample+"_"+sample_response;
       if (plotToyStudies) {
          TProfile *profPull=histReader.read<TProfile>(input_loc_result+"/prof_pull");
          TProfile *profPull_reg=histReader.read<TProfile>(input_loc_result+"/reg/prof_pull");
@@ -666,6 +682,7 @@ void run()
          //Scale with lumi to get event count
          realDisClone->Scale(cfg.lumi);
          realDisCloneAlt->Scale(cfg.lumi);
+         realDisCloneHerwig->Scale(cfg.lumi);
          
          if (!dist.is2D){  // for 2D Signal bins should be used
             unfoldedClone->SetBins(num_bins,xbins);
@@ -677,6 +694,7 @@ void run()
          
          resultSaver.save(*realDisClone,"Truth");
          resultSaver.save(*realDisCloneAlt,"TruthAlt");
+         resultSaver.save(*realDisCloneHerwig,"TruthHerwig");
          resultSaver.save(*responseMatrix,"ResponseMatrix");
          resultSaver.save(*responseMatrix_fine,"ResponseMatrix_fine");
          
@@ -709,14 +727,18 @@ void run()
                if (Systematic::convertType(key) != Systematic::pdf_envelope){
                   TH1D temp_realDis_syst = *indResponse[key].ProjectionX();
                   TH1D temp_realDisAlt_syst = *indResponseAlt[key].ProjectionX();
+                  TH1D temp_realDisHerwig_syst = *indResponseAlt[key].ProjectionX();
                   if(dist.norm) {   // Strange scaling, but this matches the one used for the nominal true hist and is fixed in combineYears
                      temp_realDis_syst.Scale(1./temp_realDis_syst.Integral());
                      temp_realDisAlt_syst.Scale(1./temp_realDis_syst.Integral());
+                     temp_realDisHerwig_syst.Scale(1./temp_realDis_syst.Integral());
                      temp_realDis_syst.Scale(cfg.lumi);
                      temp_realDisAlt_syst.Scale(cfg.lumi);
+                     temp_realDisHerwig_syst.Scale(cfg.lumi);
                   }
                   resultSaver.save(temp_realDis_syst,"Truth_"+key);
                   resultSaver.save(temp_realDisAlt_syst,"TruthAlt_"+key);
+                  resultSaver.save(temp_realDisHerwig_syst,"TruthHerwig_"+key);
                }
                else {   //shift for pdf envelope has to be derived separately since it does not follow logic as other uncertainties (enevelope done before year combination)
                   TH1F temp_realDis_syst = getPDFenvelope(input_loc+"/histMCGenRec_projX",input_loc_old,realDisClone,Systematic::convertVariation(key) == Systematic::up,dist.norm,false);

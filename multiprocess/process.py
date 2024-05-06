@@ -117,6 +117,7 @@ bTagEff_sample_syst_dict = {
 allMC = ["TTbar_diLepton","TTbar_amcatnlo","TTbar_herwig","bb4l_new","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
 #  ~allMC = ["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
 #  ~allMC = ["SingleTop_DS"]
+#  ~allMC = ["TTbar_herwig"]
 
 allData2018 = ["DoubleMuon","MuonEG","SingleMuon","EGamma"] 
 allData2017 = ["DoubleMuon","MuonEG","SingleMuon","DoubleEG","SingleElectron"] 
@@ -471,7 +472,7 @@ def submit(args,toProcess_mc,toProcess_data,toProcess_signal,disableConfirm=Fals
    # Ask if selected settings are correct
    runSubmit = True
    if disableConfirm==False:
-      correctSamples = bool(input("If you want to continue with the selected setting, enter 1:\n"))
+      correctSamples = int(input("If you want to continue with the selected setting, enter 1:\n"))
       if (correctSamples != 1):
          print("Abort Submission")
          runSubmit = False
@@ -726,8 +727,8 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["SingleTop","SingleTop_DS"]
    #  ~toProcess_mc=["bb4l"]
    #  ~toProcess_mc=["bb4l_new"]
-   #  ~toProcess_mc=["TTbar_herwig"]
-   toProcess_mc=["DrellYan_M10to50_NLO"]
+   toProcess_mc=["TTbar_herwig"]
+   #  ~toProcess_mc=["DrellYan_M10to50_NLO"]
    #  ~toProcess_mc=[]
    #  ~toProcess_mc=allMC
    

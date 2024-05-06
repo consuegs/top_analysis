@@ -651,7 +651,7 @@ TString Systematic::getPrintName(const TString& type)
     else if(type == "UETUNE") return "Underlying event";
     else if(type == "UNCLUSTERED") return "Unclustered energy";
     else if(type == "BKG XSEC") return "Background";
-    else if(type == "JET") return "Jet related";
+    else if(type == "JET") return "JES/JER";
     else if(type == "xOTHER EXP") return "Other exp. unc.";
     else if(type == "xOTHER THEO") return "Other theo. unc.";
     else return type;       // return argument if print name not definied

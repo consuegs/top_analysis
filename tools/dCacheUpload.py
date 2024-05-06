@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # need to be run without setting CMSSW environment!!
 import argparse
 import subprocess as sp

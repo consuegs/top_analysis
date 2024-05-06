@@ -181,6 +181,9 @@ void run()
          hs.addHist(selection+channel+"/mass_l1l2_allJet"             ,";mass_l1l2_allJet (GeV);EventsBIN"                     ,100,0,2000);
          hs.addHist(selection+channel+"/ratio_vecsumpTlep_vecsumpTjet",";ratio_vecsumpTlep_vecsumpTjet ;EventsBIN"             ,50,0,10);
          hs.addHist(selection+channel+"/mjj"                          ,";m_{jj} (GeV);EventsBIN"                               ,100,0,2000);
+         
+         hs.addHist(selection+channel+"/DNNMET*cos(DNNMET_phi)"   ,";DNN p_{x}^{miss} (GeV);EventsBIN"                   ,50,-250,250);
+         hs.addHist(selection+channel+"/DNNMET*sin(DNNMET_phi)"   ,";DNN p_{y}^{miss} (GeV);EventsBIN"                   ,50,-250,250);
       }
    }//End 1D reco histograms
    
@@ -391,9 +394,6 @@ void run()
          //Configure unclustered energy shift
          TString metAddition = Systematic::metNameAddition(currentSystematic);
          
-         //Configure topPT reweighting
-         bool applytopPTreweighting = checkTopPTreweighting(currentSystematic);
-         
          //Configure mcWeights
          mcWeights mcWeighter = mcWeights(currentSystematic,dss.isMadGraph,dss.isPythiaOnly);
          std::vector<mcWeights> mcWeighter_vec;   //define vector for all leptonSF related syst. (for nominal minTree)
@@ -453,6 +453,10 @@ void run()
          bool ttBar_amc=false;
          if (dss.datasetName=="TTbar_amcatnlo") ttBar_amc=true;
          
+         //Check if current sample is TTbar herwig
+         bool ttBar_herwig=false;
+         if (dss.datasetName=="TTbar_herwig") ttBar_herwig=true;
+         
          //Check if current sample is selectedSusy scenario 
          bool SUSY_T2tt_650_350=false;
          if (dss.datasetName=="T2tt_650_350") SUSY_T2tt_650_350=true;
@@ -491,6 +495,10 @@ void run()
          //Check if gen level deltaR cut should be applied (should be always applied in nominal)
          // ~bool applyDeltaRgen = (currentSystematic.type() == Systematic::applyGenLevel_DeltaRcut);
          bool applyDeltaRgen = true;
+         
+         //Configure topPT reweighting
+         bool applytopPTreweighting = (checkTopPTreweighting(currentSystematic) && (ttBar_dilepton || ttBar_dilepton_tau || ttBar_amc || ttBar_herwig));
+         // ~bool applytopPTreweighting = checkTopPTreweighting(currentSystematic);
          
          //variables used for storing in minimal trees
          float minTree_MET, minTree_PtNuNu, minTree_PhiRec, minTree_PhiGen, minTree_PhiNuNu, minTree_PhiMetNearJet, minTree_PhiMetFarJet, minTree_PhiMetLeadJet, minTree_PhiMetLead2Jet,
@@ -771,8 +779,8 @@ void run()
             //Do not use tau events in signal sample
             if (ttBar_dilepton && *genDecayMode>3) continue;
             
-            //Do only use ee,emu,mumu in in amc ttbar
-            if (ttBar_amc && (*genDecayMode>3 || *genDecayMode==0)) continue;
+            //Do only use ee,emu,mumu in amc ttbar or herwig ttbar
+            if ((ttBar_amc || ttBar_herwig) && (*genDecayMode>3 || *genDecayMode==0)) continue;
             
             // Get pT of Neutrino Pair, which is further changed in case of BSM scenarios!!
             TLorentzVector neutrinoPair(0,0,0,0);
@@ -1631,6 +1639,9 @@ void run()
             hs.fill("baseline/"+path_cat+"/mass_l1l2_allJet"                           ,minTree_mass_l1l2_allJet);
             hs.fill("baseline/"+path_cat+"/ratio_vecsumpTlep_vecsumpTjet"              ,minTree_ratio_vecsumpTlep_vecsumpTjet);
             hs.fill("baseline/"+path_cat+"/mjj"                                        ,minTree_mjj);
+            
+            hs.fill("baseline/"+path_cat+"/DNNMET*cos(DNNMET_phi)"                     ,DNN_MET_x);
+            hs.fill("baseline/"+path_cat+"/DNNMET*sin(DNNMET_phi)"                     ,DNN_MET_y);
             
             hs.fill("genParticles/"+path_cat+"/pT_nunu"                 ,neutrinoPair.Pt());
             hs.fill("genParticles/"+path_cat+"/genMET"                  ,genMet);

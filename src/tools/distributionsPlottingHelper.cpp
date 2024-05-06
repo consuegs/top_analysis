@@ -724,6 +724,10 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       ratio_mc.SetMaximum(1.75);
       ratio_mc.SetMinimum(0.4);
    }
+   else if (sPresel.Contains("cutflow")){
+      ratio_mc.SetMaximum(1.15);
+      ratio_mc.SetMinimum(0.85);
+   }
    else{
       ratio_mc.GetYaxis()->SetTitleOffset(0.45);
       ratio_mc.SetMaximum(1.35);

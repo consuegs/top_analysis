@@ -226,10 +226,15 @@ class Distribution
          histDataRecoSTDS_coarse=signalBinning_->CreateHistogram("histDataRecoSTDS_coarse_"+varName_);
          histDataRecoAlt=detectorBinning_->CreateHistogram("histDataRecoAlt_"+varName_);
          histDataRecoAlt_coarse=signalBinning_->CreateHistogram("histDataRecoAlt_coarse_"+varName_);
+         histDataRecoHerwig=detectorBinning_->CreateHistogram("histDataRecoHerwig_"+varName_);
+         histDataRecoHerwig_coarse=signalBinning_->CreateHistogram("histDataRecoHerwig_coarse_"+varName_);
          histDataTruthAlt=signalBinning_->CreateHistogram("histDataTruthAlt_"+varName_);
          histDataTruthAlt_fakes=signalBinning_->CreateHistogram("histDataTruthAlt_fakes_"+varName_);
+         histDataTruthHerwig=signalBinning_->CreateHistogram("histDataTruthHerwig_"+varName_);
+         histDataTruthHerwig_fakes=signalBinning_->CreateHistogram("histDataTruthHerwig_fakes_"+varName_);
          histDataTruthBSM=signalBinning_->CreateHistogram("histDataTruthBSM_"+varName_);
          histDataTruthAltBSM=signalBinning_->CreateHistogram("histDataTruthAltBSM_"+varName_);
+         histDataTruthHerwigBSM=signalBinning_->CreateHistogram("histDataTruthHerwigBSM_"+varName_);
          histDataReal=detectorBinning_->CreateHistogram("histDataReal_"+varName_);
          histDataReal_coarse=signalBinning_->CreateHistogram("histDataReal_coarse_"+varName_);
       }
@@ -278,9 +283,19 @@ class Distribution
          histDataTruthAlt_fakes->Fill(genbinNumber,weight);
       }
       
+      void fillDataTruthHerwig_fakes(float const &weight){
+         Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         histDataTruthHerwig_fakes->Fill(genbinNumber,weight);
+      }
+      
       void fillDataTruthAlt(float const &weight){
          Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
          histDataTruthAlt->Fill(genbinNumber,weight);
+      }
+      
+      void fillDataTruthHerwig(float const &weight){
+         Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         histDataTruthHerwig->Fill(genbinNumber,weight);
       }
       
       void fillDataTruthBSM(float const &weight){
@@ -291,6 +306,11 @@ class Distribution
       void fillDataTruthAltBSM(float const &weight){
          Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
          histDataTruthAltBSM->Fill(genbinNumber,weight);
+      }
+      
+      void fillDataTruthHerwigBSM(float const &weight){
+         Int_t genbinNumber = (is2D)? signalBinning_->GetGlobalBinNumber(*xGen_,*yGen_) : signalBinning_->GetGlobalBinNumber(*xGen_);
+         histDataTruthHerwigBSM->Fill(genbinNumber,weight);
       }
       
       void fillDataReco(float const &weight){
@@ -307,6 +327,14 @@ class Distribution
          
          Int_t binNumber_coarse = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
          histDataRecoAlt_coarse->Fill(binNumber_coarse,weight);
+      }
+      
+      void fillDataRecoHerwig(float const &weight){
+         Int_t binNumber = (is2D)? detectorBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : detectorBinning_->GetGlobalBinNumber(*xReco_);
+         histDataRecoHerwig->Fill(binNumber,weight);
+         
+         Int_t binNumber_coarse = (is2D)? signalBinning_->GetGlobalBinNumber(*xReco_,*yReco_) : signalBinning_->GetGlobalBinNumber(*xReco_);
+         histDataRecoHerwig_coarse->Fill(binNumber_coarse,weight);
       }
       
       void fillDataRecoSTDS(float const &weight){
@@ -387,11 +415,13 @@ class Distribution
             histDataReco->SetBinError(i,sqrt(histDataReco->GetBinContent(i)));
             histDataRecoSTDS->SetBinError(i,sqrt(histDataRecoSTDS->GetBinContent(i)));
             histDataRecoAlt->SetBinError(i,sqrt(histDataRecoAlt->GetBinContent(i)));
+            histDataRecoHerwig->SetBinError(i,sqrt(histDataRecoHerwig->GetBinContent(i)));
          }
          for(int i=0;i<=histDataReco_coarse->GetNbinsX()+1;i++) {
             histDataReco_coarse->SetBinError(i,sqrt(histDataReco_coarse->GetBinContent(i)));
             histDataRecoSTDS_coarse->SetBinError(i,sqrt(histDataRecoSTDS_coarse->GetBinContent(i)));
             histDataRecoAlt_coarse->SetBinError(i,sqrt(histDataRecoAlt_coarse->GetBinContent(i)));
+            histDataRecoHerwig_coarse->SetBinError(i,sqrt(histDataRecoHerwig_coarse->GetBinContent(i)));
          }
       }
       
@@ -404,14 +434,19 @@ class Distribution
          saver.save(*histDataRecoSTDS_coarse,varName_+"/histDataRecoSTDS_coarse");
          saver.save(*histDataRecoAlt,varName_+"/histDataRecoAlt");
          saver.save(*histDataRecoAlt_coarse,varName_+"/histDataRecoAlt_coarse");
+         saver.save(*histDataRecoHerwig,varName_+"/histDataRecoHerwig");
+         saver.save(*histDataRecoHerwig_coarse,varName_+"/histDataRecoHerwig_coarse");
          saver.save(*histDataReal,varName_+"/histDataReal");
          saver.save(*histDataReal_coarse,varName_+"/histDataReal_coarse");
          saver.save(*histDataTruth_fakes,varName_+"/histDataTruth_fakes");
          saver.save(*histDataTruth,varName_+"/histDataTruth");
          saver.save(*histDataTruthAlt_fakes,varName_+"/histDataTruthAlt_fakes");
          saver.save(*histDataTruthAlt,varName_+"/histDataTruthAlt");
+         saver.save(*histDataTruthHerwig_fakes,varName_+"/histDataTruthHerwig_fakes");
+         saver.save(*histDataTruthHerwig,varName_+"/histDataTruthHerwig");
          saver.save(*histDataTruthBSM,varName_+"/histDataTruthBSM");
          saver.save(*histDataTruthAltBSM,varName_+"/histDataTruthAltBSM");
+         saver.save(*histDataTruthHerwigBSM,varName_+"/histDataTruthHerwigBSM");
       }
       
       void saveMCHists(io::RootFileSaver const &saver){
@@ -476,12 +511,17 @@ class Distribution
       TH1* histDataRecoSTDS_coarse;
       TH1* histDataRecoAlt;
       TH1* histDataRecoAlt_coarse;
+      TH1* histDataRecoHerwig;
+      TH1* histDataRecoHerwig_coarse;
       TH1* histDataTruth;
       TH1* histDataTruth_fakes;
       TH1* histDataTruthAlt;
       TH1* histDataTruthAlt_fakes;
+      TH1* histDataTruthHerwig;
+      TH1* histDataTruthHerwig_fakes;
       TH1* histDataTruthBSM;
       TH1* histDataTruthAltBSM;
+      TH1* histDataTruthHerwigBSM;
       
       TH1* histDataReal;
       TH1* histDataReal_coarse;
@@ -554,7 +594,7 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
       else if (dist.varName_ == "dPhi_DNN") dist.setVariables(phiRec_DNN,phiGen);
       else if (dist.varName_ == "dPhi_new_DNN") dist.setVariables(phiRec_DNN,phiGen);
       else if (dist.varName_ == "pTll") dist.setVariables(pTllRec,pTllGen);      
-      else if (dist.varName_ == "inclusive") dist.setVariables(phiRec,phiGen);      
+      else if (dist.varName_ == "inclusive") dist.setVariables(phiRec_DNN,phiGen);      
    }
    
    TString minTreePath_Nominal = cfg.minTreePath+TString::Format("/100.0/%s/",(isNominal)? syst.name().Data() : "Nominal");
@@ -566,6 +606,7 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
    for (TString currentSample : cfg.tunfold_InputSamples){     // loop over samples (data or pseudo data)
       bool isSignal = (currentSample == "TTbar_diLepton");
       bool isSignalAlt = (currentSample == "TTbar_amcatnlo");
+      bool isSignalHerwig = (currentSample == "TTbar_herwig");
       bool isSTDS = (currentSample == "SingleTop_DS");
       bool isSTDR = (currentSample == "SingleTop");
       bool isRealData = cfg.isData(currentSample.Data());
@@ -663,22 +704,35 @@ void loopDataEvents(std::vector<Distribution> &distribution_vec, io::RootFileSav
                   for(Distribution& dist : distribution_vec) dist.fillDataTruthAltBSM(mcWeight);
                }
             }
+            else if (isSignalHerwig){ // fill truth distributions with HERWIG MC sample (used for pseudo data)
+               if (metGen<0 || genDecayMode>3 || (genDecayMode!=3 && metGen<40)) {
+                  for(Distribution& dist : distribution_vec) dist.fillDataTruthHerwig_fakes(mcWeight);
+               }
+               else {
+                  for(Distribution& dist : distribution_vec) dist.fillDataTruthHerwig(mcWeight);
+                  for(Distribution& dist : distribution_vec) dist.fillDataTruthHerwigBSM(mcWeight);
+               }
+            }
             else if (isBSM){  //fill trutg dsitribution with BSM content
                mcWeight *= scale_BSM;
                for(Distribution& dist : distribution_vec) dist.fillDataTruthBSM(mcWeight);
                for(Distribution& dist : distribution_vec) dist.fillDataTruthAltBSM(mcWeight);
+               for(Distribution& dist : distribution_vec) dist.fillDataTruthHerwigBSM(mcWeight);
             }
 
             // fill histogram with reconstructed quantities
             if (metRec<0) continue;   //events that are not reconstructed
-            if (!isSignalAlt && !isRealData && !isSTDS){
+            if (!isSignalAlt && !isSignalHerwig && !isRealData && !isSTDS){
                for(Distribution& dist : distribution_vec) dist.fillDataReco(mcWeight*recoWeight);
             }
-            if (!isSignalAlt && !isRealData && !isSTDR){
+            if (!isSignalAlt && !isSignalHerwig && !isRealData && !isSTDR){
                for(Distribution& dist : distribution_vec) dist.fillDataRecoSTDS(mcWeight*recoWeight);
             }
-            if (!isSignal  && !isRealData && !isSTDS){
+            if (!isSignal && !isSignalHerwig &&!isRealData && !isSTDS){
                for(Distribution& dist : distribution_vec) dist.fillDataRecoAlt(mcWeight*recoWeight);
+            }
+            if (!isSignal && !isSignalAlt && !isRealData && !isSTDS){
+               for(Distribution& dist : distribution_vec) dist.fillDataRecoHerwig(mcWeight*recoWeight);
             }
             if (isRealData){
                for(Distribution& dist : distribution_vec) dist.fillDataReal();
@@ -789,7 +843,7 @@ void loopMCEvents(std::vector<Distribution> &distribution_vec, io::RootFileSaver
       else if (dist.varName_ == "pTnunu_new_singleLast_DNN") dist.setVariables(metRec_DNN,metGen);
       else if (dist.varName_ == "dPhi") dist.setVariables(phiRec,phiGen);      
       else if (dist.varName_ == "pTll") dist.setVariables(pTllRec,pTllGen);      
-      else if (dist.varName_ == "inclusive") dist.setVariables(phiRec,phiGen);      
+      else if (dist.varName_ == "inclusive") dist.setVariables(phiRec_DNN,phiGen);      
    }
    
    // create vector with all input samples

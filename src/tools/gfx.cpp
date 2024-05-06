@@ -164,6 +164,7 @@ std::pair<TString,TString> gfx::parseTitle(TString const &title)
       ,std::make_tuple("p_{T}^{Jet1} (GeV)","p_{#scale[.8]{T}}^{#scale[.8]{j_{1}}}","GeV")
       ,std::make_tuple("p_{T}^{Jet2} (GeV)","p_{#scale[.8]{T}}^{#scale[.8]{j_{2}}}","GeV")
       ,std::make_tuple("m_{ll} (GeV)","m_{ll}","GeV")
+      ,std::make_tuple("M_{HT} (GeV)","m_{allJet}","GeV")
    };
 
    TString nt(title);

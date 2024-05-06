@@ -109,6 +109,7 @@ void analyzeToy(TH1 const *hist_toy,
 TH1 *generatePoissonToy(TH1 *base,int ntoy) {
    static TRandom *rnd=0;
    if(!rnd) rnd=new TRandom3();
+   rnd->SetSeed(3*ntoy);
    TH1 *r=(TH1 *)base->Clone(base->GetName()+TString::Format("_toy%d",ntoy));
    for(int ibin=0;ibin<=r->GetNbinsX()+1;ibin++) {
       double mu=r->GetBinContent(ibin);
@@ -138,7 +139,7 @@ void run()
    
    // Nominal Set
    
-   // ~std::vector<TString> systVec = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR1","CR2","ERDON","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JETPILEUPID_UP","JETPILEUPID_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","MATCH_DCTR_UP","MATCH_DCTR_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN","MTOP169p5","MTOP175p5","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
+   std::vector<TString> systVec = {"Nominal","BSEMILEP_UP","BSEMILEP_DOWN","BTAGBC_CORR_UP","BTAGBC_CORR_DOWN","BTAGBC_UNCORR_UP","BTAGBC_UNCORR_DOWN","BTAGL_CORR_UP","BTAGL_CORR_DOWN","BTAGL_UNCORR_UP","BTAGL_UNCORR_DOWN","CR1","CR2","ERDON","ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","JEREta0_UP","JEREta0_DOWN","JEREta1_UP","JEREta1_DOWN","JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN","JETPILEUPID_UP","JETPILEUPID_DOWN","L1PREFIRING_UP","L1PREFIRING_DOWN","MATCH_DCTR_UP","MATCH_DCTR_DOWN","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN","MTOP169p5","MTOP175p5","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN","PDF_ALPHAS_UP","PDF_ALPHAS_DOWN","PSFSRSCALE_UP","PSFSRSCALE_DOWN","PSISRSCALE_UP","PSISRSCALE_DOWN","PU_UP","PU_DOWN","TOP_PT","TRIG_UP","TRIG_DOWN","UETUNE_UP","UETUNE_DOWN","UNCLUSTERED_UP","UNCLUSTERED_DOWN","XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    
    // JES complete Set
    
@@ -165,7 +166,7 @@ void run()
    // ~std::vector<TString> systVec = {"JETPILEUPID_DOWN"};
    // ~std::vector<TString> systVec = {"Nominal","MEFACSCALE_UP","MEFACSCALE_DOWN","MERENSCALE_UP","MERENSCALE_DOWN","MESCALE_UP","MESCALE_DOWN"};
    // ~std::vector<TString> systVec = {"Nominal","CR1","CR2","ERDON"};
-   std::vector<TString> systVec = {"Nominal"};
+   // ~std::vector<TString> systVec = {"Nominal"};
    // ~std::vector<TString> systVec = {"Nominal","MATCH_DCTR_UP","MATCH_DCTR_DOWN"};
    
    //Remove HEM unc. for all year except 2018
@@ -179,10 +180,10 @@ void run()
    /////////////////////////
    
    // add pdf unc
-   // ~for(int i=1; i<=50; i++){
-      // ~systVec.push_back(TString::Format("PDF_%i_UP",i));
-      // ~systVec.push_back(TString::Format("PDF_%i_DOWN",i));
-   // ~}
+   for(int i=1; i<=50; i++){
+      systVec.push_back(TString::Format("PDF_%i_UP",i));
+      systVec.push_back(TString::Format("PDF_%i_DOWN",i));
+   }
    
    //////////////////////////
    // Define Distributions //
@@ -204,8 +205,10 @@ void run()
    // ~std::vector<TString> distributions = {"pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
    
    std::vector<TString> distributions = {"inclusive","dPhi_new_DNN","pTnunu_new_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
+   // ~std::vector<TString> distributions = {"inclusive"};
    // ~std::vector<TString> distributions = {"pTnunu_new","dPhi","2D_dPhi_pTnunu_new_30StabPur12Bins"};
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur12Bins"};
+   // ~std::vector<TString> distributions = {"pTnunu_new_DNN"};
    
    // ~std::vector<TString> distributions = {"2D_dPhi_pTnunu_new_30StabPur9Bins_sameDet_DNN","2D_dPhi_pTnunu_new_30StabPur9Bins_diffDet_DNN","2D_dPhi_pTnunu_new_30StabPur12Bins_DNN"};
    
@@ -265,8 +268,8 @@ void run()
          bool useAltReco = false;
          
          //Use real data
-         bool useRealData = false;
-         // ~bool useRealData = true;
+         // ~bool useRealData = false;
+         bool useRealData = true;
          
          //Use Single Top DS
          // ~bool useSingleTopDS = false;

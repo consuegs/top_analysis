@@ -62,7 +62,7 @@ namespace tunfoldplotting
    std::pair<TH1F*,TH1F*> getTotalShifts(const std::map<TString,TH1F> &map_combinedShifts, const TH1F &nominal, const bool isNorm, const float &scale = 1.);
    
    std::vector<double> plot_UnfoldedResult(TUnfoldBinning* generatorBinning, TH1F* unfolded, TH1F* unfolded_reg, TH1F* unfolded_bbb,
-                            std::pair<TH1F*,TH1F*> &unfolded_total, std::pair<TH1F*,TH1F*> &unfolded_reg_total, std::pair<TH1F*,TH1F*> &unfolded_bbb_total, std::pair<TH1F*,TH1F*> &realDis_syst_total, std::pair<TH1F*,TH1F*> &realDisAlt_syst_total, const float &tau_par, TH1F* realDis, TH1F* realDisAlt, TH2D* cov,const distrUnfold &dist, const bool plotComparison, const TString &saveName,io::RootFileSaver* saver, int &num_bins, const bool rewStudy, const bool onlyTheo, const bool plotTheo, std::ofstream &chi2_file, const bool divideBinWidth=true, const bool adaptYaxis=true);
+                            std::pair<TH1F*,TH1F*> &unfolded_total, std::pair<TH1F*,TH1F*> &unfolded_reg_total, std::pair<TH1F*,TH1F*> &unfolded_bbb_total, std::pair<TH1F*,TH1F*> &realDis_syst_total, std::pair<TH1F*,TH1F*> &realDisAlt_syst_total, std::pair<TH1F*,TH1F*> &realDisHerwig_syst_total, const float &tau_par, TH1F* realDis, TH1F* realDisAlt, TH1F* realDisHerwig, TH2D* cov,const distrUnfold &dist, const bool plotComparison, const TString &saveName,io::RootFileSaver* saver, int &num_bins, const bool rewStudy, const bool onlyTheo, const bool plotTheo, std::ofstream &chi2_file, const bool divideBinWidth=true, const bool adaptYaxis=true);
    
    std::pair<TH1F,std::pair<TH1F,TH1F>> readFixedOrderPred(TString const &filePath,bool const &is2D,bool const &norm,bool const &isNNLO,bool const &isdPhi=false);
    

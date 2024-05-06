@@ -21,13 +21,14 @@ void compare_tt_powheg_madgraph(){
    io::RootFileSaver saver(TString::Format("plots%.1f.root",cfg.processFraction*100),"compare_ttMC");
    io::RootFileReader histReader(TString::Format("multiHists/Nominal/histograms_merged_%s.root",cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100));
    
-   std::vector<TString> samplesToImport={"TTbar_diLepton","TTbar_amcatnlo"};
+   std::vector<TString> samplesToImport={"TTbar_diLepton","TTbar_amcatnlo","TTbar_herwig"};
    
    std::map<TString,std::vector<TString>> msPresel_vVars={};
    for(TString channel:{"ee/","emu/","mumu/","combined/"}){
       msPresel_vVars.insert(std::pair<TString,std::vector<TString>>("baseline/"+channel,
-      {"PuppiMET","METunc_Puppi","MET","HT","nJets","n_Interactions","Lep1_flavor","Lep2_flavor","Lep1_pt","Lep1_phi","Lep1_eta","Lep1_E","Lep2_pt","Lep2_phi","Lep2_eta","Lep2_E","Jet1_pt","Jet1_phi","Jet1_eta","Jet1_E","Jet2_pt","Jet2_phi","Jet2_eta","Jet2_E","dPhiMETnearJet","dPhiMETfarJet","dPhiMETleadJet","dPhiMETlead2Jet","dPhiMETbJet","dPhiLep1Lep2","dPhiJet1Jet2","METsig","MHT","MT","looseLeptonVeto","dPhiMETnearJet_Puppi","dPhiMETfarJet_Puppi","dPhiMETleadJet_Puppi","dPhiMETlead2Jet_Puppi","dPhiMETbJet_Puppi","dPhiLep1bJet","dPhiLep1Jet1","mLL","PFMET_phi","PuppiMET_phi","CaloMET","CaloMET_phi","MT2","vecsum_pT_allJet","vecsum_pT_l1l2_allJet","mass_l1l2_allJet","ratio_vecsumpTlep_vecsumpTjet","mjj"}));
-      // ~msPresel_vVars.insert(std::pair<TString,std::vector<TString>>("genParticles/"+channel,{"genMet"}));
+      // ~{"PuppiMET","METunc_Puppi","MET","HT","nJets","n_Interactions","Lep1_flavor","Lep2_flavor","Lep1_pt","Lep1_phi","Lep1_eta","Lep1_E","Lep2_pt","Lep2_phi","Lep2_eta","Lep2_E","Jet1_pt","Jet1_phi","Jet1_eta","Jet1_E","Jet2_pt","Jet2_phi","Jet2_eta","Jet2_E","dPhiMETnearJet","dPhiMETfarJet","dPhiMETleadJet","dPhiMETlead2Jet","dPhiMETbJet","dPhiLep1Lep2","dPhiJet1Jet2","METsig","MHT","MT","looseLeptonVeto","dPhiMETnearJet_Puppi","dPhiMETfarJet_Puppi","dPhiMETleadJet_Puppi","dPhiMETlead2Jet_Puppi","dPhiMETbJet_Puppi","dPhiLep1bJet","dPhiLep1Jet1","mLL","PFMET_phi","PuppiMET_phi","CaloMET","CaloMET_phi","MT2","vecsum_pT_allJet","vecsum_pT_l1l2_allJet","mass_l1l2_allJet","ratio_vecsumpTlep_vecsumpTjet","mjj","DNN_MET_pT"}));
+      {"MET_xy","PuppiMET_xy","dphi_metNearLep_xy","dphi_metNearLep_puppi_xy",}));
+      // ~msPresel_vVars.insert(std::pair<TString,std::vector<TString>>("genParticles/"+channel,{"genMET","pT_nunu"}));
    }
    
    hist::Histograms<TH1F> hs(samplesToImport);
@@ -78,18 +79,21 @@ void compare_tt_powheg_madgraph(){
          
          auto hist_ttDilep=hs.getHistogram(loc,"TTbar_diLepton");
          auto hist_ttAmc=hs.getHistogram(loc,"TTbar_amcatnlo");
+         auto hist_ttHerwig=hs.getHistogram(loc,"TTbar_herwig");
          hist_ttDilep->SetStats(0);
          hist_ttDilep->Draw("axis");
          hist_ttAmc->SetLineColor(kBlue);
-         for (auto const &h: {hist_ttDilep,hist_ttAmc}) {
-            // ~if (hist_ttDilep->GetNbinsX()>20) h->Rebin(2);
+         hist_ttHerwig->SetLineColor(kGreen);
+         for (auto const &h: {hist_ttDilep,hist_ttAmc,hist_ttHerwig}) {
+            if (hist_ttDilep->GetNbinsX()>20) h->Rebin(4);
             h->SetStats(0);
             h->SetMarkerSize(0);
             h->Draw("same e");
          }
          gfx::LegendEntries le;
-         le.append(*hist_ttDilep,"POWHEG dilep.","l");
-         le.append(*hist_ttAmc,"amc@NLO dilep.","l");
+         le.append(*hist_ttDilep,"POWHEG+PYTHIA","l");
+         le.append(*hist_ttAmc,"amc@NLO+PYTHIA","l");
+         le.append(*hist_ttHerwig,"POWHEG+HERWIG","l");
          TLegend leg=le.buildLegend(.6,.8,1-gPad->GetRightMargin(),-1,1);
          leg.Draw();
          label.Draw();
@@ -97,14 +101,17 @@ void compare_tt_powheg_madgraph(){
          spcan.cdLow();
          TH1F hRatio=hist::getRatio(*hist_ttDilep,*hist_ttDilep,"Ratio.",hist::ONLY1);
          TH1F hRatio_amc=hist::getRatio(*hist_ttAmc,*hist_ttDilep,"Ratio.",hist::ONLY1);
+         TH1F hRatio_herwig=hist::getRatio(*hist_ttHerwig,*hist_ttDilep,"Ratio.",hist::ONLY1);
          hRatio.SetStats(false);
          hRatio.SetMarkerSize(0);
          hRatio.SetMaximum(1.25);
          hRatio.SetMinimum(0.75);
          hRatio_amc.SetMarkerSize(0);
+         hRatio_herwig.SetMarkerSize(0);
          hRatio.Draw("axis e0");
          hRatio.Draw("same pe0");
          hRatio_amc.Draw("same pe0");
+         hRatio_herwig.Draw("same pe0");
          saver.save(spcan,loc,true,true);
       }
    }
@@ -451,12 +458,12 @@ void compare_hDamp(){
 extern "C"
 void run()
 {
-   // ~compare_tt_powheg_madgraph();
+   compare_tt_powheg_madgraph();
    
    // ~compare_tW_ds_dr();
    // ~compare_tW_ds_dr(true);
    // ~compare_tW_ds_dr(false,false);
    // ~compare_tW_ds_dr(false,true);
    
-   compare_hDamp();
+   // ~compare_hDamp();
 }
