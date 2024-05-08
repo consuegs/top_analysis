@@ -19,9 +19,13 @@ from getPath import getPath
 
 #check root version (only required when running on new node)
 root_version = ROOT.gROOT.GetVersion()
+oldRoot = False
 if root_version != "6.30/06" and root_version != "6.12/07":
     print("Your ROOT version is {}".format(root_version),"Script requires 6.30/06")
     exit()
+elif root_version == "6.12/07":
+    print("You are running the merging with an older ROOT version, probably using the lxv7 nodes, which can be quite slow.")
+    oldRoot = True
 
 
 def getNTupleVersion(year):    # checks config for number of files for given dataset
@@ -91,11 +95,13 @@ def mergeHist(dataset,logPath,histPath):    # merges histograms of given dataset
         os.remove(outfile)
     
     command = 'cmssw-cc7 --command-to-run "source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.12.06/x86_64-centos7-gcc48-opt/root/bin/thisroot.sh && hadd -f -j 8 {0}'.format(outfile)
+    if oldRoot: command = 'hadd -f -j 8 {0}'.format(outfile)    #no need for singularity when running on old nodes with old root version
+    
     for sampleName in splitSamples:
         command += " "+sampleName
-    command +='"'
+    if oldRoot == False: command +='"'
     
-    if sp.call(command,shell=True,stdout=sp.DEVNULL):
+    if sp.call(command,shell=True,stdout=(open(os.devnull, 'wb') if oldRoot else sp.DEVNULL)):
         sys.exit(1)
     print("Created",outfile)
     os.chdir(runDir)
@@ -126,7 +132,7 @@ def mergeHists_forSamples(logPath,histPath,datasetList,samplesToMerge,outputName
             hist = f.Get(histName)
             hists[histName] = hist
         f_out = ROOT.TFile(histPath+"/temp/"+file_,"RECREATE")
-        f_out.SetBit(ROOT.TFile.k630forwardCompatibility)
+        if oldRoot == False: f_out.SetBit(ROOT.TFile.k630forwardCompatibility)
         tempSamples.append(histPath+"/temp/"+file_)
         f_out.cd()
         for histName in hists.keys():
@@ -144,12 +150,12 @@ def mergeHists_forSamples(logPath,histPath,datasetList,samplesToMerge,outputName
         os.remove(outfile)
     
     command = 'cmssw-cc7 --command-to-run "source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.12.06/x86_64-centos7-gcc48-opt/root/bin/thisroot.sh && hadd -f -j 8 {0}'.format(outfile)
+    if oldRoot: command = 'hadd -f -j 8 {0}'.format(outfile)    #no need for singularity when running on old nodes with old root version
     for sampleName in tempSamples:
         command += " "+sampleName
-    command +='"'
+    if oldRoot == False: command +='"'
     
-    if sp.call(command,shell=True,stdout=sp.DEVNULL):
-    #  ~if sp.call(["hadd","-f",outfile]+tempSamples,stdout=open(os.devnull, 'wb')):    # combine temp hists with hadd 
+    if sp.call(command,shell=True,stdout=(open(os.devnull, 'wb') if oldRoot else sp.DEVNULL)):
         sys.exit(1)
     if os.path.exists(histPath+"/temp/"):   # cleaning
         shutil.rmtree(histPath+"/temp/")
@@ -175,12 +181,12 @@ def mergeAllHists(datasets,logPath,histPath):       # merge all histograms into 
         os.remove(outfile)
     
     command = 'cmssw-cc7 --command-to-run "source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.12.06/x86_64-centos7-gcc48-opt/root/bin/thisroot.sh && hadd -f -j 8 {0}'.format(outfile)
+    if oldRoot: command = 'hadd -f -j 8 {0}'.format(outfile)    #no need for singularity when running on old nodes with old root version
     for sampleName in datasetFiles:
         command += " "+sampleName
-    command +='"'
+    if oldRoot == False: command +='"'
     
-    if sp.call(command,shell=True,stdout=sp.DEVNULL):
-    #  ~if sp.call(["hadd","-f",outfile]+datasetFiles,stdout=open(os.devnull, 'wb')):
+    if sp.call(command,shell=True,stdout=(open(os.devnull, 'wb') if oldRoot else sp.DEVNULL)):
         sys.exit(1)
     print("Created",outfile)
     os.chdir(runDir)
@@ -220,6 +226,11 @@ def mergeRequired(logPath,isDistributions=True,useTrees=True):       # check if 
         fileList = glob.glob(getHistPath_module(logPath)+"/*")
     latestPath = max(fileList, key=os.path.getctime)
     if latestPath.find("merged")>0:
+        if isDistributions:
+            if latestPath.find("histograms_merged")>0:      #for distribution modules, merge only complete if histogram_merged*.root is latest file
+                return False
+            else:
+                return True
         return False
     else:
         return True
