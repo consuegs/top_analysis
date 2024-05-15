@@ -19,7 +19,7 @@ Before setting up the singularity, the repository has to be cloned. Add the foll
       export RUN_ON_NODE=0;
     fi
     
-    if [[ $linuxVersion == "AlmaLinux release 9.3 (Shamrock Pampas Cat)" ]]
+    if [[ $linuxVersion == "AlmaLinux release 9.4 (Seafoam Ocelot)" ]]
     then
         if [[ $RUN_ON_NODE == 0 ]]
         then

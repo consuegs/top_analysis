@@ -8,6 +8,7 @@ import sys
 import configparser
 import sys
 import re
+import random
 sys.path.append("../users")
 from getPath import getPath
 
@@ -114,7 +115,8 @@ bTagEff_sample_syst_dict = {
       #  ~"JERMET_DOWN" : "TTbar_diLepton",
    }
 
-allMC = ["TTbar_diLepton","TTbar_amcatnlo","TTbar_herwig","bb4l_new","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
+#  ~allMC = ["TTbar_diLepton","TTbar_amcatnlo","TTbar_herwig","bb4l_new","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
+allMC = ["TTbar_diLepton","TTbar_amcatnlo","TTbar_herwig","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","SingleTop_DS","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
 #  ~allMC = ["TTbar_diLepton","TTbar_amcatnlo","TTbar_diLepton_tau","TTbar_singleLepton","TTbar_hadronic","SingleTop","WJetsToLNu","DrellYan_NLO","DrellYan_M10to50","DrellYan_M10to50_NLO","WW","WZ","ZZ","ttZ_2L","ttZ_QQ","ttW"]
 #  ~allMC = ["SingleTop_DS"]
 #  ~allMC = ["TTbar_herwig"]
@@ -339,9 +341,10 @@ def removeJES_HEM(year):
       if key in sample_allSyst_dict:
          del sample_allSyst_dict[key]
 
-def checkCEjobs():      #check how many jobs are present in both CE and choose with CE to submit to
+def checkCEjobs():      #check how many jobs are present in both CE and choose with CE to submit to (does not work with new HTCondor version, just randomly choose between both CEs)
+   """
    try:
-      out = subprocess.check_output(["condor_status", "-grid"])
+      out = str(subprocess.check_output(["condor_status", "-grid"]))
    except Exception as error:
       print("Direct grid submission not possible (try to submit from remaining cc7 nodes or use `--copyDCache` option to run on local lx cluster)")
       sys.exit(21)
@@ -359,6 +362,12 @@ def checkCEjobs():      #check how many jobs are present in both CE and choose w
       return "ce-2"
    else:
       return "ce-1"
+   """
+   rand = random.randint(0, 1)
+   if rand:
+      return "ce-1"
+   else:
+      return "ce-2"
 
 def uploadCompressedCMSSW(onCMSconnect=False):    #compress and upload CMSSW to dCache to run on grid
    runDir = os.getcwd()
@@ -369,7 +378,7 @@ def uploadCompressedCMSSW(onCMSconnect=False):    #compress and upload CMSSW to 
       except OSError as exc: # Guard against race condition
          if exc.errno != errno.EEXIST:
             raise
-   CMSSW_path = os.getenv('CMSSW_BASE')
+   CMSSW_path = getPath("cmsswBasePath").replace("/src","")
    if CMSSW_path == None:
       print("No CMSSW version is sourced! Requirement for direct grid submission (only possible from cc7 nodes)")
       exit(25)
@@ -727,9 +736,9 @@ if __name__ == "__main__":
    #  ~toProcess_mc=["SingleTop","SingleTop_DS"]
    #  ~toProcess_mc=["bb4l"]
    #  ~toProcess_mc=["bb4l_new"]
-   toProcess_mc=["TTbar_herwig"]
+   #  ~toProcess_mc=["TTbar_herwig"]
    #  ~toProcess_mc=["DrellYan_M10to50_NLO"]
-   #  ~toProcess_mc=[]
+   toProcess_mc=[]
    #  ~toProcess_mc=allMC
    
    #  ~toProcess_data=["DoubleMuon","DoubleEG","MuonEG","SingleMuon","SingleElectron"]
@@ -742,8 +751,8 @@ if __name__ == "__main__":
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_650_350","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10","DM_scalar_1_200"]
    #  ~toProcess_signal=["T1tttt_1200_800","T1tttt_1500_100","T2tt_850_100","DM_pseudo_50_50","DM_scalar_10_10"]
    #  ~toProcess_signal=["T1tttt_1200_800"]
-   #  ~toProcess_signal=["T2tt_525_438","T2tt_525_350"]
-   toProcess_signal=[]
+   toProcess_signal=["T2tt_525_438","T2tt_525_350"]
+   #  ~toProcess_signal=[]
 
    # define command line arguments
    parser = argparse.ArgumentParser()
@@ -802,11 +811,11 @@ if __name__ == "__main__":
       if (args.m == "" or args.m == "distributions"):
          print("Submit nominal")
          if (args.y=="2018"):
-            submit(args,allMC,allData2018,[])
+            submit(args,allMC,allData2018,toProcess_signal)
          elif (args.y=="2017"):
-            submit(args,allMC,allData2017,[])
+            submit(args,allMC,allData2017,toProcess_signal)
          elif (args.y=="2016_preVFP" or args.y == "2016_postVFP"):
-            submit(args,allMC,allData2016,[])
+            submit(args,allMC,allData2016,toProcess_signal)
          else:
             print(args.y+" does not match correct year")
          for syst in sample_allSyst_dict.keys():
@@ -817,7 +826,8 @@ if __name__ == "__main__":
          exit(98)
    elif (args.pdf_complete):
       if (args.m == "" or args.m == "distributions"):
-         for varNumber in xrange(1,51):
+         #  ~for varNumber in xrange(1,51):
+         for varNumber in range(1,51):
             for var in ["UP","DOWN"]:
                args.s = "PDF_{}_{}".format(varNumber,var)
                submit(args,["TTbar_diLepton"],[],[],args.noConfirmation)

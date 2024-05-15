@@ -75,6 +75,8 @@ def checkErrorFile(outName):
     logName = outName.replace(".out",".error")
     if logName.find("TUnfold")>=0:
         return True
+    if os.path.isfile(logName) == False:
+        return False
     size = os.path.getsize(logName)/(1024*1024)
     with open(logName,"r") as f:
         for line in f:
