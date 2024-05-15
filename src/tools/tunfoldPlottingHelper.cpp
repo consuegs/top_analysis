@@ -1402,8 +1402,9 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       auto Chi2Pair_NNLO_cov_theo = getChi2NDF_withCorr(unfolded,&fixedOrderNNLOgraph,cov,dist.norm,true);
       auto Chi2Pair_NLO_cov_theo = getChi2NDF_withCorr(unfolded,&fixedOrderNLOgraph,cov,dist.norm,true);
       
+      // store chi2 values
       chi2_file<<"--------------------------------------------------------------------------"<<std::endl;
-      chi2_file<<dist.varName;
+      chi2_file<<dist.varName<<" chi2";
       if(dist.norm) chi2_file<<" normalized";
       chi2_file<<std::endl;
       chi2_file<<std::setprecision(1)<<std::fixed;
@@ -1412,7 +1413,21 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       chi2_file<<"MADGRAPH  "<<Chi2Pair_madgraph.first<<"   "<<Chi2Pair_madgraph_theo.first<<"   "<<Chi2Pair_madgraph_cov.first<<"   "<<Chi2Pair_madgraph_cov_theo.first<<std::endl;
       chi2_file<<"HERWIG  "<<Chi2Pair_herwig.first<<"   "<<Chi2Pair_herwig_theo.first<<"   "<<Chi2Pair_herwig_cov.first<<"   "<<Chi2Pair_herwig_cov_theo.first<<std::endl;
       chi2_file<<"NNLO  "<<Chi2Pair_NNLO.first<<"   "<<Chi2Pair_NNLO_theo.first<<"   "<<Chi2Pair_NNLO_cov.first<<"   "<<Chi2Pair_NNLO_cov_theo.first<<std::endl;
-      chi2_file<<"NLO  "<<Chi2Pair_NLO.first<<"   "<<Chi2Pair_NLO_theo.first<<"   "<<Chi2Pair_NLO_cov.first<<"   "<<Chi2Pair_NLO_cov_theo.first<<std::endl<<std::endl;;
+      chi2_file<<"NLO  "<<Chi2Pair_NLO.first<<"   "<<Chi2Pair_NLO_theo.first<<"   "<<Chi2Pair_NLO_cov.first<<"   "<<Chi2Pair_NLO_cov_theo.first<<std::endl<<std::endl;
+      
+      // store p values values
+      int nBins = Chi2Pair_powheg_cov.second;
+      chi2_file<<"--------------------------------------------------------------------------"<<std::endl;
+      chi2_file<<dist.varName<<" p-value";
+      if(dist.norm) chi2_file<<" normalized";
+      chi2_file<<std::endl;
+      chi2_file<<std::setprecision(3)<<std::fixed;
+      chi2_file<<"NDOF  "<<nBins<<std::endl;
+      chi2_file<<"POWHEG  "<<TMath::Prob(Chi2Pair_powheg.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_powheg_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_powheg_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_powheg_cov_theo.first,nBins)<<std::endl;
+      chi2_file<<"MADGRAPH  "<<TMath::Prob(Chi2Pair_madgraph.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_cov_theo.first,nBins)<<std::endl;
+      chi2_file<<"HERWIG  "<<TMath::Prob(Chi2Pair_herwig.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_herwig_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_herwig_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_herwig_cov_theo.first,nBins)<<std::endl;
+      chi2_file<<"NNLO  "<<TMath::Prob(Chi2Pair_NNLO.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NNLO_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NNLO_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NNLO_cov_theo.first,nBins)<<std::endl;
+      chi2_file<<"NLO  "<<TMath::Prob(Chi2Pair_NLO.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NLO_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NLO_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NLO_cov_theo.first,nBins)<<std::endl<<std::endl;
             
       // ~for (int i=0; i<unfolded_totalGraph.GetN()-1; i++) std::cout<<unfolded_totalGraph.GetErrorY(i)*unfolded_totalGraph.GetErrorY(i)<<std::endl;
                   
