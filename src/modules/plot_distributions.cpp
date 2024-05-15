@@ -231,8 +231,8 @@ void run()
          // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
          
-         vecDistr.push_back({selection+channel,"PuppiMET_xy*cos(PuppiMET_xy_phi)",-250.,250.,50});
-         vecDistr.push_back({selection+channel,"PuppiMET_xy*sin(PuppiMET_xy_phi)",-250.,250.,50});
+         // ~vecDistr.push_back({selection+channel,"PuppiMET_xy*cos(PuppiMET_xy_phi)",-250.,250.,50});
+         // ~vecDistr.push_back({selection+channel,"PuppiMET_xy*sin(PuppiMET_xy_phi)",-250.,250.,50});
          // ~vecDistr.push_back({selection+channel,"DNNMET*cos(DNNMET_phi)",-250.,250.,50});
          // ~vecDistr.push_back({selection+channel,"DNNMET*sin(DNNMET_phi)",-250.,250.,50});
          
@@ -256,14 +256,14 @@ void run()
       
       if (syst.BeginsWith("CR_ENVELOPE") || syst.BeginsWith("MESCALE_ENVELOPE") || syst.BeginsWith("MTOP_")) continue;   //Envelope and mTop uncertainties handled in getTotalSystCombined (only ingredients added here)
       
-      systHists* temp = new systHists(syst,TString::Format("multiHists/%s/histograms_merged_%s.root",syst.Data(),cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),(isNominal)? samplesToPlot : mcSamples, ttbarSamples, signalSamples, stSamples);
+      systHists* temp = new systHists(syst,TString::Format("%s/multiHists/%s/histograms_merged_%s.root",cfg.outputDirectory.Data(),syst.Data(),cfg.treeVersion.Data()),TString::Format("distributions%.1f",cfg.processFraction*100),(isNominal)? samplesToPlot : mcSamples, ttbarSamples, signalSamples, stSamples);
       systHists_vec.push_back(temp);
    }
    
    std::vector<TString> mcSamples_merged={};
    
    // Import hists 1D
-   importHists(systHists_vec,samplesToPlot,mcSamples,vecDistr,vecDistr2D);
+   importHists(systHists_vec,samplesToPlot,mcSamples,vecDistr,vecDistr2D,false);
    
    // Combine lepton channels
    for (auto &current : systHists_vec){
