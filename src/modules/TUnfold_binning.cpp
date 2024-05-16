@@ -776,11 +776,12 @@ std::tuple<TString,TString,float> getPath_SampleName_SF(TString const &sample, T
          }
       }
       else{
+         minTreePath_current = minTreePath_nominal;
          if(currentSample == "SingleTop"){
-            currentSample+="_"+syst.name();
+            currentSample = "SingleTop_DS";
          }
-         else{
-            minTreePath_current = minTreePath_nominal;
+         else if(currentSample == "SingleTop_DS"){
+            currentSample = "SingleTop";
          }
       }
    }
