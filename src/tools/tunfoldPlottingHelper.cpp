@@ -989,21 +989,39 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    Double_t xbins_plus[num_bins+1];
    Double_t xbins_minus_extra[num_bins+1];
    Double_t xbins_plus_extra[num_bins+1];
+   Double_t xbins_plus_extra_2[num_bins+1];
    double minBinWidth = binning_met[2]-binning_met[1];
    if(is_dPhi_1d) minBinWidth = binning_met[1]-binning_met[0];
    xbins[0] = 0;   //Plotting start
-   xbins_minus[0] = -1.*(minBinWidth/5.);
-   xbins_plus[0] = minBinWidth/5.;
-   xbins_minus_extra[0] = -1.*(2*minBinWidth/5.);
-   xbins_plus_extra[0] = 2*minBinWidth/5.;
+   
+   //Without Herwig
+   // ~xbins_minus[0] = -1.*(minBinWidth/5.);
+   // ~xbins_plus[0] = minBinWidth/5.;
+   // ~xbins_minus_extra[0] = -1.*(2*minBinWidth/5.);
+   // ~xbins_plus_extra[0] = 2*minBinWidth/5.;
+   
+   //With Herwig
+   xbins_minus[0] = -1.*(minBinWidth/7.);
+   xbins_plus[0] = minBinWidth/7.;
+   xbins_minus_extra[0] = -1.*(2*minBinWidth/7.);
+   xbins_plus_extra[0] = 2*minBinWidth/7.;
+   xbins_plus_extra_2[0] = 3*minBinWidth/7.;
    
    int phi_bin = 0;
    for (int i=0; i<(num_bins); i++)   {
       xbins[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax;
-      xbins_minus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax-minBinWidth/5.;
-      xbins_plus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+minBinWidth/5.;
-      xbins_minus_extra[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax-2*minBinWidth/5.;
-      xbins_plus_extra[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+2*minBinWidth/5.;
+      //Without Herwig
+      // ~xbins_minus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax-minBinWidth/5.;
+      // ~xbins_plus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+minBinWidth/5.;
+      // ~xbins_minus_extra[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax-2*minBinWidth/5.;
+      // ~xbins_plus_extra[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+2*minBinWidth/5.;
+      
+      //With Herwig
+      xbins_minus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax-minBinWidth/6.;
+      xbins_plus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+minBinWidth/6.;
+      xbins_minus_extra[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax-2*minBinWidth/7.;
+      xbins_plus_extra[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+2*minBinWidth/7.;
+      xbins_plus_extra_2[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+3*minBinWidth/7.;
       if (i%num_bins_met==num_bins_met-1) phi_bin++;
    }
    
@@ -1048,9 +1066,9 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       realDisAlt_syst_total.first->SetBins(num_bins,xbins_minus_extra);
       realDisAlt_syst_total.second->SetBins(num_bins,xbins_minus_extra);
       realDisAlt->SetBins(num_bins,xbins_minus_extra);
-      realDisHerwig_syst_total.first->SetBins(num_bins,xbins_minus_extra);
-      realDisHerwig_syst_total.second->SetBins(num_bins,xbins_minus_extra);
-      realDisHerwig->SetBins(num_bins,xbins_minus_extra);
+      realDisHerwig_syst_total.first->SetBins(num_bins,xbins_plus_extra_2);
+      realDisHerwig_syst_total.second->SetBins(num_bins,xbins_plus_extra_2);
+      realDisHerwig->SetBins(num_bins,xbins_plus_extra_2);
       fixedOrderNNLOpair.first.SetBins(num_bins,xbins_plus_extra);
       fixedOrderNLOpair.first.SetBins(num_bins,xbins_plus);
       fixedOrderNNLOpair.second.first.SetBins(num_bins,xbins_plus_extra);
@@ -1296,7 +1314,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       
       realDis_totalGraph.Draw("pe same");
       realDisAlt_totalGraph.Draw("pe same");
-      // ~realDisHerwig_totalGraph.Draw("pe same");
+      realDisHerwig_totalGraph.Draw("pe same");
       
       if(plotTheo){
          fixedOrderNNLOgraph.SetMarkerSize(0.5);
@@ -1440,7 +1458,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       // ~legE.append(fixedOrderNLOgraph,"NLO","p");
       legE.append(realDis_totalGraph,TString::Format("Powheg [%.1f/%i]",Chi2Pair_powheg_cov.first,Chi2Pair_powheg_cov.second),"p");
       legE.append(realDisAlt_totalGraph,TString::Format("MC@NLO [%.1f/%i]",Chi2Pair_madgraph_cov.first,Chi2Pair_madgraph_cov.second),"p");
-      // ~legE.append(realDisHerwig_totalGraph,TString::Format("HERWIG [%.1f/%i]",Chi2Pair_herwig_cov.first,Chi2Pair_herwig_cov.second),"p");
+      legE.append(realDisHerwig_totalGraph,TString::Format("HERWIG [%.1f/%i]",Chi2Pair_herwig_cov.first,Chi2Pair_herwig_cov.second),"p");
       legE.append(fixedOrderNNLOgraph,TString::Format("NNLO [%.1f/%i]",Chi2Pair_NNLO_cov.first,Chi2Pair_NNLO_cov.second),"p");
       legE.append(fixedOrderNLOgraph,TString::Format("NLO [%.1f/%i]",Chi2Pair_NLO_cov.first,Chi2Pair_NLO_cov.second),"p");
       // ~legE.append(*realDis,TString::Format("Powheg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_powheg.first,Chi2Pair_powheg.second),"p");
@@ -1458,7 +1476,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    }
    
    TLegend leg=legE.buildLegend(.149,.45,0.339,(isBSM)? 0.68 : .72,1);
-   leg.SetTextSize(0.034);
+   leg.SetTextSize(0.03);
    leg.Draw();
    
    unfolded->Draw("axis same");
@@ -1745,7 +1763,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
          ratio_NLO_data_graph.Draw("pe0 same");
          ratio_data_graph_asym.Draw("pe0 same");
          ratio_alt_data_graph_asym.Draw("pe0 same");
-         // ~ratio_herwig_data_graph_asym.Draw("pe0 same");
+         ratio_herwig_data_graph_asym.Draw("pe0 same");
          
          // ~ratio_alt_data.SetLineColor(kViolet);
          // ~ratio_alt_data.SetMarkerColor(kViolet);
