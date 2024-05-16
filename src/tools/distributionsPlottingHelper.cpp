@@ -40,8 +40,15 @@ systHists::systHists(TString const &systematicName, TString filePath, TString co
             altSampleType = true;
             if(systematic_.type() != Systematic::tw_ds) datasets_ = datasets_ttBar;
             else {
-               datasets_ = datasets_st;
+               // ~datasets_ = datasets_st;
+               if (datasets_st[0] == "SingleTop") datasets_ = {"SingleTop_DS"};
+               else if (datasets_st[0] == "SingleTop_DS") datasets_ = {"SingleTop"};
+               else {
+                  std::cerr<<"Unknown SingleTop sample name:"<<datasets_st[0]<<std::endl;
+                  exit(98);
+               }
                onlyST = true;
+               filePath_.ReplaceAll("TWDS","Nominal");
             }
          }
          
@@ -129,7 +136,7 @@ void distributionsplotting::importHists(std::vector<systHists*> &systHists_vec, 
       for (TString sSample : inputSamples){
          current->hists_.setCurrentSample(sSample);
          TString sSample_alt = sSample;
-         if (current->altSampleType) sSample_alt = sSample+"_"+current->systematicName_;    // get correct Sample name if alternative Sample Type
+         if (current->altSampleType && !current->onlyST) sSample_alt = sSample+"_"+current->systematicName_;    // get correct Sample name if alternative Sample Type
          //import 1D Hists
          for (auto const &distr_:vecDistr){
             TString loc;
@@ -270,7 +277,7 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal,
    bool useCRenvelope = false;
    bool useMEenvelope = false;
    bool useMTop = false;
-   
+      
    for (auto &current : systHists_vec){
       if (std::find(Systematic::nominalTypes.begin(), Systematic::nominalTypes.end(), current->systematic_.type()) != Systematic::nominalTypes.end()){  //Store sum of ttBar for syst. with alt. samples
          if (sample == "") {
@@ -281,7 +288,7 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal,
          else {
             nominal_ttbar = current->hists_.getHistogram(loc,sample);
             nominal_ttbar2L = current->hists_.getHistogram(loc,sample);
-            nominal_st = current->hists_.getSummedHist(loc,current->datasets_st_);   //for DS unc.
+            nominal_st = current->hists_.getHistogram(loc,sample);   //for DS unc.
          }
          continue;
          
@@ -292,6 +299,9 @@ std::pair<TH1F*,TH1F*> distributionsplotting::getTotalSyst(TH1F* const &nominal,
       }   
       else if (std::find(current->datasets_.begin(), current->datasets_.end(), sample) !=  current->datasets_.end()){
          tempSys=current->hists_.getHistogram(loc,sample);
+      }
+      else if (current->onlyST && (std::find(current->datasets_st_.begin(), current->datasets_st_.end(), sample) !=  current->datasets_st_.end())){
+         tempSys=current->hists_.getSummedHist(loc,current->datasets_);
       }
       else tempSys = nominal_ttbar;
             
