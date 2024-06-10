@@ -336,6 +336,7 @@ THStack hist::Histograms<HIST>::getStack(TString const &varName,std::vector<TStr
       try {
          if (!includeData && datasets.getDataset(s).isData) continue;
          h->SetFillColor(datasets.getDataset(s).color);
+         if (colormap.find(s)!=colormap.end()) h->SetFillColor(colormap.at(s));
          le_.prepend(*h,datasets.getDataset(s).label,"f");
       } catch (const std::out_of_range& exc) {
          // no full dataset, use default colors or color defined in colormap
