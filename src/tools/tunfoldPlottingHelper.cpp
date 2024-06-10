@@ -125,15 +125,17 @@ std::pair<float,int> tunfoldplotting::getChi2NDF_withCorr(TH1F* hist_res, TGraph
             corr[i-1][j-1]=cov_res->GetBinContent(i,j)/(sqrt(cov_res->GetBinContent(i,i)*cov_res->GetBinContent(j,j)));
          }
       }
-      
-      if (!includeTrueError){
-         diff.Print();
-         // ~cov.Print();
-         // ~std::cout<<cov.Determinant()<<std::endl;
-         corr.Print();
-      }
+            
+      // ~diff.Print();
       
       cov.Invert();
+      
+      if (!includeTrueError){
+         // ~diff.Print();
+         // ~cov.Print();
+         // ~std::cout<<cov.Determinant()<<std::endl;
+         // ~corr.Print();
+      }
       
       // ~cov.Print();
       
@@ -496,8 +498,8 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
       isNorm = true;
    }
    
-   totalShift.first.SetFillColor(kOrange);
-   totalShift.second.SetFillColor(kOrange);
+   totalShift.first.SetFillColor(TColor::GetColor("#ffa90e"));
+   totalShift.second.SetFillColor(TColor::GetColor("#ffa90e"));
    totalShift.first.SetLineWidth(0.);
    totalShift.second.SetLineWidth(0.);
    totalShift.first.SetFillStyle(1001);
@@ -506,8 +508,8 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
    
    statShift.first.Scale(-100.);
    statShift.second.Scale(100.);
-   statShift.first.SetFillColor(kGray);
-   statShift.second.SetFillColor(kGray);
+   statShift.first.SetFillColor(TColor::GetColor("#717581"));
+   statShift.second.SetFillColor(TColor::GetColor("#717581"));
    statShift.first.SetLineWidth(0.);
    statShift.second.SetLineWidth(0.);
    statShift.first.SetFillStyle(1001);
@@ -526,14 +528,20 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
       legE.append(statShift.first,"Stat.","f");
    }
    
+   //Draw zero line
+   TLine * zeroLine = new TLine();
+   zeroLine->SetLineStyle(7);
+   zeroLine->DrawLine(totalShift.first.GetXaxis()->GetXmin(),0.,totalShift.first.GetXaxis()->GetXmax(),0.);
+   
    if (is2D){
-      totalShift.first.GetYaxis()->SetRangeUser(-30,30);
+      // ~totalShift.first.GetYaxis()->SetRangeUser(-30,30);
+      totalShift.first.GetYaxis()->SetRangeUser(-20,20);
    }
    else if(saver->getInternalPath().Contains("dPhi")){
       totalShift.first.GetYaxis()->SetRangeUser(-10,10);
    }
    else {
-      // ~totalShift.first.GetYaxis()->SetRangeUser(-30,30);
+      // ~totalShift.first.GetYaxis()->SetRangeUser(-20,20);
       totalShift.first.GetYaxis()->SetRangeUser(-45,45);
    }
    
@@ -542,7 +550,8 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
    
    std::vector<int> lineStyles = {1,7,2,9};
    // ~std::vector<int> colors = {1,2,3,4,6,7,12,30,49};
-   std::vector<int> colors = {1,2,3,4,6,7,45};
+   // ~std::vector<int> colors = {1,2,3,4,7,45};
+   std::vector<TString> colors = {"#3f90da", "#bd1f01", "#94a4a2", "#832db6", "#a96b59", "#e76300", "#b9ac70", "#717581", "#92dadd"};
    // ~std::vector<int> colors = {2,3,4};
    // ~std::vector<int> colors = {1,2,4};
    
@@ -556,8 +565,8 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
       envelopes.first->Scale(100.);
       envelopes.second->Scale(100.);
       
-      envelopes.first->SetLineColor(colors[currentColor]);
-      envelopes.second->SetLineColor(colors[currentColor]);
+      envelopes.first->SetLineColor(TColor::GetColor(colors[currentColor]));
+      envelopes.second->SetLineColor(TColor::GetColor(colors[currentColor]));
       // ~envelopes.first->SetLineWidth(1.5);
       // ~envelopes.second->SetLineWidth(1.5);
       envelopes.first->SetLineWidth(2);
@@ -583,9 +592,10 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
    if (is2D){
       var = "2D";
       TLine * aline = new TLine();
-      aline->SetLineStyle(7);
-      aline->DrawLine(4.5,-30.,4.5,30.);
-      aline->DrawLine(8.5,-30.,8.5,30.);
+      // ~aline->SetLineStyle(7);
+      aline->SetLineWidth(2);
+      aline->DrawLine(4.5,-20.,4.5,20.);
+      aline->DrawLine(8.5,-20.,8.5,20.);
    }
    
    if (isNorm){
@@ -969,6 +979,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
          fixedOrderLOpair = readFixedOrderPred("../data/theoryPredictions/fid_LO_mt172.5_HT4_NNPDF31_dphilnnbar.dat",false,dist.norm,false,true);
       }
    }
+   
          
    //Initialize proper binning for plotting
    TVectorD binning_met(*(generatorBinning->FindNode("signal")->GetDistributionBinning(0)));
@@ -988,6 +999,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    Double_t xbins_minus[num_bins+1];
    Double_t xbins_plus[num_bins+1];
    Double_t xbins_minus_extra[num_bins+1];
+   Double_t xbins_minus_extra_2[num_bins+1];
    Double_t xbins_plus_extra[num_bins+1];
    Double_t xbins_plus_extra_2[num_bins+1];
    double minBinWidth = binning_met[2]-binning_met[1];
@@ -1004,6 +1016,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    xbins_minus[0] = -1.*(minBinWidth/7.);
    xbins_plus[0] = minBinWidth/7.;
    xbins_minus_extra[0] = -1.*(2*minBinWidth/7.);
+   xbins_minus_extra_2[0] = -1.*(3*minBinWidth/7.);
    xbins_plus_extra[0] = 2*minBinWidth/7.;
    xbins_plus_extra_2[0] = 3*minBinWidth/7.;
    
@@ -1017,9 +1030,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       // ~xbins_plus_extra[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+2*minBinWidth/5.;
       
       //With Herwig
-      xbins_minus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax-minBinWidth/6.;
-      xbins_plus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+minBinWidth/6.;
+      xbins_minus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax-minBinWidth/7.;
+      xbins_plus[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+minBinWidth/7.;
       xbins_minus_extra[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax-2*minBinWidth/7.;
+      xbins_minus_extra_2[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax-3*minBinWidth/7.;
       xbins_plus_extra[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+2*minBinWidth/7.;
       xbins_plus_extra_2[i+1] = binning_met[i%num_bins_met+1]+phi_bin*dist.xMax+3*minBinWidth/7.;
       if (i%num_bins_met==num_bins_met-1) phi_bin++;
@@ -1060,15 +1074,15 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       unfolded_bbb_total.second->SetBins(num_bins,xbins_plus);
    }
    else if (!onlyTheo){ //set offset for proper theory comparison
-      realDis->SetBins(num_bins,xbins_minus);
-      realDis_syst_total.first->SetBins(num_bins,xbins_minus);
-      realDis_syst_total.second->SetBins(num_bins,xbins_minus);
-      realDisAlt_syst_total.first->SetBins(num_bins,xbins_minus_extra);
-      realDisAlt_syst_total.second->SetBins(num_bins,xbins_minus_extra);
-      realDisAlt->SetBins(num_bins,xbins_minus_extra);
-      realDisHerwig_syst_total.first->SetBins(num_bins,xbins_plus_extra_2);
-      realDisHerwig_syst_total.second->SetBins(num_bins,xbins_plus_extra_2);
-      realDisHerwig->SetBins(num_bins,xbins_plus_extra_2);
+      realDis->SetBins(num_bins,xbins_minus_extra_2);
+      realDis_syst_total.first->SetBins(num_bins,xbins_minus_extra_2);
+      realDis_syst_total.second->SetBins(num_bins,xbins_minus_extra_2);
+      realDisAlt_syst_total.first->SetBins(num_bins,xbins_minus);
+      realDisAlt_syst_total.second->SetBins(num_bins,xbins_minus);
+      realDisAlt->SetBins(num_bins,xbins_minus);
+      realDisHerwig_syst_total.first->SetBins(num_bins,xbins_minus_extra);
+      realDisHerwig_syst_total.second->SetBins(num_bins,xbins_minus_extra);
+      realDisHerwig->SetBins(num_bins,xbins_minus_extra);
       fixedOrderNNLOpair.first.SetBins(num_bins,xbins_plus_extra);
       fixedOrderNLOpair.first.SetBins(num_bins,xbins_plus);
       fixedOrderNNLOpair.second.first.SetBins(num_bins,xbins_plus_extra);
@@ -1162,7 +1176,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       unfolded->SetMaximum(2.5*unfolded->GetMaximum());
       // ~unfolded->SetMinimum(0.4*unfolded->GetMinimum());
       if(!is_dPhi_1d && !dist.is2D) unfolded->SetMinimum(0.15*unfolded->GetMinimum());
-      else unfolded->SetMinimum((isBSM)? 0.1*unfolded->GetMinimum() : 0.3*unfolded->GetMinimum());
+      else unfolded->SetMinimum((isBSM)? 0.1*unfolded->GetMinimum() : 0.1*unfolded->GetMinimum());
    }
    unfolded->SetLineColor(kBlack);
    unfolded->SetTitle(dist.title);
@@ -1203,7 +1217,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    unfolded_graph.SetLineWidth(0);
    unfolded_reg_graph.SetLineWidth(0);
    unfolded_bbb_graph.SetLineWidth(0);
-   unfolded_graph.SetFillColor(kGray+1);
+   unfolded_graph.SetFillColor(TColor::GetColor("#717581"));
    unfolded_reg_graph.SetFillColor(kGreen-9);
    unfolded_bbb_graph.SetFillColor(kMagenta-9);
    unfolded_graph.SetMarkerSize(0.4);
@@ -1211,7 +1225,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    unfolded_bbb_graph.SetMarkerSize(0.4);
    
    unfolded_totalGraph.SetFillStyle(1001);
-   unfolded_totalGraph.SetFillColor(kOrange+1);
+   unfolded_totalGraph.SetFillColor(TColor::GetColor("#ffa90e"));
    
    unfolded_totalGraph.SetLineWidth(1.);
    unfolded_reg_totalGraph.SetLineWidth(1.);
@@ -1291,12 +1305,12 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       realDis_totalGraph.SetMarkerSize(0.5);
       realDisAlt_totalGraph.SetMarkerSize(0.5);
       realDisHerwig_totalGraph.SetMarkerSize(0.5);
-      realDis_totalGraph.SetMarkerColor(kGreen+2);
-      realDis_totalGraph.SetLineColor(kGreen+2);
-      realDisAlt_totalGraph.SetMarkerColor(kViolet);
-      realDisAlt_totalGraph.SetLineColor(kViolet);
-      realDisHerwig_totalGraph.SetMarkerColor(kCyan+2);
-      realDisHerwig_totalGraph.SetLineColor(kCyan+2);
+      realDis_totalGraph.SetMarkerColor(TColor::GetColor("#bd1f01"));
+      realDis_totalGraph.SetLineColor(TColor::GetColor("#bd1f01"));
+      realDisAlt_totalGraph.SetMarkerColor(TColor::GetColor("#832db6"));
+      realDisAlt_totalGraph.SetLineColor(TColor::GetColor("#832db6"));
+      realDisHerwig_totalGraph.SetMarkerColor(TColor::GetColor("#e76300"));
+      realDisHerwig_totalGraph.SetLineColor(TColor::GetColor("#e76300"));
       realDis_totalGraph.SetMarkerStyle(22);
       realDisAlt_totalGraph.SetMarkerStyle(23);
       realDisHerwig_totalGraph.SetMarkerStyle(43);
@@ -1319,10 +1333,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       if(plotTheo){
          fixedOrderNNLOgraph.SetMarkerSize(0.5);
          fixedOrderNLOgraph.SetMarkerSize(0.5);
-         fixedOrderNNLOgraph.SetMarkerColor(kRed);
-         fixedOrderNLOgraph.SetMarkerColor(kBlue);
-         fixedOrderNNLOgraph.SetLineColor(kRed);
-         fixedOrderNLOgraph.SetLineColor(kBlue);
+         fixedOrderNNLOgraph.SetMarkerColor(TColor::GetColor("#a96b59"));
+         fixedOrderNLOgraph.SetMarkerColor(TColor::GetColor("#3f90da"));
+         fixedOrderNNLOgraph.SetLineColor(TColor::GetColor("#a96b59"));
+         fixedOrderNLOgraph.SetLineColor(TColor::GetColor("#3f90da"));
          fixedOrderNNLOgraph.SetMarkerStyle(34);
          fixedOrderNLOgraph.SetMarkerStyle(33);
          fixedOrderNNLOgraph.SetLineWidth(1);
@@ -1413,6 +1427,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       auto Chi2Pair_herwig_cov = getChi2NDF_withCorr(unfolded,&realDisHerwig_totalGraph,cov,dist.norm);
       auto Chi2Pair_NNLO_cov = getChi2NDF_withCorr(unfolded,&fixedOrderNNLOgraph,cov,dist.norm);
       auto Chi2Pair_NLO_cov = getChi2NDF_withCorr(unfolded,&fixedOrderNLOgraph,cov,dist.norm);
+      auto Chi2Pair_LO_cov = getChi2NDF_withCorr(unfolded,&fixedOrderLOgraph,cov,dist.norm);
       
       auto Chi2Pair_powheg_cov_theo = getChi2NDF_withCorr(unfolded,&realDis_totalGraph,cov,dist.norm,true);
       auto Chi2Pair_madgraph_cov_theo = getChi2NDF_withCorr(unfolded,&realDisAlt_totalGraph,cov,dist.norm,true);
@@ -1427,11 +1442,13 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       chi2_file<<std::endl;
       chi2_file<<std::setprecision(1)<<std::fixed;
       chi2_file<<"NDOF  "<<Chi2Pair_powheg_cov.second<<std::endl;
+      chi2_file<<"Type"<<"   No Corr"<<"   No Corr(+theo)"<<"   Corr"<<"   Corr+(theo)"<<std::endl;
       chi2_file<<"POWHEG  "<<Chi2Pair_powheg.first<<"   "<<Chi2Pair_powheg_theo.first<<"   "<<Chi2Pair_powheg_cov.first<<"   "<<Chi2Pair_powheg_cov_theo.first<<std::endl;
       chi2_file<<"MADGRAPH  "<<Chi2Pair_madgraph.first<<"   "<<Chi2Pair_madgraph_theo.first<<"   "<<Chi2Pair_madgraph_cov.first<<"   "<<Chi2Pair_madgraph_cov_theo.first<<std::endl;
       chi2_file<<"HERWIG  "<<Chi2Pair_herwig.first<<"   "<<Chi2Pair_herwig_theo.first<<"   "<<Chi2Pair_herwig_cov.first<<"   "<<Chi2Pair_herwig_cov_theo.first<<std::endl;
       chi2_file<<"NNLO  "<<Chi2Pair_NNLO.first<<"   "<<Chi2Pair_NNLO_theo.first<<"   "<<Chi2Pair_NNLO_cov.first<<"   "<<Chi2Pair_NNLO_cov_theo.first<<std::endl;
       chi2_file<<"NLO  "<<Chi2Pair_NLO.first<<"   "<<Chi2Pair_NLO_theo.first<<"   "<<Chi2Pair_NLO_cov.first<<"   "<<Chi2Pair_NLO_cov_theo.first<<std::endl<<std::endl;
+      chi2_file<<"LO  "<<Chi2Pair_LO_cov.first<<std::endl<<std::endl;
       
       // store p values values
       int nBins = Chi2Pair_powheg_cov.second;
@@ -1439,8 +1456,9 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       chi2_file<<dist.varName<<" p-value";
       if(dist.norm) chi2_file<<" normalized";
       chi2_file<<std::endl;
-      chi2_file<<std::setprecision(3)<<std::fixed;
+      chi2_file<<std::setprecision(2)<<std::fixed;
       chi2_file<<"NDOF  "<<nBins<<std::endl;
+      chi2_file<<"Type"<<"   No Corr"<<"   No Corr(+theo)"<<"   Corr"<<"   Corr+(theo)"<<std::endl;
       chi2_file<<"POWHEG  "<<TMath::Prob(Chi2Pair_powheg.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_powheg_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_powheg_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_powheg_cov_theo.first,nBins)<<std::endl;
       chi2_file<<"MADGRAPH  "<<TMath::Prob(Chi2Pair_madgraph.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_cov_theo.first,nBins)<<std::endl;
       chi2_file<<"HERWIG  "<<TMath::Prob(Chi2Pair_herwig.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_herwig_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_herwig_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_herwig_cov_theo.first,nBins)<<std::endl;
@@ -1456,15 +1474,20 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       // ~legE.append(realDisAlt_totalGraph,"MadGraph","p");
       // ~legE.append(fixedOrderNNLOgraph,"NNLO","p");
       // ~legE.append(fixedOrderNLOgraph,"NLO","p");
-      legE.append(realDis_totalGraph,TString::Format("Powheg [%.1f/%i]",Chi2Pair_powheg_cov.first,Chi2Pair_powheg_cov.second),"p");
-      legE.append(realDisAlt_totalGraph,TString::Format("MC@NLO [%.1f/%i]",Chi2Pair_madgraph_cov.first,Chi2Pair_madgraph_cov.second),"p");
-      legE.append(realDisHerwig_totalGraph,TString::Format("HERWIG [%.1f/%i]",Chi2Pair_herwig_cov.first,Chi2Pair_herwig_cov.second),"p");
-      legE.append(fixedOrderNNLOgraph,TString::Format("NNLO [%.1f/%i]",Chi2Pair_NNLO_cov.first,Chi2Pair_NNLO_cov.second),"p");
-      legE.append(fixedOrderNLOgraph,TString::Format("NLO [%.1f/%i]",Chi2Pair_NLO_cov.first,Chi2Pair_NLO_cov.second),"p");
-      // ~legE.append(*realDis,TString::Format("Powheg [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_powheg.first,Chi2Pair_powheg.second),"p");
-      // ~legE.append(*realDisAlt,TString::Format("MadGraph [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_madgraph.first,Chi2Pair_madgraph.second),"p");
-      // ~legE.append(fixedOrderNNLOgraph,TString::Format("NNLO [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_NNLO.first,Chi2Pair_NNLO.second),"p");
-      // ~legE.append(fixedOrderNLOgraph,TString::Format("NLO [#chi^{2}/NDF=%.1f/%i]",Chi2Pair_NLO.first,Chi2Pair_NLO.second),"p");
+      
+      // With chi2
+      // ~legE.append(realDis_totalGraph,TString::Format("POW+PYT [%.1f/%i]",Chi2Pair_powheg_cov.first,Chi2Pair_powheg_cov.second),"p");
+      // ~legE.append(realDisHerwig_totalGraph,TString::Format("POW+HER [%.1f/%i]",Chi2Pair_herwig_cov.first,Chi2Pair_herwig_cov.second),"p");
+      // ~legE.append(realDisAlt_totalGraph,TString::Format("MC@NLO+PYT [%.1f/%i]",Chi2Pair_madgraph_cov.first,Chi2Pair_madgraph_cov.second),"p");
+      // ~legE.append(fixedOrderNLOgraph,TString::Format("NLO [%.1f/%i]",Chi2Pair_NLO_cov.first,Chi2Pair_NLO_cov.second),"p");
+      // ~legE.append(fixedOrderNNLOgraph,TString::Format("NNLO [%.1f/%i]",Chi2Pair_NNLO_cov.first,Chi2Pair_NNLO_cov.second),"p");
+      
+      //Without chi2
+      legE.append(realDis_totalGraph,"POWHEG+PYTHIA","p");
+      legE.append(realDisHerwig_totalGraph,"POWHEG+HERWIG","p");
+      legE.append(realDisAlt_totalGraph,"MC@NLO+PYTHIA","p");
+      legE.append(fixedOrderNLOgraph,"NLO","p");
+      legE.append(fixedOrderNNLOgraph,"NNLO","p");
    }
    
    if(!rewStudy && onlyTheo){
@@ -1475,7 +1498,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       legE.append(fixedOrderLOpair.first,"LO","l");
    }
    
-   TLegend leg=legE.buildLegend(.149,.45,0.339,(isBSM)? 0.68 : .72,1);
+   TLegend leg=legE.buildLegend(.149,.45,0.339,(isBSM)? 0.68 : .75,1);
    leg.SetTextSize(0.03);
    leg.Draw();
    
@@ -1589,8 +1612,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    ratio_graph_data.SetLineWidth(0);
    ratio_reg_graph.SetLineWidth(0);
    ratio_bbb_graph.SetLineWidth(0);
-   ratio_graph.SetFillColor(kGray);
-   ratio_graph_data.SetFillColor(kGray);
+   ratio_graph.SetFillColor(TColor::GetColor("#717581"));
+   ratio_graph_data.SetFillColor(TColor::GetColor("#717581"));
    ratio_reg_graph.SetFillColor(kGreen-9);
    ratio_bbb_graph.SetFillColor(kMagenta-9);
    ratio_graph.SetMarkerSize(0.4);
@@ -1666,7 +1689,7 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    ratio_bbb_totalGraph.SetMarkerSize(0.4);
    
    ratio_totalGraph_data.SetFillStyle(1001);
-   ratio_totalGraph_data.SetFillColor(kOrange+1);
+   ratio_totalGraph_data.SetFillColor(TColor::GetColor("#ffa90e"));
    
    gfx::LegendEntries legE_ratio;
    
@@ -1738,16 +1761,16 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
          ratio_data_graph_asym.SetMarkerSize(0.5);
          ratio_alt_data_graph_asym.SetMarkerSize(0.5);
          ratio_herwig_data_graph_asym.SetMarkerSize(0.5);
-         ratio_NNLO_data_graph.SetMarkerColor(kRed);
-         ratio_NLO_data_graph.SetMarkerColor(kBlue);
-         ratio_data_graph_asym.SetMarkerColor(kGreen+2);
-         ratio_alt_data_graph_asym.SetMarkerColor(kViolet);
-         ratio_herwig_data_graph_asym.SetMarkerColor(kCyan+2);
-         ratio_NNLO_data_graph.SetLineColor(kRed);
-         ratio_NLO_data_graph.SetLineColor(kBlue);
-         ratio_data_graph_asym.SetLineColor(kGreen+2);
-         ratio_alt_data_graph_asym.SetLineColor(kViolet);
-         ratio_herwig_data_graph_asym.SetLineColor(kCyan+2);
+         ratio_NNLO_data_graph.SetMarkerColor(TColor::GetColor("#a96b59"));
+         ratio_NLO_data_graph.SetMarkerColor(TColor::GetColor("#3f90da"));
+         ratio_data_graph_asym.SetMarkerColor(TColor::GetColor("#bd1f01"));
+         ratio_alt_data_graph_asym.SetMarkerColor(TColor::GetColor("#832db6"));
+         ratio_herwig_data_graph_asym.SetMarkerColor(TColor::GetColor("#e76300"));
+         ratio_NNLO_data_graph.SetLineColor(TColor::GetColor("#a96b59"));
+         ratio_NLO_data_graph.SetLineColor(TColor::GetColor("#3f90da"));
+         ratio_data_graph_asym.SetLineColor(TColor::GetColor("#bd1f01"));
+         ratio_alt_data_graph_asym.SetLineColor(TColor::GetColor("#832db6"));
+         ratio_herwig_data_graph_asym.SetLineColor(TColor::GetColor("#e76300"));
          ratio_NNLO_data_graph.SetMarkerStyle(34);
          ratio_NLO_data_graph.SetMarkerStyle(33);
          ratio_data_graph_asym.SetMarkerStyle(22);
