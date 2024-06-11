@@ -655,6 +655,7 @@ TString Systematic::getPrintName(const TString& type)
     else if(type == "xOTHER EXP") return "Other exp. unc.";
     else if(type == "xOTHER THEO") return "Other theo. unc.";
     else if(type == "ME_PS") return "ME and PS";
+    else if(type == "TWDS") return "Single top DS/DR";
     else return type;       // return argument if print name not definied
 }
 

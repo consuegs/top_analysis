@@ -528,11 +528,6 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
       legE.append(statShift.first,"Stat.","f");
    }
    
-   //Draw zero line
-   TLine * zeroLine = new TLine();
-   zeroLine->SetLineStyle(7);
-   zeroLine->DrawLine(totalShift.first.GetXaxis()->GetXmin(),0.,totalShift.first.GetXaxis()->GetXmax(),0.);
-   
    if (is2D){
       // ~totalShift.first.GetYaxis()->SetRangeUser(-30,30);
       totalShift.first.GetYaxis()->SetRangeUser(-20,20);
@@ -601,6 +596,11 @@ void tunfoldplotting::plot_systBreakdown(std::map<TString,TH1F> const &indShifts
    if (isNorm){
       var +=", normalized";
    }
+   
+   //Draw zero line
+   TLine * zeroLine = new TLine();
+   zeroLine->SetLineStyle(7);
+   zeroLine->DrawLine(totalShift.first.GetXaxis()->GetXmin(),0.,totalShift.first.GetXaxis()->GetXmax(),0.);
    
    TLatex label=gfx::cornerLabel(var,1);
    label.Draw();
@@ -1185,10 +1185,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    realDisAlt->SetTitle(dist.title);
    realDis->SetStats(false);
    
-   unfolded_reg->SetLineColor(kGreen+2);
-   unfolded_bbb->SetLineColor(kViolet);
-   unfolded_reg->SetMarkerColor(kGreen+2);
-   unfolded_bbb->SetMarkerColor(kViolet);
+   unfolded_reg->SetLineColor(TColor::GetColor("#ffa90e"));
+   unfolded_bbb->SetLineColor(TColor::GetColor("#832db6"));
+   unfolded_reg->SetMarkerColor(TColor::GetColor("#ffa90e"));
+   unfolded_bbb->SetMarkerColor(TColor::GetColor("#832db6"));
    
    // Setup unc. plotting
    // ~TGraphAsymmErrors unfolded_totalGraph = hist::getErrorGraph(unfolded_total.first,unfolded_total.second,unfolded,true,false);
@@ -1199,8 +1199,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    TGraphAsymmErrors realDisAlt_totalGraph = hist::getErrorGraph(realDisAlt_syst_total.first,realDisAlt_syst_total.second,realDisAlt,true,true);
    TGraphAsymmErrors realDisHerwig_totalGraph = hist::getErrorGraph(realDisHerwig_syst_total.first,realDisHerwig_syst_total.second,realDisHerwig,true,true);
    unfolded_totalGraph.SetLineColor(kBlack);
-   unfolded_reg_totalGraph.SetLineColor(kGreen+2);
-   unfolded_bbb_totalGraph.SetLineColor(kViolet);
+   unfolded_reg_totalGraph.SetLineColor(TColor::GetColor("#ffa90e"));
+   unfolded_bbb_totalGraph.SetLineColor(TColor::GetColor("#832db6"));
    TGraphErrors unfolded_graph(unfolded);
    TGraphErrors unfolded_reg_graph(unfolded_reg);
    TGraphErrors unfolded_bbb_graph(unfolded_bbb);
@@ -1218,8 +1218,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    unfolded_reg_graph.SetLineWidth(0);
    unfolded_bbb_graph.SetLineWidth(0);
    unfolded_graph.SetFillColor(TColor::GetColor("#717581"));
-   unfolded_reg_graph.SetFillColor(kGreen-9);
-   unfolded_bbb_graph.SetFillColor(kMagenta-9);
+   unfolded_reg_graph.SetFillColor(TColor::GetColor("#ffa90e"));
+   unfolded_bbb_graph.SetFillColor(TColor::GetColor("#832db6"));
    unfolded_graph.SetMarkerSize(0.4);
    unfolded_reg_graph.SetMarkerSize(0.4);
    unfolded_bbb_graph.SetMarkerSize(0.4);
@@ -1278,8 +1278,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
          if(rewStudy || isBSM) realDisAlt->Draw("hist same");
       }
       else{
-         realDis->SetLineColor(kBlue-6);
-         realDisAlt->SetLineColor(kRed-6);
+         realDis->SetLineColor(TColor::GetColor("#3f90da"));
+         realDisAlt->SetLineColor(TColor::GetColor("#bd1f01"));
          realDis->Draw("hist same");
          realDisAlt->Draw("hist same");
       }
@@ -1444,11 +1444,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       chi2_file<<"NDOF  "<<Chi2Pair_powheg_cov.second<<std::endl;
       chi2_file<<"Type"<<"   No Corr"<<"   No Corr(+theo)"<<"   Corr"<<"   Corr+(theo)"<<std::endl;
       chi2_file<<"POWHEG  "<<Chi2Pair_powheg.first<<"   "<<Chi2Pair_powheg_theo.first<<"   "<<Chi2Pair_powheg_cov.first<<"   "<<Chi2Pair_powheg_cov_theo.first<<std::endl;
-      chi2_file<<"MADGRAPH  "<<Chi2Pair_madgraph.first<<"   "<<Chi2Pair_madgraph_theo.first<<"   "<<Chi2Pair_madgraph_cov.first<<"   "<<Chi2Pair_madgraph_cov_theo.first<<std::endl;
       chi2_file<<"HERWIG  "<<Chi2Pair_herwig.first<<"   "<<Chi2Pair_herwig_theo.first<<"   "<<Chi2Pair_herwig_cov.first<<"   "<<Chi2Pair_herwig_cov_theo.first<<std::endl;
+      chi2_file<<"MADGRAPH  "<<Chi2Pair_madgraph.first<<"   "<<Chi2Pair_madgraph_theo.first<<"   "<<Chi2Pair_madgraph_cov.first<<"   "<<Chi2Pair_madgraph_cov_theo.first<<std::endl;
+      chi2_file<<"NLO  "<<Chi2Pair_NLO.first<<"   "<<Chi2Pair_NLO_theo.first<<"   "<<Chi2Pair_NLO_cov.first<<"   "<<Chi2Pair_NLO_cov_theo.first<<std::endl;
       chi2_file<<"NNLO  "<<Chi2Pair_NNLO.first<<"   "<<Chi2Pair_NNLO_theo.first<<"   "<<Chi2Pair_NNLO_cov.first<<"   "<<Chi2Pair_NNLO_cov_theo.first<<std::endl;
-      chi2_file<<"NLO  "<<Chi2Pair_NLO.first<<"   "<<Chi2Pair_NLO_theo.first<<"   "<<Chi2Pair_NLO_cov.first<<"   "<<Chi2Pair_NLO_cov_theo.first<<std::endl<<std::endl;
-      chi2_file<<"LO  "<<Chi2Pair_LO_cov.first<<std::endl<<std::endl;
       
       // store p values values
       int nBins = Chi2Pair_powheg_cov.second;
@@ -1460,10 +1459,10 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       chi2_file<<"NDOF  "<<nBins<<std::endl;
       chi2_file<<"Type"<<"   No Corr"<<"   No Corr(+theo)"<<"   Corr"<<"   Corr+(theo)"<<std::endl;
       chi2_file<<"POWHEG  "<<TMath::Prob(Chi2Pair_powheg.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_powheg_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_powheg_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_powheg_cov_theo.first,nBins)<<std::endl;
-      chi2_file<<"MADGRAPH  "<<TMath::Prob(Chi2Pair_madgraph.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_cov_theo.first,nBins)<<std::endl;
       chi2_file<<"HERWIG  "<<TMath::Prob(Chi2Pair_herwig.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_herwig_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_herwig_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_herwig_cov_theo.first,nBins)<<std::endl;
+      chi2_file<<"MADGRAPH  "<<TMath::Prob(Chi2Pair_madgraph.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_madgraph_cov_theo.first,nBins)<<std::endl;
+      chi2_file<<"NLO  "<<TMath::Prob(Chi2Pair_NLO.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NLO_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NLO_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NLO_cov_theo.first,nBins)<<std::endl;
       chi2_file<<"NNLO  "<<TMath::Prob(Chi2Pair_NNLO.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NNLO_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NNLO_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NNLO_cov_theo.first,nBins)<<std::endl;
-      chi2_file<<"NLO  "<<TMath::Prob(Chi2Pair_NLO.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NLO_theo.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NLO_cov.first,nBins)<<"   "<<TMath::Prob(Chi2Pair_NLO_cov_theo.first,nBins)<<std::endl<<std::endl;
             
       // ~for (int i=0; i<unfolded_totalGraph.GetN()-1; i++) std::cout<<unfolded_totalGraph.GetErrorY(i)*unfolded_totalGraph.GetErrorY(i)<<std::endl;
                   
@@ -1646,14 +1645,14 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
       ratio_data_axis.SetMaximum((rewStudy)? 1.49 : 1.25);
       ratio_data_axis.SetMinimum((rewStudy)? 0.51 : 0.75);
    }
-   ratio.SetLineColor(kRed-6);
-   ratio.SetMarkerColor(kRed-6);
+   ratio.SetLineColor(TColor::GetColor("#bd1f01"));
+   ratio.SetMarkerColor(TColor::GetColor("#bd1f01"));
    ratio.GetYaxis()->SetTitleOffset(0.4);
    ratio.GetXaxis()->SetTitleOffset(1.7);
    ratio.GetXaxis()->SetLabelOffset(0.015);
    ratio.GetXaxis()->SetTickLength(0.);
-   ratio_data.SetLineColor(kRed-6);
-   ratio_data.SetMarkerColor(kRed-6);
+   ratio_data.SetLineColor(TColor::GetColor("#bd1f01"));
+   ratio_data.SetMarkerColor(TColor::GetColor("#bd1f01"));
    ratio_data_axis.GetYaxis()->SetTitleOffset(0.4);
    ratio_data_axis.GetXaxis()->SetTitleOffset(1.7);
    ratio_data_axis.GetXaxis()->SetLabelOffset(0.015);
@@ -1694,8 +1693,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    gfx::LegendEntries legE_ratio;
    
    if (plotComparison || onlyTheo) {   // draw MC
-      ratio_alt.SetLineColor(kBlue-6);
-      ratio_alt.SetMarkerColor(kBlue-6);
+      ratio_alt.SetLineColor(TColor::GetColor("#3f90da"));
+      ratio_alt.SetMarkerColor(TColor::GetColor("#3f90da"));
       if(isAltMC || rewStudy || isBSM) ratio_alt.Draw("same");
    }
    else {
