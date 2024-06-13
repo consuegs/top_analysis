@@ -444,26 +444,26 @@ void distributionsplotting::printTotalYields(hist::Histograms<TH1F>* hs, std::ve
    
    //print overview table
    std::cout<<std::endl<<std::endl;
-   std::cout<<"& Channel & \\ee{} & \\mumu & \\emu{} & all \\\\\\hline\\hline"<<std::endl;
-   std::cout<<"\\multirow{7}[0]{*}{\\begin{sideways}Contribution\\end{sideways}}"<<std::endl;
+   std::cout<<"& Process & \\ee{} & \\mumu & \\emu{} & all \\\\\\hline\\hline"<<std::endl;
+   // ~std::cout<<"\\multirow{7}[0]{*}{\\begin{sideways}Contribution\\end{sideways}}"<<std::endl;
    for (TString sample:outputSamples) {
       sample.ReplaceAll("_","\\_");
       if (sample == "MC" || sample == "data") continue;
-      std::cout<<"&"<<getPrintName(sample)<<"&$"<<std::setprecision(0)<<valueMap[sample][0]<<"("<<std::setprecision(1)<<fractionMap[sample][0]<<")$";
-      std::cout<<"&$"<<std::setprecision(0)<<valueMap[sample][1]<<"\\,("<<std::setprecision(1)<<fractionMap[sample][1]<<")$";
-      std::cout<<"&$"<<std::setprecision(0)<<valueMap[sample][2]<<"\\,("<<std::setprecision(1)<<fractionMap[sample][2]<<")$";
-      std::cout<<"&$"<<std::setprecision(0)<<valueMap[sample][3]<<"\\,("<<std::setprecision(1)<<fractionMap[sample][3]<<")$"<<"\\\\"<<std::endl;
+      std::cout<<""<<getPrintName(sample)<<"&$"<<std::setprecision(2)<<std::scientific<<valueMap[sample][0]<<"("<<std::fixed<<std::setprecision(1)<<fractionMap[sample][0]<<")$";
+      std::cout<<"&$"<<std::setprecision(2)<<std::scientific<<valueMap[sample][1]<<"\\,("<<std::fixed<<std::setprecision(1)<<fractionMap[sample][1]<<")$";
+      std::cout<<"&$"<<std::setprecision(2)<<std::scientific<<valueMap[sample][2]<<"\\,("<<std::fixed<<std::setprecision(1)<<fractionMap[sample][2]<<")$";
+      std::cout<<"&$"<<std::setprecision(2)<<std::scientific<<valueMap[sample][3]<<"\\,("<<std::fixed<<std::setprecision(1)<<fractionMap[sample][3]<<")$"<<"\\\\"<<std::endl;
    }
    std::cout<<"\\hline\\hline"<<std::endl;
-   std::cout<<"&"<<"Sum MC"<<"&$"<<valueMap["MC"][0]<<"$&$"<<valueMap["MC"][1]<<"$&$"<<valueMap["MC"][2]<<"$&$"<<valueMap["MC"][3]<<"$"<<"\\\\"<<std::endl;
-   std::cout<<"&"<<"$\\sigma$(Sum MC)"<<"&$"<<mcUncArray[0]<<"$&$"<<mcUncArray[1]<<"$&$"<<mcUncArray[2]<<"$&$"<<mcUncArray[3]<<"$"<<"\\\\"<<std::endl;
-   std::cout<<"&"<<"Data"<<std::setprecision(0)<<"&$"<<valueMap["data"][0]<<"$&$"<<valueMap["data"][1]<<"$&$"<<valueMap["data"][2]<<"$&$"<<valueMap["data"][3]<<"$"<<"\\\\"<<std::endl;
-   std::cout<<"\\hline\\hline"<<std::endl;
-   std::cout<<"&"<<"Data/MC [\\%]"<<"&$"<<std::setprecision(1);
-   std::cout<<fractionMap["data"][0]<<"\\pm"<<fractionMap["data"][0]/valueMap["MC"][0]*mcUncArray[0]<<"$&$";
-   std::cout<<fractionMap["data"][1]<<"\\pm"<<fractionMap["data"][1]/valueMap["MC"][1]*mcUncArray[1]<<"$&$";
-   std::cout<<fractionMap["data"][2]<<"\\pm"<<fractionMap["data"][2]/valueMap["MC"][2]*mcUncArray[2]<<"$&$";
-   std::cout<<fractionMap["data"][3]<<"\\pm"<<fractionMap["data"][3]/valueMap["MC"][3]*mcUncArray[3]<<"$"<<"\\\\"<<std::endl;
+   std::cout<<""<<"Sum MC"<<"&$"<<std::setprecision(2)<<std::scientific<<valueMap["MC"][0]<<"$&$"<<valueMap["MC"][1]<<"$&$"<<valueMap["MC"][2]<<"$&$"<<valueMap["MC"][3]<<"$"<<"\\\\"<<std::endl;
+   std::cout<<""<<"$\\sigma$(Sum MC)"<<"&$"<<mcUncArray[0]<<"$&$"<<mcUncArray[1]<<"$&$"<<mcUncArray[2]<<"$&$"<<mcUncArray[3]<<"$"<<"\\\\"<<std::endl;
+   std::cout<<""<<"Data"<<std::setprecision(2)<<std::scientific<<"&$"<<valueMap["data"][0]<<"$&$"<<valueMap["data"][1]<<"$&$"<<valueMap["data"][2]<<"$&$"<<valueMap["data"][3]<<"$"<<"\\\\"<<std::endl;
+   // ~std::cout<<"\\hline\\hline"<<std::endl;
+   // ~std::cout<<"&"<<"Data/MC [\\%]"<<"&$"<<std::setprecision(1);
+   // ~std::cout<<fractionMap["data"][0]<<"\\pm"<<fractionMap["data"][0]/valueMap["MC"][0]*mcUncArray[0]<<"$&$";
+   // ~std::cout<<fractionMap["data"][1]<<"\\pm"<<fractionMap["data"][1]/valueMap["MC"][1]*mcUncArray[1]<<"$&$";
+   // ~std::cout<<fractionMap["data"][2]<<"\\pm"<<fractionMap["data"][2]/valueMap["MC"][2]*mcUncArray[2]<<"$&$";
+   // ~std::cout<<fractionMap["data"][3]<<"\\pm"<<fractionMap["data"][3]/valueMap["MC"][3]*mcUncArray[3]<<"$"<<"\\\\"<<std::endl;
    
 }
 
