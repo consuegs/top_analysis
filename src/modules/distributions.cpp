@@ -237,20 +237,20 @@ void run()
    hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_Puppi", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
    hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_Puppi", ";p_{T}^{miss} (GeV);|#Delta#phi|(p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
    
-   // ~hs2d.addHist("baseline/ee/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
-   // ~hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
-   // ~hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
-   hs2d.addHist("baseline/ee/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,800,0,400,160,0,3.2);
-   hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,800,0,400,160,0,3.2);
-   hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_DNN", ";DNN p_{T}^{miss} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,800,0,400,160,0,3.2);
+   // ~hs2d.addHist("baseline/ee/2d_MetVSdPhiMetNearLep_DNN", ";p_{T,DNN}^{miss} (GeV);|#Delta#phi|(p_{T,DNN}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
+   // ~hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_DNN", ";p_{T,DNN}^{miss} (GeV);|#Delta#phi|(p_{T,DNN}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
+   // ~hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_DNN", ";p_{T,DNN}^{miss} (GeV);|#Delta#phi|(p_{T,DNN}^{miss},nearest l);EventsBIN" ,100,0,500,320,0,3.2);
+   hs2d.addHist("baseline/ee/2d_MetVSdPhiMetNearLep_DNN", ";p_{T,DNN}^{miss} (GeV);|#Delta#phi|(p_{T,DNN}^{miss},nearest l);EventsBIN" ,800,0,400,160,0,3.2);
+   hs2d.addHist("baseline/emu/2d_MetVSdPhiMetNearLep_DNN", ";p_{T,DNN}^{miss} (GeV);|#Delta#phi|(p_{T,DNN}^{miss},nearest l);EventsBIN" ,800,0,400,160,0,3.2);
+   hs2d.addHist("baseline/mumu/2d_MetVSdPhiMetNearLep_DNN", ";p_{T,DNN}^{miss} (GeV);|#Delta#phi|(p_{T,DNN}^{miss},nearest l);EventsBIN" ,800,0,400,160,0,3.2);
    
    hs2d.addHist("genParticles/ee/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("genParticles/emu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    hs2d.addHist("genParticles/mumu/2d_PtNuNuVSdPhiNuNuNearLep", ";p_{T}^{#nu#nu(+BSM)} (GeV);|#Delta#phi|(p_{T}^{#nu#nu(+BSM)},nearest l);EventsBIN" ,100,0,1000,100,0,3.2);
    
-   hs2d.addHist("baseline/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
-   hs2d.addHist("baseline/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
-   hs2d.addHist("baseline/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(DNN p_{T}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
+   hs2d.addHist("baseline/ee/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(p_{T,DNN}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
+   hs2d.addHist("baseline/emu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(p_{T,DNN}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
+   hs2d.addHist("baseline/mumu/2d_CemVSdPhiMetNearLep", ";C_{em,W,-} (GeV);|#Delta#phi|(p_{T,DNN}^{miss},nearest l);EventsBIN" ,20,0,300,20,0,3.2);
    
    //Define 2D histograms for GOF studies
    std::vector<dim2D> dim2D_vec;

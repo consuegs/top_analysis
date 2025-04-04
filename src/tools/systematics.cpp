@@ -634,8 +634,8 @@ TString Systematic::getPrintName(const TString& type)
     else if(type == "JES") return "Jet energy scale";
     else if(type == "JER") return "Jet energy resolution";
     else if(type == "L1PREFIRING") return "L1 prefiring";
-    else if(type == "LEPTON") return "Lepton reconstruction";
-    else if(type == "LUMI") return "Luminosity";
+    else if(type == "LEPTON") return "#splitline{Lepton}{reconstruction}";
+    else if(type == "LUMI") return "Int. luminosity";
     else if(type == "MATCH") return "ME-PS matching";
     else if(type == "MATCH_DCTR") return "ME-PS matching";
     else if(type == "MESCALE_ENVELOPE") return "ME scale";

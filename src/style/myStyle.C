@@ -26,7 +26,7 @@
    gStyle->SetNumberContours(255);
 
    gStyle->SetGridStyle(1);
-   gStyle->SetGridColor(kGray+1);
+   gStyle->SetGridColor(kGray);
 
    gStyle->SetNdivisions(505,"xy");
 

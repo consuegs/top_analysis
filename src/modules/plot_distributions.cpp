@@ -139,7 +139,7 @@ void run()
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          // ~vecDistr.push_back({selection+channel,"Lep_e_pt",0.,600.,50});
          // ~vecDistr.push_back({selection+channel,"Lep_mu_pt",0.,600.,50});
-         // ~vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,30});
+         // ~vecDistr.push_back({selection+channel,"Lep1_pt",0.,360.,30}); // upper left Figure 2 paper
          // ~vecDistr.push_back({selection+channel,"Lep2_pt",0.,300.,25});
          // ~vecDistr.push_back({selection+channel,"MET",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"PuppiMET",0.,500.,7,{0,40,70,110,170,260,370,500}});
@@ -152,7 +152,7 @@ void run()
          // ~vecDistr.push_back({selection+channel,"sumpTlep",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"pTbJet",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"bJet_eta",-2.5,2.5,25});
-         // ~vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,60});
+         // ~vecDistr.push_back({selection+channel,"Jet1_pt",0.,600.,60}); // upper right Figure 2 paper
          // ~vecDistr.push_back({selection+channel,"Jet2_pt",0.,400.,40});
          // ~vecDistr.push_back({selection+channel,"dPhiMETnearJet",0.,3.2,32});
          // ~vecDistr.push_back({selection+channel,"dPhiMETleadJet",0.,3.2,32});
@@ -173,8 +173,8 @@ void run()
          // ~vecDistr.push_back({selection+channel,"dphi_metLepsum",0.,3.2,50});
          // ~vecDistr.push_back({selection+channel,"dPhiLep1Lep2",0.,3.2,50});
          // ~vecDistr.push_back({selection+channel,"dR_Lep1Lep2",0.,5.,100});
-         // ~vecDistr.push_back({selection+channel,"nJets",1.5,9.5,8});
-         // ~vecDistr.push_back({selection+channel,"nBjets",-0.5,4.5,5});
+         // ~vecDistr.push_back({selection+channel,"nJets",1.5,9.5,8}); // lower left Figure 2 paper
+         // ~vecDistr.push_back({selection+channel,"nBjets",-0.5,4.5,5}); // lower right Figure 2 paper
          // ~vecDistr.push_back({selection+channel,"MT2",0.,200.,50});
          // ~vecDistr.push_back({selection+channel,"MT",0.,600.,30});
          // ~vecDistr.push_back({selection+channel,"mt_MetLep2",0.,600.,30});
@@ -226,12 +226,11 @@ void run()
          // ~vecDistr.push_back({selection+channel,"MET_xy",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"PuppiMET_xy",0.,500.,50});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,9,{0,40,68,100,140,196,260,332,410,500}});
-         // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
-         // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
+         // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}}); // upper left Figure 5 paper
+         // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}}); // upper right Figure 5 paper
          // ~vecDistr.push_back({selection+channel,"dphi_metNearLep_puppi_xy",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
          // ~vecDistr.push_back({selection+channel,"dphi_metNearLep_xy",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
          // ~vecDistr.push_back({selection+channel,"DNN_MET_pT",0.,500.,18,{0,20,40,54,68,84,100,120,140,168,196,228,260,296,332,371,410,455,500}});
-         // ~vecDistr.push_back({selection+channel,"DNN_MET_dPhi_nextLep",0,3.2,12,{0.,0.2,0.4,0.64,0.88,1.12,1.36,1.6,1.84,2.1,2.36,2.74,3.2}});
          
          // ~vecDistr.push_back({selection+channel,"PuppiMET_xy*cos(PuppiMET_xy_phi)",-250.,250.,50});
          // ~vecDistr.push_back({selection+channel,"PuppiMET_xy*sin(PuppiMET_xy_phi)",-250.,250.,50});
@@ -246,7 +245,7 @@ void run()
    for(TString selection:{"baseline"}){
       for(TString channel:{"/ee/","/mumu/","/emu/"}){
          // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,4,0.,3.2,3,{0,70,125,200,400},{0,0.56,1.08,3.2}});
-         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,8,0.,3.2,6,{0,40,70,97.5,125,162.5,200,300,400},{0,0.28,0.56,0.82,1.08,2.14,3.2}});
+         // ~vecDistr2D.push_back({selection+channel,"2d_MetVSdPhiMetNearLep_DNN",0.,400.,8,0.,3.2,6,{0,40,70,97.5,125,162.5,200,300,400},{0,0.28,0.56,0.82,1.08,2.14,3.2}}); // lower Figure 5 paper
       }
    }
    

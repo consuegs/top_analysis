@@ -168,7 +168,7 @@ void run()
    // ~std::vector<TString> systVec = {"Nominal","CR1","CR2","ERDON"};
    // ~std::vector<TString> systVec = {"Nominal"};
    // ~std::vector<TString> systVec = {"Nominal","MATCH_DCTR_UP","MATCH_DCTR_DOWN"};
-   
+  /*
    //Remove HEM unc. for all year except 2018
    auto itr =std::find(systVec.begin(), systVec.end(), "JESUserDefinedHEM1516_DOWN");
    if (itr != systVec.end() && cfg.year_int != 3){
@@ -184,7 +184,7 @@ void run()
       systVec.push_back(TString::Format("PDF_%i_UP",i));
       systVec.push_back(TString::Format("PDF_%i_DOWN",i));
    }
-   
+  */
    //////////////////////////
    // Define Distributions //
    //////////////////////////
@@ -268,8 +268,7 @@ void run()
          bool useAltReco = false;
          
          //Use real data
-         // ~bool useRealData = false;
-         bool useRealData = true;
+         bool useRealData = true; // set this flag to true for Figure 4/7/8 of paper, false for Figure 6
          
          //Use Single Top DS
          // ~bool useSingleTopDS = false;

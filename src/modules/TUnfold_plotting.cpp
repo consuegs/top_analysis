@@ -189,13 +189,13 @@ void run()
    // ~std::vector<TString> systVec = {"JESAbsolute_UP","JESAbsolute_DOWN","JESAbsoluteYear_UP","JESAbsoluteYear_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESBBEC1Year_UP","JESBBEC1Year_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN","JESRelativeSampleYear_UP","JESRelativeSampleYear_DOWN"};
    // ~std::vector<TString> systVec = {"CR1","CR2","ERDON"};
    // ~std::vector<TString> systVec = {};
-   
+/*
    //Remove HEM unc. for all year except 2018
    auto itr =std::find(systVec.begin(), systVec.end(), "JESUserDefinedHEM1516_DOWN");
    if (itr != systVec.end() && cfg.year_int != 3){
       systVec.erase(itr);
    }
-   
+*/
    ////////////////////////////
    // Set Merged Systematics //
    ////////////////////////////

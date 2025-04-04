@@ -19,10 +19,10 @@ void style::draw_lumi(TPad &pad, bool simulation, bool drawLumiText)
    if (simulation){
       //~ if (extraText!="" && !Config::get().releaseMode){
       if (extraText!="" && Config::get().releaseMode){
-         extraText="Simulation #bullet "+extraText;
+         extraText="Simulation  "+extraText;
       }else{
          //~ extraText="Simulation";
-         extraText="Simulation #bullet "+extraText;
+         extraText="Simulation  "+extraText;
       }
    }
 
@@ -34,7 +34,7 @@ void style::draw_lumi(TPad &pad, bool simulation, bool drawLumiText)
    float lumiTextSize     = 0.7;
    float lumiTextOffset   = 0.2;
    // ~float cmsTextSize      = 0.75;
-   float cmsTextSize      = 0.85;
+   float cmsTextSize      = 0.9;
    // ratio of "CMS" and extra text size
    float extraOverCmsTextSize  = 0.76;
 
@@ -65,7 +65,7 @@ void style::draw_lumi(TPad &pad, bool simulation, bool drawLumiText)
    latex.SetTextSize(cmsTextSize*t);
    TString cmsLabel;
    cmsLabel+=TString::Format("#font[%f]{%s}",cmsTextFont,cmsText.Data());
-   cmsLabel+=TString::Format("#color[922]{#scale[%f]{#font[%f]{ %s}}}",
+   cmsLabel+=TString::Format("#color[1]{#scale[%f]{#font[%f]{ %s}}}",
                              extraTextSize/float(cmsTextSize),extraTextFont,extraText.Data());
 
    latex.DrawLatex(l,1-t+lumiTextOffset*t,cmsLabel);

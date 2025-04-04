@@ -532,7 +532,7 @@ void distributionsplotting::drawVertLines2D(std::vector<float> const &binEdgesY,
    TLine * aline = new TLine();
    TLatex * atext = new TLatex();
    // ~atext->SetTextSize(0.025);
-   atext->SetTextSize(0.035);
+   atext->SetTextSize(0.037);
    aline->SetLineWidth(1.8);
    for (int i=1; i<(binEdgesY.size()-1); i++){
       aline->DrawLine(i*400,lowerEnd,i*400,upperEnd);
@@ -571,14 +571,16 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    if (loc.Contains("ee")) cat="ee";
    else if (loc.Contains("emu")) cat="e#mu";
    else if (loc.Contains("mumu")) cat="#mu#mu";
-   else if (loc.Contains("all")) cat="all";
+   else if (loc.Contains("all")) cat="";
    if (sPresel.Contains("Met200")) cat+="  p_{T}^{miss}>200 GeV";
    TLatex label=gfx::cornerLabel(cat,1);
    
    // set plotting ranges
-   if (is2D) st_mc.SetMaximum(5e3*st_mc.GetMaximum());
-   else if (sVar.Contains("mLL") || sVar.Contains("DNN_MET_dPhi_nextLep")) st_mc.SetMaximum(3e2*st_mc.GetMaximum());
-   else st_mc.SetMaximum(1e1*st_mc.GetMaximum());
+   if (is2D) st_mc.SetMaximum(5.5e3*st_mc.GetMaximum());
+   else if (sVar.Contains("nBjets")) st_mc.SetMaximum(5.5e3*st_mc.GetMaximum());
+   else if (sVar.Contains("njets")) st_mc.SetMaximum(3e2*st_mc.GetMaximum());
+   else if (sVar.Contains("mLL") || sVar.Contains("DNN_MET_dPhi_nextLep")) st_mc.SetMaximum(3e3*st_mc.GetMaximum());
+   else st_mc.SetMaximum(1.5e2*st_mc.GetMaximum());
    if (sPresel.Contains("cutflow")) st_mc.SetMinimum(1000);
    else st_mc.SetMinimum(10);
    st_mc.Draw();     // draw stack
@@ -606,7 +608,7 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    bool plotData = false;
    if(sPresel.Contains("GOF2D") || !(sVar.Contains("MET") || sVar.Contains("met1000")|| sVar.Contains("dphi_metNearLep")|| sVar.Contains("C_em")|| sVar.Contains("Met"))) {
       hist_data->Draw("same");
-      le.prepend(*hist_data,"Data","lep");
+      le.prepend(*hist_data,"Data","lpe");  // exop for Figure 2 and lpe for Figure 5 of Paper
       plotData = true;
    }
    else if (!is2D && !sPresel.Contains("GOF2D")) {    // for MET distributions only plot up to pT=140
@@ -614,7 +616,7 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
          // ~if (hist_data->GetXaxis()->GetBinUpEdge(i)>140) hist_data->SetBinContent(i,0.);
       // ~}
       hist_data->Draw("same");
-      le.prepend(*hist_data,"Data","lep");
+      le.prepend(*hist_data,"Data","lpe");  // exop for Figure 2 and lpe for Figure 5 of Paper
       plotData = true;
    }
    else if (is2D){
@@ -626,7 +628,7 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
          // ~if (hist_data->GetXaxis()->GetBinUpEdge(i)-(width*(dphi_bin-1))>140) hist_data->SetBinContent(i,0.);
       // ~}
       hist_data->Draw("same");
-      le.prepend(*hist_data,"Data","lep");
+      le.prepend(*hist_data,"Data","lpe");   // exop for Figure 2 and lpe for Figure 5 of Paper
       plotData = true;
    }
    
@@ -655,17 +657,27 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       fixAxis2D(st_mc.GetXaxis(),binEdgesY.size()-1);
       drawVertLines2D(binEdgesY,st_mc.GetHistogram()->GetMinimum(),st_mc.GetHistogram()->GetMaximum(),true);
    }
-   
+   /*
    // redraw axis, draw label and legend
-   // ~auto hists_SM=hs->getHistograms(loc,{"TTbar_diLepton"});
-   // ~TH1F axis=*(hists_SM[0]);
-   // ~axis.SetStats(0);
-   // ~axis.SetYTitle("Events/Bin");
-   // ~axis.Draw("same axis");
-   TLegend leg=le.buildLegend(.57,(plotBSM)? .73:.77,1-(gPad->GetRightMargin()+0.02),-1,2);
+   if (sVar.Contains("2d_MetVSdPhiMetNearLep_DNN"))
+   {
+   auto hists_SM=hs->getHistograms(loc,{"TTbar_diLepton"});
+   TH1F axis=*(hists_SM[0]);
+   axis.SetXTitle("p_{#scale[.8]{T,DNN}}^{#scale[.8]{miss}}");
+   axis.Draw();
+   }*/
+   TLegend leg=le.buildLegend(.50,(plotBSM)? .73:.7,1-(gPad->GetRightMargin()+0.02),-1,2); // for Figures 2 and 5 of Paper , except 2D
+   //TLegend leg=le.buildLegend(0.55,0.72,0.82,0.9,2); // for Figure 5 2D of Paper
+   //TLegend leg=le.buildLegend(.55,(plotBSM)? .73:.77,0.88,-1,2); // for rest
+   leg.SetColumnSeparation(0.01); //
    leg.SetFillStyle(1001);
+   leg.SetTextSize(0.047); // 0.05 for Figures 2 and 5 2D!, Figure 5 2D 0.047, 0.042 for rest of Paper
    leg.Draw();
    label.Draw();
+   if (is2D){
+      fixAxis2D(st_mc.GetXaxis(),binEdgesY.size()-1);
+      drawVertLines2D(binEdgesY,st_mc.GetHistogram()->GetMinimum(),st_mc.GetHistogram()->GetMaximum(),true);
+   }
    
    // ratio part
    sp_can.pL_.cd();
@@ -717,7 +729,7 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       ratio_mc.GetXaxis()->SetBinLabel(2,"m_{ll}");
       ratio_mc.GetXaxis()->SetBinLabel(3,"jets");
       ratio_mc.GetXaxis()->SetBinLabel(4,"b-tag");
-      ratio_mc.GetXaxis()->SetBinLabel(5,"DNN p_{#scale[.8]{T}}^{#scale[.8]{miss}}");
+      ratio_mc.GetXaxis()->SetBinLabel(5,"p_{#scale[.8]{T,DNN}}^{#scale[.8]{miss}}");
       ratio_mc.GetXaxis()->SetTitle("Cut");
       ratio_mc.GetXaxis()->SetRangeUser(0.5,5.5);
       ratio_mc.GetXaxis()->SetLabelOffset(0.03);
@@ -728,11 +740,14 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
    if (sVar.Contains("nJets") || sVar.Contains("nBjets")){
       ratio_mc.GetXaxis()->SetNdivisions(ratio_mc.GetXaxis()->GetNbins()+1);
    }
-   
+//   if (sVar.Contains("nBjets")){
+//      ratio_mc.GetXaxis()->SetTitle("N_{b Jets}");
+//   }
    if(is2D){
       ratio_mc.GetYaxis()->SetTitleOffset(0.25);
       ratio_mc.SetMaximum(1.75);
       ratio_mc.SetMinimum(0.4);
+      ratio_mc.GetXaxis()->SetTitle("p_{#scale[.8]{T,DNN}}^{#scale[.8]{miss}} (GeV)");
    }
    else if (sPresel.Contains("cutflow")){
       ratio_mc.SetMaximum(1.15);
@@ -742,6 +757,9 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       ratio_mc.GetYaxis()->SetTitleOffset(0.45);
       ratio_mc.SetMaximum(1.35);
       ratio_mc.SetMinimum(0.65);
+   }
+   if(sVar.Contains("Jet1_pt")) {
+      ratio_mc.GetXaxis()->SetTitleOffset(0.89);
    }
    ratio_mc.SetStats(0);
    ratio.SetLineColor(kBlack);
@@ -765,9 +783,11 @@ void distributionsplotting::plotHistograms(TString const &sPresel, TString const
       ratio.SetMarkerSize(0.3);
       ratio.SetLineWidth(1.5);
    }
+
    gPad->RedrawAxis("g");
-   if(plotData) ratio.Draw("pe0 same");
    
+   if(plotData) ratio.Draw("lpe same"); // pexo for Figure 2 and lpe for Figure 5 of Paper
+
    if(is2D){
       fixAxis2D(ratio_mc.GetXaxis(),binEdgesY.size()-1);
       drawVertLines2D(binEdgesY,ratio_mc.GetMinimum(),ratio_mc.GetMaximum(),false);

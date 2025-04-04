@@ -59,7 +59,7 @@ void setTDRStyle() {
 
   tdrStyle->SetEndErrorSize(2);
   // tdrStyle->SetErrorMarker(20);
-  //tdrStyle->SetErrorX(0.);
+  //tdrStyle->SetErrorX(0.);  // for Figures 2 paper
   
   tdrStyle->SetMarkerStyle(20);
   
@@ -91,7 +91,7 @@ void setTDRStyle() {
   // tdrStyle->SetStatY(Float_t y = 0);
 
 // Margins:
-  tdrStyle->SetPadTopMargin(0.05);
+  tdrStyle->SetPadTopMargin(0.08);
   tdrStyle->SetPadBottomMargin(0.13);
   tdrStyle->SetPadLeftMargin(0.15);
   tdrStyle->SetPadRightMargin(0.06);
@@ -133,7 +133,7 @@ void setTDRStyle() {
 
   tdrStyle->SetAxisColor(1, "XYZ");
   tdrStyle->SetStripDecimals(kTRUE);
-  tdrStyle->SetTickLength(0.01, "XYZ");
+  tdrStyle->SetTickLength(0.015, "XYZ");
   tdrStyle->SetNdivisions(510, "XYZ");
   tdrStyle->SetPadTickX(1);  // To get tick marks on the opposite side of the frame
   tdrStyle->SetPadTickY(1);

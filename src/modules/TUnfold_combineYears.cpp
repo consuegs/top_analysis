@@ -47,7 +47,7 @@ void run()
    
    //Use real data
    // ~bool useRealData = false;
-   bool useRealData = true;
+   bool useRealData = true;  // set this flag to false for Figure 6 of paper, true for Figures 4/7/8
 
    //Use Single Top DS
    // ~bool useSingleTopDS = false;
@@ -137,7 +137,7 @@ void run()
    // ~std::vector<TString> systVec = {"JESAbsolute_UP","JESAbsolute_DOWN","JESBBEC1_UP","JESBBEC1_DOWN","JESFlavorRealistic_UP","JESFlavorRealistic_DOWN","JESRelativeBalreg_UP","JESRelativeBalreg_DOWN"};
    // ~std::vector<TString> systVec = {"XSEC_DY_UP","XSEC_DY_DOWN","XSEC_ST_UP","XSEC_ST_DOWN","XSEC_TTOTHER_UP","XSEC_TTOTHER_DOWN","XSEC_OTHER_UP","XSEC_OTHER_DOWN"};
    // ~std::vector<TString> systVec = {"ELECTRON_ID_UP","ELECTRON_ID_DOWN","ELECTRON_RECO_UP","ELECTRON_RECO_DOWN","ELECTRON_SCALESMEARING_UP","ELECTRON_SCALESMEARING_DOWN","MUON_ID_STAT_UP","MUON_ID_STAT_DOWN","MUON_ID_SYST_UP","MUON_ID_SYST_DOWN","MUON_ISO_STAT_UP","MUON_ISO_STAT_DOWN","MUON_ISO_SYST_UP","MUON_ISO_SYST_DOWN","MUON_SCALE_UP","MUON_SCALE_DOWN"};
-   // ~std::vector<TString> systVec = {};
+   // ~std::vector<TString> systVec = {}; // for Figure 6 of paper systVec should be kept empty
    
    // ~std::map<TString,std::vector<TString>> systCombinations = {
       // ~{"JES",{"JESRelativeBalreg","JESFlavorRealistic","JESRelativeSampleYear","JESAbsoluteYear","JESAbsolute","JESBBEC1Year","JESBBEC1","JESUserDefinedHEM1516"}},
