@@ -1243,9 +1243,12 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    unfolded_totalGraph.SetMarkerSize(0.6);
    unfolded_reg_totalGraph.SetMarkerSize(0.6);
    unfolded_bbb_totalGraph.SetMarkerSize(0.6);
+   unfolded_reg_totalGraph.SetMarkerStyle(22);
+   unfolded_bbb_totalGraph.SetMarkerStyle(23);
    
    realDis->SetLineColor(kRed-6);
    realDis->SetFillColor(kRed-6);
+   realDis->SetLineStyle(2);
    realDisAlt->SetLineColor(kBlue-6);
    realDisAlt->SetFillColor(kBlue-6);
    realDisHerwig->SetLineColor(kCyan-6);
@@ -1729,6 +1732,8 @@ std::vector<double> tunfoldplotting::plot_UnfoldedResult(TUnfoldBinning* generat
    ratio_totalGraph_data.SetMarkerSize(0.6);
    ratio_reg_totalGraph.SetMarkerSize(0.6);
    ratio_bbb_totalGraph.SetMarkerSize(0.6);
+   ratio_reg_totalGraph.SetMarkerStyle(22);
+   ratio_bbb_totalGraph.SetMarkerStyle(23);
    
    ratio_totalGraph_data.SetFillStyle(1001);
    ratio_totalGraph_data.SetFillColor(TColor::GetColor("#ffa90e"));
